@@ -530,23 +530,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (entry.Children.Count == 0) break;
                     MoveDefBoneSwitchNode list1 = entry.Children[(int)e.EventData.parameters[0]._data] as MoveDefBoneSwitchNode;
                     if (list1.Children.Count == 0) break;
-                    if ((int)e.EventData.parameters[1]._data > list1.Children.Count)
+                    if ((int)e.EventData.parameters[1]._data > list1.Children.Count || (int)e.EventData.parameters[1]._data < 0)
                     {
                         foreach (MDL0PolygonNode p in Root.Model._polyList)
                             p._render = false;
-                        break;
-                    }
-                    else if ((int)e.EventData.parameters[1]._data < 0)
-                    {
-                        foreach (MoveDefModelVisGroupNode l in list1.Children)
-                            foreach (MoveDefBoneIndexNode b in l.Children)
-                            {
-                                if (b.BoneNode == null)
-                                    continue;
-
-                                foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
-                                    p._render = false;
-                            }
                         break;
                     }
                     MoveDefModelVisGroupNode list2 = list1.Children[(int)e.EventData.parameters[1]._data] as MoveDefModelVisGroupNode;
@@ -554,21 +541,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     foreach (MoveDefModelVisGroupNode l in list1.Children)
                         if (l.Index != (int)e.EventData.parameters[1]._data)
                             foreach (MoveDefBoneIndexNode b in l.Children)
-                            {
-                                if (b.BoneNode == null)
-                                    continue;
-
-                                foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
-                                    p._render = false;
-                            }
+                                if (b.BoneNode != null)
+                                    foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
+                                        p._render = false;
                     foreach (MoveDefBoneIndexNode b in list2.Children)
-                    {
-                        if (b.BoneNode == null)
-                            continue;
-
-                        foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
-                            p._render = true;
-                    }
+                        if (b.BoneNode != null)
+                            foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
+                                p._render = true;
                     break;
                 case 0x0B020100:
                     if (Root.Model._polyList != null)

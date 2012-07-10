@@ -286,6 +286,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         Name = e.Name;
                         action = null;
                         list = 4;
+                        index = _extNode.Index;
                     }
 
                 if (_extNode == null)

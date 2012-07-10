@@ -47,7 +47,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Moveset Entry")]
         public int IntOffset { get { return _offset; } }
         [Browsable(false)]
-        public int _offset { get { if (Data != null) return (int)Data - (int)BaseAddress; else return 0; } }
+        public int _offset { get { if (dAddr != null) return (int)dAddr - (int)BaseAddress; else return 0; } }
         [Category("Moveset Entry")]
         public string HexOffset { get { return "0x" + _offset.ToString("X"); } }
         [Category("Moveset Entry")]
@@ -57,6 +57,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         public MoveDefExternalNode _extNode = null;
         public bool _extOverride = false;
+
+        VoidPtr data = null;
+        VoidPtr dAddr { get { return data == null ? data = Data : data; } }
 
         public int offsetID = 0;
         public bool isExtra = false;
@@ -2849,7 +2852,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (references != null)
                 Children.Add(references);
 
-            MoveDefGroupNode g = new MoveDefGroupNode() { _name = "SubRoutines", _parent = this };
+            MoveDefSubRoutineListNode g = new MoveDefSubRoutineListNode() { _name = "SubRoutines", _parent = this };
 
             _subRoutineGroup = g;
             _subRoutineList = g.Children;
@@ -2932,18 +2935,22 @@ namespace BrawlLib.SSBB.ResourceNodes
                 lookupCount += e._lookupCount;
                 refTable.Add(e.Name);
             }
+            refCount = 0;
             if (references != null)
             foreach (MoveDefExternalNode e in references.Children)
             {
-                refTable.Add(e.Name);
-                size += 8;
-
+                if (e._refs.Count > 0)
+                {
+                    refTable.Add(e.Name);
+                    size += 8;
+                    refCount++;
+                }
                 //references don't use lookup table
                 //lookupCount += e._refs.Count - 1;
             }
             return size + (lookupLen = lookupCount * 4) + refTable.TotalSize;
         }
-
+        int refCount = 0;
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             //Children are built in order but before their parent! 
@@ -2952,7 +2959,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             FDefHeader* header = (FDefHeader*)address;
             header->_fileSize = length;
-            header->_externalSubRoutineCount = references.Children.Count;
+            header->_externalSubRoutineCount = refCount;
             header->_dataTableEntryCount = sections._sectionList.Count;
             header->_lookupEntryCount = lookupCount;
             header->_pad1 = header->_pad2 = header->_pad3 = 0;
@@ -3014,7 +3021,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _lookupOffsets.AddRange(e._lookupOffsets.ToArray());
                 }
                 sectionsAddr += e._entryLength;
-                refTable.Add(e.Name);
             }
 
             if (data != null)
@@ -3073,7 +3079,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             dataAddress = (VoidPtr)values;
-            VoidPtr refTableAddr = dataAddress + sections._sectionList.Count * 8 + references.Children.Count * 8;
+            VoidPtr refTableAddr = dataAddress + sections._sectionList.Count * 8 + refCount * 8;
             refTable.WriteTable(refTableAddr);
 
             foreach (MoveDefEntryNode e in sections._sectionList)
@@ -3084,9 +3090,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             foreach (MoveDefExternalNode e in references.Children)
             {
-                //if (e._refs.Count == 0) continue;
-                *values++ = (int)e._refs[0]._entryOffset - (int)_rebuildBase;
-                *values++ = (int)refTable[e.Name] - (int)refTableAddr;
+                if (e._refs.Count > 0)
+                {
+                    *values++ = (int)e._refs[0]._entryOffset - (int)_rebuildBase;
+                    *values++ = (int)refTable[e.Name] - (int)refTableAddr;
+                }
             }
             //Some nodes handle rebuilding their own children, 
             //so if one of those children has changed, the node will stay dirty and may rebuild over itself.
@@ -3176,10 +3184,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         r.Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
                         Root._external.Add(r);
                         _sectionList.Add(r);
-                        if (Root._subRoutines.ContainsKey(r._offset))
-                            Root._subRoutines[r._offset].Name = r.Name;
-                        else
-                            Root._subRoutines.Add(r._offset, r);
                     }
                     else
                     {

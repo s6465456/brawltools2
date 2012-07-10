@@ -631,6 +631,7 @@ namespace System.Windows.Forms
             this.chkUnk.TabIndex = 36;
             this.chkUnk.Text = "Unknown";
             this.chkUnk.UseVisualStyleBackColor = true;
+            this.chkUnk.CheckedChanged += new System.EventHandler(this.chkUnk_CheckedChanged);
             // 
             // chkLoop
             // 
@@ -641,6 +642,7 @@ namespace System.Windows.Forms
             this.chkLoop.TabIndex = 35;
             this.chkLoop.Text = "Loop";
             this.chkLoop.UseVisualStyleBackColor = true;
+            this.chkLoop.CheckedChanged += new System.EventHandler(this.chkLoop_CheckedChanged);
             // 
             // chkFixedTrans
             // 
@@ -651,6 +653,7 @@ namespace System.Windows.Forms
             this.chkFixedTrans.TabIndex = 34;
             this.chkFixedTrans.Text = "Fixed Translation";
             this.chkFixedTrans.UseVisualStyleBackColor = true;
+            this.chkFixedTrans.CheckedChanged += new System.EventHandler(this.chkFixedTrans_CheckedChanged);
             // 
             // chkFixedRot
             // 
@@ -661,6 +664,7 @@ namespace System.Windows.Forms
             this.chkFixedRot.TabIndex = 33;
             this.chkFixedRot.Text = "Fixed Rotation";
             this.chkFixedRot.UseVisualStyleBackColor = true;
+            this.chkFixedRot.CheckedChanged += new System.EventHandler(this.chkFixedRot_CheckedChanged);
             // 
             // chkFixedScale
             // 
@@ -671,6 +675,7 @@ namespace System.Windows.Forms
             this.chkFixedScale.TabIndex = 32;
             this.chkFixedScale.Text = "Fixed Scale";
             this.chkFixedScale.UseVisualStyleBackColor = true;
+            this.chkFixedScale.CheckedChanged += new System.EventHandler(this.chkFixedScale_CheckedChanged);
             // 
             // chkMovesChar
             // 
@@ -681,6 +686,7 @@ namespace System.Windows.Forms
             this.chkMovesChar.TabIndex = 31;
             this.chkMovesChar.Text = "Moves Character";
             this.chkMovesChar.UseVisualStyleBackColor = true;
+            this.chkMovesChar.CheckedChanged += new System.EventHandler(this.chkMovesChar_CheckedChanged);
             // 
             // chkTransOutStart
             // 
@@ -691,6 +697,7 @@ namespace System.Windows.Forms
             this.chkTransOutStart.TabIndex = 30;
             this.chkTransOutStart.Text = "Transition Out From Start";
             this.chkTransOutStart.UseVisualStyleBackColor = true;
+            this.chkTransOutStart.CheckedChanged += new System.EventHandler(this.chkTransOutStart_CheckedChanged);
             // 
             // inTransTime
             // 
@@ -701,6 +708,7 @@ namespace System.Windows.Forms
             this.inTransTime.Size = new System.Drawing.Size(89, 20);
             this.inTransTime.TabIndex = 29;
             this.inTransTime.Text = "0";
+            this.inTransTime.ValueChanged += new System.EventHandler(this.inTransTime_ValueChanged);
             // 
             // chkNoOutTrans
             // 
@@ -711,6 +719,7 @@ namespace System.Windows.Forms
             this.chkNoOutTrans.TabIndex = 2;
             this.chkNoOutTrans.Text = "No Out Transition";
             this.chkNoOutTrans.UseVisualStyleBackColor = true;
+            this.chkNoOutTrans.CheckedChanged += new System.EventHandler(this.chkNoOutTrans_CheckedChanged);
             // 
             // label1
             // 
@@ -1258,7 +1267,7 @@ namespace System.Windows.Forms
                     else
                         MessageBox.Show(this, "Unable to recognize input file.");
                 }
-                //catch (Exception x) { MessageBox.Show(this, x.ToString()); _updating = false; }
+                catch (Exception x) { MessageBox.Show(this, x.ToString()); _updating = false; }
                 finally
                 {
                     if (node != null)
@@ -1597,6 +1606,9 @@ namespace System.Windows.Forms
                     break;
                 }
 
+            _mainWindow._updating = true;
+            _mainWindow.pnlPlayback.chkLoop.Checked = selectedSubActionGrp._flags.HasFlag(AnimationFlags.Loop);
+            _mainWindow._updating = false;
             SetFrame(0);
         }
 
@@ -1677,7 +1689,7 @@ namespace System.Windows.Forms
                 else
                 {
                     _animFrame = -1;
-                    if (chkLoop.Checked)
+                    if (_mainWindow._loop)
                         SetFrame(0);
                     else
                         StopScript();
@@ -1796,6 +1808,111 @@ namespace System.Windows.Forms
                         }
                     }
                 }
+            }
+        }
+
+        private void chkUnk_CheckedChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                if (chkUnk.Checked)
+                    selectedSubActionGrp._flags |= AnimationFlags.Unknown;
+                else
+                    selectedSubActionGrp._flags &= ~AnimationFlags.Unknown;
+                selectedSubActionGrp.SignalPropertyChange();
+            }
+        }
+
+        private void chkLoop_CheckedChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                if (chkLoop.Checked)
+                    selectedSubActionGrp._flags |= AnimationFlags.Loop;
+                else
+                    selectedSubActionGrp._flags &= ~AnimationFlags.Loop;
+                selectedSubActionGrp.SignalPropertyChange();
+            }
+        }
+
+        private void chkFixedTrans_CheckedChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                if (chkFixedTrans.Checked)
+                    selectedSubActionGrp._flags |= AnimationFlags.FixedTranslation;
+                else
+                    selectedSubActionGrp._flags &= ~AnimationFlags.FixedTranslation;
+                selectedSubActionGrp.SignalPropertyChange();
+            }
+        }
+
+        private void chkFixedRot_CheckedChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                if (chkFixedRot.Checked)
+                    selectedSubActionGrp._flags |= AnimationFlags.FixedRotation;
+                else
+                    selectedSubActionGrp._flags &= ~AnimationFlags.FixedRotation;
+                selectedSubActionGrp.SignalPropertyChange();
+            }
+        }
+
+        private void chkFixedScale_CheckedChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                if (chkFixedScale.Checked)
+                    selectedSubActionGrp._flags |= AnimationFlags.FixedScale;
+                else
+                    selectedSubActionGrp._flags &= ~AnimationFlags.FixedScale;
+                selectedSubActionGrp.SignalPropertyChange();
+            }
+        }
+
+        private void chkMovesChar_CheckedChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                if (chkMovesChar.Checked)
+                    selectedSubActionGrp._flags |= AnimationFlags.MovesCharacter;
+                else
+                    selectedSubActionGrp._flags &= ~AnimationFlags.MovesCharacter;
+                selectedSubActionGrp.SignalPropertyChange();
+            }
+        }
+
+        private void chkTransOutStart_CheckedChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                if (chkTransOutStart.Checked)
+                    selectedSubActionGrp._flags |= AnimationFlags.TransitionOutFromStart;
+                else
+                    selectedSubActionGrp._flags &= ~AnimationFlags.TransitionOutFromStart;
+                selectedSubActionGrp.SignalPropertyChange();
+            }
+        }
+
+        private void chkNoOutTrans_CheckedChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                if (chkNoOutTrans.Checked)
+                    selectedSubActionGrp._flags |= AnimationFlags.NoOutTransition;
+                else
+                    selectedSubActionGrp._flags &= ~AnimationFlags.NoOutTransition;
+                selectedSubActionGrp.SignalPropertyChange();
+            }
+        }
+
+        private void inTransTime_ValueChanged(object sender, EventArgs e)
+        {
+            if (selectedSubActionGrp != null)
+            {
+                selectedSubActionGrp._inTransTime = (byte)inTransTime.Value;
+                selectedSubActionGrp.SignalPropertyChange();
             }
         }
     }

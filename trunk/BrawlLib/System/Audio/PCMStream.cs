@@ -79,6 +79,5 @@ namespace System.Audio
             }
             GC.SuppressFinalize(this);
         }
-
     }
 }

@@ -11,19 +11,22 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal FDefModelDisplay* Header { get { return (FDefModelDisplay*)WorkingUncompressed.Address; } }
 
+        FDefModelDisplay hdr;
+
         [Category("Model Visibility")]
-        public int EntryOffset { get { return Header->_entryOffset; } }
+        public int EntryOffset { get { return hdr._entryOffset; } }
         [Category("Model Visibility")]
-        public int EntryCount { get { return Header->_entryCount; } }
+        public int EntryCount { get { return hdr._entryCount; } }
         [Category("Model Visibility")]
-        public int DefaultsOffset { get { return Header->_defaultsOffset; } }
+        public int DefaultsOffset { get { return hdr._defaultsOffset; } }
         [Category("Model Visibility")]
-        public int DefaultsCount { get { return Header->_defaultsCount; } }
+        public int DefaultsCount { get { return hdr._defaultsCount; } }
 
         protected override bool OnInitialize()
         {
             base.OnInitialize();
             _name = "Model Visibility";
+            hdr = *Header;
             return true;
         }
 

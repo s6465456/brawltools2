@@ -96,6 +96,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         MDefMdlVisSwitch = 0x2501,
         MDefMdlVisGroup = 0x2401,
         MDefActionList = 0x3101,
+        MDefSubroutineList = 0x3201,
+        MDefActionOverrideList = 0x3301,
         MDefHurtboxList = 0x3001,
         Event = 0x101B,
         Parameter = 0x1000,
