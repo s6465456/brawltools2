@@ -16,50 +16,53 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal MiscSection* Header { get { return (MiscSection*)WorkingUncompressed.Address; } }
 
+        MiscSection misc;
+
         [Category("Misc Offsets")]
-        public int UnknownSection1Offset { get { return Header->UnknownSection1Offset; } }
+        public int UnknownSection1Offset { get { return misc.UnknownSection1Offset; } }
         [Category("Misc Offsets")]
-        public int UnkBoneSectionOffset { get { return Header->UnkBoneSectionOffset; } }
+        public int UnkBoneSectionOffset { get { return misc.UnkBoneSectionOffset; } }
         [Category("Misc Offsets")]
-        public int UnkBoneSectionCount { get { return Header->UnkBoneSectionCount; } }
+        public int UnkBoneSectionCount { get { return misc.UnkBoneSectionCount; } }
         [Category("Misc Offsets")]
-        public int HurtBoxOffset { get { return Header->HurtBoxOffset; } }
+        public int HurtBoxOffset { get { return misc.HurtBoxOffset; } }
         [Category("Misc Offsets")]
-        public int HurtBoxCount { get { return Header->HurtBoxCount; } }
+        public int HurtBoxCount { get { return misc.HurtBoxCount; } }
         [Category("Misc Offsets")]
-        public int LedgegrabOffset { get { return Header->LedgegrabOffset; } }
+        public int LedgegrabOffset { get { return misc.LedgegrabOffset; } }
         [Category("Misc Offsets")]
-        public int LedgegrabCount { get { return Header->LedgegrabCount; } }
+        public int LedgegrabCount { get { return misc.LedgegrabCount; } }
         [Category("Misc Offsets")]
-        public int UnknownSection2Offset { get { return Header->UnknownSection2Offset; } }
+        public int UnknownSection2Offset { get { return misc.UnknownSection2Offset; } }
         [Category("Misc Offsets")]
-        public int UnknownSection2Count { get { return Header->UnknownSection2Count; } }
+        public int UnknownSection2Count { get { return misc.UnknownSection2Count; } }
         [Category("Misc Offsets")]
-        public int BoneRefOffset { get { return Header->BoneRef2Offset; } }
+        public int BoneRefOffset { get { return misc.BoneRef2Offset; } }
         [Category("Misc Offsets")]
-        public int UnknownSection3Offset { get { return Header->UnknownSection3Offset; } }
+        public int UnknownSection3Offset { get { return misc.UnknownSection3Offset; } }
         [Category("Misc Offsets")]
-        public int SoundDataOffset { get { return Header->SoundDataOffset; } }
+        public int SoundDataOffset { get { return misc.SoundDataOffset; } }
         [Category("Misc Offsets")]
-        public int UnkSection5Offset { get { return Header->UnknownSection5Offset; } }
+        public int UnkSection5Offset { get { return misc.UnknownSection5Offset; } }
         [Category("Misc Offsets")]
-        public int MultiJumpOffset { get { return Header->MultiJumpOffset; } }
+        public int MultiJumpOffset { get { return misc.MultiJumpOffset; } }
         [Category("Misc Offsets")]
-        public int GlideOffset { get { return Header->GlideOffset; } }
+        public int GlideOffset { get { return misc.GlideOffset; } }
         [Category("Misc Offsets")]
-        public int CrawlOffset { get { return Header->CrawlOffset; } }
+        public int CrawlOffset { get { return misc.CrawlOffset; } }
         [Category("Misc Offsets")]
-        public int UnknownSection9Offset { get { return Header->UnknownSection9Offset; } }
+        public int UnknownSection9Offset { get { return misc.UnknownSection9Offset; } }
         [Category("Misc Offsets")]
-        public int TetherOffset { get { return Header->TetherOffset; } }
+        public int TetherOffset { get { return misc.TetherOffset; } }
         [Category("Misc Offsets")]
-        public int UnknownSection12Offset { get { return Header->UnknownSection12Offset; } }
+        public int UnknownSection12Offset { get { return misc.UnknownSection12Offset; } }
 
         public MoveDefMiscNode(string name) { _name = name; }
 
         protected override bool OnInitialize()
         {
             base.OnInitialize();
+            misc = *Header;
             return false;
         }
 

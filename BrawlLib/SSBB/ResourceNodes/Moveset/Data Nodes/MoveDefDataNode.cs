@@ -20,60 +20,62 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<SpecialOffset> specialOffsets = new List<SpecialOffset>();
         internal uint DataLen;
 
+        MovesetHeader hdr;
+
         [Category("Data Offsets")]
-        public int SubactionFlagsStart { get { return Header->SubactionFlagsStart; } }
+        public int SubactionFlagsStart { get { return hdr.SubactionFlagsStart; } }
         [Category("Data Offsets")]
-        public int ModelVisibilityStart { get { return Header->ModelVisibilityStart; } }
+        public int ModelVisibilityStart { get { return hdr.ModelVisibilityStart; } }
         [Category("Data Offsets")]
-        public int AttributeStart { get { return Header->AttributeStart; } }
+        public int AttributeStart { get { return hdr.AttributeStart; } }
         [Category("Data Offsets")]
-        public int SSEAttributeStart { get { return Header->SSEAttributeStart; } }
+        public int SSEAttributeStart { get { return hdr.SSEAttributeStart; } }
         [Category("Data Offsets")]
-        public int MiscSectionOffset { get { return Header->MiscSectionOffset; } }
+        public int MiscSectionOffset { get { return hdr.MiscSectionOffset; } }
         [Category("Data Offsets")]
-        public int CommonActionFlagsStart { get { return Header->CommonActionFlagsStart; } }
+        public int CommonActionFlagsStart { get { return hdr.CommonActionFlagsStart; } }
         [Category("Data Offsets")]
-        public int ActionFlagsStart { get { return Header->ActionFlagsStart; } }
+        public int ActionFlagsStart { get { return hdr.ActionFlagsStart; } }
         [Category("Data Offsets")]
-        public int Unknown7 { get { return Header->Unknown7; } }
+        public int Unknown7 { get { return hdr.Unknown7; } }
         [Category("Data Offsets")]
-        public int ActionInterrupts { get { return Header->ActionInterrupts; } }
+        public int ActionInterrupts { get { return hdr.ActionInterrupts; } }
         [Category("Data Offsets")]
-        public int EntryActionsStart { get { return Header->EntryActionsStart; } }
+        public int EntryActionsStart { get { return hdr.EntryActionsStart; } }
         [Category("Data Offsets")]
-        public int ExitActionsStart { get { return Header->ExitActionsStart; } }
+        public int ExitActionsStart { get { return hdr.ExitActionsStart; } }
         [Category("Data Offsets")]
-        public int ActionPreStart { get { return Header->ActionPreStart; } }
+        public int ActionPreStart { get { return hdr.ActionPreStart; } }
         [Category("Data Offsets")]
-        public int SubactionMainStart { get { return Header->SubactionMainStart; } }
+        public int SubactionMainStart { get { return hdr.SubactionMainStart; } }
         [Category("Data Offsets")]
-        public int SubactionGFXStart { get { return Header->SubactionGFXStart; } }
+        public int SubactionGFXStart { get { return hdr.SubactionGFXStart; } }
         [Category("Data Offsets")]
-        public int SubactionSFXStart { get { return Header->SubactionSFXStart; } }
+        public int SubactionSFXStart { get { return hdr.SubactionSFXStart; } }
         [Category("Data Offsets")]
-        public int SubactionOtherStart { get { return Header->SubactionOtherStart; } }
+        public int SubactionOtherStart { get { return hdr.SubactionOtherStart; } }
         [Category("Data Offsets")]
-        public int BoneFloats1 { get { return Header->BoneFloats1; } }
+        public int BoneFloats1 { get { return hdr.BoneFloats1; } }
         [Category("Data Offsets")]
-        public int BoneFloats2 { get { return Header->BoneFloats2; } }
+        public int BoneFloats2 { get { return hdr.BoneFloats2; } }
         [Category("Data Offsets")]
-        public int BoneRef1 { get { return Header->BoneRef1; } }
+        public int BoneRef1 { get { return hdr.BoneRef1; } }
         [Category("Data Offsets")]
-        public int BoneRef2 { get { return Header->BoneRef2; } }
+        public int BoneRef2 { get { return hdr.BoneRef2; } }
         [Category("Data Offsets")]
-        public int EntryActionOverrides { get { return Header->EntryActionOverrides; } }
+        public int EntryActionOverrides { get { return hdr.EntryActionOverrides; } }
         [Category("Data Offsets")]
-        public int ExitActionOverrides { get { return Header->ExitActionOverrides; } }
+        public int ExitActionOverrides { get { return hdr.ExitActionOverrides; } }
         [Category("Data Offsets")]
-        public int Unknown22 { get { return Header->Unknown22; } }
+        public int Unknown22 { get { return hdr.Unknown22; } }
         [Category("Data Offsets")]
-        public int Unknown23 { get { return Header->BoneFloats3; } }
+        public int BoneFloats3 { get { return hdr.BoneFloats3; } }
         [Category("Data Offsets")]
-        public int Unknown24 { get { return Header->Unknown24; } }
+        public int Unknown24 { get { return hdr.Unknown24; } }
         [Category("Data Offsets")]
-        public int StaticArticles { get { return Header->StaticArticlesStart; } }
+        public int StaticArticles { get { return hdr.StaticArticlesStart; } }
         [Category("Data Offsets")]
-        public int EntryArticleStart { get { return Header->EntryArticleStart; } }
+        public int EntryArticleStart { get { return hdr.EntryArticleStart; } }
 
         int unk27, unk28, flags2;
         uint flags1;
@@ -141,7 +143,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             unk28 = Header->Unknown28;
             flags1 = Header->Flags1;
             flags2 = Header->Flags2;
-
+            hdr = *Header;
             _extraEntries = new List<MoveDefEntryNode>();
             _extraOffsets = new List<int>();
             _articles = new SortedList<int, MoveDefEntryNode>();

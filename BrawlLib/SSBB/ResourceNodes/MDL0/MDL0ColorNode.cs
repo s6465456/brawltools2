@@ -38,15 +38,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int NumEntries { get { return Header->_numEntries; } }
 
         private List<RGBAPixel> _colors;
-        public RGBAPixel[] ColorsAsArray
+        public RGBAPixel[] Colors
         {
             get { return _colors == null && Header != null ? (_colors = ColorCodec.ToRGBA(ColorCodec.ExtractColors(Header))).ToArray() : _colors.ToArray(); }
             set { _colors = value.ToList<RGBAPixel>(); SignalPropertyChange(); }
-        }
-        public List<RGBAPixel> ColorsAsList
-        {
-            get { return _colors; }
-            set { _colors = value; SignalPropertyChange(); }
         }
 
         protected override bool OnInitialize()
@@ -64,7 +59,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             if (Model._isImport || _changed)
             {
-                _enc = new ColorCodec(ColorsAsArray);
+                _enc = new ColorCodec(Colors);
                 return _enc._dataLen.Align(0x20) + 0x20;
             }
             else return base.OnCalculateSize(force);
@@ -83,7 +78,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_format = (int)_enc._outType;
                 header->_entryStride = (byte)_enc._dstStride;
                 header->_scale = 0;
-                header->_numEntries = (ushort)ColorsAsArray.Length;
+                header->_numEntries = (ushort)Colors.Length;
 
                 //Write data
                 _enc.Write((byte*)header + 0x20);

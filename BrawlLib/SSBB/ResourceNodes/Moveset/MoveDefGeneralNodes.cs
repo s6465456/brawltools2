@@ -12,7 +12,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.MDefActionList; } }
         public List<List<int>> ActionOffsets = new List<List<int>>();
     }
-
+    public class MoveDefSubRoutineListNode : MoveDefEntryNode
+    {
+        public override ResourceType ResourceType { get { return ResourceType.MDefSubroutineList; } }
+    }
     public class MoveDefGroupNode : MoveDefEntryNode
     {
         public override ResourceType ResourceType { get { return ResourceType.MDefNoEdit; } }
@@ -263,14 +266,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         internal int i = 0;
 
+        FDefListOffset hdr;
+
         [Category("List Offset")]
-        public int DataOffset { get { return Header->_startOffset; } }
+        public int DataOffset { get { return hdr._startOffset; } }
         [Category("List Offset")]
-        public int Count { get { return Header->_listCount; } }
+        public int Count { get { return hdr._listCount; } }
 
         protected override bool OnInitialize()
         {
             base.OnInitialize();
+            hdr = *Header;
             return false;
         }
     }

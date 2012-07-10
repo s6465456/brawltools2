@@ -10,7 +10,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MoveDefActionOverrideNode : MoveDefEntryNode
     {
         internal ActionOverride* Start { get { return (ActionOverride*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+        public override ResourceType ResourceType { get { return ResourceType.MDefActionOverrideList; } }
 
         protected override bool OnInitialize()
         {
@@ -71,12 +71,12 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MoveDefActionOverrideEntryNode : MoveDefEntryNode
     {
         internal ActionOverride* Header { get { return (ActionOverride*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+        public override ResourceType ResourceType { get { return ResourceType.MDefNoEdit; } }
 
         public int _actionId, _commandListOffset;
 
         [Category("Action Override")]
-        public int ActionID { get { return _actionId; } }
+        public int ActionID { get { return _actionId; } set { _actionId = value; Name = "Action" + _actionId + " Override"; Children[0].Name = "Action" + _actionId; SignalPropertyChange(); } }
         [Category("Action Override")]
         public int CommandListOffset { get { return _commandListOffset; } }
 

@@ -113,7 +113,7 @@ namespace BrawlBox.NodeWrappers
                 ((MDL0Node)_resource).AddChild(g = new MDL0GroupNode(MDLResourceType.Colors), true);
 
             MDL0ColorNode node = new MDL0ColorNode() { Name = "ColorGroup" + ((MDL0Node)_resource)._colorList.Count };
-            node.ColorsAsArray = new RGBAPixel[] { new RGBAPixel() { A = 255, R = 128, G = 128, B = 128 } };
+            node.Colors = new RGBAPixel[] { new RGBAPixel() { A = 255, R = 128, G = 128, B = 128 } };
             g.AddChild(node, true);
 
             node.Rebuild(true);

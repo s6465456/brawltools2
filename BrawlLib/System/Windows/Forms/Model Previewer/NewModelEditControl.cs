@@ -101,7 +101,7 @@ namespace System.Windows.Forms
         private ToolStripButton button1;
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripSeparator toolStripSeparator1;
-        private ModelPlaybackPanel pnlPlayback;
+        public ModelPlaybackPanel pnlPlayback;
         private ToolStripMenuItem showPlay;
         public ToolStripMenuItem displayFrameCountDifferencesToolStripMenuItem;
         public ToolStripMenuItem syncLoopToAnimationToolStripMenuItem;
@@ -549,7 +549,7 @@ namespace System.Windows.Forms
             this.showAnim,
             this.showPlay});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.editorsToolStripMenuItem.Text = "Panels";
             // 
             // showOptions
@@ -610,7 +610,7 @@ namespace System.Windows.Forms
             this.toggleFloor,
             this.resetCameraToolStripMenuItem});
             this.backColorToolStripMenuItem.Name = "backColorToolStripMenuItem";
-            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.backColorToolStripMenuItem.Text = "Viewer";
             // 
             // setColorToolStripMenuItem
@@ -649,7 +649,7 @@ namespace System.Windows.Forms
             this.togglePolygons,
             this.toggleVertices});
             this.modelToolStripMenuItem.Name = "modelToolStripMenuItem";
-            this.modelToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.modelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.modelToolStripMenuItem.Text = "Model";
             // 
             // toggleBones
@@ -686,22 +686,28 @@ namespace System.Windows.Forms
             this.hitboxesOffToolStripMenuItem,
             this.hurtboxesOffToolStripMenuItem});
             this.movesetToolStripMenuItem1.Name = "movesetToolStripMenuItem1";
-            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(135, 22);
+            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
             this.movesetToolStripMenuItem1.Text = "Moveset";
             this.movesetToolStripMenuItem1.Visible = false;
             // 
             // hitboxesOffToolStripMenuItem
             // 
+            this.hitboxesOffToolStripMenuItem.Checked = true;
+            this.hitboxesOffToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.hitboxesOffToolStripMenuItem.Name = "hitboxesOffToolStripMenuItem";
-            this.hitboxesOffToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.hitboxesOffToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.hitboxesOffToolStripMenuItem.Text = "Hitboxes";
+            this.hitboxesOffToolStripMenuItem.CheckedChanged += new System.EventHandler(this.RenderStateChanged);
             this.hitboxesOffToolStripMenuItem.Click += new System.EventHandler(this.hitboxesOffToolStripMenuItem_Click);
             // 
             // hurtboxesOffToolStripMenuItem
             // 
+            this.hurtboxesOffToolStripMenuItem.Checked = true;
+            this.hurtboxesOffToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.hurtboxesOffToolStripMenuItem.Name = "hurtboxesOffToolStripMenuItem";
-            this.hurtboxesOffToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.hurtboxesOffToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.hurtboxesOffToolStripMenuItem.Text = "Hurtboxes";
+            this.hurtboxesOffToolStripMenuItem.CheckedChanged += new System.EventHandler(this.RenderStateChanged);
             this.hurtboxesOffToolStripMenuItem.Click += new System.EventHandler(this.hurtboxesOffToolStripMenuItem_Click);
             // 
             // fileTypesToolStripMenuItem
@@ -713,7 +719,7 @@ namespace System.Windows.Forms
             this.playPAT0ToolStripMenuItem,
             this.playVIS0ToolStripMenuItem});
             this.fileTypesToolStripMenuItem.Name = "fileTypesToolStripMenuItem";
-            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.fileTypesToolStripMenuItem.Text = "Animations";
             // 
             // playCHR0ToolStripMenuItem
@@ -1017,6 +1023,7 @@ namespace System.Windows.Forms
             this.button1});
             this.toolStrip1.Location = new System.Drawing.Point(448, 0);
             this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
             this.toolStrip1.Size = new System.Drawing.Size(284, 24);
             this.toolStrip1.TabIndex = 30;
             this.toolStrip1.Text = "toolStrip1";
@@ -1024,7 +1031,6 @@ namespace System.Windows.Forms
             // chkHitboxes
             // 
             this.chkHitboxes.Checked = true;
-            this.chkHitboxes.CheckOnClick = true;
             this.chkHitboxes.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkHitboxes.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkHitboxes.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -1032,11 +1038,11 @@ namespace System.Windows.Forms
             this.chkHitboxes.Size = new System.Drawing.Size(57, 21);
             this.chkHitboxes.Text = "Hitboxes";
             this.chkHitboxes.Visible = false;
+            this.chkHitboxes.Click += new System.EventHandler(this.hitboxesOffToolStripMenuItem_Click);
             // 
             // chkHurtboxes
             // 
             this.chkHurtboxes.Checked = true;
-            this.chkHurtboxes.CheckOnClick = true;
             this.chkHurtboxes.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkHurtboxes.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkHurtboxes.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -1044,6 +1050,7 @@ namespace System.Windows.Forms
             this.chkHurtboxes.Size = new System.Drawing.Size(65, 21);
             this.chkHurtboxes.Text = "Hurtboxes";
             this.chkHurtboxes.Visible = false;
+            this.chkHurtboxes.Click += new System.EventHandler(this.hurtboxesOffToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
@@ -1080,7 +1087,7 @@ namespace System.Windows.Forms
             this.chkVertices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkVertices.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.chkVertices.Name = "chkVertices";
-            this.chkVertices.Size = new System.Drawing.Size(52, 21);
+            this.chkVertices.Size = new System.Drawing.Size(52, 19);
             this.chkVertices.Text = "Vertices";
             this.chkVertices.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
             this.chkVertices.Click += new System.EventHandler(this.chkVertices_Click);
@@ -1095,7 +1102,7 @@ namespace System.Windows.Forms
             this.chkFloor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkFloor.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.chkFloor.Name = "chkFloor";
-            this.chkFloor.Size = new System.Drawing.Size(38, 21);
+            this.chkFloor.Size = new System.Drawing.Size(38, 19);
             this.chkFloor.Text = "Floor";
             this.chkFloor.CheckedChanged += new System.EventHandler(this.chkFloor_CheckedChanged);
             this.chkFloor.Click += new System.EventHandler(this.chkFloor_Click);
@@ -2707,20 +2714,16 @@ namespace System.Windows.Forms
         private void hitboxesOffToolStripMenuItem_Click(object sender, EventArgs e)
         {
             chkHitboxes.Checked = !chkHitboxes.Checked;
-            if (chkHitboxes.Checked == false)
-                hitboxesOffToolStripMenuItem.Checked = false;
-            else
-                hitboxesOffToolStripMenuItem.Checked = true;
+
+            hitboxesOffToolStripMenuItem.Checked = chkHitboxes.Checked;
 
             modelPanel1.Invalidate();
         }
         private void hurtboxesOffToolStripMenuItem_Click(object sender, EventArgs e)
         {
             chkHurtboxes.Checked = !chkHurtboxes.Checked;
-            if (chkHurtboxes.Checked == false)
-                hurtboxesOffToolStripMenuItem.Checked = false;
-            else
-                hurtboxesOffToolStripMenuItem.Checked = true;
+
+            hurtboxesOffToolStripMenuItem.Checked = chkHurtboxes.Checked;
 
             modelPanel1.Invalidate();
         }
@@ -2874,16 +2877,18 @@ namespace System.Windows.Forms
         public void chkLoop_CheckedChanged(object sender, EventArgs e) 
         {
             _loop = pnlPlayback.chkLoop.Checked;
-            if (syncLoopToAnimationToolStripMenuItem.Checked)
+            if (syncLoopToAnimationToolStripMenuItem.Checked && !_updating)
                 ((BRESEntryNode)GetSelectedBRRESFile(pnlAssets.fileType.SelectedIndex)).tLoop = _loop;
         }
 
         private void FileChanged(object sender, EventArgs e)
         {
-            if (pnlMoveset._mainMoveset == null)
-                chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = false;
-            else
-                chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = true;
+            movesetToolStripMenuItem1.Visible = chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = pnlMoveset._mainMoveset != null;
+        }
+
+        private void RenderStateChanged(object sender, EventArgs e)
+        {
+            modelPanel1.Invalidate();
         }
 
         private void HtBoxesChanged(object sender, EventArgs e)

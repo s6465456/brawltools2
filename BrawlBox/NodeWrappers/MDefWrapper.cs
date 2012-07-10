@@ -1005,4 +1005,66 @@ namespace BrawlBox.NodeWrappers
             res.TreeView.SelectedNode = res;
         }
     }
+    [NodeWrapper(ResourceType.MDefSubroutineList)]
+    class MDefSubroutineListWrapper : GenericWrapper
+    {
+        #region Menu
+        private static ContextMenuStrip _menu;
+        static MDefSubroutineListWrapper()
+        {
+            _menu = new ContextMenuStrip();
+            _menu.Items.Add(new ToolStripMenuItem("Add Ne&w Subroutine", null, NewAction, Keys.Control | Keys.H));
+            _menu.Items.Add(new ToolStripSeparator());
+            _menu.Items.Add(new ToolStripMenuItem("&Export", null, ExportAction, Keys.Control | Keys.E));
+            _menu.Opening += MenuOpening;
+            _menu.Closing += MenuClosing;
+        }
+        protected static void NewAction(object sender, EventArgs e) { GetInstance<MDefSubroutineListWrapper>().NewActionGroup(); }
+        private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e) { }
+        private static void MenuOpening(object sender, CancelEventArgs e) { }
+        #endregion
+
+        public MDefSubroutineListWrapper() { ContextMenuStrip = _menu; }
+
+        public void NewActionGroup()
+        {
+            MoveDefActionNode node = new MoveDefActionNode("SubRoutine" + _resource.Children.Count, true, _resource);
+            _resource.AddChild(node);
+            _resource.Name = "[" + _resource.Children.Count + "] SubRoutines";
+            BaseWrapper res = this.FindResource(node, false);
+            res.EnsureVisible();
+            res.TreeView.SelectedNode = res;
+        }
+    }
+    [NodeWrapper(ResourceType.MDefActionOverrideList)]
+    class MDefActionOverrideListWrapper : GenericWrapper
+    {
+        #region Menu
+        private static ContextMenuStrip _menu;
+        static MDefActionOverrideListWrapper()
+        {
+            _menu = new ContextMenuStrip();
+            _menu.Items.Add(new ToolStripMenuItem("Add Ne&w Action Override", null, NewAction, Keys.Control | Keys.H));
+            _menu.Items.Add(new ToolStripSeparator());
+            _menu.Items.Add(new ToolStripMenuItem("&Export", null, ExportAction, Keys.Control | Keys.E));
+            _menu.Opening += MenuOpening;
+            _menu.Closing += MenuClosing;
+        }
+        protected static void NewAction(object sender, EventArgs e) { GetInstance<MDefActionOverrideListWrapper>().NewActionGroup(); }
+        private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e) { }
+        private static void MenuOpening(object sender, CancelEventArgs e) { }
+        #endregion
+
+        public MDefActionOverrideListWrapper() { ContextMenuStrip = _menu; }
+
+        public void NewActionGroup()
+        {
+            MoveDefActionOverrideEntryNode node = new MoveDefActionOverrideEntryNode() { Name = "Action0 Override" };
+            node.Children.Add(new MoveDefActionNode("Action0", true, node));
+            _resource.AddChild(node);
+            BaseWrapper res = this.FindResource(node, false);
+            res.EnsureVisible();
+            res.TreeView.SelectedNode = res;
+        }
+    }
 }

@@ -334,19 +334,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Check for random params around the file
                 if (next.Parent is MoveDefDataNode)
                     if (next.Parent.Children.Count > next.Index + 1)
-                        if ((next = next.Parent.Children[next.Index + 1] as MoveDefEntryNode) is MoveDefSectionParamNode || (next is MoveDefRawDataNode && next.Children.Count > 0 && next.Children[0] is MoveDefSectionParamNode))
+                        if ((next = next.Parent.Children[next.Index + 1] as MoveDefEntryNode) is MoveDefCharSpecificNode || (next is MoveDefRawDataNode && next.Children.Count > 0 && next.Children[0] is MoveDefSectionParamNode))
                         {
-                            if (next.Children.Count == 0)
+                            if (!(next is MoveDefRawDataNode))
                             {
                                 size += next.CalculateSize(true);
                                 lookupCount += next._lookupCount;
                             }
                             else
                                 foreach (MoveDefSectionParamNode p in next.Children)
-                                {
                                     size += p.CalculateSize(true);
-                                    lookupCount += p._lookupCount;
-                                }
                             goto Top;
                         }
 
@@ -790,10 +787,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (next.Parent.Children.Count > next.Index + 1)
                         if ((next = next.Parent.Children[next.Index + 1] as MoveDefEntryNode) is MoveDefCharSpecificNode || (next is MoveDefRawDataNode && next.Children.Count > 0 && next.Children[0] is MoveDefSectionParamNode))
                         {
-                            if (next.Children.Count == 0)
+                            if (!(next is MoveDefRawDataNode))
                             {
                                 next.Rebuild(dataAddress, next._calcSize, true);
+                                root._lookupOffsets.AddRange(next._lookupOffsets.ToArray());
                                 dataAddress += next._calcSize;
+
+                                if (next._lookupCount != next._lookupOffsets.Count)
+                                    Console.WriteLine();
                             }
                             else
                             {
