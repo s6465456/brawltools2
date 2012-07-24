@@ -39,7 +39,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _offsets.Add(_offset);
 
             data = new byte[WorkingUncompressed.Length];
-
+            
             for (int i = 0; i < data.Length; i++)
                 data[i] = Header[i];
 
@@ -124,7 +124,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public MDL0BoneNode BoneNode
         {
-            get { if (Model == null) return null; if (boneIndex > Model._linker.BoneCache.Length || boneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[boneIndex]; }
+            get { if (Model == null) return null; if (boneIndex >= Model._linker.BoneCache.Length || boneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[boneIndex]; }
             set { boneIndex = value.BoneIndex; Name = value.Name; }
         }
 

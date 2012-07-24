@@ -243,7 +243,10 @@ namespace System.Windows.Forms
                         {
                             tex = new PAT0TextureEntryNode();
                             tex.key = CurrentFrame - 1;
-                            node.InsertChild(tex, true, node.GetTextureEntry(CurrentFrame - 1).Index + 1);
+                            if (node.Children.Count > 0)
+                                node.InsertChild(tex, true, node.GetTextureEntry(CurrentFrame - 1).Index + 1);
+                            else
+                                node.AddChild(tex, true);
                             tex.Texture = texBox.Text;
                             tex.Palette = pltBox.Text;
                         }

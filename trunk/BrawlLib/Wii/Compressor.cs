@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using BrawlLib.SSBBTypes;
+using System.Windows.Forms;
 
 namespace BrawlLib.Wii.Compression
 {
@@ -35,6 +36,7 @@ namespace BrawlLib.Wii.Compression
                 switch (cmpr->Algorithm)
                 {
                     case CompressionType.LZ77: return true;
+                    case CompressionType.RunLength: return true;
                     default: return false;
                 }
             }
@@ -45,7 +47,7 @@ namespace BrawlLib.Wii.Compression
             {
                 case CompressionType.LZ77: { LZ77.Expand(header, dstAddr, dstLen); break; }
                 case CompressionType.Huffman:
-                case CompressionType.RunLength:
+                case CompressionType.RunLength: { RunLength.Expand(header, dstAddr, dstLen); break; }
                 case CompressionType.Differential:
                 default:
                     throw new InvalidCompressionException("Unknown compression type.");

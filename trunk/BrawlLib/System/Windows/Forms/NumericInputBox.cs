@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace System.Windows.Forms
 {
@@ -16,13 +17,13 @@ namespace System.Windows.Forms
             {
                 if (_value == value) return;
 
-                if (check == false) float.TryParse(Text, out _oldValue);
+                if (check == false) float.TryParse(Text, NumberStyles.Any, CultureInfo.InvariantCulture, out _oldValue);
 
                 _value = value;
 
                 UpdateText();
 
-                if (check == true) { float.TryParse(Text, out _oldValue); check = false; }
+                if (check == true) { float.TryParse(Text, NumberStyles.Any, CultureInfo.InvariantCulture, out _oldValue); check = false; }
 
                 Apply();
             }
@@ -67,7 +68,7 @@ namespace System.Windows.Forms
                     break;
 
                 case Keys.Left:
-                    if (float.TryParse(Text, out val))
+                    if (float.TryParse(Text, NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                     {
                         if (e.Control)
                         {
@@ -87,7 +88,7 @@ namespace System.Windows.Forms
                     break;
 
                 case Keys.Right:
-                    if (float.TryParse(Text, out val))
+                    if (float.TryParse(Text, NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                     {
                         if (e.Control)
                         {
@@ -107,7 +108,7 @@ namespace System.Windows.Forms
                     break;
 
                 case Keys.Up:
-                    if (float.TryParse(Text, out val))
+                    if (float.TryParse(Text, NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                     {
                         if (e.Shift)
                             Text = (val + 1.0f).ToString();
@@ -120,7 +121,7 @@ namespace System.Windows.Forms
                     break;
 
                 case Keys.Down:
-                    if (float.TryParse(Text, out val))
+                    if (float.TryParse(Text, NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                     {
                         if (e.Shift)
                             Text = (val - 1.0f).ToString();
@@ -158,7 +159,7 @@ namespace System.Windows.Forms
                 case Keys.X:
                     if (e.Control)
                     {
-                        if (float.TryParse(Text, out val))
+                        if (float.TryParse(Text, NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                         {
                             val = float.NaN;
                             Text = val.ToString();
@@ -193,13 +194,13 @@ namespace System.Windows.Forms
         {
             float val = _value;
 
-            if (val.ToString() == Text)
+            if (val.ToString(CultureInfo.InvariantCulture) == Text)
                 return;
 
             if (Text == "")
                 val = float.NaN;
             else
-                float.TryParse(Text, out val);
+                float.TryParse(Text, NumberStyles.Any, CultureInfo.InvariantCulture, out val);
 
             if (_value != val)
             {

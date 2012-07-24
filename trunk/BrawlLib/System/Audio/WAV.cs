@@ -197,13 +197,21 @@ namespace System.Audio
     {
         public const uint RIFFTag = 0x46464952;
         public const uint WAVETag = 0x45564157;
+        public const uint LISTTag = 0x5453494C;
         public const int Size = fmtChunk.Size + dataChunk.Size + 12;
+
+        public uint GetSize { get { return 12 + fmtChunk.Size + 8 + (_listChunk._chunkTag == LISTTag ? 8 + _listChunk._chunkSize : 0); } }
 
         public uint _tag;
         public uint _length;
         public uint _waveTag;
         public fmtChunk _fmtChunk;
-        public dataChunk _dataChunk;
+        public dataChunk _listChunk { get { return *(dataChunk*)(Address + 12 + fmtChunk.Size); } }
+        public dataChunk _dataChunk 
+        {
+            get { return *(dataChunk*)(Address + 12 + fmtChunk.Size + (_listChunk._chunkTag == LISTTag ? 8 + _listChunk._chunkSize : 0)); }
+            set { *(dataChunk*)(Address + 12 + fmtChunk.Size) = value; }
+        }
 
         public RIFFHeader(int format, int channels, int bitsPerSample, int sampleRate, int numSamples)
         {
@@ -211,9 +219,10 @@ namespace System.Audio
             _waveTag = WAVETag;
             _fmtChunk = new fmtChunk(format, channels, bitsPerSample, sampleRate);
             uint dataLen = (uint)(numSamples * _fmtChunk._blockAlign);
-            _dataChunk = new dataChunk(dataLen);
             _length = (dataLen + Size) - 8;
+            _dataChunk = new dataChunk(dataLen);
         }
+        internal byte* Address { get { fixed (void* ptr = &this)return (byte*)ptr; } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -258,6 +267,8 @@ namespace System.Audio
             _chunkTag = dataTag;
             _chunkSize = dataLength;
         }
+
+        internal byte* Address { get { fixed (void* ptr = &this)return (byte*)ptr; } }
     }
 
     public unsafe static class WAV

@@ -15,7 +15,7 @@ namespace BrawlLib.SSBBTypes
 
         public uint _tag;
         public buint _unCompDataLen;
-        public fixed int padding[8];
+        public fixed int padding[2];
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 

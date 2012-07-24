@@ -233,6 +233,7 @@ namespace BrawlBox
                     }
                 }
                 catch (Exception x) { Say(x.Message); }
+                finally { }
             }
             return false;
         }

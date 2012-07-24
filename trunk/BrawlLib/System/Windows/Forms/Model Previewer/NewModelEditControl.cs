@@ -114,7 +114,6 @@ namespace System.Windows.Forms
         private ToolStripMenuItem saveCurrentSettingsToolStripMenuItem;
         public ToolStripMenuItem clearSavedSettingsToolStripMenuItem;
         public ToolStripMenuItem alwaysSyncFrameCountsToolStripMenuItem;
-        private Splitter splitter2;
         private Panel panel3;
         private ToolStripMenuItem toolStripMenuItem1;
         private ToolStripMenuItem loadMovesetToolStripMenuItem;
@@ -235,7 +234,6 @@ namespace System.Windows.Forms
             this.modelPanel1 = new System.Windows.Forms.ModelPanel();
             this.animEditors = new System.Windows.Forms.Panel();
             this.pnlPlayback = new System.Windows.Forms.ModelPlaybackPanel();
-            this.splitter2 = new System.Windows.Forms.Splitter();
             this.panel3 = new System.Windows.Forms.Panel();
             this.vis0Editor = new System.Windows.Forms.VIS0Editor();
             this.pat0Editor = new System.Windows.Forms.PAT0Editor();
@@ -549,7 +547,7 @@ namespace System.Windows.Forms
             this.showAnim,
             this.showPlay});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.editorsToolStripMenuItem.Text = "Panels";
             // 
             // showOptions
@@ -610,7 +608,7 @@ namespace System.Windows.Forms
             this.toggleFloor,
             this.resetCameraToolStripMenuItem});
             this.backColorToolStripMenuItem.Name = "backColorToolStripMenuItem";
-            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.backColorToolStripMenuItem.Text = "Viewer";
             // 
             // setColorToolStripMenuItem
@@ -649,7 +647,7 @@ namespace System.Windows.Forms
             this.togglePolygons,
             this.toggleVertices});
             this.modelToolStripMenuItem.Name = "modelToolStripMenuItem";
-            this.modelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.modelToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.modelToolStripMenuItem.Text = "Model";
             // 
             // toggleBones
@@ -686,7 +684,7 @@ namespace System.Windows.Forms
             this.hitboxesOffToolStripMenuItem,
             this.hurtboxesOffToolStripMenuItem});
             this.movesetToolStripMenuItem1.Name = "movesetToolStripMenuItem1";
-            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(135, 22);
             this.movesetToolStripMenuItem1.Text = "Moveset";
             this.movesetToolStripMenuItem1.Visible = false;
             // 
@@ -695,7 +693,7 @@ namespace System.Windows.Forms
             this.hitboxesOffToolStripMenuItem.Checked = true;
             this.hitboxesOffToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.hitboxesOffToolStripMenuItem.Name = "hitboxesOffToolStripMenuItem";
-            this.hitboxesOffToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.hitboxesOffToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
             this.hitboxesOffToolStripMenuItem.Text = "Hitboxes";
             this.hitboxesOffToolStripMenuItem.CheckedChanged += new System.EventHandler(this.RenderStateChanged);
             this.hitboxesOffToolStripMenuItem.Click += new System.EventHandler(this.hitboxesOffToolStripMenuItem_Click);
@@ -705,7 +703,7 @@ namespace System.Windows.Forms
             this.hurtboxesOffToolStripMenuItem.Checked = true;
             this.hurtboxesOffToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.hurtboxesOffToolStripMenuItem.Name = "hurtboxesOffToolStripMenuItem";
-            this.hurtboxesOffToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.hurtboxesOffToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
             this.hurtboxesOffToolStripMenuItem.Text = "Hurtboxes";
             this.hurtboxesOffToolStripMenuItem.CheckedChanged += new System.EventHandler(this.RenderStateChanged);
             this.hurtboxesOffToolStripMenuItem.Click += new System.EventHandler(this.hurtboxesOffToolStripMenuItem_Click);
@@ -719,7 +717,7 @@ namespace System.Windows.Forms
             this.playPAT0ToolStripMenuItem,
             this.playVIS0ToolStripMenuItem});
             this.fileTypesToolStripMenuItem.Name = "fileTypesToolStripMenuItem";
-            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.fileTypesToolStripMenuItem.Text = "Animations";
             // 
             // playCHR0ToolStripMenuItem
@@ -981,9 +979,9 @@ namespace System.Windows.Forms
             this.models.FormattingEnabled = true;
             this.models.Items.AddRange(new object[] {
             "All"});
-            this.models.Location = new System.Drawing.Point(300, 1);
+            this.models.Location = new System.Drawing.Point(310, 1);
             this.models.Name = "models";
-            this.models.Size = new System.Drawing.Size(148, 21);
+            this.models.Size = new System.Drawing.Size(138, 21);
             this.models.TabIndex = 21;
             this.models.SelectedIndexChanged += new System.EventHandler(this.models_SelectedIndexChanged);
             // 
@@ -1087,7 +1085,7 @@ namespace System.Windows.Forms
             this.chkVertices.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkVertices.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.chkVertices.Name = "chkVertices";
-            this.chkVertices.Size = new System.Drawing.Size(52, 19);
+            this.chkVertices.Size = new System.Drawing.Size(52, 21);
             this.chkVertices.Text = "Vertices";
             this.chkVertices.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
             this.chkVertices.Click += new System.EventHandler(this.chkVertices_Click);
@@ -1102,7 +1100,7 @@ namespace System.Windows.Forms
             this.chkFloor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkFloor.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.chkFloor.Name = "chkFloor";
-            this.chkFloor.Size = new System.Drawing.Size(38, 19);
+            this.chkFloor.Size = new System.Drawing.Size(38, 21);
             this.chkFloor.Text = "Floor";
             this.chkFloor.CheckedChanged += new System.EventHandler(this.chkFloor_CheckedChanged);
             this.chkFloor.Click += new System.EventHandler(this.chkFloor_Click);
@@ -1189,7 +1187,6 @@ namespace System.Windows.Forms
             // 
             this.animEditors.AutoScroll = true;
             this.animEditors.Controls.Add(this.pnlPlayback);
-            this.animEditors.Controls.Add(this.splitter2);
             this.animEditors.Controls.Add(this.panel3);
             this.animEditors.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.animEditors.Location = new System.Drawing.Point(0, 400);
@@ -1202,20 +1199,12 @@ namespace System.Windows.Forms
             // 
             this.pnlPlayback.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlPlayback.Enabled = false;
-            this.pnlPlayback.Location = new System.Drawing.Point(267, 0);
+            this.pnlPlayback.Location = new System.Drawing.Point(264, 0);
             this.pnlPlayback.MinimumSize = new System.Drawing.Size(290, 54);
             this.pnlPlayback.Name = "pnlPlayback";
-            this.pnlPlayback.Size = new System.Drawing.Size(465, 60);
+            this.pnlPlayback.Size = new System.Drawing.Size(468, 60);
             this.pnlPlayback.TabIndex = 15;
             this.pnlPlayback.Resize += new System.EventHandler(this.pnlPlayback_Resize);
-            // 
-            // splitter2
-            // 
-            this.splitter2.Location = new System.Drawing.Point(264, 0);
-            this.splitter2.Name = "splitter2";
-            this.splitter2.Size = new System.Drawing.Size(3, 60);
-            this.splitter2.TabIndex = 0;
-            this.splitter2.TabStop = false;
             // 
             // panel3
             // 
@@ -1365,9 +1354,10 @@ namespace System.Windows.Forms
             srt0Editor._mainWindow =
             shp0Editor._mainWindow =
             pat0Editor._mainWindow =
-            vis0Editor._mainWindow = this;
+            vis0Editor._mainWindow = 
+            modelPanel1._mainWindow = this;
 
-            animEditors.HorizontalScroll.Enabled = addedHeight = (!(animEditors.Width - panel3.Width - splitter2.Width >= pnlPlayback.MinimumSize.Width));
+            animEditors.HorizontalScroll.Enabled = addedHeight = (!(animEditors.Width - panel3.Width >= pnlPlayback.MinimumSize.Width));
             if (pnlPlayback.Width <= pnlPlayback.MinimumSize.Width)
             {
                 pnlPlayback.Dock = DockStyle.Left;
@@ -1415,7 +1405,8 @@ namespace System.Windows.Forms
         private Vector3 _lastPoint;
         private Vector3 _oldAngles, _oldPosition, _oldScale;
         private bool _snapX, _snapY, _snapZ, _snapCirc, _snapXY, _snapYZ, _snapXZ;
-        
+
+        public List<MDL0Node> Articles = new List<MDL0Node>();
         public List<MDL0Node> _targetModels = new List<MDL0Node>();
         private MDL0Node _targetModel;
 
@@ -1871,6 +1862,9 @@ namespace System.Windows.Forms
                 models.SelectedItem = _targetModel;
             _updating = false;
 
+            if (_targetModel != null)
+                RenderBones = _targetModel._renderBones;
+
             //pnlAnim.bgLayer.Invalidate();
         }
         #endregion
@@ -1905,18 +1899,13 @@ namespace System.Windows.Forms
             }
             if (_currentControl != newControl)
             {
-                //bool visible = showPlay.Checked;
                 if (_currentControl != null)
-                {
-                    //visible = _currentControl.Visible;
                     _currentControl.Visible = false;
-                }
                 _currentControl = newControl;
                 if (!(_currentControl is SRT0Editor) && !(_currentControl is PAT0Editor))
                     syncTexObjToolStripMenuItem.Checked = false;
                 if (_currentControl != null)
                 {
-                    //_currentControl.Visible = visible;
                     _currentControl.Visible = true;
                     if (_currentControl is CHR0Editor)
                     {
@@ -2013,6 +2002,9 @@ namespace System.Windows.Forms
 
             if (!_playing) 
                 UpdatePropDisplay();
+
+            
+
             modelPanel1.Invalidate();
         }
 
@@ -3421,29 +3413,29 @@ namespace System.Windows.Forms
                 foreach (MoveDefActionNode a in pnlMoveset.selectedActionNodes)
                 {
                     if (a.catchCollisions != null && a.catchCollisions.Count > 0)
-                        foreach (MoveDefEventNode e in a.catchCollisions)
+                        foreach (HitBox e in a.catchCollisions)
                             e.RenderCatchCollision(TargetModel._linker.BoneCache, context, modelPanel1._camera.GetPoint(), MParams.DrawStyle.Brawl);
 
                     if (a.offensiveCollisions != null && a.offensiveCollisions.Count > 0)
-                        foreach (MoveDefEventNode e in a.offensiveCollisions)
+                        foreach (HitBox e in a.offensiveCollisions)
                             e.RenderOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel1._camera.GetPoint(), MParams.DrawStyle.Brawl);
 
                     if (a.specialOffensiveCollisions != null && a.specialOffensiveCollisions.Count > 0)
-                        foreach (MoveDefEventNode e in a.specialOffensiveCollisions)
+                        foreach (HitBox e in a.specialOffensiveCollisions)
                             e.RenderSpecialOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel1._camera.GetPoint(), MParams.DrawStyle.Brawl);
 
                     if (a.subRoutine != null)
                     {
                         if (a.subRoutine.catchCollisions != null && a.subRoutine.catchCollisions.Count > 0)
-                            foreach (MoveDefEventNode e in a.subRoutine.catchCollisions)
+                            foreach (HitBox e in a.subRoutine.catchCollisions)
                                 e.RenderCatchCollision(TargetModel._linker.BoneCache, context, modelPanel1._camera.GetPoint(), MParams.DrawStyle.Brawl);
 
                         if (a.subRoutine.offensiveCollisions != null && a.subRoutine.offensiveCollisions.Count > 0)
-                            foreach (MoveDefEventNode e in a.subRoutine.offensiveCollisions)
+                            foreach (HitBox e in a.subRoutine.offensiveCollisions)
                                 e.RenderOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel1._camera.GetPoint(), MParams.DrawStyle.Brawl);
 
                         if (a.subRoutine.specialOffensiveCollisions != null && a.subRoutine.specialOffensiveCollisions.Count > 0)
-                            foreach (MoveDefEventNode e in a.subRoutine.specialOffensiveCollisions)
+                            foreach (HitBox e in a.subRoutine.specialOffensiveCollisions)
                                 e.RenderSpecialOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel1._camera.GetPoint(), MParams.DrawStyle.Brawl);
                     }
                 }
@@ -4168,14 +4160,14 @@ namespace System.Windows.Forms
             if (_updating)
                 return;
 
-            if (animEditors.Width - panel3.Width - splitter2.Width >= pnlPlayback.MinimumSize.Width)
+            if (animEditors.Width - panel3.Width >= pnlPlayback.MinimumSize.Width)
             {
-                pnlPlayback.Width += animEditors.Width - panel3.Width - splitter2.Width - pnlPlayback.MinimumSize.Width;
+                pnlPlayback.Width += animEditors.Width - panel3.Width - pnlPlayback.MinimumSize.Width;
                 pnlPlayback.Dock = DockStyle.Fill;
             }
             else pnlPlayback.Dock = DockStyle.Left;
 
-            if (panel3.Width + splitter2.Width + pnlPlayback.Width <= animEditors.Width)
+            if (panel3.Width + pnlPlayback.Width <= animEditors.Width)
             {
                 if (addedHeight)
                 {

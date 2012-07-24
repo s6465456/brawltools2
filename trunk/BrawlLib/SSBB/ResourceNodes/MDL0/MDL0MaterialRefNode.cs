@@ -26,7 +26,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0MaterialNode Material { get { return Parent as MDL0MaterialNode; } }
 
         public TextureFlags _texFlags;
-        public TextureMatrix _texMatrix;
+        public TexMtxEffect _texMatrix;
 
         [Browsable(false)]
         public int TextureCoordId 
@@ -50,17 +50,26 @@ namespace BrawlLib.SSBB.ResourceNodes
         public TexFlags Flags { get { return _flags; } }
         public TexFlags _flags;
 
-        [Category("Texture Matrix")]
-        public sbyte TexUnk1 { get { return _texMatrix.TexUnk1; } set { if (!CheckIfMetal()) _texMatrix.TexUnk1 = value; } }
-        [Category("Texture Matrix")]
-        public sbyte TexUnk2 { get { return _texMatrix.TexUnk2; } set { if (!CheckIfMetal()) _texMatrix.TexUnk2 = value; } }
-        [Category("Texture Matrix")]
-        public sbyte TexUnk3 { get { return _texMatrix.TexUnk3; } set { if (!CheckIfMetal()) _texMatrix.TexUnk3 = value; } }
-        [Category("Texture Matrix")]
-        public sbyte TexUnk4 { get { return _texMatrix.TexUnk4; } set { if (!CheckIfMetal()) _texMatrix.TexUnk4 = value; } }
-        [Category("Texture Matrix"), TypeConverter(typeof(Matrix43StringConverter))]
-        public Matrix43 TexMtx { get { return _texMatrix.TexMtx; } set { if (!CheckIfMetal()) _texMatrix.TexMtx = value; } }
+        public enum MappingMethod
+        {
+            TexCoord = 0x00,
+            EnvCamera = 0x01,
+            Projection = 0x02,
+            EnvLight = 0x03,
+            EnvSpec = 0x04
+        }
 
+        [Category("Texture Matrix Effect")]
+        public sbyte SCN0RefCamera { get { return _texMatrix.SCNCamera; } set { if (!CheckIfMetal()) _texMatrix.SCNCamera = value; } }
+        [Category("Texture Matrix Effect")]
+        public sbyte SCN0RefLight { get { return _texMatrix.SCNLight; } set { if (!CheckIfMetal()) _texMatrix.SCNLight = value; } }
+        [Category("Texture Matrix Effect")]
+        public MappingMethod MapMode { get { return (MappingMethod)_texMatrix.MapMode; } set { if (!CheckIfMetal()) _texMatrix.MapMode = (byte)value; } }
+        [Category("Texture Matrix Effect")]
+        public bool IdentityMatrix { get { return _texMatrix.Identity == 1; } set { if (!CheckIfMetal()) _texMatrix.Identity = (byte)(value ? 1 : 0); } }
+        [Category("Texture Matrix Effect"), TypeConverter(typeof(Matrix43StringConverter))]
+        public Matrix43 EffectMatrix { get { return _texMatrix.TexMtx; } set { if (!CheckIfMetal()) _texMatrix.TexMtx = value; } }
+        
         public XFDualTex DualTexFlags;
         public XFTexMtxInfo TexMtxFlags;
 
@@ -522,9 +531,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             _texFlags.TexScale = new Vector2(1);
             _bindState._scale = new Vector3(1);
             _texMatrix.TexMtx = Matrix43.Identity;
-            _texMatrix.TexUnk1 = -1;
-            _texMatrix.TexUnk2 = -1;
-            _texMatrix.TexUnk4 = 1;
+            _texMatrix.SCNCamera = -1;
+            _texMatrix.SCNLight = -1;
+            _texMatrix.Identity = 1;
 
             _projection = (int)TexProjection.ST;
             _inputForm = (int)TexInputForm.AB11;

@@ -10,10 +10,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class CLR0Node : BRESEntryNode
     {
-        internal CLR0* Header { get { return (CLR0*)WorkingUncompressed.Address; } }
+        internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
+        internal CLR0v3* Header3 { get { return (CLR0v3*)WorkingUncompressed.Address; } }
+        internal CLR0v4* Header4 { get { return (CLR0v4*)WorkingUncompressed.Address; } }
+
         public override ResourceType ResourceType { get { return ResourceType.CLR0; } }
 
-        internal int _numFrames, _unk1, _unk2, _version;
+        internal int _numFrames = 1, _origPathOffset, _loop, _version = 3;
 
         [Category("CLR0")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
@@ -24,114 +27,140 @@ namespace BrawlLib.SSBB.ResourceNodes
             set
             {
                 _numFrames = (int)value;
-                foreach (CLR0EntryNode n in Children)
-                    n.NumEntries = _numFrames + 1;
+                foreach (CLR0MaterialNode n in Children)
+                    foreach (CLR0MaterialEntryNode e in n.Children)
+                        e.NumEntries = _numFrames + 1;
                 SignalPropertyChange();
             }
         }
 
-        //[Category("CLR0")]
-        //public int Unknown { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
         [Category("CLR0")]
-        public bool Loop { get { return _unk2 != 0; } set { _unk2 = value ? 1 : 0; SignalPropertyChange(); } }
+        public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
         
         protected override bool OnInitialize()
         {
             base.OnInitialize();
 
-            _version = Header->_header._version;
-            if (_version == 3)
+            _version = Header->_version;
+            if (_version == 4)
             {
-                _numFrames = Header->_frames;
-                _unk1 = Header->_unk1;
-                _unk2 = Header->_unk2;
+                _numFrames = Header4->_frames;
+                _origPathOffset = Header4->_origPathOffset;
+                _loop = Header4->_loop;
 
-                if ((_name == null) && (Header->_stringOffset != 0))
-                    _name = Header->ResourceString;
+                if ((_name == null) && (Header4->_stringOffset != 0))
+                    _name = Header4->ResourceString;
+
+                return Header4->Group->_numEntries > 0;
             }
             else
             {
-                _numFrames = Header->_entries;
-                _unk1 = Header->_stringOffset;
-                _unk2 = Header->_frames;
-                _name = Header->ResourceString2;
-            }
+                _numFrames = Header3->_frames;
+                _origPathOffset = Header3->_origPathOffset;
+                _loop = Header3->_loop;
 
-            return Header->Group->_numEntries > 0;
+                if ((_name == null) && (Header3->_stringOffset != 0))
+                    _name = Header3->ResourceString;
+
+                return Header3->Group->_numEntries > 0;
+            }
         }
 
-        public CLR0EntryNode CreateEntry()
+        public CLR0MaterialNode CreateEntry()
         {
-            CLR0EntryNode node = new CLR0EntryNode();
-            node._numEntries = -1;
-            node.NumEntries = _numFrames + 1;
+            CLR0MaterialNode node = new CLR0MaterialNode();
+            CLR0MaterialEntryNode entry = new CLR0MaterialEntryNode();
+            entry._target = EntryTarget.Color0;
+            entry._name = entry._target.ToString();
+            entry._numEntries = -1;
+            entry.NumEntries = _numFrames + 1;
             node.Name = this.FindName(null);
             this.AddChild(node);
+            node.AddChild(entry);
             return node;
         }
 
         protected override int OnCalculateSize(bool force)
         {
-            int size = CLR0.Size + 0x18;// +(Children.Count * 0x10);
-            foreach (CLR0EntryNode n in Children)
+            int size = (_version == 4 ? CLR0v4.Size : CLR0v3.Size) + 0x18 + Children.Count * 0x10;
+            foreach (CLR0MaterialNode n in Children)
             {
-                if (n._numEntries == 0)
-                    size += 0x20;
-                else
-                    size += ((_numFrames + 1) * 4) + 0x20;
+                size += 8 + n.Children.Count * 8;
+                foreach (CLR0MaterialEntryNode e in n.Children)
+                    if (e._numEntries != 0)
+                        size += (e._colors.Count * 4);
             }
-            //size += Children.Count * ((_numFrames + 1) * 4 + 0x20);
             return size;
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             int count = Children.Count;
-            int stride = (_numFrames + 1) * 4 * count;
-            //int data;
 
-            CLR0Entry* pEntry = (CLR0Entry*)(address + 0x3C + (count * 0x10));
-            ABGRPixel* pData = (ABGRPixel*)(((int)pEntry + count * 0x10));
+            CLR0Material* pMat = (CLR0Material*)(address + (_version == 4 ? CLR0v4.Size : CLR0v3.Size) + 0x18 + (count * 0x10));
 
-            CLR0* header = (CLR0*)address;
-            *header = new CLR0(length, _unk1, _numFrames, count, _unk2);
+            int offset = Children.Count * 8;
+            foreach (CLR0MaterialNode n in Children)
+                offset += n.Children.Count * 8;
 
-            ResourceGroup* group = header->Group;
+            ABGRPixel* pData = (ABGRPixel*)((VoidPtr)pMat + offset);
+
+            ResourceGroup* group;
+            if (_version == 4)
+            {
+                CLR0v4* header = (CLR0v4*)address;
+                *header = new CLR0v4(length, _numFrames, count, _loop);
+
+                group = header->Group;
+            }
+            else
+            {
+                CLR0v3* header = (CLR0v3*)address;
+                *header = new CLR0v3(length, _numFrames, count, _loop);
+
+                group = header->Group;
+            }
             *group = new ResourceGroup(count);
 
             ResourceEntry* entry = group->First;
-            foreach (CLR0EntryNode n in Children)
+            foreach (CLR0MaterialNode n in Children)
             {
-                entry->_dataOffset = (int)pEntry - (int)group;
+                (entry++)->_dataOffset = (int)pMat - (int)group;
 
-                if (n._numEntries == 0)
-                    *pEntry = new CLR0Entry(n._flags, (ABGRPixel)n._colorMask, (ABGRPixel)n._solidColor);
-                    //*(RGBAPixel*)&data = (RGBAPixel)n._solidColor;
-                else
-                    *pEntry = new CLR0Entry(n._flags, (ABGRPixel)n._colorMask, (int)pData - ((int)pEntry + 12));
-                    //data = (int)pData - ((int)pEntry + 12);
+                uint newFlags = 0;
 
-                entry++;
-                pEntry++;
-
-                foreach (ARGBPixel p in n._colors)
-                    *pData++ = (ABGRPixel)p;
-
+                CLR0MaterialEntry* pMatEntry = (CLR0MaterialEntry*)((VoidPtr)pMat + 8);
+                foreach (CLR0MaterialEntryNode e in n.Children)
+                {
+                    newFlags |= ((uint)((1 + (e._constant ? 2 : 0)) & 3) << ((int)e._target * 2));
+                    if (e._numEntries == 0)
+                        *pMatEntry = new CLR0MaterialEntry((ABGRPixel)e._colorMask, (ABGRPixel)e._solidColor);
+                    else
+                    {
+                        *pMatEntry = new CLR0MaterialEntry((ABGRPixel)e._colorMask, (int)pData - (int)((VoidPtr)pMatEntry + 4));
+                        foreach (ARGBPixel p in e._colors)
+                            *pData++ = (ABGRPixel)p;
+                    }
+                    pMatEntry++;
+                    e._changed = false;
+                }
+                pMat->_flags = newFlags;
+                pMat = (CLR0Material*)pMatEntry;
                 n._changed = false;
             }
         }
 
         protected override void OnPopulate()
         {
-            ResourceGroup* group = Header->Group;
+            ResourceGroup* group = Header3->Group;
             for (int i = 0; i < group->_numEntries; i++)
-                new CLR0EntryNode().Initialize(this, new DataSource(group->First[i].DataAddress, 0));
+                new CLR0MaterialNode().Initialize(this, new DataSource(group->First[i].DataAddress, 8));
         }
 
         internal override void GetStrings(StringTable table)
         {
             table.Add(Name);
-            foreach (CLR0EntryNode n in Children)
+            foreach (CLR0MaterialNode n in Children)
                 table.Add(n.Name);
         }
 
@@ -139,15 +168,18 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.PostProcess(bresAddress, dataAddress, dataLength, stringTable);
 
-            CLR0* header = (CLR0*)dataAddress;
-            header->ResourceStringAddress = stringTable[Name] + 4;
+            CLR0v3* header = (CLR0v3*)dataAddress;
+            if (_version == 4)
+                ((CLR0v4*)header)->ResourceStringAddress = stringTable[Name] + 4;
+            else
+                header->ResourceStringAddress = stringTable[Name] + 4;
 
             ResourceGroup* group = header->Group;
             group->_first = new ResourceEntry(0xFFFF, 0, 0, 0, 0);
             ResourceEntry* rEntry = group->First;
 
             int index = 1;
-            foreach (CLR0EntryNode n in Children)
+            foreach (CLR0MaterialNode n in Children)
             {
                 dataAddress = (VoidPtr)group + (rEntry++)->_dataOffset;
                 ResourceEntry.Build(group, index++, dataAddress, (BRESString*)stringTable[n.Name]);
@@ -155,20 +187,104 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal static ResourceNode TryParse(DataSource source) { return ((CLR0*)source.Address)->_header._tag == CLR0.Tag ? new CLR0Node() : null; }
+        internal static ResourceNode TryParse(DataSource source) { return ((CLR0v3*)source.Address)->_header._tag == CLR0v3.Tag ? new CLR0Node() : null; }
 
     }
 
-    public unsafe class CLR0EntryNode : ResourceNode, IColorSource
+    public unsafe class CLR0MaterialNode : ResourceNode
     {
-        internal CLR0Entry* Header { get { return (CLR0Entry*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.CLR0Entry; } }
+        internal CLR0Material* Header { get { return (CLR0Material*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.CLR0Material; } }
 
         internal CLR0EntryFlags _flags;
-        public CLR0EntryFlags Flags { get { return _flags; } set { _flags = value; SignalPropertyChange(); } }
-        [TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 FlagsAsBits { get { return new Bin32((uint)_flags); } set { _flags = (CLR0EntryFlags)value.data; SignalPropertyChange(); } }
-        
+
+        public List<int> _entries;
+
+        protected override bool OnInitialize()
+        {
+            if ((_name == null) && (Header->_stringOffset != 0))
+                _name = Header->ResourceString;
+
+            _flags = Header->Flags;
+            _entries = new List<int>();
+
+            for (int i = 0; i < 11; i++)
+            {
+                EntryFlag flag = (EntryFlag)((uint)_flags >> i * 2);
+                if (((uint)flag & 1) != 0)
+                    _entries.Add(i);
+            }
+
+            return _entries.Count > 0;
+        }
+
+        protected override void OnPopulate()
+        {
+            for (int i = 0; i < _entries.Count; i++)
+                new CLR0MaterialEntryNode() { _target = (EntryTarget)_entries[i], _constant = ((((uint)_flags >> _entries[i] * 2) & 2) == 2) }.Initialize(this, (VoidPtr)Header + 8 + i * 8, 8);
+        }
+
+        protected internal virtual void PostProcess(VoidPtr dataAddress, StringTable stringTable)
+        {
+            CLR0Material* header = (CLR0Material*)dataAddress;
+            header->ResourceStringAddress = stringTable[Name] + 4;
+        }
+
+        public void CreateEntry()
+        {
+            int value = 0; Top:
+            foreach (CLR0MaterialEntryNode t in Children)
+                if ((int)t._target == value) { value++; goto Top; }
+            if (value >= 11)
+                return;
+
+            CLR0MaterialEntryNode entry = new CLR0MaterialEntryNode();
+            entry._target = (EntryTarget)value;
+            entry._name = entry._target.ToString();
+            entry._numEntries = -1;
+            entry.NumEntries = ((CLR0Node)Parent)._numFrames + 1;
+            AddChild(entry);
+        }
+    }
+
+    public unsafe class CLR0MaterialEntryNode : ResourceNode, IColorSource
+    {
+        internal CLR0MaterialEntry* Header { get { return (CLR0MaterialEntry*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.CLR0MaterialEntry; } }
+
+        public bool _constant = false;
+        [Category("CLR0 Material Entry")]
+        public bool Constant 
+        {
+            get { return _constant; } 
+            set 
+            {
+                if (_constant != value)
+                {
+                    _constant = value;
+                    if (_constant)
+                        MakeSolid(new ARGBPixel());
+                    else
+                        MakeList();
+                }
+            } 
+        }
+        internal EntryTarget _target;
+        [Category("CLR0 Material Entry")]
+        public EntryTarget Target 
+        {
+            get { return _target; } 
+            set 
+            {
+                foreach (CLR0MaterialEntryNode t in Parent.Children)
+                    if (t._target == value) return;
+
+                _target = value;
+                Name = _target.ToString();
+                SignalPropertyChange(); 
+            }
+        }
+
         internal ARGBPixel _colorMask;
         [Browsable(false)]
         public ARGBPixel ColorMask { get { return _colorMask; } set { _colorMask = value; SignalPropertyChange(); } }
@@ -206,25 +322,23 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
-            _flags = Header->Flags;
             _colorMask = (ARGBPixel)Header->_colorMask;
 
             _colors.Clear();
-            if ((_flags & CLR0EntryFlags.IsSolid) != 0)
+            if (_constant)
             {
                 _numEntries = 0;
                 _solidColor = (ARGBPixel)Header->SolidColor;
             }
             else
             {
-                _numEntries = ((CLR0Node)_parent)._numFrames + 1;
+                _numEntries = ((CLR0Node)_parent._parent)._numFrames + 1;
                 ABGRPixel* data = Header->Data;
                 for (int i = 0; i < _numEntries; i++)
                     _colors.Add((ARGBPixel)(*data++));
             }
 
-            if ((_name == null) && (Header->_stringOffset != 0))
-                _name = Header->ResourceString;
+            _name = _target.ToString();
 
             return false;
         }
@@ -232,20 +346,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void MakeSolid(ARGBPixel color)
         {
             _numEntries = 0;
-            _flags |= CLR0EntryFlags.IsSolid;
+            _constant = true;
             _solidColor = color;
             SignalPropertyChange();
         }
         public void MakeList()
         {
-            int entries = ((CLR0Node)_parent)._numFrames + 1;
+            _constant = false;
+            int entries = ((CLR0Node)_parent._parent)._numFrames + 1;
             _numEntries = _colors.Count;
             NumEntries = entries;
         }
 
         protected internal virtual void PostProcess(VoidPtr dataAddress, StringTable stringTable)
         {
-            CLR0Entry* header = (CLR0Entry*)dataAddress;
+            CLR0Material* header = (CLR0Material*)dataAddress;
             header->ResourceStringAddress = stringTable[Name] + 4;
         }
 
@@ -264,13 +379,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public int ColorCount { get { return (_numEntries == 0) ? 1 : _numEntries; } }
         public ARGBPixel GetColor(int index) { return (_numEntries == 0) ? _solidColor : _colors[index]; }
-        public void SetColor(int index, ARGBPixel color) 
+        public void SetColor(int index, ARGBPixel color)
         {
             if (_numEntries == 0)
                 _solidColor = color;
             else
                 _colors[index] = color;
-            SignalPropertyChange(); 
+            SignalPropertyChange();
         }
 
         #endregion

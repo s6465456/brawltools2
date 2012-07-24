@@ -371,7 +371,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if ((_bone = value) != null)
                 {
                     _bone._manPolys.Add(this);
-                    _render = _bone._flags.HasFlag(BoneFlags.Visible);
+                    _render = _bone._flags1.HasFlag(BoneFlags.Visible);
                 }
             }
         }
@@ -1045,11 +1045,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _dataOffset = header->_dataOffset = tableLen + 0xBC;
                 header->_index = _entryIndex;
 
-                if (!(Model._version == 11 || Model._version == 10))
+                if (Model._version < 10)
                     header->_nodeTableOffset = 0x64;
                 else
                 {
+                    //Technically two bshorts: Fur Vector Id & Fur Layer Coord Id. Currently unsupported.
                     *(bint*)((byte*)header + 0x60) = -1;
+
+                    //Table offset
                     *(byte*)((byte*)header + 0x67) = 0x68;
                 }
 
@@ -1557,7 +1560,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal void WeightVertices() { _manager.Weight(); }
         internal void UnWeightVertices() { _manager.UnWeight(); }
 
-        internal override void Bind(GLContext ctx) { _render = (_bone != null ? _bone._flags.HasFlag(BoneFlags.Visible) ? true : false : true); }
+        internal override void Bind(GLContext ctx) { _render = (_bone != null ? _bone._flags1.HasFlag(BoneFlags.Visible) ? true : false : true); }
         internal override void Unbind(GLContext ctx) { _render = false; }
 
         #endregion

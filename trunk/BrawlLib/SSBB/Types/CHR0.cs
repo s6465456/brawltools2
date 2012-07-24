@@ -15,11 +15,11 @@ namespace BrawlLib.SSBBTypes
         public BRESCommonHeader _header;
         public bint _dataOffset;
         public bint _stringOffset;
-        public bint _pad1;
+        public bint _origPath;
         public bushort _numFrames;
         public bushort _numEntries;
         public bint _loop;
-        public bint _pad2;
+        public bint _scalingRule;
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public ResourceGroup* Group { get { return (ResourceGroup*)(Address + _dataOffset); } }
@@ -40,7 +40,7 @@ namespace BrawlLib.SSBBTypes
             _header._version = version;
             _dataOffset = Size;
             _stringOffset = 0;
-            _pad1 = _pad2 = 0;
+            _origPath = _scalingRule = 0;
             _numFrames = (ushort)frames;
             _numEntries = (ushort)entries;
             _loop = loop;
@@ -55,9 +55,9 @@ namespace BrawlLib.SSBBTypes
         
         public BRESCommonHeader _header;
         public bint _dataOffset;
-        public bint _pad1;
+        public bint _origPath;
         public bint _stringOffset;
-        public bint _pad2;
+        public bint _scalingRule;
         public bushort _numFrames;
         public bushort _numEntries;
         public bint _loop;
@@ -81,7 +81,7 @@ namespace BrawlLib.SSBBTypes
             _header._version = version;
             _dataOffset = Size;
             _stringOffset = 0;
-            _pad1 = _pad2 = 0;
+            _origPath = _scalingRule = 0;
             _numFrames = (ushort)frames;
             _numEntries = (ushort)entries;
             _loop = loop;

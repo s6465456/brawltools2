@@ -2,6 +2,7 @@
 using BrawlLib.SSBBTypes;
 using System.Collections.Generic;
 using BrawlLib.OpenGL;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -129,7 +130,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void Attach(GLContext context) { }
         public void Detach(GLContext context) { }
         public void Refesh(GLContext context) { }
-        public void Render(GLContext context)
+        public void Render(GLContext context, ModelEditControl mainWindow)
         {
             context.glDisable((uint)GLEnableCap.Lighting);
             context.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
@@ -138,7 +139,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (CollisionObject obj in _objects)
                 obj.Render(context);
         }
-        public void Render2(GLContext context, Vector4 Light) { }
         #endregion
 
 

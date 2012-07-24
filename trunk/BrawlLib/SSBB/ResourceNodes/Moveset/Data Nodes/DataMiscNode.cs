@@ -9,6 +9,7 @@ using BrawlLib.IO;
 using BrawlLib.Wii.Animations;
 using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.OpenGL;
+using System.Runtime.InteropServices;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -51,7 +52,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Misc Offsets")]
         public int CrawlOffset { get { return misc.CrawlOffset; } }
         [Category("Misc Offsets")]
-        public int UnknownSection9Offset { get { return misc.UnknownSection9Offset; } }
+        public int CollisionData { get { return misc.CollisionDataOffset; } }
         [Category("Misc Offsets")]
         public int TetherOffset { get { return misc.TetherOffset; } }
         [Category("Misc Offsets")]
@@ -66,7 +67,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        public MoveDefMiscUnkSection9Node unk9;
+        public CollisionDataNode collisionData;
         public MoveDefMiscUnkSection12Node unk12;
         public MoveDefTetherNode tether;
         public UnkSection1Node unkSection1;
@@ -108,8 +109,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 (glide = new MoveDefGlideNode()).Initialize(this, new DataSource(BaseAddress + GlideOffset, 0));
             if (CrawlOffset != 0)
                 (crawl = new MoveDefCrawlNode()).Initialize(this, new DataSource(BaseAddress + CrawlOffset, 0));
-            if (UnknownSection9Offset != 0)
-                (unk9 = new MoveDefMiscUnkSection9Node()).Initialize(this, new DataSource(BaseAddress + UnknownSection9Offset, 0));
+            if (CollisionData != 0)
+                (collisionData = new CollisionDataNode() { _name = "Misc Collision Data" }).Initialize(this, new DataSource(BaseAddress + CollisionData, 0));
             if (TetherOffset != 0)
                 (tether = new MoveDefTetherNode()).Initialize(this, new DataSource(BaseAddress + TetherOffset, 0));
             if (UnknownSection12Offset != 0)
@@ -122,14 +123,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         internal int i = 0;
 
+        [Category("Misc Collision Data")]
         public int DataOffset { get { return Header->_startOffset; } }
+        [Category("Misc Collision Data")]
         public int Count { get { return Header->_listCount; } }
 
         protected override bool OnInitialize()
         {
             base.OnInitialize();
             if (_name == null)
-                _name = "Unknown Section 9";
+                _name = "Misc Collision Data";
             return Count > 0;
         }
 
@@ -162,10 +165,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     MoveDefUnkSection9DataNode data = offset.Children[0] as MoveDefUnkSection9DataNode;
 
-                    size += 24/* + data.Children.Count * 4*/;
+                    if (!data.External)
+                    {
+                        size += 24/* + data.Children.Count * 4*/;
 
-                    if (data.Children.Count > 0)
-                        _lookupCount++; //indices offset
+                        if (data.Children.Count > 0)
+                            _lookupCount++; //indices offset
+                    }
                 }
             }
             return size;
@@ -180,10 +186,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 mainOff += 4;
                 if (r.Children.Count > 0)
-                {
-                    offOff += 24;
-                    //dataOff += r.Children[0].Children.Count * 4;
-                }
+                    if (!(r.Children[0] as MoveDefEntryNode).External)
+                    {
+                        offOff += 24;
+                        //dataOff += r.Children[0].Children.Count * 4;
+                    }
             }
 
             //indices
@@ -210,33 +217,37 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if (offset.Children.Count > 0)
                 {
-                    *offsets = (int)data - (int)_rebuildBase;
-
                     _lookupOffsets.Add((int)offsets - (int)_rebuildBase); //offset
 
-                    offsets++;
-
                     MoveDefUnkSection9DataNode dataNode = offset.Children[0] as MoveDefUnkSection9DataNode;
+                    if (!dataNode.External)
+                    {
+                        *offsets = (int)data - (int)_rebuildBase;
 
-                    data->_unk1 = dataNode._unk1;
-                    data->_unk2 = dataNode._unk2;
-                    data->_unk3 = dataNode._unk3;
-                    data->_unk4 = dataNode._unk4;
+                        data->_unk1 = dataNode._unk1;
+                        data->_unk2 = dataNode._unk2;
+                        data->_unk3 = dataNode._unk3;
+                        data->_unk4 = dataNode._unk4;
 
-                    data->_list._listCount = dataNode.Children.Count;
-                    //data->_list._startOffset = (dataNode.Children.Count > 0 ? (int)indices - (int)_rebuildBase : 0);
-                    data->_list._startOffset = (dataNode.Children.Count > 0 ? (int)(dataNode.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase : 0);
+                        data->_list._listCount = dataNode.Children.Count;
+                        //data->_list._startOffset = (dataNode.Children.Count > 0 ? (int)indices - (int)_rebuildBase : 0);
+                        data->_list._startOffset = (dataNode.Children.Count > 0 ? (int)(dataNode.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase : 0);
 
-                    if (data->_list._startOffset > 0)
-                        _lookupOffsets.Add((int)data->_list._startOffset.Address - (int)_rebuildBase);
+                        if (data->_list._startOffset > 0)
+                            _lookupOffsets.Add((int)data->_list._startOffset.Address - (int)_rebuildBase);
 
-                    data++;
+                        data++;
 
-                    //foreach (MoveDefBoneIndexNode b in dataNode.Children)
-                    //{
-                    //    b._entryOffset = indices;
-                    //    *indices++ = b.boneIndex;
-                    //}
+                        //foreach (MoveDefBoneIndexNode b in dataNode.Children)
+                        //{
+                        //    b._entryOffset = indices;
+                        //    *indices++ = b.boneIndex;
+                        //}
+                    }
+                    else
+                        *offsets = (int)dataNode._entryOffset - (int)_rebuildBase;
+
+                    offsets++;
                 }
                 else
                     *offsets++ = 0;
@@ -299,27 +310,32 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int _unk1, _unk4;
         public float _unk2, _unk3;
 
-        [Category("Misc Section 9 Data")]
+        int count, offset;
+
+        [Category("Misc Collision Data")]
         public int Unk1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 9 Data")]
+        [Category("Misc Collision Data")]
         public float Unk2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 9 Data")]
+        [Category("Misc Collision Data")]
         public float Unk3 { get { return _unk3; } set { _unk3 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 9 Data")]
+        [Category("Misc Collision Data")]
         public int Unk4 { get { return _unk4; } set { _unk4 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 9 Data")]
-        public int ListOffset { get { return Header->_list._startOffset; } }
-        [Category("Misc Section 9 Data")]
-        public int ListCount { get { return Header->_list._listCount; } }
+        [Category("Misc Collision Data")]
+        public int ListOffset { get { return offset; } }
+        [Category("Misc Collision Data")]
+        public int ListCount { get { return count; } }
 
         protected override bool OnInitialize()
         {
             base.OnInitialize();
-            _name = "Data";
+            if (_name == null)
+                _name = "Data";
             _unk1 = Header->_unk1;
             _unk2 = Header->_unk2;
             _unk3 = Header->_unk3;
             _unk4 = Header->_unk4;
+            count = Header->_list._listCount;
+            offset = Header->_list._startOffset;
             return ListOffset > 0;
         }
 
@@ -407,61 +423,38 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class UnkSection1Node : MoveDefEntryNode
     {
-        internal FDefMiscSection1* Header { get { return (FDefMiscSection1*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
-        int _unk1, _unk2, _unk3, _unk4, _unk5, _unk6, _unk7, _unk8;
+        internal bint* values { get { return (bint*)WorkingUncompressed.Address; } }
+
+        internal int[] _entries;
 
         [Category("Misc Section 1")]
-        public int Unk1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 1")]
-        public int Unk2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 1")]
-        public int Unk3 { get { return _unk3; } set { _unk3 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 1")]
-        public int Unk4 { get { return _unk4; } set { _unk4 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 1")]
-        public int Unk5 { get { return _unk5; } set { _unk5 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 1")]
-        public int Unk6 { get { return _unk6; } set { _unk6 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 1")]
-        public int Unk7 { get { return _unk7; } set { _unk7 = value; SignalPropertyChange(); } }
-        [Category("Misc Section 1")]
-        public int Unk8 { get { return _unk8; } set { _unk8 = value; SignalPropertyChange(); } }
-
+        public int[] Entries { get { return _entries; } set { _entries = value; SignalPropertyChange(); } }
+        
         protected override bool OnInitialize()
         {
-            base.OnInitialize();
             _name = "Misc Section 1";
-            _unk1 = Header->_unk1;
-            _unk2 = Header->_unk2;
-            _unk3 = Header->_unk3;
-            _unk4 = Header->_unk4;
-            _unk5 = Header->_unk5;
-            _unk6 = Header->_unk6;
-            _unk7 = Header->_unk7;
-            _unk8 = Header->_unk8;
+            base.OnInitialize();
+
+            _entries = new int[Size / 4];
+            for (int i = 0; i < _entries.Length; i++)
+                _entries[i] = values[i];
+
             return false;
         }
 
         protected override int OnCalculateSize(bool force)
         {
             _lookupCount = 0;
-            return 32;
+            return _entries.Length * 4;
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             _entryOffset = address;
-            FDefMiscSection1* header = (FDefMiscSection1*)address;
-            header->_unk1 = _unk1;
-            header->_unk2 = _unk2;
-            header->_unk3 = _unk3;
-            header->_unk4 = _unk4;
-            header->_unk5 = _unk5;
-            header->_unk6 = _unk6;
-            header->_unk7 = _unk7;
-            header->_unk8 = _unk8;
+            for (int i = 0; i < _entries.Length; i++)
+                *(bint*)(address + i * 4) = _entries[i];
         }
     }
 
@@ -485,7 +478,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             byte* addr = Header;
             for (int i = 0; i < Count; i++)
-                new MoveDefRawDataNode("Unk" + i).Initialize(this, addr + i * 32, 32);
+                new MiscData2Node().Initialize(this, addr + i * 32, 32);
 
             SetSizeInternal(Children.Count * 32);
         }
@@ -499,8 +492,90 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             _entryOffset = address;
-            foreach (MoveDefRawDataNode d in Children)
+            foreach (MiscData2Node d in Children)
                 d.Rebuild(address + d.Index * 32, 32, true);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct UnkDataMiscOff2
+    {
+        public byte unk1;
+        public byte unk2;
+        public byte unk3;
+        public byte unk4;
+
+        public byte unk5;
+        public byte unk6;
+        public byte unk7;
+        public byte unk8;
+
+        public bfloat unk9;
+        public bfloat unk10;
+
+        public bfloat unk11;
+        public bfloat unk12;
+        public bfloat unk13;
+        public bfloat unk14;
+    }
+    public unsafe class MiscData2Node : MoveDefCharSpecificNode
+    {
+        internal UnkDataMiscOff2* Header { get { return (UnkDataMiscOff2*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+
+        UnkDataMiscOff2 hdr;
+
+        [Category("Unknown Data 2 Entry")]
+        public byte Unknown1 { get { return hdr.unk1; } set { hdr.unk1 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public byte Unknown2 { get { return hdr.unk2; } set { hdr.unk2 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public byte Unknown3 { get { return hdr.unk3; } set { hdr.unk3 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public byte Unknown4 { get { return hdr.unk4; } set { hdr.unk4 = value; SignalPropertyChange(); } }
+
+        [Category("Unknown Data 2 Entry")]
+        public byte Unknown5 { get { return hdr.unk5; } set { hdr.unk5 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public byte Unknown6 { get { return hdr.unk6; } set { hdr.unk6 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public byte Unknown7 { get { return hdr.unk7; } set { hdr.unk7 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public byte Unknown8 { get { return hdr.unk8; } set { hdr.unk8 = value; SignalPropertyChange(); } }
+
+        [Category("Unknown Data 2 Entry")]
+        public float Unknown9 { get { return hdr.unk9; } set { hdr.unk9 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public float Unknown10 { get { return hdr.unk10; } set { hdr.unk10 = value; SignalPropertyChange(); } }
+        
+        [Category("Unknown Data 2 Entry")]
+        public float Unknown11 { get { return hdr.unk11; } set { hdr.unk11 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public float Unknown12 { get { return hdr.unk12; } set { hdr.unk12 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public float Unknown13 { get { return hdr.unk13; } set { hdr.unk13 = value; SignalPropertyChange(); } }
+        [Category("Unknown Data 2 Entry")]
+        public float Unknown14 { get { return hdr.unk14; } set { hdr.unk14 = value; SignalPropertyChange(); } }
+
+        protected override bool OnInitialize()
+        {
+            _name = "Unk" + Index;
+            base.OnInitialize();
+            hdr = *Header;
+            return false;
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            _lookupCount = 0;
+            return 32;
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            _entryOffset = address;
+            UnkDataMiscOff2* data = (UnkDataMiscOff2*)address;
+            *data = hdr;
         }
     }
 
@@ -673,7 +748,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public MDL0BoneNode BoneNode
         {
-            get { if (Model == null) return null; if (flags.BoneIndex > Model._linker.BoneCache.Length || flags.BoneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[flags.BoneIndex]; }
+            get { if (Model == null) return null; if (flags.BoneIndex >= Model._linker.BoneCache.Length || flags.BoneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[flags.BoneIndex]; }
             set { flags.BoneIndex = value.BoneIndex; Name = value.Name; }
         }
         
@@ -732,6 +807,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Rendering
         public unsafe void Render(GLContext ctx, bool selected, int type) 
         {
+            if (BoneNode == null)
+                return;
+
             //Coded by Toomai
             //Modified for release v0.67
 
@@ -1119,7 +1197,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public MDL0BoneNode BoneNode
         {
-            get { if (Model == null) return null; if (boneIndex > Model._linker.BoneCache.Length || boneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[boneIndex]; }
+            get { if (Model == null) return null; if (boneIndex >= Model._linker.BoneCache.Length || boneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[boneIndex]; }
             set { boneIndex = value.BoneIndex; Name = value.Name; }
         }
 
@@ -1385,19 +1463,19 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal bfloat* floatval { get { return (bfloat*)WorkingUncompressed.Address; } }
         internal bint intval1 { get { return *(bint*)(WorkingUncompressed.Address + 80); } }
-        internal bint intval2 { get { return *(bint*)(WorkingUncompressed.Address + 84); } }
+        //internal bint intval2 { get { return *(bint*)(WorkingUncompressed.Address + 84); } }
 
         internal float[] floatEntries;
         internal int intEntry1 = 0;
-        internal int intEntry2 = 0;
+        //internal int intEntry2 = 0;
 
         [Category("Glide Attribute")]
-        public float[] Entries { get { return floatEntries; } }
+        public float[] Entries { get { return floatEntries; } set { floatEntries = value; SignalPropertyChange(); } }
         [Category("Glide Attribute")]
-        public int Unk1 { get { return intEntry1; } }
-        [Category("Glide Attribute")]
-        public int Unk2 { get { return intEntry2; } }
-
+        public int Unknown { get { return intEntry1; } set { intEntry1 = value; SignalPropertyChange(); } }
+        //[Category("Glide Attribute")]
+        //public int Unknown2 { get { return intEntry2; } set { intEntry2 = value; SignalPropertyChange(); } }
+        
         protected override bool OnInitialize()
         {
             base.OnInitialize();
@@ -1407,7 +1485,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0; i < floatEntries.Length; i++)
                 floatEntries[i] = floatval[i];
             intEntry1 = intval1;
-            intEntry2 = intval2;
+            //intEntry2 = intval2;
 
             return false;
         }
@@ -1415,7 +1493,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override int OnCalculateSize(bool force)
         {
             _lookupCount = 0;
-            return 88;
+            return 84;
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -1427,7 +1505,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     *(bfloat*)(address + i * 4) = 0;
             *(bint*)(address + 80) = intval1;
-            *(bint*)(address + 84) = intval2;
+            //*(bint*)(address + 84) = intval2;
         }
     }
 
@@ -1507,7 +1585,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         internal int StartOffset, ListCount;
-
+        public bool seperate = false;
         protected override bool OnInitialize()
         {
             base.OnInitialize();
@@ -1531,7 +1609,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (MoveDefSoundDataNode r in Children)
             {
                 _lookupCount += (r.Children.Count > 0 ? 1 : 0);
-                size += 8/* + r.Children.Count * 4*/;
+                size += 8;
+                if (seperate)
+                    size += r.Children.Count * 4;
             }
             return size;
         }
@@ -1542,7 +1622,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (MoveDefSoundDataNode r in Children)
             {
                 mainOff += 8;
-                //sndOff += r.Children.Count * 4;
+                if (seperate)
+                    sndOff += r.Children.Count * 4;
             }
 
             //indices
@@ -1567,17 +1648,20 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if (r.Children.Count > 0)
                 {
-                    //sndLists->_startOffset = (int)indices - (int)_rebuildBase;
-                    sndLists->_startOffset = (int)(r.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase;
+                    if (seperate)
+                        sndLists->_startOffset = (int)indices - (int)_rebuildBase;
+                    else
+                        sndLists->_startOffset = (int)(r.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase;
                     _lookupOffsets.Add((int)sndLists->_startOffset.Address - (int)_rebuildBase);
                 }
 
                 (sndLists++)->_listCount = r.Children.Count;
-                //foreach (MoveDefIndexNode b in r.Children)
-                //{
-                //    b._entryOffset = indices;
-                //    *indices++ = b.ItemIndex;
-                //}
+                if (seperate)
+                    foreach (MoveDefIndexNode b in r.Children)
+                    {
+                        b._entryOffset = indices;
+                        *indices++ = b.ItemIndex;
+                    }
             }
         }
     }

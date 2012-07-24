@@ -437,46 +437,18 @@ namespace System.Windows.Forms
 
                     for (int i = 0; i < newEv.numArguments; i++)
                     {
-                        long type = (long)(origEvent.Children[i] as MoveDefEventParameterNode)._type;
-                        if (i == 12 && (newEv._event == 0x06000D00 || newEv._event == 0x06150F00 || newEv._event == 0x062B0D00))
+                        int type = (int)(origEvent.Children[i] as MoveDefEventParameterNode)._type;
+                        int value = (origEvent.Children[i] as MoveDefEventParameterNode)._value;
+                        newEv.NewParam(i, value, type);
+                        if (type == (int)ArgVarType.Offset)
                         {
-                            HitboxFlagsNode h = new HitboxFlagsNode(info != null ? info.Params[i] : "Value") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value };
-                            h.val.data = h._value;
-                            h.GetFlags();
-                            newEv.AddChild(h);
+                            MoveDefEventOffsetNode oldoff = origEvent.Children[i] as MoveDefEventOffsetNode;
+                            MoveDefEventOffsetNode newoff = newEv.Children[i] as MoveDefEventOffsetNode;
+                            newoff.list = oldoff.list;
+                            newoff.index = oldoff.index;
+                            newoff.type = oldoff.type;
+                            newoff.action = oldoff.action;
                         }
-                        else if (((newEv._event == 0x06000D00 || newEv._event == 0x06150F00 || newEv._event == 0x062B0D00) && (i == 0 || i == 3 || i == 4)) ||
-                            ((newEv._event == 0x11001000 || newEv._event == 0x11010A00 || newEv._event == 0x11020A00) && i == 0))
-                            newEv.AddChild(new MoveDefEventValue2HalfNode(info != null ? info.Params[i] : "Value") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value });
-                        else if (i == 14 && newEv._event == 0x06150F00)
-                        {
-                            SpecialHitboxFlagsNode h = new SpecialHitboxFlagsNode(info != null ? info.Params[i] : "Value") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value };
-                            h.val.data = h._value;
-                            h.GetFlags();
-                            newEv.AddChild(h);
-                        }
-                        else if ((ArgVarType)(int)type == ArgVarType.Value)
-                            newEv.AddChild(new MoveDefEventValueNode(info != null ? info.Params[i] : "Value") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value });
-                        else if ((ArgVarType)(int)type == ArgVarType.Scalar)
-                            newEv.AddChild(new MoveDefEventScalarNode(info != null ? info.Params[i] : "Scalar") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value });
-                        else if ((ArgVarType)(int)type == ArgVarType.Boolean)
-                            newEv.AddChild(new MoveDefEventBoolNode(info != null ? info.Params[i] : "Boolean") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value });
-                        else if ((ArgVarType)(int)type == ArgVarType.Unknown)
-                            newEv.AddChild(new MoveDefEventUnkNode(info != null ? info.Params[i] : "Unknown") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value });
-                        else if ((ArgVarType)(int)type == ArgVarType.Requirement)
-                        {
-                            MoveDefEventRequirementNode r = new MoveDefEventRequirementNode(info != null ? info.Params[i] : "Requirement") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value };
-                            newEv.AddChild(r);
-                            r.val = r.GetRequirement(r._value);
-                        }
-                        else if ((ArgVarType)(int)type == ArgVarType.Variable)
-                        {
-                            MoveDefEventVariableNode v = new MoveDefEventVariableNode(info != null ? info.Params[i] : "Variable") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value };
-                            newEv.AddChild(v);
-                            v.val = v.ResolveVariable(v._value);
-                        }
-                        else if ((ArgVarType)(int)type == ArgVarType.Offset)
-                            newEv.AddChild(new MoveDefEventOffsetNode(info != null ? info.Params[i] : "Offset") { _value = (origEvent.Children[i] as MoveDefEventParameterNode)._value });
                     }
                 }
                 return newEv;
@@ -550,15 +522,12 @@ namespace System.Windows.Forms
 
                 MoveDefEventOffsetNode offset = value as MoveDefEventOffsetNode;
 
-                int list, type, index;
-                offset.Root.GetLocation(offset.RawOffset, out list, out type, out index);
-
                 _updating = true;
-                comboBox1.SelectedIndex = offset.list = list;
+                comboBox1.SelectedIndex = offset.list;
                 if (offset.type != -1)
-                    comboBox3.SelectedIndex = offset.type = type;
+                    comboBox3.SelectedIndex = offset.type;
                 if (offset.index != -1)
-                    comboBox2.SelectedIndex = offset.index = index;
+                    comboBox2.SelectedIndex = offset.index;
                 _updating = false;
             }
             else 
@@ -586,43 +555,16 @@ namespace System.Windows.Forms
             {
                 newEv = new MoveDefEventNode() { _parent = origEvent.Parent };
 
-                newEvent.EventID = (int)frmEventList.eventEvent;
+                newEvent.EventID = (uint)frmEventList.eventEvent;
                 ActionEventInfo info = newEvent.EventInfo;
 
-                if (info.Params == null)
+                if (info == null || info.Params == null)
                 {
                     DisplayEvent();
                     return;
                 }
 
-                for (int i = 0; i < newEvent.numArguments; i++)
-                {
-                    long type = info.GetDfltParameter(i);
-                    if (i >= info.Params.Length)
-                        continue;
-
-                    if ((newEvent._event == 0x06000D00 || newEvent._event == 0x06150F00 || newEvent._event == 0x062B0D00) && i == 12)
-                        newEvent.AddChild(new HitboxFlagsNode(info != null ? info.Params[i] : "Value"));
-                    else if (((newEvent._event == 0x06000D00 || newEvent._event == 0x06150F00 || newEvent._event == 0x062B0D00) && (i == 0 || i == 3 || i == 4)) ||
-                        ((newEvent._event == 0x11001000 || newEvent._event == 0x11010A00 || newEvent._event == 0x11020A00) && i == 0))
-                        newEvent.AddChild(new MoveDefEventValue2HalfNode(info != null ? info.Params[i] : "Value"));
-                    else if (i == 14 && newEvent._event == 0x06150F00)
-                        newEvent.AddChild(new SpecialHitboxFlagsNode(info != null ? info.Params[i] : "Value"));
-                    else if ((ArgVarType)(int)type == ArgVarType.Value)
-                        newEvent.AddChild(new MoveDefEventValueNode(info != null ? info.Params[i] : "Value"));
-                    else if ((ArgVarType)(int)type == ArgVarType.Scalar)
-                        newEvent.AddChild(new MoveDefEventScalarNode(info != null ? info.Params[i] : "Scalar"));
-                    else if ((ArgVarType)(int)type == ArgVarType.Boolean)
-                        newEvent.AddChild(new MoveDefEventBoolNode(info != null ? info.Params[i] : "Boolean"));
-                    else if ((ArgVarType)(int)type == ArgVarType.Unknown)
-                        newEvent.AddChild(new MoveDefEventUnkNode(info != null ? info.Params[i] : "Unknown"));
-                    else if ((ArgVarType)(int)type == ArgVarType.Requirement)
-                        newEvent.AddChild(new MoveDefEventRequirementNode(info != null ? info.Params[i] : "Requirement"));
-                    else if ((ArgVarType)(int)type == ArgVarType.Variable)
-                        newEvent.AddChild(new MoveDefEventVariableNode(info != null ? info.Params[i] : "Variable"));
-                    else if ((ArgVarType)(int)type == ArgVarType.Offset)
-                        newEvent.AddChild(new MoveDefEventOffsetNode(info != null ? info.Params[i] : "Offset"));
-                }
+                newEvent.NewChildren();
             }
 
             DisplayEvent();
@@ -650,40 +592,18 @@ namespace System.Windows.Forms
                 int ind = param.Index;
                 ActionEventInfo info = eventData.EventInfo;
                 string name = ((ArgVarType)cboType.SelectedIndex).ToString();
-                if (info != null)
-                    name = info.Params[ind];
 
-                //int value = 0;
+                int value = 0;
 
-                //MoveDefEventParameterNode p = newEvent.Children[ind] as MoveDefEventParameterNode;
-                //if (p is MoveDefEventValueNode || p is MoveDefEventScalarNode || p is MoveDefEventBoolNode)
-                //    value = p._value;
+                MoveDefEventParameterNode p = newEvent.Children[ind] as MoveDefEventParameterNode;
+                if (p is MoveDefEventValueNode || p is MoveDefEventScalarNode || p is MoveDefEventBoolNode)
+                    value = p._value;
 
                 newEvent.Children[ind].Remove();
 
                 ArgVarType t = ((ArgVarType)cboType.SelectedIndex);
 
-                if ((newEvent._event == 0x06000D00 || newEvent._event == 0x06150F00 || newEvent._event == 0x062B0D00) && ind == 12)
-                    newEvent.InsertChild(new HitboxFlagsNode(name), true, ind);
-                else if (((newEvent._event == 0x06000D00 || newEvent._event == 0x06150F00 || newEvent._event == 0x062B0D00) && (ind == 0 || ind == 3 || ind == 4)) ||
-                    ((newEvent._event == 0x11010A00 || newEvent._event == 0x11020A00) && ind == 0))
-                    newEvent.InsertChild(new MoveDefEventValue2HalfNode(name), true, ind);
-                else if (ind == 14 && newEvent._event == 0x06150F00)
-                    newEvent.InsertChild(new SpecialHitboxFlagsNode(name), true, ind);
-                else if (t == ArgVarType.Value)
-                    newEvent.InsertChild(new MoveDefEventValueNode(name), true, ind);
-                else if (t == ArgVarType.Scalar)
-                    newEvent.InsertChild(new MoveDefEventScalarNode(name), true, ind);
-                else if (t == ArgVarType.Boolean)
-                    newEvent.InsertChild(new MoveDefEventBoolNode(name), true, ind);
-                else if (t == ArgVarType.Unknown)
-                    newEvent.InsertChild(new MoveDefEventUnkNode(name), true, ind);
-                else if (t == ArgVarType.Requirement)
-                    newEvent.InsertChild(new MoveDefEventRequirementNode(name), true, ind);
-                else if (t == ArgVarType.Variable)
-                    newEvent.InsertChild(new MoveDefEventVariableNode(name), true, ind);
-                else if (t == ArgVarType.Offset)
-                    newEvent.InsertChild(new MoveDefEventOffsetNode(name), true, ind);
+                newEvent.NewParam(ind, value, (int)t);
             }
 
             DisplayParameter(index);
@@ -724,17 +644,18 @@ namespace System.Windows.Forms
             status = DialogResult.OK;
             int index = origEvent.Index;
             MoveDefActionNode action = origEvent.Parent as MoveDefActionNode;
-            action.InsertChild(newEvent, true, index);
             origEvent.Remove();
+            action.InsertChild(newEvent, true, index);
 
             if (p != null)
             {
                 p.SelectedObject = _oldSelectedObject;
                 p.scriptEditor1.MakeScript();
+                p.SetFrame(p._animFrame); //Reset and then run script to show changes
             }
             else
-            if (Completed != null)
-                Completed(this, null);
+                if (Completed != null)
+                    Completed(this, null);
         }
 
         public object _oldSelectedObject;
@@ -762,13 +683,13 @@ namespace System.Windows.Forms
                 comboBox2.Items.AddRange(param.Root._subActions.Children.ToArray());
             }
             if (comboBox1.SelectedIndex >= 2)
-                comboBox3.Visible = label3.Visible = false;
+                comboBox3.Visible = label4.Visible = false;
             else
-                comboBox3.Visible = label3.Visible = true;
+                comboBox3.Visible = label4.Visible = true;
             if (comboBox1.SelectedIndex == 4)
-                comboBox2.Visible = label2.Visible = false;
+                comboBox2.Visible = label3.Visible = label2.Visible = false;
             else
-                comboBox2.Visible = label2.Visible = true;
+                comboBox2.Visible = label3.Visible = label2.Visible = true;
             if (comboBox1.SelectedIndex == 2)
             {
                 comboBox2.Items.Clear();
@@ -777,22 +698,49 @@ namespace System.Windows.Forms
             if (comboBox1.SelectedIndex == 3)
             {
                 comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param.Root._external.ToArray());
+                comboBox2.Items.AddRange(param.Root._externalRefs.ToArray());
             }
         }
 
         private void offsetOkay_Click(object sender, EventArgs e)
         {
-            int offset = -1;
+            MoveDefEventOffsetNode _targetNode = param as MoveDefEventOffsetNode;
+            if (_targetNode.action != null)
+            {
+                _targetNode._value = -1;
+                _targetNode.action._actionRefs.Remove(param);
+            }
             if (comboBox1.SelectedIndex >= 3)
-                offset = -1;
+            {
+                if (comboBox1.SelectedIndex == 3 && comboBox2.SelectedIndex >= 0 && comboBox2.SelectedIndex < param.Root._externalRefs.Count)
+                {
+                    if (_targetNode._extNode != null)
+                    {
+                        _targetNode._extNode._refs.Remove(_targetNode);
+                        _targetNode._extNode = null;
+                    }
+                    (param._extNode = param.Root._externalRefs[comboBox2.SelectedIndex] as MoveDefExternalNode)._refs.Add(param);
+                }
+            }
             else
-                offset = param.Root.GetOffset(comboBox1.SelectedIndex, (comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex), comboBox2.SelectedIndex);
-            param._value = offset;
-            (param as MoveDefEventOffsetNode).action = param.Root.GetAction(offset);
-            (param as MoveDefEventOffsetNode).list = comboBox1.SelectedIndex;
-            (param as MoveDefEventOffsetNode).type = (comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex);
-            (param as MoveDefEventOffsetNode).index = (comboBox1.SelectedIndex == 4 ? -1 : comboBox2.SelectedIndex);
+            {
+                if (param._extNode != null)
+                {
+                    param._extNode._refs.Remove(param);
+                    param._extNode = null;
+                }
+            }
+            _targetNode.list = comboBox1.SelectedIndex;
+            _targetNode.type = (comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex);
+            _targetNode.index = (comboBox1.SelectedIndex == 4 ? -1 : comboBox2.SelectedIndex);
+            _targetNode.action = param.Root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
+            if (_targetNode.action != null)
+            {
+                param._value = _targetNode.action._offset;
+                _targetNode.action._actionRefs.Add(param);
+            }
+            else
+                param._value = -1;
             param.SignalPropertyChange();
         }
     }

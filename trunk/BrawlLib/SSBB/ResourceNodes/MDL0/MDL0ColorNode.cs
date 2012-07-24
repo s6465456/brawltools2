@@ -33,7 +33,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Color Data")]
         public byte EntryStride { get { return Header->_entryStride; } }
         [Category("Color Data")]
-        public byte Unknown { get { return Header->_scale; } }
+        public byte Pad { get { return Header->_pad; } }
         [Category("Color Data")]
         public int NumEntries { get { return Header->_numEntries; } }
 
@@ -77,7 +77,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_isRGBA = _enc._hasAlpha ? 1 : 0;
                 header->_format = (int)_enc._outType;
                 header->_entryStride = (byte)_enc._dstStride;
-                header->_scale = 0;
+                header->_pad = 0;
                 header->_numEntries = (ushort)Colors.Length;
 
                 //Write data

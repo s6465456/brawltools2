@@ -266,7 +266,7 @@ namespace BrawlBox
         }
 
         private static string _inFilter =
-        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.brstm;*.brsar;*.msbin;*.rwsd;*.rseq;*.rbnk;*.efls;*.breff;*.breft;*.arc;*.rel;*.szs;*.mrg|" +
+        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.brstm;*.brsar;*.msbin;*.rwsd;*.rseq;*.rbnk;*.efls;*.breff;*.breft;*.arc;*.rel;*.szs;*.mrg;*.mrgc|" +
         "PAC File Archive (*.pac)|*.pac|" +
         "PCS Compressed File Archive (*.pcs)|*.pcs|" +
         "Resource Package (*.brres;*.brtex;*.brmdl)|*.brres;*.brtex;*.brmdl|" +
@@ -292,7 +292,7 @@ namespace BrawlBox
         "REL Module (*.rel)|*.rel|" +
         "DOL Static Module (*.dol)|*.dol|" +
         "SZS File Archive (*.szs)|*.szs|" +
-        "MRG Resource Group (*.mrg)|*.mrg";
+        "MRG Resource Group (*.mrg;*.mrgc)|*.mrg;*.mrgc";
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {

@@ -85,7 +85,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             ARCFileHeader* entry = Header->First;
             for (int i = 0; i < Header->_numFiles; i++, entry = entry->Next)
                 if ((entry->_size == 0) || (NodeFactory.FromAddress(this, entry->Data, entry->Length) == null))
-                    if (SpecialName.Contains(_name) && i == 0 && RootNode == this)
+                    if (((SpecialName.Contains(_name) && RootNode == this) || ((FileType == ARCFileType.Type7 && Name.EndsWith("Param")) || Name == "Fighter")) && i == 0)
                         new MoveDefNode().Initialize(this, entry->Data, entry->Length);
                     else
                         new ARCEntryNode().Initialize(this, entry->Data, entry->Length);

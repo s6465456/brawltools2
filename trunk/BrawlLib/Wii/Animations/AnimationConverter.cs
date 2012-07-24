@@ -12,17 +12,27 @@ namespace BrawlLib.Wii.Animations
             bfloat* sPtr = (bfloat*)entry->Data;
             SRT0Code code = entry->Code;
 
-            if (!code.NoScaleX)
-                if (code.FixedScaleX)
-                    kf[KeyFrameMode.ScaleX, 0] = *sPtr++;
+            if (!code.NoScale)
+            {
+                if (code.ScaleIsotropic)
+                {
+                    if (code.FixedScaleX)
+                        kf[KeyFrameMode.ScaleXYZ, 0] = *sPtr++;
+                    else
+                        DecodeSRT0Frames(kf, (VoidPtr)sPtr + *(buint*)sPtr++, KeyFrameMode.ScaleXYZ);
+                }
                 else
-                    DecodeSRT0Frames(kf, (VoidPtr)sPtr + *(buint*)sPtr++, KeyFrameMode.ScaleX);
-            if (!code.NoScaleY)
-                if (code.FixedScaleY)
-                    kf[KeyFrameMode.ScaleY, 0] = *sPtr++;
-                else
-                    DecodeSRT0Frames(kf, (VoidPtr)sPtr + *(buint*)sPtr++, KeyFrameMode.ScaleY);
-            
+                {
+                    if (code.FixedScaleX)
+                        kf[KeyFrameMode.ScaleX, 0] = *sPtr++;
+                    else
+                        DecodeSRT0Frames(kf, (VoidPtr)sPtr + *(buint*)sPtr++, KeyFrameMode.ScaleX);
+                    if (code.FixedScaleY)
+                        kf[KeyFrameMode.ScaleY, 0] = *sPtr++;
+                    else
+                        DecodeSRT0Frames(kf, (VoidPtr)sPtr + *(buint*)sPtr++, KeyFrameMode.ScaleY);
+                }
+            }
             if (!code.NoRotation)
                 if (code.FixedRotation)
                     kf[KeyFrameMode.RotX, 0] = *sPtr++;
@@ -573,48 +583,84 @@ namespace BrawlLib.Wii.Animations
             int index = group * 3;
             int numFrames = kf.FrameLimit;
             int dataLen = 0;
-
+            KeyframeEntry[] roots = new KeyframeEntry[2];
             bool exist = false;
-
+            bool isotropic = group == 0;
             int* count = stackalloc int[2];
             bool* isExist = stackalloc bool[2];
             bool* isFixed = stackalloc bool[2];
 
             for (int i = 0; i < (group == 1 ? 1 : 2); i++)
             {
+                roots[i] = kf._keyRoots[index + i];
                 count[i] = kf._keyCounts[index + i];
                 isExist[i] = count[i] > 0;
                 isFixed[i] = count[i] <= 1;
             }
 
-            exist = isExist[0] || isExist[1];
+            if (exist = isExist[0] || isExist[1])
+            {
+                if (group == 0)
+                {
+                    if (isFixed[0] != isFixed[1])
+                        isotropic = false;
+                    else if (count[0] != count[1])
+                        isotropic = false;
+                    else
+                    {
+                        KeyframeEntry e1 = roots[0], e2 = roots[1];
+                        for (int i = count[0]; i-- > 0; )
+                        {
+                            e1 = e1._next; e2 = e2._next;
+                            if ((e1._index != e2._index) ||
+                                (e1._value != e2._value))
+                            {
+                                isotropic = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            else //Set isotropic to true, so it sets the default value.
+                isotropic = true;
+            if (group == 0 && isotropic)
+                code.ScaleIsotropic = true;
             for (int i = 0; i < (group == 1 ? 1 : 2); i++)
             {
-                int loc = 0;
-                if (group == 2)
-                    loc = 2;
-                else if (group == 1)
-                    loc = 1;
-                else if (group == 0 && i == 0)
-                    loc = 3;
-                else loc = 0;
-
-                int fix = 0;
-                if (group == 0)
-                    fix = i;
-                else if (group == 1)
-                    fix = 2;
-                else if (group == 2)
-                    fix = 3 + i;
-
                 if (exist)
                 {
-                    entrySize += 4;
+                    switch (group)
+                    {
+                        case 0: code.NoScale = false; break;
+                        case 1: code.NoRotation = false; break;
+                        case 2: code.NoTranslation = false; break;
+                    }
+                    if (!(group == 0 && i == 1 && code.ScaleIsotropic))
+                        entrySize += 4;
                     if (!isFixed[i])
-                        dataLen += 8 + (count[i] * 12);
+                    {
+                        switch (group)
+                        {
+                            case 0:
+                                switch (i)
+                                {
+                                    case 0: code.FixedScaleX = false; break;
+                                    case 1: code.FixedScaleY = false; break;
+                                }
+                                break;
+                            case 1: code.FixedRotation = false; break;
+                            case 2: switch (i)
+                                {
+                                    case 0: code.FixedX = false; break;
+                                    case 1: code.FixedY = false; break;
+                                }
+                                break;
+                        }
+                        if (!(group == 0 && i == 1 && code.ScaleIsotropic))
+                            dataLen += 8 + (count[i] * 12);
+                    }
                 }
-                code.SetFixed(fix, isFixed[i]);
-                code.SetHas(loc, exist);
             }
             return dataLen;
         }
@@ -681,30 +727,66 @@ namespace BrawlLib.Wii.Animations
                 r = type * 3; //Increment to next
                 for (int axis = 0; axis < (type == 1 ? 1 : 2); axis++)
                 {
-                    int loc = 0;
-                    if (type == 2)
-                        loc = 2;
-                    else if (type == 1)
-                        loc = 1;
-                    else if (type == 0 && axis == 0)
-                        loc = 3;
-                    else loc = 0;
-
-                    int fix = 0;
-                    if (type == 0)
-                        fix = axis;
-                    else if (type == 1)
-                        fix = 2;
-                    else if (type == 2)
-                        fix = 3 + axis;
-
-                    if (code.GetHas(loc))
-                        if (code.GetFixed(fix))
-                            *(bfloat*)pOffset++ = kf._keyRoots[r + axis]._next._value;
+                    bool has = false;
+                    switch (type)
+                    {
+                        case 0: has = !code.NoScale; break;
+                        case 1: has = !code.NoRotation; break;
+                        case 2: has = !code.NoTranslation; break;
+                    }
+                    if (has)
+                        if (code.ScaleIsotropic && type == 0)
+                        {
+                            if (axis == 0)
+                            {
+                                if (code.FixedScaleX)
+                                    *(bfloat*)pOffset++ = kf._keyRoots[0]._next._value;
+                                else
+                                {
+                                    *pOffset = (int)(dataAddress - pOffset); pOffset++;
+                                    dataAddress += EncodeEntry(r + axis, AnimDataFormat.I12, kf, dataAddress);
+                                }
+                            }
+                        }
                         else
                         {
-                            *pOffset = (int)(dataAddress - pOffset); pOffset++;
-                            dataAddress += EncodeEntry(r + axis, AnimDataFormat.I12, kf, dataAddress);
+                            bool fix = false;
+                            switch (type)
+                            {
+                                case 0:
+                                    switch (axis)
+                                    {
+                                        case 0:
+                                            fix = code.FixedScaleX;
+                                            break;
+                                        case 1: 
+                                            fix = code.FixedScaleY;
+                                            break;
+                                    }
+                                    break;
+                                case 1:
+                                    fix = code.FixedRotation;
+                                    break;
+                                case 2:
+                                    switch (axis)
+                                    {
+                                        case 0:
+                                            fix = code.FixedX;
+                                            break;
+                                        case 1:
+                                            fix = code.FixedY;
+                                            break;
+                                    }
+                                    break;
+                            }
+
+                            if (fix)
+                                *(bfloat*)pOffset++ = kf._keyRoots[r + axis]._next._value;
+                            else
+                            {
+                                *pOffset = (int)(dataAddress - pOffset); pOffset++;
+                                dataAddress += EncodeEntry(r + axis, AnimDataFormat.I12, kf, dataAddress);
+                            }
                         }
                 }
             }

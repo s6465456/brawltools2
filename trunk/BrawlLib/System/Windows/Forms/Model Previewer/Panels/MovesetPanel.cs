@@ -9,6 +9,7 @@ using BrawlLib;
 using System.Collections.Generic;
 using BrawlLib.Wii.Models;
 using BrawlLib.SSBBTypes;
+using System.Globalization;
 
 namespace System.Windows.Forms
 {
@@ -1284,7 +1285,7 @@ namespace System.Windows.Forms
             {
                 if (_mainMoveset.IsDirty)
                 {
-                    DialogResult res = MessageBox.Show(this, "You have made changes to an external file. Would you like to save those changes?", "Closing external file.", MessageBoxButtons.YesNoCancel);
+                    DialogResult res = MessageBox.Show(this, "You have made changes to an external moveset file. Would you like to save those changes?", "Closing external moveset file.", MessageBoxButtons.YesNoCancel);
                     if (((res == DialogResult.Yes) && (!SaveMoveset())) || (res == DialogResult.Cancel))
                         return false;
                 }
@@ -1409,7 +1410,7 @@ namespace System.Windows.Forms
             if (!(SelectedObject is MoveDefHurtBoxNode))
                 return;
 
-            float.TryParse(numOffX.Text, out ((MoveDefHurtBoxNode)SelectedObject)._offst._x);
+            float.TryParse(numOffX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out ((MoveDefHurtBoxNode)SelectedObject)._offst._x);
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
@@ -1421,7 +1422,7 @@ namespace System.Windows.Forms
             if (!(SelectedObject is MoveDefHurtBoxNode))
                 return;
 
-            float.TryParse(numOffY.Text, out ((MoveDefHurtBoxNode)SelectedObject)._offst._y);
+            float.TryParse(numOffY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out ((MoveDefHurtBoxNode)SelectedObject)._offst._y);
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
@@ -1433,7 +1434,7 @@ namespace System.Windows.Forms
             if (!(SelectedObject is MoveDefHurtBoxNode))
                 return;
 
-            float.TryParse(numOffZ.Text, out ((MoveDefHurtBoxNode)SelectedObject)._offst._z);
+            float.TryParse(numOffZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out ((MoveDefHurtBoxNode)SelectedObject)._offst._z);
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
@@ -1445,7 +1446,7 @@ namespace System.Windows.Forms
             if (!(SelectedObject is MoveDefHurtBoxNode))
                 return;
 
-            float.TryParse(numStrX.Text, out ((MoveDefHurtBoxNode)SelectedObject)._stretch._x);
+            float.TryParse(numStrX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out ((MoveDefHurtBoxNode)SelectedObject)._stretch._x);
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
@@ -1457,7 +1458,7 @@ namespace System.Windows.Forms
             if (!(SelectedObject is MoveDefHurtBoxNode))
                 return;
 
-            float.TryParse(numStrY.Text, out ((MoveDefHurtBoxNode)SelectedObject)._stretch._y);
+            float.TryParse(numStrY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out ((MoveDefHurtBoxNode)SelectedObject)._stretch._y);
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
@@ -1469,7 +1470,7 @@ namespace System.Windows.Forms
             if (!(SelectedObject is MoveDefHurtBoxNode))
                 return;
 
-            float.TryParse(numStrZ.Text, out ((MoveDefHurtBoxNode)SelectedObject)._stretch._z);
+            float.TryParse(numStrZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out ((MoveDefHurtBoxNode)SelectedObject)._stretch._z);
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
@@ -1491,7 +1492,7 @@ namespace System.Windows.Forms
             if (!(SelectedObject is MoveDefHurtBoxNode))
                 return;
 
-            float.TryParse(numRadius.Text, out ((MoveDefHurtBoxNode)SelectedObject)._radius);
+            float.TryParse(numRadius.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out ((MoveDefHurtBoxNode)SelectedObject)._radius);
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
@@ -1599,6 +1600,7 @@ namespace System.Windows.Forms
             foreach (MoveDefActionNode a in selectedSubActionGrp.Children)
                 selectedActionNodes.Add(a);
 
+            _mainWindow.pnlAssets.listAnims.SelectedItems.Clear();
             for (int i = 0; i < _mainWindow.pnlAssets.listAnims.Items.Count; i++)
                 if (_mainWindow.pnlAssets.listAnims.Items[i].Tag.ToString() == selectedSubActionGrp.Name)
                 {
@@ -1702,7 +1704,7 @@ namespace System.Windows.Forms
         public void SetFrame(int index)
         {
             if (index == 0)
-                ResetModelVis();
+                ResetModelVisEtc();
 
             if (subactions)
                 _mainWindow.SetFrame(index + 1);
@@ -1711,7 +1713,7 @@ namespace System.Windows.Forms
             {
                 if (!_playing)
                 {
-                    ResetModelVis();
+                    ResetModelVisEtc();
                     for (int i = 0; i < selectedActionNodes.Count; i++)
                     {
                         MoveDefActionNode a = selectedActionNodes[i];
@@ -1751,7 +1753,7 @@ namespace System.Windows.Forms
                         }
                     else
                     {
-                        ResetModelVis();
+                        ResetModelVisEtc();
                         for (int i = 0; i < selectedActionNodes.Count; i++)
                         {
                             MoveDefActionNode a = selectedActionNodes[i];
@@ -1769,11 +1771,12 @@ namespace System.Windows.Forms
             _animFrame = index;
         }
 
-        public void ResetModelVis()
+        public void ResetModelVisEtc()
         {
             foreach (MDL0BoneNode bone in _mainWindow.boneCollisions)
                 bone._nodeColor = bone._boneColor = Color.Transparent;
             _mainWindow.boneCollisions = new List<MDL0BoneNode>();
+            _mainWindow.hurtBoxType = 0;
 
             if (TargetModel != null && TargetModel._polyList != null && _mainMoveset != null)
             {

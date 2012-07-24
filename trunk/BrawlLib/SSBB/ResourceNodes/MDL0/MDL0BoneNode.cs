@@ -12,12 +12,13 @@ using BrawlLib.Wii.Animations;
 using BrawlLib.Wii.Compression;
 using System.Windows;
 using BrawlLib.IO;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class MDL0BoneNode : MDL0EntryNode, IMatrixNode
     {
-        private List<string> _entries = new List<string>();
+        private List<UserDataClass> _entries = new List<UserDataClass>();
 
         public int _permanentID;
         [Browsable(false)]
@@ -40,7 +41,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.MDL0Bone; } }
 
-        public BoneFlags _flags;
+        public BoneFlags _flags1;
+        public BillboardFlags _flags2;
+        public uint _unknown;
         
         internal List<MDL0PolygonNode> _infPolys = new List<MDL0PolygonNode>();
         internal List<MDL0PolygonNode> _manPolys = new List<MDL0PolygonNode>();
@@ -92,11 +95,23 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Bone")]
         public int NodeId { get { return Header->_nodeId; } }
         [Category("Bone")]
-        public BoneFlags Flags { get { return _flags; } set { _flags = (BoneFlags)(int)value; SignalPropertyChange(); } }
+        public BoneFlags Flags { get { return _flags1; } set { _flags1 = (BoneFlags)(int)value; SignalPropertyChange(); } }
         [Category("Bone")]
-        public uint Pad1 { get { return Header->_pad1; } }
+        public BillboardFlags BillboardSetting 
+        { 
+            get { return _flags2; } 
+            set 
+            {
+                if (_flags2 != 0 && Model._billboardBones.Contains(this))
+                    Model._billboardBones.Remove(this);
+                _flags2 = (BillboardFlags)(int)value;
+                if (_flags2 != 0 && _flags1.HasFlag(BoneFlags.HasGeometry) && !Model._billboardBones.Contains(this))
+                    Model._billboardBones.Add(this);
+                SignalPropertyChange();
+            }
+        }
         [Category("Bone")]
-        public uint Pad2 { get { return Header->_pad2; } }
+        public uint BillboardRefNodeId { get { return _unknown; } set { _unknown = value; SignalPropertyChange(); } }
         
         [Category("Bone"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 Scale { get { return _bindState._scale; } set { _bindState.Scale = value; flagsChanged = true; SignalPropertyChange(); } }
@@ -132,8 +147,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         //}
         //public SkeletonJoint _joint;
 
-        [Category("MDL0 Bone Part 2")]
-        public string[] Entries { get { return _entries.ToArray(); } set { _entries = value.ToList<string>(); SignalPropertyChange(); } }
+        [Category("MDL0 Bone User Data")]
+        public UserDataClass[] Entries { get { return _entries.ToArray(); } set { _entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } }
 
         internal override void GetStrings(StringTable table)
         {
@@ -142,8 +157,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (MDL0BoneNode n in Children)
                 n.GetStrings(table);
 
-            foreach (string s in _entries)
-                table.Add(s);
+            foreach (UserDataClass s in _entries)
+                table.Add(s._name);
         }
 
         //Initialize should only be called from parent group during parse.
@@ -172,9 +187,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _name = header->ResourceString;
 
             //Assign fields
-            _flags = (BoneFlags)(uint)header->_flags;
+            _flags1 = (BoneFlags)(uint)header->_flags;
+            _flags2 = (BillboardFlags)(uint)header->_bbFlags;
+            _unknown = header->_bbNodeId;
             _nodeIndex = header->_nodeId;
             _boneIndex = header->_index;
+
+            if (_flags2 != 0 && _flags1.HasFlag(BoneFlags.HasGeometry))
+                Model._billboardBones.Add(this);
 
             _permanentID = header->_index;
 
@@ -188,12 +208,37 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (header->_part2Offset != 0)
             {
-                Part2Data* part2 = (Part2Data*)((byte*)header + header->_part2Offset);
+                UserData* part2 = (UserData*)((byte*)header + header->_part2Offset);
                 ResourceGroup* group = part2->Group;
                 ResourceEntry* pEntry = &group->_first + 1;
                 int count = group->_numEntries;
                 for (int i = 0; i < count; i++)
-                    _entries.Add(new String((sbyte*)group + (pEntry++)->_stringOffset));
+                {
+                    UserDataEntry* entry = (UserDataEntry*)((VoidPtr)group + pEntry->_dataOffset);
+                    UserDataClass d = new UserDataClass() { _name = new String((sbyte*)group + pEntry->_stringOffset) };
+                    VoidPtr addr = (VoidPtr)entry + entry->_dataOffset;
+                    d._type = entry->Type;
+                    for (int x = 0; x < entry->_entryCount; x++)
+                    {
+                        switch (entry->Type)
+                        {
+                            case UserValueType.Float:
+                                d._entries.Add(((float)*(bfloat*)addr).ToString());
+                                addr += 4;
+                                break;
+                            case UserValueType.Int:
+                                d._entries.Add(((int)*(bint*)addr).ToString());
+                                addr += 4;
+                                break;
+                            case UserValueType.String:
+                                string s = new String((sbyte*)addr);
+                                d._entries.Add(s);
+                                addr += s.Length + 1;
+                                break;
+                        }
+                    }
+                    _entries.Add(d);
+                }
             }
             //We don't want to process children because not all have been parsed yet.
             //Child assigning will be handled by the parent group.
@@ -223,7 +268,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             int len = 0xD0;
             if (_entries.Count > 0)
-                len += 0x1C + (_entries.Count * 0x2C);
+            {
+                len += 0x18 + (_entries.Count * 0x2C);
+                foreach (UserDataClass c in _entries)
+                    foreach (string s in c._entries)
+                        if (c.DataType == UserValueType.Float)
+                            len += 4;
+                        else if (c.DataType == UserValueType.Int)
+                            len += 4;
+                        else if (c.DataType == UserValueType.String)
+                            len += s.Length + 1;
+            }
             return len;
         }
 
@@ -249,12 +304,49 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 *pGroup = new ResourceGroup(_entries.Count);
 
-                foreach (string s in _entries)
+                int id = 0;
+                foreach (UserDataClass s in _entries)
                 {
                     (pEntry++)->_dataOffset = (int)pData - (int)pGroup;
-                    Part2DataEntry* p = (Part2DataEntry*)pData;
-                    *p = new Part2DataEntry(1);
-                    pData += 0x1C;
+                    UserDataEntry* p = (UserDataEntry*)pData;
+                    *p = new UserDataEntry(s._entries.Count, s._type, id++);
+                    pData += 0x18;
+                    for (int i = 0; i < s._entries.Count; i++)
+                        if (s.DataType == UserValueType.Float)
+                        {
+                            float x;
+                            if (!float.TryParse(s._entries[i], out x))
+                                x = 0;
+                            *(bfloat*)pData = x;
+                            pData += 4;
+                        }
+                        else if (s.DataType == UserValueType.Int)
+                        {
+                            int x;
+                            if (!int.TryParse(s._entries[i], out x))
+                                x = 0;
+                            *(bint*)pData = x;
+                            pData += 4;
+                        }
+                        else if (s.DataType == UserValueType.String)
+                        {
+                            if (s._entries[i] == null)
+                                s._entries[i] = "";
+
+                            int len = s._entries[i].Length;
+                            int ceil = len + 1;
+
+                            sbyte* ptr = (sbyte*)pData;
+
+                            for (int x = 0; x < len; )
+                                ptr[x] = (sbyte)s._entries[i][x++];
+
+                            for (int x = len; x < ceil; )
+                                ptr[x++] = 0;
+
+                            pData += s._entries[i].Length + 1;
+                        }
+                    p->_totalLen = (int)pData - (int)p;
                 }
             }
             else
@@ -296,25 +388,26 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void CalcFlags()
         {
-            _flags = 0; //Reset flags
+            _flags1 = BoneFlags.Visible;
 
-            _flags += (int)BoneFlags.Common5 + (int)BoneFlags.Visible;
+            if ((Scale._x == Scale._y) && (Scale._y == Scale._z))
+                _flags1 += (int)BoneFlags.ScaleEqual;
             if (_refCount > 0)
-                _flags += (int)BoneFlags.HasGeometry;
+                _flags1 += (int)BoneFlags.HasGeometry;
             if (Scale == new Vector3(1))
-                _flags += (int)BoneFlags.FixedScale;
+                _flags1 += (int)BoneFlags.FixedScale;
             if (Rotation == new Vector3(0))
-                _flags += (int)BoneFlags.FixedRotation;
+                _flags1 += (int)BoneFlags.FixedRotation;
             if (Translation == new Vector3(0))
-                _flags += (int)BoneFlags.FixedTranslation;
+                _flags1 += (int)BoneFlags.FixedTranslation;
 
             if (Parent is MDL0BoneNode)
             {
                 if ((BindMatrix == ((MDL0BoneNode)Parent).BindMatrix) && (InverseBindMatrix == ((MDL0BoneNode)Parent).InverseBindMatrix))
-                    _flags += (int)BoneFlags.NoTransform;
+                    _flags1 += (int)BoneFlags.NoTransform;
             }
             else if (BindMatrix == Matrix.Identity && InverseBindMatrix == Matrix.Identity)
-                _flags += (int)BoneFlags.NoTransform;
+                _flags1 += (int)BoneFlags.NoTransform;
 
             flagsChanged = false;
         }
@@ -325,7 +418,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             RecalcOffsets(header, address, length);
 
-            if (_flags == 0 || flagsChanged)
+            if (_flags1 == 0 || flagsChanged)
                 CalcFlags();
 
             header->_headerLen = length;
@@ -336,9 +429,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             //    header->_index = _boneIndex = Model._linker.BoneCache.Length - 1 + Model._overrideCount++;
             
             header->_nodeId = _nodeIndex;
-            header->_flags = (uint)_flags;
-            header->_pad1 = 0;
-            header->_pad2 = 0;
+            header->_flags = (uint)_flags1;
+            header->_bbFlags = (uint)_flags2;
+            header->_bbNodeId = _unknown;
             header->_scale = _bindState._scale;
             header->_rotation = _bindState._rotate;
             header->_translation = _bindState._translate;
@@ -375,9 +468,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 for (int i = 0; i < count; i++)
                 {
-                    Part2DataEntry* entry = (Part2DataEntry*)((byte*)pGroup + (pEntry++)->_dataOffset);
-                    entry->_stringOffset = (int)stringTable[_entries[i]] + 4 - ((int)entry + (int)dataAddress);
-                    ResourceEntry.Build(pGroup, i + 1, entry, (BRESString*)stringTable[_entries[i]]);
+                    UserDataEntry* entry = (UserDataEntry*)((byte*)pGroup + (pEntry++)->_dataOffset);
+                    entry->_stringOffset = (int)stringTable[_entries[i]._name] + 4 - ((int)entry + (int)dataAddress);
+                    ResourceEntry.Build(pGroup, i + 1, entry, (BRESString*)stringTable[_entries[i]._name]);
                 }
             }
         }
@@ -434,9 +527,30 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //_frameMatrix = _frameState._quatTransform;
                 //_inverseFrameMatrix = _frameState._quatiTransform;
             }
-
+            MuliplyRotation();
             foreach (MDL0BoneNode bone in Children)
                 bone.RecalcFrameState();
+        }
+
+        public void MuliplyRotation()
+        {
+            if (Model._mainWindow != null)
+            {
+                Vector3 center = _frameMatrix.GetPoint();
+                Vector3 cam = Model._mainWindow.modelPanel1._camera.GetPoint();
+                Vector3 scale = new Vector3(1);
+                Vector3 rot = new Vector3();
+                Vector3 trans = new Vector3();
+
+                if (BillboardSetting == BillboardFlags.PerspectiveSTD)
+                    rot = center.LookatAngles(cam) * Maths._rad2degf;
+
+                _frameMatrix *= Matrix.TransformMatrix(scale, rot, trans);
+                _inverseFrameMatrix *= Matrix.ReverseTransformMatrix(scale, rot, trans);
+            }
+
+            //foreach (MDL0BoneNode bone in Children)
+            //    bone.MuliplyRotation();
         }
 
         internal unsafe List<MDL0BoneNode> ChildTree(List<MDL0BoneNode> list)
@@ -467,7 +581,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public const float _nodeRadius = 0.20f;
 
         public bool _render = true;
-        internal unsafe void Render(GLContext ctx)
+        internal unsafe void Render(GLContext ctx, ModelEditControl _mainWindow)
         {
             if (!_render)
                 return;
@@ -507,10 +621,25 @@ namespace BrawlLib.SSBB.ResourceNodes
             fixed (Matrix* m = &_frameState._transform)
                 ctx.glMultMatrix((float*)m);
 
+            Vector3 center = _frameMatrix.GetPoint();
+            Vector3 cam = _mainWindow.modelPanel1._camera.GetPoint();
+            Matrix m2 = new Matrix();
+            Vector3 scale = new Vector3(1);
+            Vector3 rot = new Vector3();
+            Vector3 trans = new Vector3();
+
+            if (BillboardSetting == BillboardFlags.PerspectiveSTD)
+                rot = center.LookatAngles(cam) * Maths._rad2degf;
+
+            m2 = Matrix.TransformMatrix(scale, rot, trans);
+            ctx.glPushMatrix();
+            ctx.glMultMatrix((float*)&m2);
+
             //Render children
             foreach (MDL0BoneNode n in Children)
-                n.Render(ctx);
+                n.Render(ctx, _mainWindow);
 
+            ctx.glPopMatrix();
             ctx.glPopMatrix();
         }
 

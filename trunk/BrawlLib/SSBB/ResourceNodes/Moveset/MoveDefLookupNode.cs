@@ -71,7 +71,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             return 0;
         }
-
+        public bool remove = false;
         protected override bool OnInitialize()
         {
             //ResourceNode n;

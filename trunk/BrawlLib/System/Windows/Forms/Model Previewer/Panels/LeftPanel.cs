@@ -630,6 +630,7 @@ namespace System.Windows.Forms
                 case ResourceType.MRG:
                 case ResourceType.BRES:
                 case ResourceType.BRESGroup:
+                default:
                     foreach (ResourceNode n in node.Children)
                         if (found) LoadAnims(n, type); else found = LoadAnims(n, type);
                     break;

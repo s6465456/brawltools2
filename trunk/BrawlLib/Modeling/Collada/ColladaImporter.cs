@@ -77,7 +77,7 @@ namespace BrawlLib.Modeling
         public static int index = 0;
         public MDL0Node ImportModel(string filePath)
         {
-            MDL0Node model = new MDL0Node() { _name = Path.GetFileNameWithoutExtension(filePath), _origPath = filePath };
+            MDL0Node model = new MDL0Node() { _name = Path.GetFileNameWithoutExtension(filePath), _originPath = filePath };
             model.InitGroups();
 
             model._importOptions._mdlType = mdlType.SelectedIndex;
@@ -186,9 +186,9 @@ namespace BrawlLib.Modeling
                 model._version = 9; //The user can change the version later
 
                 if (model._importOptions._mdlType == 0)
-                    model._unk4 = model._unk5 = 1;
+                    model._needNrmMtxArray = model._needTexMtxArray = 1;
                 else
-                    model._unk4 = 1;
+                    model._needNrmMtxArray = 1;
 
                 Say("Building model...");
 

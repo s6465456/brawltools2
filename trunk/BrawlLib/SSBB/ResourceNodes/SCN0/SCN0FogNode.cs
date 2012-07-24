@@ -5,6 +5,7 @@ using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
 using BrawlLib.Imaging;
+using BrawlLib.Wii.Graphics;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -12,20 +13,18 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal SCN0Fog* Data { get { return (SCN0Fog*)WorkingUncompressed.Address; } }
 
-        private int density;
+        private int type;
         private SCN0FogFlags flags;
 
-        private List<SCN0Keyframe> starts, ends;
-        private List<RGBAPixel> colors;
+        private List<SCN0Keyframe> starts = new List<SCN0Keyframe>(), ends = new List<SCN0Keyframe>();
+        private List<RGBAPixel> colors = new List<RGBAPixel>();
         
         [Category("Fog")]
-        public SCN0FogFlags Flags { get { return flags; } set { flags = value; SignalPropertyChange(); } }
+        public FogType Type { get { return (FogType)type; } set { type = (int)value; SignalPropertyChange(); } }
         [Category("Fog")]
-        public int Density { get { return density; } set { density = value; SignalPropertyChange(); } }
+        public List<SCN0Keyframe> StartZ { get { return starts; } set { starts = value; SignalPropertyChange(); } }
         [Category("Fog")]
-        public List<SCN0Keyframe> StartPoints { get { return starts; } set { starts = value; SignalPropertyChange(); } }
-        [Category("Fog")]
-        public List<SCN0Keyframe> EndPoints { get { return ends; } set { ends = value; SignalPropertyChange(); } }
+        public List<SCN0Keyframe> EndZ { get { return ends; } set { ends = value; SignalPropertyChange(); } }
         [Category("Fog")]
         public RGBAPixel[] Colors { get { return colors.ToArray(); } set { colors = value.ToList<RGBAPixel>(); SignalPropertyChange(); } }
         
@@ -38,11 +37,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             colors = new List<RGBAPixel>();
 
             flags = (SCN0FogFlags)Data->_flags;
-            density = Data->_density;
+            type = Data->_type;
             if (Name != "<null>")
             {
                 if (flags.HasFlag(SCN0FogFlags.FixedStart))
-                    starts.Add(new Vector3(Data->_start, 0, 0));
+                    starts.Add(new Vector3(0, 0, Data->_start));
                 else
                 {
                     SCN0KeyframeStruct* addr = Data->startKeyframes->Data;
@@ -50,7 +49,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         starts.Add(*addr++);
                 }
                 if (flags.HasFlag(SCN0FogFlags.FixedEnd))
-                    ends.Add(new Vector3(Data->_end, 0, 0));
+                    ends.Add(new Vector3(0, 0, Data->_end));
                 else
                 {
                     SCN0KeyframeStruct* addr = Data->endKeyframes->Data;
@@ -89,6 +88,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             SCN0Fog* header = (SCN0Fog*)address;
 
+            flags = (SCN0FogFlags)0;
             if (colors.Count > 1)
             {
                 *((bint*)header->_color.Address) = (int)lightAddr - (int)header->_color.Address;
@@ -145,7 +145,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             header->_flags = (byte)flags;
-            header->_density = density;
+            header->_type = type;
         }
 
         protected internal override void PostProcess(VoidPtr scn0Address, VoidPtr dataAddress, StringTable stringTable)

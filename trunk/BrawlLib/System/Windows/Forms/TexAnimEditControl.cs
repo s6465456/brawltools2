@@ -37,17 +37,12 @@ namespace System.Windows.Forms
         public TexAnimEditControl() 
         {
             InitializeComponent();
-            _boxes[0] = numScale;
-            _boxes[1] = numUnk;
-            
+            _boxes[0] = numScaleX;
+            _boxes[1] = numScaleY;
             _boxes[3] = numRot;
-            
-            
             _boxes[6] = numTransX;
             _boxes[7] = numTransY;
             
-            
-
             for (int i = 0; i < 9; i++)
                 if (i % 3 == 0 || i == 7 || i == 1)
                     _boxes[i].Tag = i;
@@ -72,7 +67,7 @@ namespace System.Windows.Forms
                             if (_target.GetKeyframe((KeyFrameMode)i, x) != null)
                             {
                                 check = true;
-                                a.SetBools(i);
+                                a.SetBools(i, true);
                             }
                         }
                         if (check == true)
@@ -118,7 +113,7 @@ namespace System.Windows.Forms
 
                 _currentFrame = _target.GetAnimFrame(_currentPage);
 
-                numScale.Value = _currentFrame.Scale._y;
+                numScaleY.Value = _currentFrame.Scale._y;
                 //numScaleY.Value = _currentFrame.Scale._y;
                 //numScaleZ.Value = _currentFrame.Scale._z;
 
@@ -130,7 +125,7 @@ namespace System.Windows.Forms
                 numTransY.Value = _currentFrame.Translation._y;
                 //numTransZ.Value = _currentFrame.Translation._z;
 
-                numUnk.Value = _currentFrame.Scale._x;
+                numScaleX.Value = _currentFrame.Scale._x;
 
                 for (int i = 0; i < 9; i++)
                     UpdateBox(i);
@@ -166,7 +161,7 @@ namespace System.Windows.Forms
         {
             NumericInputBox box = sender as NumericInputBox;
             AnimationFrame kf;
-            float* pkf = (float*)&kf + 1;
+            float* pkf = (float*)&kf;
             float val = box.Value;
             int index = (int)box.Tag;
             int x;
@@ -181,6 +176,8 @@ namespace System.Windows.Forms
                     if (kfIndex >= 0)
                     {
                         kf = (AnimationFrame)listKeyframes.Items[kfIndex];
+                        kf.forKeyframeSRT = true;
+                        kf.SetBools(index + 0x10, false);
                         pkf[index] = val;
                         for (x = 0; (x < 10) && float.IsNaN(pkf[x]); x++) ;
                         if (x == 10)
@@ -201,13 +198,17 @@ namespace System.Windows.Forms
                     if (kfIndex >= 0)
                     {
                         kf = (AnimationFrame)listKeyframes.Items[kfIndex];
+                        kf.SetBools(index + 0x10, true);
                         pkf[index] = val;
+                        kf.forKeyframeSRT = true;
                         listKeyframes.Items[kfIndex] = kf;
                     }
                     else
                     {
                         kf = AnimationFrame.Empty;
+                        kf.forKeyframeSRT = true;
                         kf.Index = _currentPage;
+                        kf.SetBools(index + 0x10, true);
                         pkf[index] = val;
 
                         int count = listKeyframes.Items.Count;
@@ -243,11 +244,11 @@ namespace System.Windows.Forms
         private Label label1;
         private Label label2;
         private Label label3;
-        private NumericInputBox numScale;
+        private NumericInputBox numScaleY;
         private NumericInputBox numRot;
         private NumericInputBox numTransX;
         private NumericInputBox numTransY;
-        private NumericInputBox numUnk;
+        private NumericInputBox numScaleX;
         private Label label7;
         private NumericUpDown numFrame;
         private Label lblFrameCount;
@@ -261,11 +262,11 @@ namespace System.Windows.Forms
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.numScale = new System.Windows.Forms.NumericInputBox();
+            this.numScaleY = new System.Windows.Forms.NumericInputBox();
             this.numRot = new System.Windows.Forms.NumericInputBox();
             this.numTransX = new System.Windows.Forms.NumericInputBox();
             this.numTransY = new System.Windows.Forms.NumericInputBox();
-            this.numUnk = new System.Windows.Forms.NumericInputBox();
+            this.numScaleX = new System.Windows.Forms.NumericInputBox();
             this.label7 = new System.Windows.Forms.Label();
             this.numFrame = new System.Windows.Forms.NumericUpDown();
             this.lblFrameCount = new System.Windows.Forms.Label();
@@ -274,10 +275,10 @@ namespace System.Windows.Forms
             this.listKeyframes = new System.Windows.Forms.ListBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label9 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numFrame)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -316,16 +317,16 @@ namespace System.Windows.Forms
             this.label3.Text = "Rotation";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // numScale
+            // numScaleY
             // 
-            this.numScale.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.numScale.Location = new System.Drawing.Point(184, 30);
-            this.numScale.Margin = new System.Windows.Forms.Padding(0);
-            this.numScale.Name = "numScale";
-            this.numScale.Size = new System.Drawing.Size(70, 20);
-            this.numScale.TabIndex = 3;
-            this.numScale.Text = "0";
-            this.numScale.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numScaleY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numScaleY.Location = new System.Drawing.Point(184, 30);
+            this.numScaleY.Margin = new System.Windows.Forms.Padding(0);
+            this.numScaleY.Name = "numScaleY";
+            this.numScaleY.Size = new System.Drawing.Size(70, 20);
+            this.numScaleY.TabIndex = 3;
+            this.numScaleY.Text = "0";
+            this.numScaleY.ValueChanged += new System.EventHandler(this.BoxChanged);
             // 
             // numRot
             // 
@@ -360,16 +361,16 @@ namespace System.Windows.Forms
             this.numTransY.Text = "0";
             this.numTransY.ValueChanged += new System.EventHandler(this.BoxChanged);
             // 
-            // numUnk
+            // numScaleX
             // 
-            this.numUnk.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.numUnk.Location = new System.Drawing.Point(97, 30);
-            this.numUnk.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
-            this.numUnk.Name = "numUnk";
-            this.numUnk.Size = new System.Drawing.Size(70, 20);
-            this.numUnk.TabIndex = 11;
-            this.numUnk.Text = "0";
-            this.numUnk.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numScaleX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numScaleX.Location = new System.Drawing.Point(97, 30);
+            this.numScaleX.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numScaleX.Name = "numScaleX";
+            this.numScaleX.Size = new System.Drawing.Size(70, 20);
+            this.numScaleX.TabIndex = 11;
+            this.numScaleX.Text = "0";
+            this.numScaleX.ValueChanged += new System.EventHandler(this.BoxChanged);
             // 
             // label7
             // 
@@ -466,12 +467,12 @@ namespace System.Windows.Forms
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.numTransY);
             this.panel1.Controls.Add(this.btnPrev);
-            this.panel1.Controls.Add(this.numScale);
+            this.panel1.Controls.Add(this.numScaleY);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.lblFrameCount);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.numFrame);
-            this.panel1.Controls.Add(this.numUnk);
+            this.panel1.Controls.Add(this.numScaleX);
             this.panel1.Controls.Add(this.numRot);
             this.panel1.Controls.Add(this.numTransX);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -479,6 +480,28 @@ namespace System.Windows.Forms
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(300, 97);
             this.panel1.TabIndex = 23;
+            // 
+            // label9
+            // 
+            this.label9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label9.Location = new System.Drawing.Point(166, 30);
+            this.label9.Margin = new System.Windows.Forms.Padding(0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(19, 20);
+            this.label9.TabIndex = 22;
+            this.label9.Text = "Y";
+            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label8
+            // 
+            this.label8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label8.Location = new System.Drawing.Point(79, 30);
+            this.label8.Margin = new System.Windows.Forms.Padding(0);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(19, 20);
+            this.label8.TabIndex = 21;
+            this.label8.Text = "X";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label6
             // 
@@ -501,28 +524,6 @@ namespace System.Windows.Forms
             this.label5.TabIndex = 19;
             this.label5.Text = "X";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label8
-            // 
-            this.label8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label8.Location = new System.Drawing.Point(79, 30);
-            this.label8.Margin = new System.Windows.Forms.Padding(0);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(19, 20);
-            this.label8.TabIndex = 21;
-            this.label8.Text = "X";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label9
-            // 
-            this.label9.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label9.Location = new System.Drawing.Point(166, 30);
-            this.label9.Margin = new System.Windows.Forms.Padding(0);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(19, 20);
-            this.label9.TabIndex = 22;
-            this.label9.Text = "Y";
-            this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // TexAnimEditControl
             // 

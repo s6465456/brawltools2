@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using BrawlLib.SSBBTypes;
+using BrawlLib.OpenGL;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefArticleNode : MoveDefEntryNode
+    public unsafe class MoveDefArticleNode : MoveDefEntryNode, IRenderedObject
     {
         internal Article* Header { get { return (Article*)WorkingUncompressed.Address; } }
 
@@ -19,7 +21,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Category("Article")]
-        public int ID { get { return id; } set { id = value; SignalPropertyChange(); } }
+        public int ID { get { return Index; } }
+        [Category("Article")]
+        public int ArticleGroupID { get { return id; } set { id = value; SignalPropertyChange(); } }
         [Category("Article")]
         public int ARCEntryGroup { get { return group; } set { group = value; SignalPropertyChange(); } }
         [Category("Article"), Browsable(true), TypeConverter(typeof(DropDownListBonesMDef))]
@@ -98,8 +102,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MoveDefFlagsNode subActionFlags;
         public MoveDefEntryNode subActions;
         public MoveDefModelVisibilityNode mdlVis;
-        public MoveDefListOffsetNode data1;
-        public MoveDefListOffsetNode data2;
+        public CollisionDataNode data1;
+        public Data2ListNode data2;
         public MoveDefSectionParamNode data3;
 
         [Category("Article")]
@@ -266,48 +270,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 (mdlVis = new MoveDefModelVisibilityNode()).Initialize(this, BaseAddress + ModelVisibility, 16);
 
             if (CollisionData != 0)
-            {
-                data1 = new MoveDefListOffsetNode() { _name = "Collision Data" };
-                data1.Initialize(this, BaseAddress + CollisionData, 8);
-                if (data1.DataOffset > 0)
-                {
-                    MoveDefOffsetNode o;
-                    bint* addr = (bint*)(BaseAddress + data1.DataOffset);
-                    for (int i = 0; i < data1.Count; i++)
-                    {
-                        (o = new MoveDefOffsetNode() { _name = "Entry" }).Initialize(data1, addr++, 4);
-                        if (o.DataOffset > 0)
-                        {
-                            int value = *((int*)(BaseAddress + o.DataOffset));
-                            switch (value)
-                            {
-                                case 0: new CollDataType0() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0); break;
-                                case 1: new CollDataType1() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0); break;
-                                case 2: new CollDataType2() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0); break;
-                                default:
-                                    Console.WriteLine(value);
-                                    new MoveDefSectionParamNode() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0);
-                                    break;
-                            }
-                            //new MoveDefSectionParamNode() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0);
-                        }
-                    }
-                }
-            }
+                (data1 = new CollisionDataNode() { _name = "Collision Data" }).Initialize(this, BaseAddress + CollisionData, 8);
 
             if (DataOffset2 != 0)
-            {
-                data2 = new MoveDefListOffsetNode() { _name = "Data2" };
-                data2.Initialize(this, BaseAddress + DataOffset2, 8);
-                if (data2.DataOffset > 0)
-                    new MoveDefSectionParamNode() { _name = "Data" }.Initialize(data2, BaseAddress + data2.DataOffset, 0);
-            }
+                (data2 = new Data2ListNode() { _name = "Data2" }).Initialize(this, BaseAddress + DataOffset2, 8);
 
             if (DataOffset3 != 0)
-            {
-                data3 = new MoveDefSectionParamNode() { _name = "Data3" };
-                data3.Initialize(this, BaseAddress + DataOffset3, 4);
-            }
+                (data3 = new MoveDefSectionParamNode() { _name = "Data3" }).Initialize(this, BaseAddress + DataOffset3, 0);
 
             //Extra offsets.
             //Dedede:
@@ -341,6 +310,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 else if (index > 0 && ArticleStringID == "ArticleType1_46" && RootNode.Name == "FitKirby")
                 {
+                    MoveDefEntryNode p = null;
                     switch (index)
                     {
                         case 1:
@@ -348,10 +318,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         case 3:
                         case 4:
                         case 5:
-                            //offset
-                            //int
-                            //int
-                            //offset
+                            p = new MoveDefKirbyArticleP1Node() { offsetID = index };
                             break;
                         case 6:
                         case 8:
@@ -360,6 +327,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                             break;
                         case 9: break;
                     }
+                    if (p != null)
+                        p.Initialize(this, BaseAddress + i, 0);
+                    entry = p;
                 }
                 else if (index > 0 && ((ArticleStringID == "ArticleType1_11" && RootNode.Name == "FitFox") || (ArticleStringID == "ArticleType1_9" && RootNode.Name == "FitFalco") || (ArticleStringID == "ArticleType1_11" && RootNode.Name == "FitWolf")))
                 {
@@ -382,11 +352,33 @@ namespace BrawlLib.SSBB.ResourceNodes
                             p = new SecondaryActionOffsetNode() { _name = "Data" + index };
                             break;
                         case 6:
-                            p = new Fox11Falco9Wolf11Article6Node();
+                            p = new Fox11Falco9Wolf11PopoArticle63Node() { offsetID = index };
                             break;
                     }
                     if (p != null)
                         p.Initialize(this, BaseAddress + i, 0);
+                    entry = p;
+                }
+                else if ((index == 23 || index == 24) && ArticleStringID == "ArticleType1_10" && RootNode.Name == "FitPikmin")
+                {
+                    MoveDefEntryNode p = null;
+                    switch (index)
+                    {
+                        case 23:
+                            p = new ActionOffsetNode() { _name = "Data" + index };
+                            break;
+                        case 24:
+                            p = new SecondaryActionOffsetNode() { _name = "Data" + index };
+                            break;
+                    }
+                    if (p != null)
+                        p.Initialize(this, BaseAddress + i, 0);
+                    entry = p;
+                }
+                else if (index == 3 && ArticleStringID == "ArticleType1_14" && RootNode.Name == "FitPopo")
+                {
+                    Fox11Falco9Wolf11PopoArticle63Node p = new Fox11Falco9Wolf11PopoArticle63Node() { offsetID = index };
+                    p.Initialize(this, BaseAddress + i, 0);
                     entry = p;
                 }
                 else if (index > 4 && ArticleStringID == "ArticleType1_7" && RootNode.Name == "FitSonic")
@@ -411,7 +403,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     p.Initialize(this, BaseAddress + i, 0);
                     entry = p;
                 }
-                else if ((index == 3 && ArticleStringID == "ArticleType1_4" && RootNode.Name == "FitGanon") ||(index == 1 && ArticleStringID == "ArticleType1_7" && RootNode.Name == "FitSonic") )
+                else if ((index == 3 && ArticleStringID == "ArticleType1_4" && RootNode.Name == "FitGanon") || (index == 1 && ArticleStringID == "ArticleType1_7" && RootNode.Name == "FitSonic"))
                 {
                     MoveDefHitDataListNode p = new MoveDefHitDataListNode() { _name = "HitData" };
                     p.Initialize(this, BaseAddress + i, 0);
@@ -546,17 +538,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                             size += 8;
                         }
 
-                        bool write = true;
-                        if (!Static)
-                        {
-                            write = false;
-                            foreach (MoveDefActionNode a in g.Children)
-                                if (a.Children.Count > 0 || a._actionRefs.Count > 0)
-                                    write = true;
-                        }
+                        //bool write = true;
+                        //if (!Static)
+                        //{
+                        //    write = false;
+                        //    foreach (MoveDefActionNode a in g.Children)
+                        //        if (a.Children.Count > 0 || a._actionRefs.Count > 0)
+                        //            write = true;
+                        //}
                         foreach (MoveDefActionNode a in g.Children)
                         {
-                            if ((Static && a.Children.Count > 0) || (!Static && write))
+                            //if ((Static && a.Children.Count > 0) || (!Static && write))
+                            if (a.Children.Count > 0 || a._actionRefs.Count > 0 || a._build)
                             {
                                 switch (a.Index)
                                 {
@@ -602,36 +595,21 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (data1 != null)
             {
-                size += 8;
                 _lookupCount++; //data 1 offset
-                if (data1.Children.Count > 0)
+                if (!data1.External)
                 {
-                    _lookupCount++; //offset to children
-                    foreach (MoveDefOffsetNode o in data1.Children)
-                    {
-                        size += 4;
-                        if (o.Children.Count > 0)
-                        {
-                            _lookupCount++; //offset to child
-                            if (!(o.Children[0] as MoveDefEntryNode).External)
-                            {
-                                size += o.Children[0].CalculateSize(true);
-                                _lookupCount += (o.Children[0] as MoveDefEntryNode)._lookupCount;
-                            }
-                        }
-                    }
+                    size += data1.CalculateSize(true);
+                    _lookupCount += data1._lookupCount;
                 }
             }
 
             if (data2 != null)
             {
-                size += 8;
                 _lookupCount++; //data 2 offset
-                if (data2.Children.Count > 0)
+                if (!data2.External)
                 {
-                    _lookupCount++; //offset to children
-                    foreach (MoveDefSectionParamNode p in data2.Children)
-                        size += p.CalculateSize(true);
+                    size += data2.CalculateSize(true);
+                    _lookupCount += data2._lookupCount;
                 }
             }
 
@@ -768,62 +746,24 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (data1 != null)
             {
-                bint* offsets = (bint*)addr;
-                VoidPtr dataAddr = addr;
-                if (data1.Children.Count > 0)
+                if (!data1.External)
                 {
-                    foreach (MoveDefOffsetNode o in data1.Children)
-                        if (o.Children.Count > 0 && !(o.Children[0] as MoveDefEntryNode).External)
-                        {
-                            o.Children[0].Rebuild(dataAddr, o.Children[0]._calcSize, true);
-                            _lookupOffsets.AddRange((o.Children[0] as MoveDefEntryNode)._lookupOffsets);
-                            dataAddr += o.Children[0]._calcSize;
-                        }
-                    offsets = (bint*)dataAddr;
-                    foreach (MoveDefOffsetNode o in data1.Children)
-                    {
-                        if (o.Children.Count > 0)
-                        {
-                            *offsets = (int)(o.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase;
-                            _lookupOffsets.Add((int)offsets - (int)_rebuildBase); //offset to child
-                        }
-                        offsets++;
-                    }
+                    data1.Rebuild(addr, data1._calcSize, true);
+                    _lookupOffsets.AddRange(data1._lookupOffsets);
+                    addr += data1._calcSize;
                 }
-
-                FDefListOffset* header = (FDefListOffset*)offsets;
-                off1 = (int)((VoidPtr)header) - (int)_rebuildBase;
-
-                header->_listCount = data1.Children.Count;
-                if (data1.Children.Count > 0)
-                {
-                    header->_startOffset = (int)dataAddr - (int)_rebuildBase;
-                    _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
-                }
-
-                addr = (VoidPtr)header + 8;
+                off1 = (int)data1._entryOffset - (int)_rebuildBase;
             }
 
             if (data2 != null)
             {
-                VoidPtr dataAddr = addr;
-                foreach (MoveDefSectionParamNode p in data2.Children)
+                if (!data2.External)
                 {
-                    p.Rebuild(dataAddr, p._calcSize, true);
-                    dataAddr += p._calcSize;
+                    data2.Rebuild(addr, data2._calcSize, true);
+                    _lookupOffsets.AddRange(data2._lookupOffsets);
+                    addr += data2._calcSize;
                 }
-
-                FDefListOffset* header = (FDefListOffset*)dataAddr;
-                off2 = (int)((VoidPtr)header) - (int)_rebuildBase;
-
-                header->_listCount = data2.Children.Count;
-                if (data2.Children.Count > 0)
-                {
-                    header->_startOffset = (int)addr - (int)_rebuildBase;
-                    _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase); //offset to children
-                }
-
-                addr = dataAddr + 8;
+                off2 = (int)data2._entryOffset - (int)_rebuildBase;
             }
 
             if (data3 != null)
@@ -865,7 +805,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     foreach (MoveDefSubActionGroupNode g in e.Children)
                     {
                         foreach (MoveDefActionNode a in g.Children)
-                            if (a.Children.Count > 0)
+                            if (a.Children.Count > 0 || a._actionRefs.Count > 0 || a._build)
                                 switch (a.Index)
                                 {
                                     case 0: mainNull = false; break;
@@ -914,7 +854,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     lastOffsets = (bint*)addr;
 
-                    int x = 0; bool write = true;
+                    int x = 0; //bool write = true;
                     foreach (MoveDefSubActionGroupNode grp in e.Children)
                     {
                         if (i == 0)
@@ -927,26 +867,29 @@ namespace BrawlLib.SSBB.ResourceNodes
                             subActionFlagsAddr++;
                         }
 
-                        if (!Static)
-                        {
-                            write = false;
-                            foreach (MoveDefActionNode a in grp.Children)
-                                if (a.Children.Count > 0 || a._actionRefs.Count > 0)
-                                    write = true;
-                        }
-                        if ((Static && grp.Children[0].Children.Count > 0) || (!Static && write))
+                        //if (!Static)
+                        //{
+                        //    write = false;
+                        //    foreach (MoveDefActionNode a in grp.Children)
+                        //        if (a.Children.Count > 0 || a._actionRefs.Count > 0)
+                        //            write = true;
+                        //}
+                        //if ((Static && grp.Children[0].Children.Count > 0) || (!Static && write))
+                        if (grp.Children[0].Children.Count > 0 || (grp.Children[0] as MoveDefActionNode)._actionRefs.Count > 0 || (grp.Children[0] as MoveDefActionNode)._build)
                         {
                             mainOffsets[x] = (int)(grp.Children[0] as MoveDefActionNode)._entryOffset - (int)_rebuildBase;
                             _lookupOffsets.Add((int)&mainOffsets[x] - (int)_rebuildBase);
                         }
 
-                        if ((Static && grp.Children[1].Children.Count > 0) || (!Static && write))
+                        //if ((Static && grp.Children[1].Children.Count > 0) || (!Static && write))
+                        if (grp.Children[1].Children.Count > 0 || (grp.Children[1] as MoveDefActionNode)._actionRefs.Count > 0 || (grp.Children[1] as MoveDefActionNode)._build)
                         {
                             GFXOffsets[x] = (int)(grp.Children[1] as MoveDefActionNode)._entryOffset - (int)_rebuildBase;
                             _lookupOffsets.Add((int)&GFXOffsets[x] - (int)_rebuildBase);
                         }
 
-                        if ((Static && grp.Children[2].Children.Count > 0) || (!Static && write))
+                        //if ((Static && grp.Children[2].Children.Count > 0) || (!Static && write))
+                        if (grp.Children[2].Children.Count > 0 || (grp.Children[2] as MoveDefActionNode)._actionRefs.Count > 0 || (grp.Children[2] as MoveDefActionNode)._build)
                         {
                             SFXOffsets[x] = (int)(grp.Children[2] as MoveDefActionNode)._entryOffset - (int)_rebuildBase;
                             _lookupOffsets.Add((int)&SFXOffsets[x] - (int)_rebuildBase);
@@ -1061,6 +1004,42 @@ namespace BrawlLib.SSBB.ResourceNodes
                     Console.WriteLine((int)addr - (int)address);
             }
         }
+
+        public int currentSubAction = 0;
+        public MDL0Node Model = null;
+        public void Attach(GLContext context)
+        {
+            if (Model != null)
+                Model.Attach(context);
+        }
+
+        public void Detach(GLContext context)
+        {
+            if (Model != null)
+                Model.Detach(context);
+        }
+
+        public void Refesh(GLContext context)
+        {
+            if (Model != null)
+                Model.Refesh(context);
+        }
+
+        public void Render(GLContext ctx, ModelEditControl mainWindow)
+        {
+            if (Model != null)
+            {
+                Model.Render(ctx, mainWindow);
+                if (Model._linker.BoneCache.Length > 0 && BoneNode != null)
+                {
+                    MDL0BoneNode b = Model._linker.BoneCache[0] as MDL0BoneNode;
+                    b._frameMatrix = BoneNode._frameMatrix * b._frameState._transform;
+                    b._inverseFrameMatrix = b._frameState._iTransform * BoneNode._inverseFrameMatrix;
+                    foreach (MDL0BoneNode bone in b.Children)
+                        bone.RecalcFrameState();
+                }
+            }
+        }
     }
 
     public unsafe class CollDataType0 : MoveDefEntryNode
@@ -1129,6 +1108,108 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _lookupOffsets.Add((int)data->_list._startOffset.Address - (int)_rebuildBase);
             }
             data->_list._listCount = Children.Count;
+        }
+    }
+
+    public unsafe class CollisionDataNode : MoveDefEntryNode
+    {
+        internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
+        //public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+        FDefListOffset hdr;
+        [Category("List Offset")]
+        public int DataOffset { get { return hdr._startOffset; } }
+        [Category("List Offset")]
+        public int Count { get { return hdr._listCount; } }
+        protected override void OnPopulate()
+        {
+            if (DataOffset > 0)
+            {
+                MoveDefOffsetNode o;
+                bint* addr = (bint*)(BaseAddress + DataOffset);
+                for (int i = 0; i < Count; i++)
+                {
+                    (o = new MoveDefOffsetNode() { _name = "Entry" }).Initialize(this, addr++, 4);
+                    if (o.DataOffset > 0)
+                    {
+                        int value = *((int*)(BaseAddress + o.DataOffset));
+                        switch (value)
+                        {
+                            case 0: new CollDataType0() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0); break;
+                            case 1: new CollDataType1() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0); break;
+                            case 2: new CollDataType2() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0); break;
+                            default:
+                                Console.WriteLine(value);
+                                new MoveDefSectionParamNode() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        protected override bool OnInitialize()
+        {
+            base.OnInitialize();
+            hdr = *Header;
+            return hdr._startOffset > 0;
+        }
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            bint* offsets = (bint*)address;
+            VoidPtr dataAddr = address;
+            if (Children.Count > 0)
+            {
+                foreach (MoveDefOffsetNode o in Children)
+                    if (o.Children.Count > 0 && !(o.Children[0] as MoveDefEntryNode).External)
+                    {
+                        o.Children[0].Rebuild(dataAddr, o.Children[0]._calcSize, true);
+                        _lookupOffsets.AddRange((o.Children[0] as MoveDefEntryNode)._lookupOffsets);
+                        dataAddr += o.Children[0]._calcSize;
+                    }
+                offsets = (bint*)dataAddr;
+                foreach (MoveDefOffsetNode o in Children)
+                {
+                    if (o.Children.Count > 0)
+                    {
+                        *offsets = (int)(o.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase;
+                        _lookupOffsets.Add((int)offsets - (int)_rebuildBase); //offset to child
+                    }
+                    offsets++;
+                }
+            }
+
+            _entryOffset = offsets;
+            FDefListOffset* header = (FDefListOffset*)offsets;
+
+            header->_listCount = Children.Count;
+            if (Children.Count > 0)
+            {
+                header->_startOffset = (int)dataAddr - (int)_rebuildBase;
+                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+            }
+        }
+        protected override int OnCalculateSize(bool force)
+        {
+            _lookupCount = 0;
+            _entryLength = 8;
+            _childLength = 0;
+            if (Children.Count > 0)
+            {
+                _lookupCount++; //offset to children
+                foreach (MoveDefOffsetNode o in Children)
+                {
+                    _childLength += 4;
+                    if (o.Children.Count > 0)
+                    {
+                        _lookupCount++; //offset to child
+                        if (!(o.Children[0] as MoveDefEntryNode).External)
+                        {
+                            _childLength += o.Children[0].CalculateSize(true);
+                            _lookupCount += (o.Children[0] as MoveDefEntryNode)._lookupCount;
+                        }
+                    }
+                }
+            }
+            return _childLength + _entryLength;
         }
     }
 

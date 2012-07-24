@@ -15,11 +15,11 @@ namespace BrawlLib
             "TEX0 Raw Texture (*.tex0)|*.tex0";
 
         public static string MDL0 =
-            "All Model Formats (*.mdl0, *.dae, *.pmd)|*.mdl0;*.dae;*.pmd|" +
+            "All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             //"All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             "Collada Scene (*.dae)|*.dae|" +
+            //"Miku Miku Dance Model (*.pmd)|*.pmd|" +
             "MDL0 Raw Model (*.mdl0)|*.mdl0";
-            //"Miku Miku Dance Model (*.pmd)|*.pmd";
 
         public static string CHR0 =
             "CHR0 Raw Animation (*.chr0)|*.chr0";

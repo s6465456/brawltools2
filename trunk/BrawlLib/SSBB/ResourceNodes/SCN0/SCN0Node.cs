@@ -10,79 +10,158 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class SCN0Node : BRESEntryNode
     {
-        internal SCN0* Header { get { return (SCN0*)WorkingUncompressed.Address; } }
+        internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
+        internal SCN0v4* Header4 { get { return (SCN0v4*)WorkingUncompressed.Address; } }
+        internal SCN0v5* Header5 { get { return (SCN0v5*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.SCN0; } }
 
-        private int _unk1, _unk2, _unk3, _unk4, _unk5, _unk6, _unk7, _unk8, _unk9, _unk10;
+        private int _version = 4, _origPathOffset, _frameCount = 1, _specLights, _loop, _lightset, _amblights, _lights, _fog, _camera, _pad;
 
         [Category("Scene Data")]
-        public int Version { get { return Header->_header._version; } }//set { _version = value; SignalPropertyChange(); } }
+        public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
-        public int Unknown1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
+        public int FrameCount { get { return _frameCount; } set { _frameCount = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
-        public int FrameCount { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
-        [Category("Scene Data"), TypeConverter(typeof(Bin8StringConverter))]
-        public Bin8 Flags { get { return new Bin8((byte)_unk3); } set { _unk3 = value.data; SignalPropertyChange(); } }
+        public int SpecularLightCount { get { return _specLights; } set { _specLights = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
-        public int Loop { get { return _unk4; } set { _unk4 = value; SignalPropertyChange(); } }
-        [Category("Scene Data")]
-        public int LightSetEntries { get { return _unk5; } }//set { _unk5 = value; SignalPropertyChange(); } }
-        [Category("Scene Data")]
-        public int AmbLightsEntries { get { return _unk6; } }//set { _unk6 = value; SignalPropertyChange(); } }
-        [Category("Scene Data")]
-        public int LightsEntries { get { return _unk7; } }//set { _unk7 = value; SignalPropertyChange(); } }
-        [Category("Scene Data")]
-        public int FogsEntries { get { return _unk8; } }//set { _unk8 = value; SignalPropertyChange(); } }
-        [Category("Scene Data")]
-        public int CamerasEntries { get { return _unk9; } }//set { _unk9 = value; SignalPropertyChange(); } }
-        [Category("Scene Data")]
-        public int Unknown3 { get { return _unk10; } set { _unk10 = value; SignalPropertyChange(); } }
+        public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
 
         protected override bool OnInitialize()
         {
             base.OnInitialize();
 
-            if ((_name == null) && (Header->_stringOffset != 0))
-                _name = Header->ResourceString;
+            _version = Header->_version;
+            if (_version == 5)
+            {
+                if ((_name == null) && (Header5->_stringOffset != 0))
+                    _name = Header5->ResourceString;
 
-            _unk1 = Header->_unk1;
-            _unk2 = Header->_frameCount;
-            _unk3 = Header->_unk3;
-            _unk4 = Header->_unk4;
-            _unk5 = Header->_lightSetCount;
-            _unk6 = Header->_ambientCount;
-            _unk7 = Header->_lightCount;
-            _unk8 = Header->_fogCount;
-            _unk9 = Header->_cameraCount;
-            _unk10 = Header->_unk10;
+                _origPathOffset = Header5->_origPathOffset;
+                _frameCount = Header5->_frameCount;
+                _specLights = Header5->_specLightCount;
+                _loop = Header5->_loop;
+                _lightset = Header5->_lightSetCount;
+                _amblights = Header5->_ambientCount;
+                _lights = Header5->_lightCount;
+                _fog = Header5->_fogCount;
+                _camera = Header5->_cameraCount;
+                _pad = Header5->_pad;
 
-            return Header->Group->_numEntries > 0 && Version != 5;
+                return Header5->Group->_numEntries > 0;
+            }
+            else
+            {
+                if ((_name == null) && (Header4->_stringOffset != 0))
+                    _name = Header4->ResourceString;
+
+                _origPathOffset = Header4->_origPathOffset;
+                _frameCount = Header4->_frameCount;
+                _specLights = Header4->_specLightCount;
+                _loop = Header4->_loop;
+                _lightset = Header4->_lightSetCount;
+                _amblights = Header4->_ambientCount;
+                _lights = Header4->_lightCount;
+                _fog = Header4->_fogCount;
+                _camera = Header4->_cameraCount;
+                _pad = Header4->_pad;
+
+                return Header4->Group->_numEntries > 0;
+            }
         }
 
         protected override void OnPopulate()
         {
-            ResourceGroup* group = Header->Group;
-            SCN0GroupNode g;
-            for (int i = 0; i < group->_numEntries; i++)
+            if (Header->_version == 5)
             {
-                string name = group->First[i].GetName();
-                (g = new SCN0GroupNode(name)).Initialize(this, new DataSource(group->First[i].DataAddress, 0));
-                if (name == "LightSet(NW4R)")
-                    for (int x = 0; x < Header->_lightSetCount; x++)
-                        new SCN0LightSetNode().Initialize(g, new DataSource(&Header->LightSets[x], SCN0LightSet.Size));
-                else if (name == "AmbLights(NW4R)")
-                    for (int x = 0; x < Header->_ambientCount; x++)
-                        new SCN0AmbientLightNode().Initialize(g, new DataSource(&Header->AmbientLights[x], SCN0AmbientLight.Size));
-                else if (name == "Lights(NW4R)")
-                    for (int x = 0; x < Header->_lightCount; x++)
-                        new SCN0LightNode().Initialize(g, new DataSource(&Header->Lights[x], SCN0Light.Size));
-                else if (name == "Fogs(NW4R)")
-                    for (int x = 0; x < Header->_fogCount; x++)
-                        new SCN0FogNode().Initialize(g, new DataSource(&Header->Fogs[x], SCN0Fog.Size));
-                else if (name == "Cameras(NW4R)")
-                    for (int x = 0; x < Header->_cameraCount; x++)
-                        new SCN0CameraNode().Initialize(g, new DataSource(&Header->Cameras[x], SCN0Camera.Size));
+                ResourceGroup* group = Header5->Group;
+                SCN0GroupNode g;
+                for (int i = 0; i < group->_numEntries; i++)
+                {
+                    string name = group->First[i].GetName();
+                    (g = new SCN0GroupNode(name)).Initialize(this, new DataSource(group->First[i].DataAddress, 0));
+                    if (name == "LightSet(NW4R)")
+                        for (int x = 0; x < Header5->_lightSetCount; x++)
+                            new SCN0LightSetNode().Initialize(g, new DataSource(&Header5->LightSets[x], SCN0LightSet.Size));
+                    else if (name == "AmbLights(NW4R)")
+                        for (int x = 0; x < Header5->_ambientCount; x++)
+                            new SCN0AmbientLightNode().Initialize(g, new DataSource(&Header5->AmbientLights[x], SCN0AmbientLight.Size));
+                    else if (name == "Lights(NW4R)")
+                        for (int x = 0; x < Header5->_lightCount; x++)
+                            new SCN0LightNode().Initialize(g, new DataSource(&Header5->Lights[x], SCN0Light.Size));
+                    else if (name == "Fogs(NW4R)")
+                        for (int x = 0; x < Header5->_fogCount; x++)
+                            new SCN0FogNode().Initialize(g, new DataSource(&Header5->Fogs[x], SCN0Fog.Size));
+                    else if (name == "Cameras(NW4R)")
+                        for (int x = 0; x < Header5->_cameraCount; x++)
+                            new SCN0CameraNode().Initialize(g, new DataSource(&Header5->Cameras[x], SCN0Camera.Size));
+                }
             }
+            else
+            {
+                ResourceGroup* group = Header4->Group;
+                SCN0GroupNode g;
+                for (int i = 0; i < group->_numEntries; i++)
+                {
+                    string name = group->First[i].GetName();
+                    (g = new SCN0GroupNode(name)).Initialize(this, new DataSource(group->First[i].DataAddress, 0));
+                    if (name == "LightSet(NW4R)")
+                        for (int x = 0; x < Header4->_lightSetCount; x++)
+                            new SCN0LightSetNode().Initialize(g, new DataSource(&Header4->LightSets[x], SCN0LightSet.Size));
+                    else if (name == "AmbLights(NW4R)")
+                        for (int x = 0; x < Header4->_ambientCount; x++)
+                            new SCN0AmbientLightNode().Initialize(g, new DataSource(&Header4->AmbientLights[x], SCN0AmbientLight.Size));
+                    else if (name == "Lights(NW4R)")
+                        for (int x = 0; x < Header4->_lightCount; x++)
+                            new SCN0LightNode().Initialize(g, new DataSource(&Header4->Lights[x], SCN0Light.Size));
+                    else if (name == "Fogs(NW4R)")
+                        for (int x = 0; x < Header4->_fogCount; x++)
+                            new SCN0FogNode().Initialize(g, new DataSource(&Header4->Fogs[x], SCN0Fog.Size));
+                    else if (name == "Cameras(NW4R)")
+                        for (int x = 0; x < Header4->_cameraCount; x++)
+                            new SCN0CameraNode().Initialize(g, new DataSource(&Header4->Cameras[x], SCN0Camera.Size));
+                }
+            }
+        }
+
+        public SCN0GroupNode GetOrCreateFolder<T>() where T : SCN0EntryNode
+        {
+            string groupName;
+            if (typeof(T) == typeof(SCN0LightSetNode))
+                groupName = "LightSet(NW4R)";
+            else if (typeof(T) == typeof(SCN0AmbientLightNode))
+                groupName = "AmbLights(NW4R)";
+            else if (typeof(T) == typeof(SCN0LightNode))
+                groupName = "Lights(NW4R)";
+            else if (typeof(T) == typeof(SCN0FogNode))
+                groupName = "Fogs(NW4R)";
+            else if (typeof(T) == typeof(SCN0CameraNode))
+                groupName = "Cameras(NW4R)";
+            else
+                return null;
+
+            SCN0GroupNode group = null;
+            foreach (SCN0GroupNode node in Children)
+                if (node.Name == groupName) { group = node; break; }
+
+            if (group == null)
+                AddChild(group = new SCN0GroupNode(groupName));
+
+            return group;
+        }
+        public T CreateResource<T>(string name) where T : SCN0EntryNode
+        {
+            SCN0GroupNode group = GetOrCreateFolder<T>();
+            if (group == null)
+                return null;
+
+            T n = Activator.CreateInstance<T>();
+            n.Name = group.FindName(name);
+            group.AddChild(n);
+
+            n._realIndex = n.Index;
+            n._nodeIndex = group.UsedChildren.IndexOf(n);
+
+            return n;
         }
 
         internal override void GetStrings(StringTable table)
@@ -94,7 +173,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override int OnCalculateSize(bool force)
         {
-            int size = SCN0.Size + 0x18 + Children.Count * 0x10;
+            int size = SCN0v4.Size + 0x18 + Children.Count * 0x10;
             foreach (SCN0GroupNode n in Children)
                 size += n.CalculateSize(true);
             return size;
@@ -104,18 +183,35 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             int GroupLen = 0, LightSetLen = 0, AmbLightSetLen = 0, LightLen = 0, FogLen = 0, CameraLen = 0;
 
-            SCN0* header = (SCN0*)address;
+            ResourceGroup* group;
+            if (_version == 5)
+            {
+                SCN0v5* header = (SCN0v5*)address;
 
-            header->_unk1 = _unk1;
-            header->_frameCount = (short)_unk2;
-            header->_unk3 = (short)_unk3;
-            header->_unk4 = _unk4;
-            header->_unk10 = (short)_unk10;
-            header->_dataOffset = SCN0.Size;
+                header->_origPathOffset = _origPathOffset;
+                header->_frameCount = (short)_frameCount;
+                header->_specLightCount = (short)_specLights;
+                header->_loop = _loop;
+                header->_pad = (short)_pad;
+                header->_dataOffset = SCN0v5.Size;
 
-            ResourceGroup* group = header->Group;
+                group = header->Group;
+            }
+            else
+            {
+                SCN0v4* header = (SCN0v4*)address;
+
+                header->_origPathOffset = _origPathOffset;
+                header->_frameCount = (short)_frameCount;
+                header->_specLightCount = (short)_specLights;
+                header->_loop = _loop;
+                header->_pad = (short)_pad;
+                header->_dataOffset = SCN0v4.Size;
+
+                group = header->Group;
+            }
+
             *group = new ResourceGroup(Children.Count);
-
             GroupLen = group->_totalSize;
 
             ResourceEntry* entry = group->First;
@@ -128,48 +224,41 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr keyframeAddress = entryAddress;
             foreach (SCN0GroupNode g in Children)
                 foreach (SCN0EntryNode e in g.Children)
-                {
-                    e.scn0Addr = header;
                     keyframeAddress += e._length;
-                }
 
             VoidPtr lightArrayAddress = keyframeAddress;
             foreach (SCN0GroupNode g in Children)
                 foreach (SCN0EntryNode e in g.Children)
                     lightArrayAddress += e.keyLen;
 
-            header->_lightSetCount = 0;
-            header->_ambientCount = 0;
-            header->_lightCount = 0;
-            header->_fogCount = 0;
-            header->_cameraCount = 0;
+            short _lightSetCount = 0, _ambientCount = 0, _lightCount = 0, _fogCount = 0, _cameraCount = 0;
 
             foreach (SCN0GroupNode g in Children)
             {
                 if (g._name == "LightSet(NW4R)")
                 {
                     LightSetLen = g._entryLen;
-                    header->_lightSetCount = (short)g.Children.Count;
+                    _lightSetCount = (short)g.Children.Count;
                 }
                 else if (g._name == "AmbLights(NW4R)")
                 {
                     AmbLightSetLen = g._entryLen;
-                    header->_ambientCount = (short)g.Children.Count;
+                    _ambientCount = (short)g.Children.Count;
                 }
                 else if (g._name == "Lights(NW4R)")
                 {
                     LightLen = g._entryLen;
-                    header->_lightCount = (short)g.Children.Count;
+                    _lightCount = (short)g.Children.Count;
                 }
                 else if (g._name == "Fogs(NW4R)")
                 {
                     FogLen = g._entryLen;
-                    header->_fogCount = (short)g.Children.Count;
+                    _fogCount = (short)g.Children.Count;
                 }
                 else if (g._name == "Cameras(NW4R)")
                 {
                     CameraLen = g._entryLen;
-                    header->_cameraCount = (short)g.Children.Count;
+                    _cameraCount = (short)g.Children.Count;
                 }
 
                 (entry++)->_dataOffset = (int)groupAddress - (int)group;
@@ -186,15 +275,33 @@ namespace BrawlLib.SSBB.ResourceNodes
                 keyframeAddress += g.keyLen;
                 lightArrayAddress += g.lightLen;
             }
-
-            header->Set(GroupLen, LightSetLen, AmbLightSetLen, LightLen, FogLen, CameraLen);
+            if (_version == 5)
+            {
+                SCN0v5* header = (SCN0v5*)address;
+                header->_lightSetCount = _lightSetCount;
+                header->_ambientCount = _ambientCount;
+                header->_lightCount = _lightCount;
+                header->_fogCount = _fogCount;
+                header->_cameraCount = _cameraCount;
+                header->Set(GroupLen, LightSetLen, AmbLightSetLen, LightLen, FogLen, CameraLen);
+            }
+            else
+            {
+                SCN0v4* header = (SCN0v4*)address;
+                header->_lightSetCount = _lightSetCount;
+                header->_ambientCount = _ambientCount;
+                header->_lightCount = _lightCount;
+                header->_fogCount = _fogCount;
+                header->_cameraCount = _cameraCount;
+                header->Set(GroupLen, LightSetLen, AmbLightSetLen, LightLen, FogLen, CameraLen);
+            }
         }
 
         protected internal override void PostProcess(VoidPtr bresAddress, VoidPtr dataAddress, int dataLength, StringTable stringTable)
         {
             base.PostProcess(bresAddress, dataAddress, dataLength, stringTable);
 
-            SCN0* header = (SCN0*)dataAddress;
+            SCN0v4* header = (SCN0v4*)dataAddress;
             header->ResourceStringAddress = stringTable[Name] + 4;
 
             ResourceGroup* group = header->Group;
@@ -211,6 +318,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal static ResourceNode TryParse(DataSource source) { return ((SCN0*)source.Address)->_header._tag == SCN0.Tag ? new SCN0Node() : null; }
+        internal static ResourceNode TryParse(DataSource source) { return ((SCN0v4*)source.Address)->_header._tag == SCN0v4.Tag ? new SCN0Node() : null; }
     }
 }

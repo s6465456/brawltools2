@@ -24,6 +24,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 n.GetStrings(table);
         }
 
+        public override void RemoveChild(ResourceNode child)
+        {
+            if ((_children != null) && (_children.Count == 1) && (_children.Contains(child)))
+                _parent.RemoveChild(this);
+            else
+                base.RemoveChild(child);
+        }
+
         protected override bool OnInitialize()
         {
             return true;
@@ -89,6 +97,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        [Browsable(false)]
         public List<ResourceNode> UsedChildren
         {
             get
@@ -105,8 +114,13 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class SCN0EntryNode : ResourceNode
     {
         internal SCN0CommonHeader* Header { get { return (SCN0CommonHeader*)WorkingUncompressed.Address; } }
-
-        public VoidPtr scn0Addr;
+        public override bool AllowNullNames
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         public VoidPtr keyframeAddr;
         public RGBAPixel* lightAddr;
@@ -115,13 +129,30 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int _length, _scn0Offset, _stringOffset, _nodeIndex, _realIndex;
 
         [Category("SCN0 Entry")]
-        public int Length { get { return _length; } }//set { _length = value; SignalPropertyChange(); } }
+        public int Length 
+        {
+            get 
+            {
+                if (this is SCN0LightSetNode)
+                    return SCN0LightSet.Size;
+                else if (this is SCN0LightNode)
+                    return SCN0Light.Size;
+                else if (this is SCN0AmbientLightNode)
+                    return SCN0AmbientLight.Size;
+                else if (this is SCN0CameraNode)
+                    return SCN0Camera.Size;
+                else if (this is SCN0FogNode)
+                    return SCN0Fog.Size;
+                return 0;
+
+            }
+        }
         [Category("SCN0 Entry")]
-        public int SCN0Offset { get { return _scn0Offset; } }//set { _scn0Offset = value; SignalPropertyChange(); } }
+        public int SCN0Offset { get { return _scn0Offset; } }
         [Category("SCN0 Entry")]
-        public int NodeIndex { get { return _nodeIndex; } }//set { _nodeIndex = value; SignalPropertyChange(); } }
+        public int NodeIndex { get { return ((SCN0GroupNode)Parent).UsedChildren.IndexOf(this); } }
         [Category("SCN0 Entry")]
-        public int RealIndex { get { return _realIndex; } }//set { _realIndex = value; SignalPropertyChange(); } }
+        public int RealIndex { get { return Name != "<null>" ? Index : -1; } }
 
         internal virtual void GetStrings(StringTable table) { if (Name != "<null>") table.Add(Name); }
 
@@ -147,24 +178,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             SCN0CommonHeader* header = (SCN0CommonHeader*)address;
             if (Name == "<null>")
-            {
-                header->_scn0Offset = (int)scn0Addr - (int)address;
                 header->_nodeIndex = header->_realIndex = -1;
-                header->_stringOffset = 0;
-            }
-            header->_length = _length = length;
+            header->_length = length;
         }
 
         protected internal virtual void PostProcess(VoidPtr scn0Address, VoidPtr dataAddress, StringTable stringTable)
         {
             SCN0CommonHeader* header = (SCN0CommonHeader*)dataAddress;
-            header->_length = _length;
             header->_scn0Offset = (int)scn0Address - (int)dataAddress;
             if (Name != "<null>")
             {
                 header->ResourceStringAddress = stringTable[Name] + 4;
-                header->_nodeIndex = _nodeIndex;
-                header->_realIndex = _realIndex;
+                header->_nodeIndex = ((SCN0GroupNode)Parent).UsedChildren.IndexOf(this);
+                header->_realIndex = Index;
             }
             else
             {

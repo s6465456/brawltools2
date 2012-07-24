@@ -20,9 +20,9 @@ namespace BrawlLib.SSBBTypes
         public const int Size = 0x24;
 
         public BRESCommonHeader _header;
-        public bint _dataOffset; //0x24
+        public bint _dataOffset;
         public bint _stringOffset;
-        public bint _pad;
+        public bint _origPathOffset;
         public bushort _numFrames;
         public bushort _numEntries;
         public bint _loop;
@@ -35,7 +35,7 @@ namespace BrawlLib.SSBBTypes
             _header._bresOffset = 0;
             _dataOffset = 0x24;
             _stringOffset = 0;
-            _pad = 0;
+            _origPathOffset = 0;
             _numFrames = frameCount;
             _numEntries = numEntries;
             _loop = loop;
@@ -59,10 +59,10 @@ namespace BrawlLib.SSBBTypes
         public const int Size = 0x28;
 
         public BRESCommonHeader _header;
-        public bint _dataOffset; //0x28
-        public bint _pad1; //0
+        public bint _dataOffset;
+        public bint _part2Offset;
         public bint _stringOffset;
-        public bint _pad2; //0
+        public bint _origPathOffset;
         public bushort _numFrames;
         public bushort _numEntries;
         public bint _loop;
@@ -75,7 +75,7 @@ namespace BrawlLib.SSBBTypes
             _header._bresOffset = 0;
             _dataOffset = 0x28;
             _stringOffset = 0;
-            _pad1 = _pad2 = 0;
+            _part2Offset = _origPathOffset = 0;
             _numFrames = frameCount;
             _numEntries = numEntries;
             _loop = loop;

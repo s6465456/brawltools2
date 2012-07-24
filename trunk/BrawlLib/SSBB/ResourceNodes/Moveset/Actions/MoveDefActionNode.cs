@@ -14,6 +14,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public class MoveDefSubActionGroupNode : MoveDefEntryNode
     {
         public override ResourceType ResourceType { get { return ResourceType.MDefSubActionGroup; } }
+        public override bool AllowDuplicateNames { get { return true; } }
         public override string ToString() { return Name; }
 
         public AnimationFlags _flags;
@@ -40,7 +41,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override string ToString() { if (Name.StartsWith("SubRoutine")) return Name; else return base.ToString(); }
 
         public bool _isBlank = false;
-
+        public bool _build = false;
+        [Category("Script")]
+        public bool ForceWrite { get { return _build; } set { _build = value; } }
+        
         public List<ResourceNode> _actionRefs = new List<ResourceNode>();
         public ResourceNode[] ActionRefs { get { return _actionRefs.ToArray(); } }
 
@@ -48,7 +52,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             _name = name;
             _isBlank = blank;
-
+            _build = false;
             if (_isBlank) //Initialize will not be called, because there is no data to read
             {
                 _parent = parent;
@@ -83,6 +87,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             _offsets.Add(_offset);
             base.OnInitialize();
+            //_build = true;
             if (_offset > Root.dataSize)
                 return false;
             if (_name == null)
@@ -130,11 +135,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = 8; //Terminator event size
             foreach (MoveDefEventNode e in Children)
             {
-                if (e._name == "FADEF00D" || e._name == "FADE0D8A")
-                    continue;
-
+                if (e.EventID == 0xFADEF00D || e.EventID == 0xFADE0D8A) continue;
                 size += e.CalculateSize(true);
-
                 _lookupCount += e._lookupCount;
             }
             return size;
@@ -183,9 +185,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         #region Scripting
-        public List<MoveDefEventNode> catchCollisions = new List<MoveDefEventNode>();
-        public List<MoveDefEventNode> offensiveCollisions = new List<MoveDefEventNode>();
-        public List<MoveDefEventNode> specialOffensiveCollisions = new List<MoveDefEventNode>();
+        public List<HitBox> catchCollisions = new List<HitBox>();
+        public List<HitBox> offensiveCollisions = new List<HitBox>();
+        public List<HitBox> specialOffensiveCollisions = new List<HitBox>();
         public int _eventIndex = 0, _loopCount = -1, _loopStartIndex = -1, _loopEndIndex = -1, _loopTime = 0;
         public bool _looping = false, _runEvents = true, _return = false, _idling = false, _subRoutine = false, _delete = false;
         public int _waitFrames = 0, _totalFrames = 0; //In frames
@@ -355,16 +357,18 @@ namespace BrawlLib.SSBB.ResourceNodes
             _loopEndIndex = -1;
             _loopTime = 0;
             _waitFrames = 0;
-            catchCollisions = new List<MoveDefEventNode>();
-            offensiveCollisions = new List<MoveDefEventNode>();
-            specialOffensiveCollisions = new List<MoveDefEventNode>();
+            catchCollisions = new List<HitBox>();
+            offensiveCollisions = new List<HitBox>();
+            specialOffensiveCollisions = new List<HitBox>();
             _idling = false;
             _delete = false;
             _subRoutine = false;
-            foreach (MDL0BoneNode bone in _mainWindow.boneCollisions)
-                bone._nodeColor = bone._boneColor = Color.Transparent;
-            _mainWindow.boneCollisions = new List<MDL0BoneNode>();
-            _mainWindow.hurtBoxType = 0;
+            subRoutineSetAt = 0;
+            subRoutine = null;
+            actionReferencedBy = null;
+            _caseIndices = null;
+            _defaultCaseIndex = -1;
+            _cases = null;
 
             //if (scriptEditor1.EventList.Items.Count > 0)
             //    scriptEditor1.EventList.SelectedIndex = 0;
@@ -420,16 +424,17 @@ namespace BrawlLib.SSBB.ResourceNodes
                     break;
                 case 0x06000D00: //Offensive Collison
                 case 0x062B0D00: //Thrown Collision
-                    e.HitboxID = (int)(e.EventData.parameters[0]._data & 0xFFFF);
-                    e.HitboxSize = (int)(e.EventData.parameters[5]._data);
-                    offensiveCollisions.Add(e);
+                    HitBox bubble1 = new HitBox(e);
+                    bubble1.HitboxID = (int)(e.EventData.parameters[0]._data & 0xFFFF);
+                    bubble1.HitboxSize = (int)(e.EventData.parameters[5]._data);
+                    offensiveCollisions.Add(bubble1);
                     break;
                 case 0x06050100: //Body Collision
                     _mainWindow.hurtBoxType = (int)(e.EventData.parameters[0]._data);
                     break;
                 case 0x06080200: //Bone Collision
                     int id = (int)(e.EventData.parameters[0]._data);
-                    if (Root.Model != null && Root.Model._linker.BoneCache.Length > id && id > 0)
+                    if (Root.Model != null && Root.Model._linker.BoneCache.Length > id && id >= 0)
                     {
                         MDL0BoneNode bone = Root.Model._linker.BoneCache[id] as MDL0BoneNode;
                         switch ((int)(e.EventData.parameters[1]._data))
@@ -456,12 +461,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 case 0x060A0800: //Catch Collision 1
                 case 0x060A0900: //Catch Collision 2
                 case 0x060A0A00: //Catch Collision 3
-                    e.HitboxID = (int)(e.EventData.parameters[0]._data);
-                    e.HitboxSize = (int)(e.EventData.parameters[2]._data);
-                    catchCollisions.Add(e);
+                    HitBox bubble2 = new HitBox(e);
+                    bubble2.HitboxID = (int)(e.EventData.parameters[0]._data);
+                    bubble2.HitboxSize = (int)(e.EventData.parameters[2]._data);
+                    catchCollisions.Add(bubble2);
                     break;
                 case 0x060D0000: //Terminate Catch Collisions
-                    catchCollisions = new List<MoveDefEventNode>();
+                    catchCollisions = new List<HitBox>();
                     break;
                 case 0x00060000: //Loop break?
                     _looping = false;
@@ -469,25 +475,46 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _loopTime = 0;
                     break;
                 case 0x06150F00: //Special Offensive Collison
-                    e.HitboxID = (int)(e.EventData.parameters[0]._data & 0xFFFF);
-                    e.HitboxSize = (int)(e.EventData.parameters[5]._data);
-                    specialOffensiveCollisions.Add(e);
+                    HitBox bubble3 = new HitBox(e);
+                    bubble3.HitboxID = (int)(e.EventData.parameters[0]._data & 0xFFFF);
+                    bubble3.HitboxSize = (int)(e.EventData.parameters[5]._data);
+                    specialOffensiveCollisions.Add(bubble3);
                     break;
                 case 0x06040000: //Terminate Collisions
-                    offensiveCollisions = new List<MoveDefEventNode>();
-                    specialOffensiveCollisions = new List<MoveDefEventNode>();
+                    offensiveCollisions = new List<HitBox>();
+                    specialOffensiveCollisions = new List<HitBox>();
                     break;
                 case 0x06030100: //Delete hitbox
-                    foreach (MoveDefEventNode ev in offensiveCollisions)
-                        if (ev.HitboxID == (int)(ev.EventData.parameters[0]._data))
+                    foreach (HitBox ev in offensiveCollisions)
+                        if (ev.HitboxID == (int)(e.EventData.parameters[0]._data))
                         {
                             offensiveCollisions.Remove(ev);
                             break;
                         }
-                    foreach (MoveDefEventNode ev in specialOffensiveCollisions)
-                        if (ev.HitboxID == (int)(ev.EventData.parameters[0]._data))
+                    foreach (HitBox ev in specialOffensiveCollisions)
+                        if (ev.HitboxID == (int)(e.EventData.parameters[0]._data))
                         {
                             specialOffensiveCollisions.Remove(ev);
+                            break;
+                        }
+                    break;
+                case 0x061B0500: //Move hitbox
+                    foreach (HitBox ev in offensiveCollisions)
+                        if (ev.HitboxID == (int)(e.EventData.parameters[0]._data))
+                        {
+                            ev.EventData.parameters[1]._data = e.EventData.parameters[1]._data;
+                            ev.EventData.parameters[6]._data = e.EventData.parameters[2]._data;
+                            ev.EventData.parameters[7]._data = e.EventData.parameters[3]._data;
+                            ev.EventData.parameters[8]._data = e.EventData.parameters[4]._data;
+                            break;
+                        }
+                    foreach (HitBox ev in specialOffensiveCollisions)
+                        if (ev.HitboxID == (int)(e.EventData.parameters[0]._data))
+                        {
+                            ev.EventData.parameters[1]._data = e.EventData.parameters[1]._data;
+                            ev.EventData.parameters[6]._data = e.EventData.parameters[2]._data;
+                            ev.EventData.parameters[7]._data = e.EventData.parameters[3]._data;
+                            ev.EventData.parameters[8]._data = e.EventData.parameters[4]._data;
                             break;
                         }
                     break;
@@ -524,40 +551,25 @@ namespace BrawlLib.SSBB.ResourceNodes
                     break;
                 case 0x0B000200: //Model Changer 1
                 case 0x0B010200: //Model Changer 2
-                    if (Root.Model._polyList == null) break;
+                    if (Root.Model._polyList == null)  break;
                     if (Root.data.mdlVisibility.Children.Count == 0) break;
-                    MoveDefModelVisRefNode entry = Root.data.mdlVisibility.Children[(e._event >> 16 & 1)] as MoveDefModelVisRefNode;
-                    if (entry.Children.Count == 0) break;
-                    MoveDefBoneSwitchNode list1 = entry.Children[(int)e.EventData.parameters[0]._data] as MoveDefBoneSwitchNode;
-                    if (list1.Children.Count == 0) break;
-                    if ((int)e.EventData.parameters[1]._data > list1.Children.Count || (int)e.EventData.parameters[1]._data < 0)
-                    {
-                        foreach (MDL0PolygonNode p in Root.Model._polyList)
-                            p._render = false;
-                        break;
-                    }
-                    MoveDefModelVisGroupNode list2 = list1.Children[(int)e.EventData.parameters[1]._data] as MoveDefModelVisGroupNode;
-                    if (list2.Children.Count == 0) break;
-                    foreach (MoveDefModelVisGroupNode l in list1.Children)
-                        if (l.Index != (int)e.EventData.parameters[1]._data)
-                            foreach (MoveDefBoneIndexNode b in l.Children)
-                                if (b.BoneNode != null)
-                                    foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
-                                        p._render = false;
-                    foreach (MoveDefBoneIndexNode b in list2.Children)
+                    MoveDefModelVisRefNode entry = Root.data.mdlVisibility.Children[((int)(e._event >> 16 & 1))] as MoveDefModelVisRefNode;
+                    if (entry.Children.Count == 0 || (int)e.EventData.parameters[0]._data < 0 && (int)e.EventData.parameters[0]._data >= entry.Children.Count) break;
+                    MoveDefBoneSwitchNode SwitchNode = entry.Children[(int)e.EventData.parameters[0]._data] as MoveDefBoneSwitchNode;
+                    foreach (MoveDefModelVisGroupNode grp in SwitchNode.Children)
+                        foreach (MoveDefBoneIndexNode b in grp.Children)
+                            if (b.BoneNode != null)
+                                foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
+                                    p._render = false;
+                    if ((int)e.EventData.parameters[1]._data > SwitchNode.Children.Count || (int)e.EventData.parameters[1]._data < 0) break;
+                    MoveDefModelVisGroupNode Group = SwitchNode.Children[(int)e.EventData.parameters[1]._data] as MoveDefModelVisGroupNode;
+                    foreach (MoveDefBoneIndexNode b in Group.Children)
                         if (b.BoneNode != null)
                             foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
                                 p._render = true;
                     break;
                 case 0x0B020100:
-                    if (Root.Model._polyList != null)
-                    {
-                        bool val = e.EventData.parameters[0]._data != 0;
-                        foreach (MDL0PolygonNode p in Root.Model._polyList)
-                            p._render = val;
-                        if (val)
-                            _mainWindow.pnlMoveset.ResetModelVis();
-                    }
+                    Root.Model._visible = e.EventData.parameters[0]._data != 0;
                     break;
                 case 0x00100200: //Switch
                     _cases = new List<MoveDefEventParameterNode>();
@@ -607,6 +619,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 case 0x00180000: //Break
                     _eventIndex = _loopEndIndex + 1;
                     _loopEndIndex = -1;
+                    break;
+                case 10000200: //Generate Article 
+                    break;
+                case 0x10040200: //Set Anchored Article SubAction
+                case 0x10070200: //Set Remote Article SubAction
+                    break;
+                case 0x10010200: //Set Ex-Anchored Article Action
                     break;
             }
         }

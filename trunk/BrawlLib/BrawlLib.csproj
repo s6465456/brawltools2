@@ -180,6 +180,7 @@
     <Compile Include="SSBB\ResourceNodes\AI\ATKDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\AI\CENode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\UserData.cs" />
     <Compile Include="SSBB\ResourceNodes\DOLNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Archives\U8Node.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Actions\ActionEventNode.cs" />
@@ -398,6 +399,9 @@
     </Compile>
     <Compile Include="System\Windows\Forms\ShpAnimEditControl.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\StageModuleConverter.cs">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\StringInputComboBox.cs">
       <SubType>Component</SubType>

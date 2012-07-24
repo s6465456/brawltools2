@@ -43,6 +43,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (offset.DataOffset == 0)
                     continue;
 
+                if (Root.GetSize(offset.DataOffset) != EntryCount * 8)
+                    Console.WriteLine(Root.GetSize(offset.DataOffset) - EntryCount * 8);
+
                 VoidPtr offAddr = BaseAddress + offset.DataOffset;
                 for (int c = 0; c < EntryCount; c++)
                 {
