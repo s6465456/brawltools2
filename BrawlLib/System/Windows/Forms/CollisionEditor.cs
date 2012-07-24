@@ -1728,7 +1728,7 @@ namespace System.Windows.Forms
 
             //Render objects
             if (_targetNode != null)
-                _targetNode.Render(context);
+                _targetNode.Render(context, null);
 
             //Render selection box
             if (!_selecting)

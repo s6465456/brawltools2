@@ -167,24 +167,22 @@ namespace System.Windows.Forms
             if (_targetNode == null)
                 return;
 
-            int list, type, index;
-            _targetNode.Root.GetLocation(_targetNode.RawOffset == -1 ? _targetNode._offset + 4 : _targetNode.RawOffset, out list, out type, out index);
-
             _updating = true;
-            comboBox1.SelectedIndex = _targetNode.list = list;
-            if (_targetNode.type != -1)
-                comboBox3.SelectedIndex = _targetNode.type = type;
-            if (_targetNode.index != -1 && comboBox2.Items.Count > index)
-                comboBox2.SelectedIndex = _targetNode.index = index;
 
-            if (list < 3)
-            {
-                _targetNode.action = _targetNode.Root.GetAction(list, type, index);
-                if (_targetNode.action == null)
-                    _targetNode.action = _targetNode.GetAction();
-            }
-            else
-                _targetNode.action = null;
+            comboBox1.SelectedIndex = _targetNode.list;
+            if (_targetNode.type != -1)
+                comboBox3.SelectedIndex = _targetNode.type;
+            if (_targetNode.index != -1 && comboBox2.Items.Count > _targetNode.index)
+                comboBox2.SelectedIndex = _targetNode.index;
+
+            //if (_targetNode.list < 3)
+            //{
+            //    _targetNode.action = _targetNode.Root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
+            //    if (_targetNode.action == null)
+            //        _targetNode.action = _targetNode.GetAction();
+            //}
+            //else
+            //    _targetNode.action = null;
 
             _updating = false;
             UpdateText();
@@ -217,14 +215,17 @@ namespace System.Windows.Forms
                 if (TargetNode.Root._subActions != null)
                 comboBox2.Items.AddRange(_targetNode.Root._subActions.Children.ToArray());
             }
+
             if (comboBox1.SelectedIndex >= 2)
                 comboBox3.Visible = label3.Visible = false;
             else
                 comboBox3.Visible = label3.Visible = true;
+
             if (comboBox1.SelectedIndex == 4)
                 comboBox2.Visible = label2.Visible = false;
             else
                 comboBox2.Visible = label2.Visible = true;
+
             if (comboBox1.SelectedIndex == 2)
             {
                 comboBox2.Items.Clear();
@@ -233,7 +234,7 @@ namespace System.Windows.Forms
             if (comboBox1.SelectedIndex == 3)
             {
                 comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(_targetNode.Root._external.ToArray());
+                comboBox2.Items.AddRange(_targetNode.Root._externalRefs.ToArray());
             }
             if (!_updating)
                 UpdateText();
@@ -261,16 +262,38 @@ namespace System.Windows.Forms
 
         private void button1_Click(object sender, EventArgs e)
         {
-            int offset = -1;
+            if (_targetNode.action != null)
+            {
+                _targetNode._value = -1;
+                (_targetNode as MoveDefEventOffsetNode).action._actionRefs.Remove(_targetNode);
+            }
             if (comboBox1.SelectedIndex >= 3)
-                offset = -1;
+            {
+                if (comboBox1.SelectedIndex == 3 && comboBox2.SelectedIndex >= 0 && comboBox2.SelectedIndex < _targetNode.Root._externalRefs.Count)
+                {
+                    if (_targetNode._extNode != null)
+                    {
+                        _targetNode._extNode._refs.Remove(_targetNode);
+                        _targetNode._extNode = null;
+                    }
+                    (_targetNode._extNode = _targetNode.Root._externalRefs[comboBox2.SelectedIndex] as MoveDefExternalNode)._refs.Add(_targetNode);
+                    _targetNode.Name = _targetNode._extNode.Name;
+                }
+            }
             else
-                offset = _targetNode.Root.GetOffset(comboBox1.SelectedIndex, (comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex), comboBox2.SelectedIndex);
-            _targetNode._value = offset;
-            _targetNode.action = _targetNode.Root.GetAction(offset);
+            {
+                if (_targetNode._extNode != null)
+                {
+                    _targetNode._extNode._refs.Remove(_targetNode);
+                    _targetNode._extNode = null;
+                }
+            }
             _targetNode.list = comboBox1.SelectedIndex;
             _targetNode.type = (comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex);
             _targetNode.index = (comboBox1.SelectedIndex == 4 ? -1 : comboBox2.SelectedIndex);
+            _targetNode.action = _targetNode.Root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
+            if (_targetNode.action != null)
+                _targetNode._value = _targetNode.action._offset;
             _targetNode.SignalPropertyChange();
         }
     }

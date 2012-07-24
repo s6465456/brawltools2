@@ -3,6 +3,7 @@ using System.ComponentModel;
 using BrawlLib.SSBB.ResourceNodes;
 using System.Data;
 using System.IO;
+using System.Globalization;
 
 namespace System.Windows.Forms
 {
@@ -167,7 +168,7 @@ namespace System.Windows.Forms
             if (AttributeArray[index]._type == 2) //degrees
             {
                 float val;
-                if (!float.TryParse(value, out val))
+                if (!float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                     value = ((float)(((bfloat*)buffer)[index])).ToString();
                 else
                 {
@@ -195,7 +196,7 @@ namespace System.Windows.Forms
             else //float/radians
             {
                 float val;
-                if (!float.TryParse(value, out val))
+                if (!float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                     value = ((float)(((bfloat*)buffer)[index])).ToString();
                 else
                 {

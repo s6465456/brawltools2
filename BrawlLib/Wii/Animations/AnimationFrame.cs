@@ -28,28 +28,28 @@ namespace BrawlLib.Wii.Animations
         public bool hasTy;
         public bool hasTz;
 
-        public void SetBools(int index)
+        public void SetBools(int index, bool val)
         {
             switch (index)
             {
                 case 0x10:
-                    hasSx = true; break;
+                    hasSx = val; break;
                 case 0x11:
-                    hasSy = true; break;
+                    hasSy = val; break;
                 case 0x12:
-                    hasSz = true; break;
+                    hasSz = val; break;
                 case 0x13:
-                    hasRx = true; break;
+                    hasRx = val; break;
                 case 0x14:
-                    hasRy = true; break;
+                    hasRy = val; break;
                 case 0x15:
-                    hasRz = true; break;
+                    hasRz = val; break;
                 case 0x16:
-                    hasTx = true; break;
+                    hasTx = val; break;
                 case 0x17:
-                    hasTy = true; break;
+                    hasTy = val; break;
                 case 0x18:
-                    hasTz = true; break;
+                    hasTz = val; break;
             }
         }
 

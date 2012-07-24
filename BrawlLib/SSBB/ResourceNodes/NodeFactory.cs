@@ -28,23 +28,37 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         //Parser commands must initialize the node before returning.
-        public static ResourceNode FromFile(ResourceNode parent, string path)
+        public unsafe static ResourceNode FromFile(ResourceNode parent, string path)
         {
             ResourceNode node = null;
             FileMap map = FileMap.FromFile(path, FileMapProtect.Read);
             try 
             {
-                if (Path.GetExtension(path).ToUpper().ToString() == ".MRG")
+                if (String.Equals(Path.GetExtension(path), ".mrg", StringComparison.OrdinalIgnoreCase) || String.Equals(Path.GetExtension(path), ".mrgc", StringComparison.OrdinalIgnoreCase))
                 {
                     node = new MRGNode();
-                    node.Initialize(parent, map);
+                    DataSource source = new DataSource(map);
+                    if (Compressor.IsDataCompressed(source.Address, source.Length))
+                    {
+                        CompressionHeader* cmpr = (CompressionHeader*)source.Address;
+                        try
+                        {
+                            //Expand the whole resource and initialize
+                            FileMap map2 = FileMap.FromTempFile(cmpr->ExpandedSize);
+                            Compressor.Expand(cmpr, map2.Address, map2.Length);
+                            source.Compression = cmpr->Algorithm;
+                            node.Initialize(parent, source, new DataSource(map2));
+                        }
+                        catch (InvalidCompressionException) { }
+                    }
+                    else node.Initialize(parent, map);
                 }
-                else if (Path.GetExtension(path).ToUpper().ToString() == ".REL")
+                else if (String.Equals(Path.GetExtension(path), ".rel", StringComparison.OrdinalIgnoreCase))
                 {
                     node = new RELNode();
                     node.Initialize(parent, map);
                 }
-                else if (Path.GetExtension(path).ToUpper().ToString() == ".DOL")
+                else if (String.Equals(Path.GetExtension(path), ".dol", StringComparison.OrdinalIgnoreCase))
                 {
                     node = new DOLNode();
                     node.Initialize(parent, map);

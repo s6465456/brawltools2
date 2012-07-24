@@ -60,7 +60,7 @@ namespace BrawlBox
         public void MoveUp() { MoveUp(true); }
         public void MoveUp(bool select)
         {
-            if (PrevNode == null)
+            if (PrevVisibleNode == null)
                 return;
 
             if (_resource.MoveUp())
@@ -81,7 +81,7 @@ namespace BrawlBox
         public void MoveDown() { MoveDown(true); }
         public void MoveDown(bool select)
         {
-            if (NextNode == null)
+            if (NextVisibleNode == null)
                 return;
 
             if (_resource.MoveDown())

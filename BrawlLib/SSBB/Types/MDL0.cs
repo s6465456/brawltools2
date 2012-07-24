@@ -43,7 +43,7 @@ namespace BrawlLib.SSBBTypes
             return (ResourceGroup*)(Address + offset);
         }
 
-        public Part2Data* Part2 { get { return (_part2Offset > 0) ? (Part2Data*)(Address + _part2Offset) : null; } }
+        public UserData* Part2 { get { return (_part2Offset > 0) ? (UserData*)(Address + _part2Offset) : null; } }
 
         public int _part2Offset
         {
@@ -163,6 +163,28 @@ namespace BrawlLib.SSBBTypes
         }
     }
 
+    public enum MDLScalingRule
+    {
+        Standard = 0,
+        SoftImage = 1,
+        Maya = 2
+    }
+    
+    public enum TexMatrixMode
+    {
+        Matrix_Maya = 0,
+        Matrix_XSI = 1,
+        Matrix_3dsMax = 2
+    }
+
+    //Calculation method for the normal matrix and texture matrix that makes up an envelope
+    public enum MDLEnvelopeMatrixMode
+    {
+        Normal = 0,
+        Approximate = 1,
+        Exact = 2
+    }
+
     //Immediately after header, separate entity
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct MDL0Props
@@ -171,35 +193,37 @@ namespace BrawlLib.SSBBTypes
 
         public buint _headerLen; //0x40
         public bint _mdl0Offset;
-        public bint _unk1; //0x00 or 0x02
-        public bint _unk2; //0x00
-        public bint _numVertices; //Length/offset?
-        public bint _numFaces; //Length/offset?
-        public bint _unk3; //0x00
+        public bint _scalingRule;
+        public bint _texMatrixMode;
+        public bint _numVertices;
+        public bint _numFaces;
+        public bint _origPathOffset; //0x00
         public bint _numNodes;
-        public byte _unk4; //0x01
-        public byte _unk5; //0x01
-        public bshort _unk6; //0x00
+        public byte _needNrmMtxArray; //0x01
+        public byte _needTexMtxArray; //0x01
+        public byte _enableExtents; //0x00
+        public byte _envMtxMode; //0x00
         public buint _dataOffset; //0x40
         public BVec3 _minExtents;
         public BVec3 _maxExtents;
 
-        public MDL0Props(int version, int vertices, int faces, int nodes, int unk1, int unk2, int unk3, int unk4, int unk5, int unk6, Vector3 min, Vector3 max)
+        public MDL0Props(int version, int vertices, int faces, int nodes, int scalingRule, int texMtxMode, byte needsNrmArr, byte needsTexArr, byte enableExtents, byte envMtxMode, Vector3 min, Vector3 max)
         {
             _headerLen = 0x40;
             if (version == 9 || version == 8)
                 _mdl0Offset = -64;
             else
                 _mdl0Offset = -76;
-            _unk1 = unk1;
-            _unk2 = unk2;
+            _scalingRule = scalingRule;
+            _texMatrixMode = texMtxMode;
             _numVertices = vertices;
             _numFaces = faces;
-            _unk3 = unk3;
+            _origPathOffset = 0;
             _numNodes = nodes;
-            _unk4 = (byte)unk4;
-            _unk5 = (byte)unk5;
-            _unk6 = (short)unk6;
+            _needNrmMtxArray = needsNrmArr;
+            _needTexMtxArray = needsTexArr;
+            _enableExtents = enableExtents;
+            _envMtxMode = envMtxMode;
             _dataOffset = 0x40;
             _minExtents = min;
             _maxExtents = max;
@@ -406,22 +430,29 @@ namespace BrawlLib.SSBBTypes
     [Flags]
     public enum BoneFlags : uint
     {
-        NoTransform      = 0x1,
-        FixedTranslation = 0x2,
-        FixedRotation    = 0x4,
-        FixedScale       = 0x8,
-        Common5          = 0x10,
-        HasGeomParent    = 0x20,
-        HasGeomChildren  = 0x40,
-        Unk8             = 0x80,
-        Visible          = 0x100,
-        HasGeometry      = 0x200,
-        Unk11            = 0x400,
-        Unk12            = 0x800,
-        Unk13            = 0x1000,
-        Unk14            = 0x2000,
-        Unk15            = 0x4000,
-        Unk16            = 0x8000,
+        None              = 0x0,
+        NoTransform       = 0x1,
+        FixedTranslation  = 0x2,
+        FixedRotation     = 0x4,
+        FixedScale        = 0x8,
+        ScaleEqual        = 0x10,
+        SegScaleCompApply = 0x20,
+        SegScaleCompParent= 0x40,
+        ClassicScaleOff   = 0x80,
+        Visible           = 0x100,
+        HasGeometry       = 0x200,
+        HasBillboardParent= 0x400,
+    }
+
+    public enum BillboardFlags : uint
+    {
+        Off = 0,
+        STD,
+        PerspectiveSTD,
+        Rotation,
+        PerspectiveRotation,
+        Y,
+        PerspectiveY,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -434,8 +465,8 @@ namespace BrawlLib.SSBBTypes
 
         public bint _nodeId;
         public buint _flags;
-        public buint _pad1;
-        public buint _pad2;
+        public buint _bbFlags;
+        public buint _bbNodeId;
 
         public BVec3 _scale;
         public BVec3 _rotation;
@@ -454,7 +485,7 @@ namespace BrawlLib.SSBBTypes
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public Part2Data* Part2 { get { return (Part2Data*)(Address + _part2Offset); } }
+        public UserData* Part2 { get { return (UserData*)(Address + _part2Offset); } }
 
         public string ResourceString { get { return new String((sbyte*)ResourceStringAddress); } }
         public VoidPtr ResourceStringAddress
@@ -542,7 +573,7 @@ namespace BrawlLib.SSBBTypes
         public bint _isRGBA;
         public bint _format;
         public byte _entryStride;
-        public byte _scale;
+        public byte _pad;
         public bushort _numEntries;
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
@@ -588,6 +619,61 @@ namespace BrawlLib.SSBBTypes
         }
     }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct MDL0FurVecData
+    {
+        public bint _dataLen; //includes header/padding
+        public bint _mdl0Offset;
+        public bint _dataOffset; //0x20
+        public bint _stringOffset;
+
+        public bint _index;
+        public bushort _numEntries;
+        public fixed byte pad[10];
+
+        private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public BVec3* Entries { get { return (BVec3*)(Address + _dataOffset); } }
+
+        public string ResourceString { get { return new String((sbyte*)this.ResourceStringAddress); } }
+        public VoidPtr ResourceStringAddress
+        {
+            get { return (VoidPtr)this.Address + _stringOffset; }
+            set { _stringOffset = (int)value - (int)Address; }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct MDL0FurPosData
+    {
+        public bint _dataLen; //including header
+        public bint _mdl0Offset;
+        public bint _dataOffset; //0x40
+        public bint _stringOffset;
+
+        public bint _index;
+        public bint _isXYZ;
+        public bint _type;
+        public byte _divisor;
+        public byte _entryStride;
+        public bshort _numVertices;
+
+        public bint _numLayers;
+        public bint _offsetOfLayer;
+        public fixed byte pad[24];
+
+        private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public VoidPtr Data { get { return Address + _dataOffset; } }
+
+        public WiiVertexComponentType Type { get { return (WiiVertexComponentType)(int)_type; } }
+
+        public string ResourceString { get { return new String((sbyte*)this.ResourceStringAddress); } }
+        public VoidPtr ResourceStringAddress
+        {
+            get { return (VoidPtr)this.Address + _stringOffset; }
+            set { _stringOffset = (int)value - (int)Address; }
+        }
+    }
+
     public enum CullMode : int
     {
         Cull_None = 0,
@@ -612,20 +698,20 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct TextureMatrix
+    public struct TexMtxEffect
     {
-        public sbyte TexUnk1;
-        public sbyte TexUnk2;
-        public sbyte TexUnk3;
-        public sbyte TexUnk4;
+        public sbyte SCNCamera;
+        public sbyte SCNLight;
+        public byte MapMode;
+        public byte Identity;
         public bMatrix43 TexMtx;
 
-        public static readonly TextureMatrix Default = new TextureMatrix()
+        public static readonly TexMtxEffect Default = new TexMtxEffect()
         {
-            TexUnk1 = -1,
-            TexUnk2 = -1,
-            TexUnk3 = 0,
-            TexUnk4 = 1,
+            SCNCamera = -1,
+            SCNLight = -1,
+            MapMode = 0,
+            Identity = 1,
             TexMtx = Matrix43.Identity
         };
     }
@@ -654,14 +740,14 @@ namespace BrawlLib.SSBBTypes
             Tex7Flags = TextureFlags.Default,
             Tex8Flags = TextureFlags.Default,
 
-            Tex1Matrices = TextureMatrix.Default,
-            Tex2Matrices = TextureMatrix.Default,
-            Tex3Matrices = TextureMatrix.Default,
-            Tex4Matrices = TextureMatrix.Default,
-            Tex5Matrices = TextureMatrix.Default,
-            Tex6Matrices = TextureMatrix.Default,
-            Tex7Matrices = TextureMatrix.Default,
-            Tex8Matrices = TextureMatrix.Default,
+            Tex1Matrices = TexMtxEffect.Default,
+            Tex2Matrices = TexMtxEffect.Default,
+            Tex3Matrices = TexMtxEffect.Default,
+            Tex4Matrices = TexMtxEffect.Default,
+            Tex5Matrices = TexMtxEffect.Default,
+            Tex6Matrices = TexMtxEffect.Default,
+            Tex7Matrices = TexMtxEffect.Default,
+            Tex8Matrices = TexMtxEffect.Default,
         };
 
         public buint LayerFlags;
@@ -676,22 +762,22 @@ namespace BrawlLib.SSBBTypes
         public TextureFlags Tex7Flags;
         public TextureFlags Tex8Flags;
 
-        public TextureMatrix Tex1Matrices;
-        public TextureMatrix Tex2Matrices;
-        public TextureMatrix Tex3Matrices;
-        public TextureMatrix Tex4Matrices;
-        public TextureMatrix Tex5Matrices;
-        public TextureMatrix Tex6Matrices;
-        public TextureMatrix Tex7Matrices;
-        public TextureMatrix Tex8Matrices;
+        public TexMtxEffect Tex1Matrices;
+        public TexMtxEffect Tex2Matrices;
+        public TexMtxEffect Tex3Matrices;
+        public TexMtxEffect Tex4Matrices;
+        public TexMtxEffect Tex5Matrices;
+        public TexMtxEffect Tex6Matrices;
+        public TexMtxEffect Tex7Matrices;
+        public TexMtxEffect Tex8Matrices;
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
         public TextureFlags GetTexFlags(int Index) { return *(TextureFlags*)((byte*)Address + 8 + (Index * 20)); }
         public void SetTexFlags(TextureFlags value, int Index) { *(TextureFlags*)((byte*)Address + 8 + (Index * 20)) = value; }
         
-        public TextureMatrix GetTexMatrices(int Index) { return *(TextureMatrix*)((byte*)Address + 168 + (Index * 52)); }
-        public void SetTexMatrices(TextureMatrix value, int Index) { *(TextureMatrix*)((byte*)Address + 168 + (Index * 52)) = value; }
+        public TexMtxEffect GetTexMatrices(int Index) { return *(TexMtxEffect*)((byte*)Address + 168 + (Index * 52)); }
+        public void SetTexMatrices(TexMtxEffect value, int Index) { *(TexMtxEffect*)((byte*)Address + 168 + (Index * 52)) = value; }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -905,9 +991,15 @@ namespace BrawlLib.SSBBTypes
         public byte _enableAlphaTest;
         public sbyte _lightSet;
         public sbyte _fogSet;
-        public byte _unk1;
-        public bint _unk2;
-        public bint _unk3; //-1
+        public byte _pad;
+        public byte _indirectMethod1;
+        public byte _indirectMethod2;
+        public byte _indirectMethod3;
+        public byte _indirectMethod4;
+        public sbyte _normMapRefLight1;
+        public sbyte _normMapRefLight2;
+        public sbyte _normMapRefLight3;
+        public sbyte _normMapRefLight4;
         public bint _shaderOffset;
         public bint _numTextures;
         public bint _matRefOffset; //1044 for v8 & v9 or 1048 for v10 & v11 MDL0
@@ -921,7 +1013,7 @@ namespace BrawlLib.SSBBTypes
         public MDL0Header* Parent { get { return (MDL0Header*)(Address + _mdl0Offset); } }
 
         public MDL0TextureRef* First { get { return (_matRefOffset != 0) ? (MDL0TextureRef*)(Address + _matRefOffset) : null; } }
-        public Part2Data* Part2 { get { return (_part2Offset != 0) ? (Part2Data*)(Address + _part2Offset) : null; } }
+        public UserData* Part2 { get { return (_part2Offset != 0) ? (UserData*)(Address + _part2Offset) : null; } }
 
         public int DisplayListOffset(int version)
         {
@@ -1341,8 +1433,15 @@ namespace BrawlLib.SSBBTypes
         }
     }
 
+    public enum UserValueType
+    {
+        Int = 0,
+        Float,
+        String
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct Part2Data
+    public unsafe struct UserData
     {
         public bint _totalLen; //including group + all entries
         
@@ -1351,25 +1450,27 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct Part2DataEntry
+    public unsafe struct UserDataEntry
     {
         public bint _totalLen;
-        public bint _unk1; //0x18, length without first four?
-        public bint _unk2; //0x01, num entries?
-        public bint _unk3; //0x00
+        public bint _dataOffset;
+        public bint _entryCount;
+        public bint _type;
         public bint _stringOffset; //same as entry
-        public bint _unk4; //0x00
-        public bint _unk5; //0x00
+        public bint _id;
 
-        public Part2DataEntry(int unk2)
+        //Entries, in the specified type
+
+        public UserValueType Type { get { return (UserValueType)(int)_type; } set { _type = (int)value; } }
+
+        public UserDataEntry(int entries, UserValueType type, int id)
         {
-            _totalLen = 0x1C;
-            _unk1 = 0x18;
-            _unk2 = unk2;
-            _unk3 = 0;
+            _totalLen = 0;
+            _dataOffset = 0x18;
+            _entryCount = entries;
+            _type = (int)type;
             _stringOffset = 0;
-            _unk4 = 0;
-            _unk5 = 0;
+            _id = id;
         }
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }

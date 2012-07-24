@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Drawing;
+using System.Globalization;
 
 namespace System
 {
@@ -21,9 +22,9 @@ namespace System
 
             if (arr.Length == 3)
             {
-                float.TryParse(arr[0], out v._x);
-                float.TryParse(arr[1], out v._y);
-                float.TryParse(arr[2], out v._z);
+                float.TryParse(arr[0], NumberStyles.Any, CultureInfo.InvariantCulture, out v._x);
+                float.TryParse(arr[1], NumberStyles.Any, CultureInfo.InvariantCulture, out v._y);
+                float.TryParse(arr[2], NumberStyles.Any, CultureInfo.InvariantCulture, out v._z);
             }
             _x = v._x;
             _y = v._y;

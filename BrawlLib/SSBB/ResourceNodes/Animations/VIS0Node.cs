@@ -21,8 +21,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public override bool tLoop { get { return Loop; } set { Loop = value; } }
 
-        internal int _frameCount, _version;
-        internal int _unk1, _unk2, _loop;
+        internal int _frameCount = 1, _version = 3, _loop;
 
         [Category("Bone Visibility")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }

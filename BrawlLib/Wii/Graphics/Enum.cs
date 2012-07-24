@@ -232,8 +232,8 @@ namespace BrawlLib.Wii.Graphics
 
     public enum ProjectionType
     {
-        PERSPECTIVE = 0,
-        ORTHOGRAPHIC
+        Perspective = 0,
+        Orthographic
     }
 
     public enum TevMode
@@ -554,5 +554,48 @@ namespace BrawlLib.Wii.Graphics
          TexCoord5,//XF_TEX5_INROW =  0xA,
          TexCoord6,//XF_TEX6_INROW =  0xB,
          TexCoord7,//XF_TEX7_INROW =  0xC
+    }
+
+    public enum SpotFn
+    {
+         Off = 0,
+         Flat,
+         Cos,
+         Cos2,
+	     Sharp,
+	     Ring,
+	     Ring2
+    }
+
+    public enum DistAttnFn
+    {
+         Off = 0,
+         Gentle,
+         Medium,
+         Steep
+    }
+
+    public enum FogType
+    {
+        None = 0x00,
+
+        PerspectiveLinear = 0x02,
+        PerspectiveExp = 0x04,
+        PerspectiveExp2 = 0x05,
+        PerspectiveRevExp = 0x06,
+        PerspectiveRevExp2 = 0x07,
+
+        OrthographicLinear = 0x0A,
+        OrthographicExp = 0x0C,
+        OrthographicExp2 = 0x0D,
+        OrthographicRevExp = 0x0E,
+        OrthographicRevExp2 = 0x0F,
+
+        ////For compatibility with former versions
+        //GX_FOG_LIN 		= GX_FOG_PERSP_LIN,
+        //GX_FOG_EXP		= GX_FOG_PERSP_EXP,
+        //GX_FOG_EXP2		= GX_FOG_PERSP_EXP2,
+        //GX_FOG_REVEXP  	= GX_FOG_PERSP_REVEXP,
+        //GX_FOG_REVEXP2 	= GX_FOG_PERSP_REVEXP2
     }
 }

@@ -456,7 +456,7 @@ namespace BrawlLib.SSBBTypes
         public bint MultiJumpOffset;
         public bint GlideOffset;
         public bint CrawlOffset;
-        public bint UnknownSection9Offset;
+        public bint CollisionDataOffset;
         public bint TetherOffset;
         public bint UnknownSection12Offset;
 

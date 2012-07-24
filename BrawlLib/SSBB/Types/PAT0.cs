@@ -29,7 +29,7 @@ namespace BrawlLib.SSBBTypes
         public bint _pltPtrTableOffset;
 
         public bint _stringOffset;
-        public bint _pad; //0x00
+        public bint _origPathOffset;
 
         public bushort _numFrames;
         public bushort _numEntries; //Same as group entries, directly below
@@ -76,9 +76,9 @@ namespace BrawlLib.SSBBTypes
         public bint _texPtrTableOffset;
         public bint _pltPtrTableOffset;
 
-        public bint _pad1; //0x00
+        public bint _part2Offset;
         public bint _stringOffset;
-        public bint _pad2; //0x00
+        public bint _origPathOffset;
 
         public bushort _numFrames;
         public bushort _numEntries; //Same as group entries, directly below
@@ -162,8 +162,6 @@ namespace BrawlLib.SSBBTypes
         public bfloat _key;
         public bushort _texFileIndex;
         public bushort _pltFileIndex;
-
-        //Aligned to ? bytes
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }

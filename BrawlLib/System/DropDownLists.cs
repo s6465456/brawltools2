@@ -69,12 +69,24 @@ namespace System
         }
     }
 
+    public class DropDownListGFXFilesMDef : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            string[] values = (context.Instance as MoveDefEntryNode).Root.iGFXFiles;
+            if (values != null)
+                return new StandardValuesCollection(values);
+            return null;
+        }
+    }
+
     public class DropDownListExtNodesMDef : StringConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
-            MoveDefExternalNode[] values = (context.Instance as MoveDefEntryNode).Root._external.ToArray();
+            ResourceNode[] values = (context.Instance as MoveDefEntryNode).Root._externalRefs.ToArray();
             if (values != null)
                 return new StandardValuesCollection(values);
             return null;
@@ -90,6 +102,19 @@ namespace System
             if (values != null)
                 return new StandardValuesCollection(values);
             return null;
+        }
+    }
+
+    public class DropDownListSCN0Ambience : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            SCN0Node node = (context.Instance as SCN0EntryNode).Parent.Parent as SCN0Node;
+            ResourceNode n = node.FindChild("AmbLights(NW4R)", false);
+            if (n != null)
+                return new StandardValuesCollection(n.Children);
+            else return null;
         }
     }
 

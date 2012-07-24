@@ -294,6 +294,7 @@ namespace BrawlBox.NodeWrappers
             bool go = true;
             string airground = Application.StartupPath + "/MovesetData/AirGroundStats.txt";
             string collision = Application.StartupPath + "/MovesetData/CollisionStats.txt";
+            string gfx = Application.StartupPath + "/MovesetData/GFXFiles.txt";
             string enums = Application.StartupPath + "/MovesetData/Enums.txt";
 
             if (File.Exists(airground))
@@ -320,6 +321,19 @@ namespace BrawlBox.NodeWrappers
                 using (StreamWriter file = new StreamWriter(collision))
                 {
                     foreach (string i in node.iCollisionStats)
+                        file.WriteLine(i);
+                }
+            if (File.Exists(gfx))
+                if (MessageBox.Show("Do you want to overwrite GFXFiles.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(gfx))
+                {
+                    foreach (string i in node.iGFXFiles)
                         file.WriteLine(i);
                 }
             if (File.Exists(enums))
@@ -466,7 +480,7 @@ namespace BrawlBox.NodeWrappers
         {
             DialogResult res;
             MoveDefEventNode e = _resource as MoveDefEventNode;
-            int ev = e._event;
+            long ev = e._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
             if (e.Root.EventDictionary.ContainsKey(ev))
                 temp.Name = e.Root.EventDictionary[ev]._name;
@@ -480,7 +494,7 @@ namespace BrawlBox.NodeWrappers
                 else
                     e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Children.Count], pDescs = new string[_resource.Children.Count], _name = temp.Name, idNumber = ev });
                 e.Root._dictionaryChanged = true;
-                foreach (MoveDefEventNode n in e.Root._events[ev])
+                foreach (MoveDefEventNode n in e.Root._events[(uint)ev])
                 {
                     n.Name = temp.Name;
                     n.HasChanged = false;
@@ -493,7 +507,7 @@ namespace BrawlBox.NodeWrappers
         {
             DialogResult res;
             MoveDefEventNode e = _resource as MoveDefEventNode;
-            int ev = e._event;
+            long ev = e._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
             if (e.Root.EventDictionary.ContainsKey(ev))
                 temp.Name = e.Root.EventDictionary[ev]._description;
@@ -515,7 +529,7 @@ namespace BrawlBox.NodeWrappers
         {
             DialogResult res;
             MoveDefEventNode e = _resource as MoveDefEventNode;
-            int ev = e._event;
+            long ev = e._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
             if (e.Root.EventDictionary.ContainsKey(ev))
                 temp.Name = e.Root.EventDictionary[ev]._syntax;
@@ -571,7 +585,7 @@ namespace BrawlBox.NodeWrappers
         {
             DialogResult res;
             MoveDefEventParameterNode e = _resource as MoveDefEventParameterNode;
-            int ev = (e.Parent as MoveDefEventNode)._event;
+            long ev = (e.Parent as MoveDefEventNode)._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
             if (e.Root.EventDictionary.ContainsKey(ev))
                 temp.Name = e.Root.EventDictionary[ev].Params[_resource.Index];
@@ -584,7 +598,7 @@ namespace BrawlBox.NodeWrappers
                     e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Parent.Children.Count], pDescs = new string[_resource.Parent.Children.Count], idNumber = ev });
                 e.Root.EventDictionary[ev].Params[_resource.Index] = temp.Name;
                 e.Root._dictionaryChanged = true;
-                foreach (MoveDefEventNode n in e.Root._events[ev])
+                foreach (MoveDefEventNode n in e.Root._events[(uint)ev])
                 {
                     n.Children[_resource.Index].Name = temp.Name;
                     n.Children[_resource.Index].HasChanged = false;
@@ -597,7 +611,7 @@ namespace BrawlBox.NodeWrappers
         {
             DialogResult res;
             MoveDefEventParameterNode e = _resource as MoveDefEventParameterNode;
-            int ev = (e.Parent as MoveDefEventNode)._event;
+            long ev = (e.Parent as MoveDefEventNode)._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
             if (e.Root.EventDictionary.ContainsKey(ev))
                 temp.Name = e.Root.EventDictionary[ev].pDescs[_resource.Index];
@@ -911,11 +925,11 @@ namespace BrawlBox.NodeWrappers
 
         public void NewSwitch()
         {
-            MoveDefBoneSwitchNode node = new MoveDefBoneSwitchNode() { Name = "BoneSwitch" + _resource.Children.Count };
-            _resource.AddChild(node);
-            BaseWrapper res = this.FindResource(node, false);
-            res.EnsureVisible();
-            res.TreeView.SelectedNode = res;
+            foreach (MoveDefModelVisRefNode r in _resource.Parent.Children)
+            {
+                MoveDefBoneSwitchNode node = new MoveDefBoneSwitchNode() { Name = "BoneSwitch" + r.Children.Count };
+                r.AddChild(node);
+            }
         }
     }
 
@@ -929,23 +943,25 @@ namespace BrawlBox.NodeWrappers
             _menu = new ContextMenuStrip();
             _menu.Items.Add(new ToolStripMenuItem("Add New Group", null, NewGroupAction, Keys.Control | Keys.A));
             _menu.Items.Add(new ToolStripSeparator());
-            _menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUpAction, Keys.Control | Keys.Up));
-            _menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDownAction, Keys.Control | Keys.Down));
-            _menu.Items.Add(new ToolStripMenuItem("Re&name", null, RenameAction, Keys.Control | Keys.N));
+            _menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUp2Action, Keys.Control | Keys.Up));
+            _menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDown2Action, Keys.Control | Keys.Down));
             _menu.Items.Add(new ToolStripSeparator());
-            _menu.Items.Add(new ToolStripMenuItem("&Delete", null, DeleteAction, Keys.Control | Keys.Delete));
+            _menu.Items.Add(new ToolStripMenuItem("&Delete", null, Delete2Action, Keys.Control | Keys.Delete));
             _menu.Opening += MenuOpening;
             _menu.Closing += MenuClosing;
         }
         protected static void NewGroupAction(object sender, EventArgs e) { GetInstance<MDefMdlVisSwitchWrapper>().NewGroup(); }
+        protected static void MoveUp2Action(object sender, EventArgs e) { GetInstance<MDefMdlVisSwitchWrapper>().MoveUp2(); }
+        protected static void MoveDown2Action(object sender, EventArgs e) { GetInstance<MDefMdlVisSwitchWrapper>().MoveDown2(); }
+        protected static void Delete2Action(object sender, EventArgs e) { GetInstance<MDefMdlVisSwitchWrapper>().Delete2(); }
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            _menu.Items[2].Enabled = _menu.Items[3].Enabled = _menu.Items[6].Enabled = true;
+            _menu.Items[2].Enabled = _menu.Items[3].Enabled = _menu.Items[5].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             MDefMdlVisSwitchWrapper w = GetInstance<MDefMdlVisSwitchWrapper>();
-            _menu.Items[6].Enabled = w.Parent != null;
+            _menu.Items[5].Enabled = w.Parent != null;
             _menu.Items[2].Enabled = w.PrevNode != null;
             _menu.Items[3].Enabled = w.NextNode != null;
         }
@@ -960,6 +976,30 @@ namespace BrawlBox.NodeWrappers
             BaseWrapper res = this.FindResource(node, false);
             res.EnsureVisible();
             res.TreeView.SelectedNode = res;
+        }
+
+        public void MoveUp2()
+        {
+            int i = _resource.Index;
+            foreach (MoveDefModelVisRefNode r in _resource.Parent.Parent.Children)
+                if (i < r.Children.Count)
+                    r.Children[i].doMoveUp();
+        }
+
+        public void MoveDown2()
+        {
+            int i = _resource.Index;
+            foreach (MoveDefModelVisRefNode r in _resource.Parent.Parent.Children)
+                if (i < r.Children.Count)
+                    r.Children[i].doMoveDown();
+        }
+
+        public void Delete2()
+        {
+            int i = _resource.Index;
+            foreach (MoveDefModelVisRefNode r in _resource.Parent.Parent.Children)
+                if (i < r.Children.Count)
+                    r.Children[i].Remove();
         }
     }
     [NodeWrapper(ResourceType.MDefMdlVisGroup)]
@@ -1024,6 +1064,8 @@ namespace BrawlBox.NodeWrappers
         private static void MenuOpening(object sender, CancelEventArgs e) { }
         #endregion
 
+        static bool shown = false;
+
         public MDefSubroutineListWrapper() { ContextMenuStrip = _menu; }
 
         public void NewActionGroup()
@@ -1031,6 +1073,11 @@ namespace BrawlBox.NodeWrappers
             MoveDefActionNode node = new MoveDefActionNode("SubRoutine" + _resource.Children.Count, true, _resource);
             _resource.AddChild(node);
             _resource.Name = "[" + _resource.Children.Count + "] SubRoutines";
+            if (!shown)
+            {
+                MessageBox.Show("Be sure to actually use this subroutine using an event with an offset or it will be removed after you save.\nThis message will not be shown again.");
+                shown = true;
+            }
             BaseWrapper res = this.FindResource(node, false);
             res.EnsureVisible();
             res.TreeView.SelectedNode = res;
@@ -1062,6 +1109,38 @@ namespace BrawlBox.NodeWrappers
             MoveDefActionOverrideEntryNode node = new MoveDefActionOverrideEntryNode() { Name = "Action0 Override" };
             node.Children.Add(new MoveDefActionNode("Action0", true, node));
             _resource.AddChild(node);
+            BaseWrapper res = this.FindResource(node, false);
+            res.EnsureVisible();
+            res.TreeView.SelectedNode = res;
+        }
+    }
+
+    [NodeWrapper(ResourceType.MDefRefList)]
+    class MDefRefListWrapper : GenericWrapper
+    {
+        static bool shown = false;
+
+        #region Menu
+        private static ContextMenuStrip _menu;
+        static MDefRefListWrapper()
+        {
+            _menu = new ContextMenuStrip();
+            _menu.Items.Add(new ToolStripMenuItem("Add New Reference", null, NewRefAction, Keys.Control | Keys.A));
+        }
+        protected static void NewRefAction(object sender, EventArgs e) { GetInstance<MDefRefListWrapper>().NewRef(); }
+        #endregion
+
+        public MDefRefListWrapper() { ContextMenuStrip = _menu; }
+
+        public void NewRef()
+        {
+            MoveDefReferenceEntryNode node = new MoveDefReferenceEntryNode() { Name = "NewRef" };
+            _resource.AddChild(node);
+            if (!shown)
+            {
+                MessageBox.Show("Be sure that the name of this reference has the same name as a section entry in Fighter.pac.\nAlso be sure to actually use this reference using an event with an offset or it will be removed after you save.\nThis message will not be shown again.");
+                shown = true;
+            }
             BaseWrapper res = this.FindResource(node, false);
             res.EnsureVisible();
             res.TreeView.SelectedNode = res;

@@ -22,7 +22,8 @@ namespace BrawlLib.Wii.Models
         Objects,
         Textures,
         Palettes,
-        None
+        FurVectors,
+        FurLayerCoords
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -43,7 +44,9 @@ namespace BrawlLib.Wii.Models
             typeof(MDL0ShaderNode),
             typeof(MDL0PolygonNode),
             null,
-            null
+            null,
+            null,
+            null,
         };
 
         internal static readonly MR[] OrderBank = new MR[]
@@ -59,7 +62,8 @@ namespace BrawlLib.Wii.Models
             MR.Normals,
             MR.Colors,
             MR.UVs,
-            //MR.None
+            //MR.FurVectors,
+            //MR.FurLayerCoords
         };
 
         internal static readonly List<MR>[] IndexBank = new List<MR>[]{
@@ -71,10 +75,10 @@ namespace BrawlLib.Wii.Models
             null, //5
             null, //6
             null, //7
-            new List<MR>( new MR[]{MR.Definitions, MR.Bones, MR.Vertices, MR.Normals, MR.Colors, MR.UVs, MR.Materials, MR.Shaders, MR.Objects, MR.Textures, MR.Palettes}),
-            new List<MR>( new MR[]{MR.Definitions, MR.Bones, MR.Vertices, MR.Normals, MR.Colors, MR.UVs, MR.Materials, MR.Shaders, MR.Objects, MR.Textures, MR.Palettes}),
-            new List<MR>( new MR[]{MR.Definitions, MR.Bones, MR.Vertices, MR.Normals, MR.Colors, MR.UVs, MR.None, MR.None, MR.Materials, MR.Shaders, MR.Objects, MR.Textures, MR.Palettes}),
-            new List<MR>( new MR[]{MR.Definitions, MR.Bones, MR.Vertices, MR.Normals, MR.Colors, MR.UVs, MR.None, MR.None, MR.Materials, MR.Shaders, MR.Objects, MR.Textures, MR.Palettes}) 
+            new List<MR>(new MR[] { MR.Definitions, MR.Bones, MR.Vertices, MR.Normals, MR.Colors, MR.UVs, MR.Materials, MR.Shaders, MR.Objects, MR.Textures, MR.Palettes }),
+            new List<MR>(new MR[] { MR.Definitions, MR.Bones, MR.Vertices, MR.Normals, MR.Colors, MR.UVs, MR.Materials, MR.Shaders, MR.Objects, MR.Textures, MR.Palettes }),
+            new List<MR>(new MR[] { MR.Definitions, MR.Bones, MR.Vertices, MR.Normals, MR.Colors, MR.UVs, MR.FurVectors, MR.FurLayerCoords, MR.Materials, MR.Shaders, MR.Objects, MR.Textures, MR.Palettes }),
+            new List<MR>(new MR[] { MR.Definitions, MR.Bones, MR.Vertices, MR.Normals, MR.Colors, MR.UVs, MR.FurVectors, MR.FurLayerCoords, MR.Materials, MR.Shaders, MR.Objects, MR.Textures, MR.Palettes }) 
         };
         #endregion
 
@@ -92,6 +96,9 @@ namespace BrawlLib.Wii.Models
         public ResourceGroup* Polygons; //5
         public ResourceGroup* Textures; //10
         public ResourceGroup* Palettes; //11
+
+        public ResourceGroup* FurVectors;
+        public ResourceGroup* FurLayerCoords;
         //public ResourceGroup* None;
         //public int StringOffset;
 
@@ -125,10 +132,10 @@ namespace BrawlLib.Wii.Models
             //Extract resource addresses
             fixed (ResourceGroup** gList = &Defs)
                 for (int i = 0; i < groupCount; i++)
-                    if ((offset = offsets[i]) != 0 && iList[i] != MR.None)
+                    if ((offset = offsets[i]) != 0 && iList[i] != MR.FurVectors && iList[i] != MR.FurLayerCoords)
                         gList[(int)iList[i]] = (ResourceGroup*)((byte*)pModel + offset);
-                    else if (offset > 0 && iList[i] == MR.None)
-                        MessageBox.Show("Unused data offset " + i + " is not 0!");
+                    else if (offset > 0 && (iList[i] == MR.FurLayerCoords || iList[i] == MR.FurVectors))
+                        MessageBox.Show("Unsupported Fur Data is used!");
         }
 
         public static ModelLinker Prepare(MDL0Node model)
@@ -259,7 +266,7 @@ namespace BrawlLib.Wii.Models
                     if (form != null)
                         form.Say("Writing relocation offsets for the " + resType.ToString());
 
-                    if (resType == MR.None || ((group = Groups[(int)resType]) == null) || (TypeBank[(int)resType] == null))
+                    if (resType == MR.FurLayerCoords || resType == MR.FurVectors || ((group = Groups[(int)resType]) == null) || (TypeBank[(int)resType] == null))
                         continue;
 
                     pOut[(int)resType] = pGrp = (ResourceGroup*)pGroup;
@@ -302,7 +309,7 @@ namespace BrawlLib.Wii.Models
                 for (int i = 0; i < count; i++)
                 {
                     resType = iList[i];
-                    if (resType == MR.None)
+                    if (resType == MR.FurVectors || resType == MR.FurLayerCoords)
                         offset = 0;
                     else if ((offset = (int)pGroup[(int)resType]) > 0)
                         offset -= (int)Header;

@@ -16,8 +16,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal List<string> _textureFiles = new List<string>();
         internal List<string> _paletteFiles = new List<string>();
 
-        internal int _loop, _version;
-        internal ushort _frameCount;
+        internal int _loop, _version = 3;
+        internal ushort _frameCount = 1;
 
         public bool texChanged = false, pltChanged = false;
 
@@ -181,7 +181,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_header._tag = PAT0v4.Tag;
                 header->_header._version = 4;
                 header->_dataOffset = PAT0v4.Size;
-                header->_pad1 = header->_pad2 = 0;
+                header->_part2Offset = header->_origPathOffset = 0;
                 header->_numFrames = _frameCount;
                 header->_numEntries = (ushort)Children.Count;
                 header->_numTexPtr = (ushort)_textureFiles.Count;
@@ -194,7 +194,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_header._tag = PAT0v3.Tag;
                 header->_header._version = 3;
                 header->_dataOffset = PAT0v3.Size;
-                header->_pad = 0;
+                header->_origPathOffset = 0;
                 header->_numFrames = _frameCount;
                 header->_numEntries = (ushort)Children.Count;
                 header->_numTexPtr = (ushort)_textureFiles.Count;
@@ -794,16 +794,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return tex; }
             set 
             {
-                if (((PAT0TextureNode)Parent).hasTex)
-                {
-                    if (!String.IsNullOrEmpty(value))
-                        Name = value;
-                }
-                else
-                {
-                    tex = null;
-                    MessageBox.Show("You must enable the use of textures on the texture node.");
-                }
+                if (!(Parent as PAT0TextureNode).hasTex || value == tex)
+                    return;
+
+                if (!String.IsNullOrEmpty(value))
+                    Name = value;
+                
                 ((PAT0Node)Parent.Parent.Parent).texChanged = true;
             }
         }
@@ -813,19 +809,15 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return plt; }
             set 
             {
-                if (((PAT0TextureNode)Parent).hasPlt)
+                if (!(Parent as PAT0TextureNode).hasPlt || value == plt)
+                    return;
+
+                if (!String.IsNullOrEmpty(value))
                 {
-                    if (!String.IsNullOrEmpty(value))
-                    {
-                        plt = value;
-                        SignalPropertyChange();
-                    }
+                    plt = value;
+                    SignalPropertyChange();
                 }
-                else
-                {
-                    plt = null;
-                    MessageBox.Show("You must enable the use of palettes on the texture node.");
-                }
+                
                 ((PAT0Node)Parent.Parent.Parent).pltChanged = true;
             }
         }

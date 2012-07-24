@@ -138,6 +138,44 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
     }
+    public unsafe class MoveDefEventValue2HalfGFXNode : MoveDefEventParameterNode
+    {
+        [Browsable(false)]
+        public override ArgVarType _type { get { return ArgVarType.Value; } }
+
+        [Category("MoveDef Event Value"), TypeConverter(typeof(DropDownListGFXFilesMDef))]
+        public string GFXFile 
+        { 
+            get 
+            { 
+                int index = ((_value >> 16) & 0xFFFF);
+                if (Root.iGFXFiles != null && Root.iGFXFiles.Length > 0 && index < Root.iGFXFiles.Length)
+                    return Root.iGFXFiles[index];
+                else return index.ToString();
+            } 
+            set 
+            {
+                int index = 0;
+                if (!int.TryParse(value, out index))
+                    if (Root.iGFXFiles != null && Root.iGFXFiles.Length > 0 && Root.iGFXFiles.Contains(value))
+                        index = Array.IndexOf(Root.iGFXFiles, value);
+                _value = (_value & 0xFFFF) | ((index & 0xFFFF) << 16);
+                SignalPropertyChange(); 
+            } 
+        }
+        [Category("MoveDef Event Value")]
+        public short EFLSEntryIndex { get { return (short)((_value) & 0xFFFF); } set { _value = (int)((uint)_value & 0xFFFF0000) | (value & 0xFFFF); SignalPropertyChange(); } }
+        
+        public MoveDefEventValue2HalfGFXNode(string name) { _name = name != null ? name : "Value"; }
+
+        protected override bool OnInitialize()
+        {
+            if (_name == null)
+                _name = "Value";
+            base.OnInitialize();
+            return false;
+        }
+    }
     public unsafe class MoveDefEventValueHalf2ByteNode : MoveDefEventParameterNode
     {
         [Browsable(false)]
@@ -222,7 +260,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             if (_name == null)
                 _name = "Unknown";
-            MessageBox.Show(TreePath);
+            //MessageBox.Show(TreePath);
             base.OnInitialize();
             return false;
         }
@@ -268,24 +306,16 @@ namespace BrawlLib.SSBB.ResourceNodes
             set
             {
                 if (_extNode != null)
-                {
-                    if (_extNode._parent is MoveDefSectionNode)
-                    {
-                        MessageBox.Show("Section references are not editable.");
-                        return;
-                    }
-
                     if (_extNode.Name != value)
                         _extNode._refs.Remove(this);
-                }
-                foreach (MoveDefExternalNode e in Root._external)
+                foreach (MoveDefExternalNode e in Root._externalRefs)
                     if (e.Name == value)
                     {
                         _extNode = e;
                         e._refs.Add(this);
                         Name = e.Name;
                         action = null;
-                        list = 4;
+                        list = 3;
                         index = _extNode.Index;
                     }
 
@@ -312,9 +342,27 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (RawOffset > 0)
             {
-                action = Root.GetAction(RawOffset);
-                if (action == null)
-                    action = GetAction();
+                Root.GetLocation(RawOffset, out list, out type, out index);
+                if (!External)
+                {
+                    action = Root.GetAction(list, type, index);
+                    if (action == null)
+                        action = GetAction();
+                }
+            }
+            else if (RawOffset < 0 && External)
+            {
+                action = null;
+                index = _extNode.Index;
+                list = 3;
+                type = -1;
+            }
+            else
+            {
+                action = null;
+                index = -1;
+                list = 4;
+                type = -1;
             }
 
             if (_name == null)
@@ -443,7 +491,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void GetValue()
         {
-            val = ResolveVariable(_value = ((int)mem * 0x10000000) + ((int)type * 0x1000000) + number);
+            val = ResolveVariable(_value = ((int)mem * 0x10000000) + ((int)type * 0x1000000) + number.Clamp(0, 0xFFFFFF));
         }
 
         public enum VarMemType
@@ -470,7 +518,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             string variableName = "";
             long variableMemType = (value & 0xF0000000) / 0x10000000;
             long variableType = (value & 0xF000000) / 0x1000000;
-            long variableNumber = (value & 0xFF);
+            long variableNumber = (value & 0xFFFFFF);
             if (variableMemType == 0) { variableName = "IC-"; mem = VarMemType.IC; }
             if (variableMemType == 1) { variableName = "LA-"; mem = VarMemType.LA; }
             if (variableMemType == 2) { variableName = "RA-"; mem = VarMemType.RA; }
@@ -549,6 +597,16 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class HitboxFlagsNode : MoveDefEventParameterNode
     {
         internal HitboxFlags val = new HitboxFlags();
+
+        public string HexValue
+        {
+            get { return _value.ToString("X"); }
+            set
+            {
+                val.data = _value = Int32.Parse(value, System.Globalization.NumberStyles.HexNumber);
+                GetFlags();
+            }
+        }
 
         public int effect, unk1, sound, unk2, ground, air, unk3, type, clang, unk4, direct, unk5;
 
@@ -665,6 +723,16 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal SpecialHitboxFlags val = new SpecialHitboxFlags();
 
+        public string HexValue 
+        {
+            get { return _value.ToString("X"); }
+            set
+            {
+                val.data = _value = Int32.Parse(value, System.Globalization.NumberStyles.HexNumber);
+                GetFlags();
+            }
+        }
+        
         public int angleFlipping, unk1, stretches, unk2, shield, absorb, reflect, unk3, invinc, grip, unk4, freeze, sleep, flinch;
         public Bin16 hitBits = new Bin16();
 

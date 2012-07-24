@@ -65,7 +65,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0TextureNode(string name) 
         {
             _name = name;
-            if (Name == "TShadow1" || Name == "_env_map_tex_dummy")
+            if (Name == "TShadow1")
                 Enabled = false;
         }
 
@@ -75,8 +75,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_context == null)
                 _context = ctx;
 
-            if (palette == null && mRef.PaletteNode != null)
+            if (mRef.PaletteNode != null)
                 palette = mRef.RootNode.FindChild("Palettes(NW4R)/" + mRef.Palette, true) as PLT0Node;
+            else palette = null;
 
             try
             {
@@ -226,6 +227,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         if (path != null)
                         {
                             DirectoryInfo dir = new DirectoryInfo(Path.GetDirectoryName(path));
+                            if (dir.Exists)
                             foreach (FileInfo file in dir.GetFiles(Name + ".*"))
                             {
                                 if (file.Name.EndsWith(".tga"))
@@ -298,7 +300,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             //Unbind(ctx);
 
-            if (Name == "TShadow1" || Name == "_env_map_tex_dummy")
+            if (Name == "TShadow1")
                 Enabled = false;
 
             _context = ctx;

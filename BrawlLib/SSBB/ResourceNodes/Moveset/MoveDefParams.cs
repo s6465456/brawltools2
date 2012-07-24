@@ -112,7 +112,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        public static int TabUpEvents(int eventId)
+        public static int TabUpEvents(uint eventId)
         {
             switch (eventId)
             {
@@ -141,7 +141,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        public static int TabDownEvents(int eventId)
+        public static int TabDownEvents(uint eventId)
         {
             switch (eventId)
             {

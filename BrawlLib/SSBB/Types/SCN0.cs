@@ -8,7 +8,7 @@ using BrawlLib.Wii.Graphics;
 namespace BrawlLib.SSBBTypes
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct SCN0
+    public unsafe struct SCN0v4
     {
         public const uint Tag = 0x304E4353;
         public const int Size = 0x44;
@@ -21,16 +21,16 @@ namespace BrawlLib.SSBBTypes
         public bint _fogOffset;
         public bint _cameraOffset;
         public bint _stringOffset;
-        public bint _unk1; //v5 stringOffset
+        public bint _origPathOffset;
         public bshort _frameCount;
-        public bshort _unk3;
-        public bint _unk4;
+        public bshort _specLightCount;
+        public bint _loop;
         public bshort _lightSetCount;
         public bshort _ambientCount;
         public bshort _lightCount;
         public bshort _fogCount;
         public bshort _cameraCount;
-        public bshort _unk10;
+        public bshort _pad;
 
         public void Set(int groupLen, int lightSetLen, int ambLightLen, int lightLen, int fogLen, int cameraLen)
         {
@@ -38,6 +38,71 @@ namespace BrawlLib.SSBBTypes
 
             _header._tag = Tag;
             _header._version = 4;
+            _header._bresOffset = 0;
+
+            _lightSetOffset = _dataOffset + groupLen;
+            _ambLightOffset = _lightSetOffset + lightSetLen;
+            _lightOffset = _ambLightOffset + ambLightLen;
+            _fogOffset = _lightOffset + lightLen;
+            _cameraOffset = _fogOffset + fogLen;
+            _header._size = _cameraOffset + cameraLen;
+
+            if (lightSetLen == 0) _lightSetOffset = 0;
+            if (ambLightLen == 0) _ambLightOffset = 0;
+            if (lightLen == 0) _lightOffset = 0;
+            if (fogLen == 0) _fogOffset = 0;
+            if (cameraLen == 0) _cameraOffset = 0;
+        }
+
+        private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+
+        public ResourceGroup* Group { get { return (ResourceGroup*)(Address + _dataOffset); } }
+
+        public SCN0LightSet* LightSets { get { return (SCN0LightSet*)(Address + _lightSetOffset); } }
+        public SCN0AmbientLight* AmbientLights { get { return (SCN0AmbientLight*)(Address + _ambLightOffset); } }
+        public SCN0Light* Lights { get { return (SCN0Light*)(Address + _lightOffset); } }
+        public SCN0Fog* Fogs { get { return (SCN0Fog*)(Address + _fogOffset); } }
+        public SCN0Camera* Cameras { get { return (SCN0Camera*)(Address + _cameraOffset); } }
+
+        public string ResourceString { get { return new String((sbyte*)this.ResourceStringAddress); } }
+        public VoidPtr ResourceStringAddress
+        {
+            get { return (VoidPtr)this.Address + _stringOffset; }
+            set { _stringOffset = (int)value - (int)Address; }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct SCN0v5
+    {
+        public const uint Tag = 0x304E4353;
+        public const int Size = 0x44;
+
+        public BRESCommonHeader _header;
+        public bint _dataOffset;
+        public bint _lightSetOffset;
+        public bint _ambLightOffset;
+        public bint _lightOffset;
+        public bint _fogOffset;
+        public bint _cameraOffset;
+        public bint _origPathOffset;
+        public bint _stringOffset;
+        public bint _loop;
+        public bshort _frameCount;
+        public bshort _specLightCount;
+        public bshort _cameraCount;
+        public bshort _fogCount;
+        public bshort _lightSetCount;
+        public bshort _ambientCount;
+        public bshort _lightCount;
+        public bshort _pad;
+
+        public void Set(int groupLen, int lightSetLen, int ambLightLen, int lightLen, int fogLen, int cameraLen)
+        {
+            _dataOffset = Size;
+
+            _header._tag = Tag;
+            _header._version = 5;
             _header._bresOffset = 0;
 
             _lightSetOffset = _dataOffset + groupLen;
@@ -101,13 +166,12 @@ namespace BrawlLib.SSBBTypes
         public SCN0CommonHeader _header;
 
         public bint _ambNameOffset;
-        public bshort _magic; //0xFFFF
+        public bshort _id; //ambient set here as id at runtime
         public byte _numLights;
-        public byte _unk1;
+        public byte _pad;
         public fixed int _entries[8]; //string offsets
-
-        public bint _pad1, _pad2, _pad3, _pad4; //0xFFFFFFFF
-
+        public fixed short _lightIds[8]; //entries are set here as ids at runtime
+        
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public bint* Offsets { get { fixed (void* ptr = _entries)return (bint*)ptr; } }
 
@@ -119,21 +183,22 @@ namespace BrawlLib.SSBBTypes
         }
 
         public bint* StringOffsets { get { return (bint*)(Address + 0x1C); } }
+        public bshort* IDs { get { return (bshort*)(Address + 0x3C); } }
     }
 
     [Flags]
-    public enum SCN0AmbLightFlags
+    public enum SCN0AmbLightFixedFlags
     {
         None = 0,
         FixedLighting = 128,
     }
 
     [Flags]
-    public enum SCN0AmbLightEnableFlags
+    public enum SCN0AmbLightFlags
     {
         None = 0,
-        Enabled = 1,
-        UseLightSet = 2
+        HasColor = 1,
+        HasAlpha = 2
     }
 
     [Flags]
@@ -151,16 +216,33 @@ namespace BrawlLib.SSBBTypes
 
         public SCN0CommonHeader _header;
 
-        public byte _fixedFlags; //0x80
-        public byte _unk2; //0x00
-        public byte _unk3; //0x00
-        public byte _unk4; //0x03, entries?
+        public byte _fixedFlags;
+        public byte _pad1;
+        public byte _pad2;
+        public byte _flags;
 
         public RGBAPixel _lighting;
 
         public RGBAPixel* lightEntries { get { return (RGBAPixel*)((byte*)Address + 24 + *(bint*)((byte*)Address + 24)); } }
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    }
+
+    [Flags]
+    public enum UsageFlags : ushort
+    {
+        Enabled = 0x1, //Unused by Program
+        HasSpecular = 0x2, //Use NonSpecLightId, SpecularColor, Brightness
+        HasColor = 0x4,
+        HasAlpha = 0x8,
+    }
+
+    [Flags]
+    public enum LightType : ushort
+    {
+        Point = 0x0,
+        Directional = 0x1, //Don't use distFunc, refDistance, refBrightness
+        Spotlight = 0x2, //Use cutoff
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -170,33 +252,47 @@ namespace BrawlLib.SSBBTypes
 
         public SCN0CommonHeader _header;
 
-        public bint _unk1;
-        public bint _unk2;
-        public bushort _flags1;
-        public bushort _flags2;
-        public bint _unk5;
+        public bint _nonSpecLightId;
+        public bint _part2Offset;
 
-        public BVec3 _vec1;
-        public RGBAPixel _lighting1;
-        public BVec3 _vec2;
+        public bushort _fixedFlags;
+        public bushort _usageFlags;
 
-        public bint _unk6;
-        public bfloat _unk7;
-        public bfloat _unk8;
-        public bint _unk9; //2
-        public bfloat _unk10;
-        public RGBAPixel _lighting2;
-        public bfloat _unk12;
+        public bint _visOffset; 
+        public byte* visBitEntries { get { return (byte*)_visOffset.Address + _visOffset; } }
 
-        public SCN0KeyframesHeader* xEndKeyframes { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x24 + *(bint*)((byte*)Address + 0x24)); } }
-        public SCN0KeyframesHeader* yEndKeyframes { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x28 + *(bint*)((byte*)Address + 0x28)); } }
-        public SCN0KeyframesHeader* zEndKeyframes { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x2C + *(bint*)((byte*)Address + 0x2C)); } }
-        public RGBAPixel* light1Entries { get { return (RGBAPixel*)((byte*)Address + 0x30 + *(bint*)((byte*)Address + 0x30)); } }
-        public SCN0KeyframesHeader* xStartKeyframes { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x34 + *(bint*)((byte*)Address + 0x34)); } }
-        public SCN0KeyframesHeader* yStartKeyframes { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x38 + *(bint*)((byte*)Address + 0x38)); } }
-        public SCN0KeyframesHeader* zStartKeyframes { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x3C + *(bint*)((byte*)Address + 0x3C)); } }
-        public RGBAPixel* light2Entries { get { return (RGBAPixel*)((byte*)Address + 0x54 + *(bint*)((byte*)Address + 0x54)); } }
+        public BVec3 _startPoint;
+        public SCN0KeyframesHeader* xStartKeyframes { get { return (SCN0KeyframesHeader*)(_startPoint._x.Address + *(bint*)_startPoint._x.Address); } }
+        public SCN0KeyframesHeader* yStartKeyframes { get { return (SCN0KeyframesHeader*)(_startPoint._y.Address + *(bint*)_startPoint._y.Address); } }
+        public SCN0KeyframesHeader* zStartKeyframes { get { return (SCN0KeyframesHeader*)(_startPoint._z.Address + *(bint*)_startPoint._z.Address); } }
+
+        public RGBAPixel _lightColor;
+        public RGBAPixel* lightColorEntries { get { return (RGBAPixel*)(_lightColor.Address + *(bint*)_lightColor.Address); } }
+
+        public BVec3 _endPoint;
+        public SCN0KeyframesHeader* xEndKeyframes { get { return (SCN0KeyframesHeader*)(_endPoint._x.Address + *(bint*)_endPoint._x.Address); } }
+        public SCN0KeyframesHeader* yEndKeyframes { get { return (SCN0KeyframesHeader*)(_endPoint._y.Address + *(bint*)_endPoint._y.Address); } }
+        public SCN0KeyframesHeader* zEndKeyframes { get { return (SCN0KeyframesHeader*)(_endPoint._z.Address + *(bint*)_endPoint._z.Address); } }
+
+        public bint _distFunc;
+
+        public bfloat _refDistance;
+        public SCN0KeyframesHeader* refDistanceKeyframes { get { return (SCN0KeyframesHeader*)(_refDistance.Address + *(bint*)_refDistance.Address); } }
+
+        public bfloat _refBrightness;
+        public SCN0KeyframesHeader* refBrightnessKeyframes { get { return (SCN0KeyframesHeader*)(_refBrightness.Address + *(bint*)_refBrightness.Address); } }
         
+        public bint _spotFunc;
+
+        public bfloat _cutoff;
+        public SCN0KeyframesHeader* cutoffKeyframes { get { return (SCN0KeyframesHeader*)(_cutoff.Address + *(bint*)_cutoff.Address); } }
+
+        public RGBAPixel _specularColor;
+        public RGBAPixel* specColorEntries { get { return (RGBAPixel*)(_specularColor.Address + *(bint*)_specularColor.Address); } }
+        
+        public bfloat _shininess;
+        public SCN0KeyframesHeader* shininessKeyframes { get { return (SCN0KeyframesHeader*)(_shininess.Address + *(bint*)_shininess.Address); } }
+
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 
@@ -207,18 +303,17 @@ namespace BrawlLib.SSBBTypes
 
         public SCN0CommonHeader _header;
         
-        //Flags determine if there's an offset
         public byte _flags;
         public Int24 _pad;
-        public bint _density;
+        public bint _type;
 
-        //Each of these is a bint offset if not fixed
-        public bfloat _start; 
-        public bfloat _end; 
-        public RGBAPixel _color;
-
+        public bfloat _start;
         public SCN0KeyframesHeader* startKeyframes { get { return (SCN0KeyframesHeader*)((byte*)Address + 28 + *(bint*)((byte*)Address + 28)); } }
+
+        public bfloat _end;
         public SCN0KeyframesHeader* endKeyframes { get { return (SCN0KeyframesHeader*)((byte*)Address + 32 + *(bint*)((byte*)Address + 32)); } }
+
+        public RGBAPixel _color;
         public RGBAPixel* colorEntries { get { return (RGBAPixel*)((byte*)Address + 36 + *(bint*)((byte*)Address + 36)); } }
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
@@ -234,21 +329,37 @@ namespace BrawlLib.SSBBTypes
     }
 
     [Flags]
-    public enum SCN0CameraVectorFlags
+    public enum SCN0CameraFlags
     {
-        None = 0,
-        Unknown = 1,
-        FixedX = 2,
-        FixedY = 4,
-        FixedZ = 8
+        PosXConstant = 0x2,
+        PosYConstant = 0x4,
+        PosZConstant = 0x8,
+        AspectConstant = 0x10,
+        NearConstant = 0x20,
+        FarConstant = 0x40,
+        PerspFovYConstant = 0x80,
+        OrthoHeightConstant = 0x100,
+        AimXConstant = 0x200,
+        AimYConstant = 0x400,
+        AimZConstant = 0x800,
+        TwistConstant = 0x1000,
+        RotXConstant = 0x2000,
+        RotYConstant = 0x4000,
+        RotZConstant = 0x8000,
     }
 
     [Flags]
     public enum SCN0CameraFlags2
     {
         None = 0,
-        UseVec4 = 2,
-        UseVec3 = 1
+        AlwaysOn = 2,
+        CameraTypeMask = 1
+    }
+
+    public enum SCN0CameraType
+    {
+        Rotate = 0,
+        Aim = 1,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -258,33 +369,40 @@ namespace BrawlLib.SSBBTypes
 
         public SCN0CommonHeader _header;
 
-        public bint _pad1; //0
+        public bint _projType;
         public bushort _flags1;
         public bushort _flags2;
-        public bint _pad2; //0
+        public bint _part2Offset;
 
-        public BVec3 _vec1;
-        public BVec3 _camSettings;
-        public BVec3 _vec2;
-        public BVec3 _vec3;
-        public BVec3 _vec4;
+        public BVec3 _position;
+        public SCN0KeyframesHeader* posXKeyframes { get { return (SCN0KeyframesHeader*)(_position._x.Address + *(bint*)_position._x.Address); } }
+        public SCN0KeyframesHeader* posYKeyframes { get { return (SCN0KeyframesHeader*)(_position._y.Address + *(bint*)_position._y.Address); } }
+        public SCN0KeyframesHeader* posZKeyframes { get { return (SCN0KeyframesHeader*)(_position._z.Address + *(bint*)_position._z.Address); } }
 
-        public SCN0KeyframesHeader* v1xKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x20 + *(bint*)((byte*)Address + 0x20)); } }
-        public SCN0KeyframesHeader* v1yKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x24 + *(bint*)((byte*)Address + 0x24)); } }
-        public SCN0KeyframesHeader* v1zKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x28 + *(bint*)((byte*)Address + 0x28)); } }
-
-        public SCN0KeyframesHeader* v2xKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x38 + *(bint*)((byte*)Address + 0x38)); } }
-        public SCN0KeyframesHeader* v2yKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x3C + *(bint*)((byte*)Address + 0x3C)); } }
-        public SCN0KeyframesHeader* v2zKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x40 + *(bint*)((byte*)Address + 0x40)); } }
+        public bfloat _aspect;
+        public bfloat _nearZ;
+        public bfloat _farZ;
+        public SCN0KeyframesHeader* aspectKeyframes { get { return (SCN0KeyframesHeader*)(_aspect.Address + *(bint*)_aspect.Address); } }
+        public SCN0KeyframesHeader* nearZKeyframes { get { return (SCN0KeyframesHeader*)(_nearZ.Address + *(bint*)_nearZ.Address); } }
+        public SCN0KeyframesHeader* farZKeyframes { get { return (SCN0KeyframesHeader*)(_farZ.Address + *(bint*)_farZ.Address); } }
         
-        public SCN0KeyframesHeader* v3xKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x44 + *(bint*)((byte*)Address + 0x44)); } }
-        public SCN0KeyframesHeader* v3yKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x48 + *(bint*)((byte*)Address + 0x48)); } }
-        public SCN0KeyframesHeader* v3zKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x4C + *(bint*)((byte*)Address + 0x4C)); } }
-        
-        public SCN0KeyframesHeader* v4xKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x50 + *(bint*)((byte*)Address + 0x50)); } }
-        public SCN0KeyframesHeader* v4yKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x54 + *(bint*)((byte*)Address + 0x54)); } }
-        public SCN0KeyframesHeader* v4zKfs { get { return (SCN0KeyframesHeader*)((byte*)Address + 0x58 + *(bint*)((byte*)Address + 0x58)); } }
+        public BVec3 _rotate;
+        public SCN0KeyframesHeader* rotXKeyframes { get { return (SCN0KeyframesHeader*)(_rotate._x.Address + *(bint*)_rotate._x.Address); } }
+        public SCN0KeyframesHeader* rotYKeyframes { get { return (SCN0KeyframesHeader*)(_rotate._y.Address + *(bint*)_rotate._y.Address); } }
+        public SCN0KeyframesHeader* rotZKeyframes { get { return (SCN0KeyframesHeader*)(_rotate._z.Address + *(bint*)_rotate._z.Address); } }
 
+        public BVec3 _aim;
+        public SCN0KeyframesHeader* aimXKeyframes { get { return (SCN0KeyframesHeader*)(_aim._x.Address + *(bint*)_aim._x.Address); } }
+        public SCN0KeyframesHeader* aimYKeyframes { get { return (SCN0KeyframesHeader*)(_aim._y.Address + *(bint*)_aim._y.Address); } }
+        public SCN0KeyframesHeader* aimZKeyframes { get { return (SCN0KeyframesHeader*)(_aim._z.Address + *(bint*)_aim._z.Address); } }
+
+        public bfloat _twist;
+        public bfloat _perspFovY;
+        public bfloat _orthoHeight;
+        public SCN0KeyframesHeader* twistKeyframes { get { return (SCN0KeyframesHeader*)(_twist.Address + *(bint*)_twist.Address); } }
+        public SCN0KeyframesHeader* fovYKeyframes { get { return (SCN0KeyframesHeader*)(_perspFovY.Address + *(bint*)_perspFovY.Address); } }
+        public SCN0KeyframesHeader* heightKeyframes { get { return (SCN0KeyframesHeader*)(_orthoHeight.Address + *(bint*)_orthoHeight.Address); } }
+        
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 

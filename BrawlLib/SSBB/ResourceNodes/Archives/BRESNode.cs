@@ -111,7 +111,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return null;
 
             T n = Activator.CreateInstance<T>();
-            n.Name = name;//group.FindName(name);
+            n.Name = group.FindName(name);
             group.AddChild(n);
 
             return n;

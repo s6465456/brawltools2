@@ -67,17 +67,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             set
             {
                 if (_extNode != null)
-                {
-                    if (_extNode._parent is MoveDefSectionNode)
-                    {
-                        MessageBox.Show("Section references are not editable.");
-                        return;
-                    }
-
                     if (_extNode.Name != value)
                         _extNode._refs.Remove(this);
-                }
-                foreach (MoveDefExternalNode e in Root._external)
+                
+                foreach (MoveDefExternalNode e in Root._externalRefs)
                     if (e.Name == value)
                     {
                         _extNode = e;

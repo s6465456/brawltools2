@@ -14,16 +14,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         private string _ambientLight;
         private List<string> _entries = new List<string>();
-        private short magic;
-        private byte numLights, unk1;
+        private byte numLights;
 
-        //[Category("Light Set")]
-        //public short Magic { get { return magic; } set { magic = value; SignalPropertyChange(); } }
-        [Category("Light Set")]
+        [Category("Light Set"), TypeConverter(typeof(DropDownListSCN0Ambience))]
         public string Ambience { get { return _ambientLight; } set { _ambientLight = value; SignalPropertyChange(); } }
         [Category("Light Set")]
         public string[] Lights { get { return _entries.ToArray(); } set { _entries = value.ToList<string>(); SignalPropertyChange(); } }
-
         protected override bool OnInitialize()
         {
             base.OnInitialize();
@@ -31,9 +27,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (Data->_ambNameOffset != 0)
                 _ambientLight = Data->AmbientString;
 
-            magic = Data->_magic;
             numLights = Data->_numLights;
-            unk1 = Data->_unk1;
 
             bint* strings = Data->StringOffsets;
             for (int i = 0; i < Data->_numLights; i++)
@@ -62,12 +56,17 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
+            base.OnRebuild(address, length, force);
+
             SCN0LightSet* header = (SCN0LightSet*)address;
 
-            header->_unk1 = 0;
-            header->_magic = -1;
-            header->_numLights = (byte)Lights.Length;
-            header->_pad1 = header->_pad2 = header->_pad3 = header->_pad4 = -1;
+            header->_pad = 0;
+            header->_id = -1;
+            header->_numLights = (byte)Lights.Length.Clamp(0, 8);
+            bshort* ids = header->IDs;
+            int i = 0;
+            while (i < 8)
+                ids[i++] = -1;
         }
 
         protected internal override void PostProcess(VoidPtr scn0Address, VoidPtr dataAddress, StringTable stringTable)
@@ -83,7 +82,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             int i;
             bint* strings = header->StringOffsets;
-            for (i = 0; i < _entries.Count; i++)
+            for (i = 0; i < _entries.Count && i < 8; i++)
                 strings[i] = (int)stringTable[_entries[i]] + 4 - (int)strings;
             while (i < 8)
                 strings[i++] = 0;

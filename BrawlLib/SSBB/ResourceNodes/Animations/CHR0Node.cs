@@ -27,10 +27,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal int _numFrames = 1;
         internal int _stringoffset, _dataoffset, _loop;
-        internal int _version;
+        internal int _version = 4;
 
         public int ConversionBias = 0;
-        public int startUpVersion = 0;
+        public int startUpVersion = 4;
 
         [Category("Animation Data")]
         public int Version
@@ -305,25 +305,25 @@ namespace BrawlLib.SSBB.ResourceNodes
                                             kfe._value += bone._bindState.Translate._z - extBone._bindState.Translate._z;
                                         break;
 
-                                    //Rotations
-                                    case 0x13: //Rot X
-                                        difference = bone._bindState.Rotate._x - extBone._bindState.Rotate._x;
-                                        kfe._value += difference;
-                                        if (difference != 0)
-                                            FixChildren(bone, 0);
-                                        break;
-                                    case 0x14: //Rot Y
-                                        difference = bone._bindState.Rotate._y - extBone._bindState.Rotate._y;
-                                        kfe._value += difference;
-                                        if (difference != 0)
-                                            FixChildren(bone, 1);
-                                        break;
-                                    case 0x15: //Rot Z
-                                        difference = bone._bindState.Rotate._z - extBone._bindState.Rotate._z;
-                                        kfe._value += difference;
-                                        if (difference != 0)
-                                            FixChildren(bone, 2);
-                                        break;
+                                    ////Rotations
+                                    //case 0x13: //Rot X
+                                    //    difference = bone._bindState.Rotate._x - extBone._bindState.Rotate._x;
+                                    //    kfe._value += difference;
+                                    //    if (difference != 0)
+                                    //        FixChildren(bone, 0);
+                                    //    break;
+                                    //case 0x14: //Rot Y
+                                    //    difference = bone._bindState.Rotate._y - extBone._bindState.Rotate._y;
+                                    //    kfe._value += difference;
+                                    //    if (difference != 0)
+                                    //        FixChildren(bone, 1);
+                                    //    break;
+                                    //case 0x15: //Rot Z
+                                    //    difference = bone._bindState.Rotate._z - extBone._bindState.Rotate._z;
+                                    //    kfe._value += difference;
+                                    //    if (difference != 0)
+                                    //        FixChildren(bone, 2);
+                                    //    break;
                                 }
                             if (kfe._value == float.NaN || kfe._value == float.PositiveInfinity || kfe._value == float.NegativeInfinity)
                             { 

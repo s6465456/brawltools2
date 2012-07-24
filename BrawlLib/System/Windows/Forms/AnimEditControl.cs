@@ -67,7 +67,7 @@ namespace System.Windows.Forms
                             if (_target.GetKeyframe((KeyFrameMode)i, x) != null) //Check for a keyframe
                             {
                                 check = true; //Keyframe found
-                                a.SetBools(i); //Make sure the anim frame displays this
+                                a.SetBools(i, true); //Make sure the anim frame displays this
                             }
                         }
                         if (check == true)
@@ -156,7 +156,7 @@ namespace System.Windows.Forms
         {
             NumericInputBox box = sender as NumericInputBox;
             AnimationFrame kf;
-            float* pkf = (float*)&kf + 1;
+            float* pkf = (float*)&kf;
             float val = box.Value;
             int index = (int)box.Tag;
             int x;
@@ -171,6 +171,8 @@ namespace System.Windows.Forms
                     if (kfIndex >= 0)
                     {
                         kf = (AnimationFrame)listKeyframes.Items[kfIndex];
+                        kf.forKeyframeCHR = true;
+                        kf.SetBools(index + 0x10, false);
                         pkf[index] = val;
                         for (x = 0; (x < 9) && float.IsNaN(pkf[x]); x++) ;
                         if (x == 9)
@@ -191,12 +193,16 @@ namespace System.Windows.Forms
                     if (kfIndex >= 0)
                     {
                         kf = (AnimationFrame)listKeyframes.Items[kfIndex];
+                        kf.forKeyframeCHR = true;
+                        kf.SetBools(index + 0x10, true);
                         pkf[index] = val;
                         listKeyframes.Items[kfIndex] = kf;
                     }
                     else
                     {
                         kf = AnimationFrame.Empty;
+                        kf.forKeyframeCHR = true;
+                        kf.SetBools(index + 0x10, true);
                         kf.Index = _currentPage;
                         pkf[index] = val;
 

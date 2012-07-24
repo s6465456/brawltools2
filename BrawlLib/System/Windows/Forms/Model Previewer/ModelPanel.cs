@@ -14,6 +14,8 @@ namespace System.Windows.Forms
 
     public unsafe class ModelPanel : GLPanel
     {
+        public ModelEditControl _mainWindow;
+
         public bool _grabbing = false;
         public bool _scrolling = false;
         private int _lastX, _lastY;
@@ -52,7 +54,14 @@ namespace System.Windows.Forms
         private List<IRenderedObject> _renderList = new List<IRenderedObject>();
 
         public Vector4 _ambient = new Vector4(0.2f, 0.2f, 0.2f, 1);
-        public Vector4 _position = new Vector4(0, 6, 6, 0);
+
+        //Position for the angle of lighting. 
+        //X = Radius, 
+        //Y = Azimuth Angle, 
+        //Z = Elevation Angle, 
+        //W = 1 (World Coords)
+        public Vector4 _position = new Vector4(700, 90, 45, 1);
+
         public Vector4 _diffuse = new Vector4(0.8f, 0.8f, 0.8f, 1);
         public Vector4 _specular = new Vector4(0.5f, 0.5f, 0.5f, 1);
         
@@ -126,8 +135,13 @@ namespace System.Windows.Forms
                     _context.Capture();
                     _context.glEnable(GLEnableCap.Lighting);
                     _context.glEnable(GLEnableCap.Light0);
-                    fixed (Vector4* pos = &_position)
-                        _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)pos);
+                    float r = value._x;
+                    float azimuth = value._y;
+                    float elevation = value._z;
+                    Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+                    Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+                    _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)&PositionLight);
+                    _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_DIRECTION, (float*)&SpotDirectionLight);
                     _context.Release();
                     Invalidate();
                 }
@@ -485,8 +499,16 @@ namespace System.Windows.Forms
             _context.glEnable(GLEnableCap.Light0);
             _context.glEnable(GLEnableCap.COLOR_MATERIAL);
 
-            fixed (Vector4* pos = &_position)
-                _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)pos);
+            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_CUTOFF, 180.0f);
+            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_EXPONENT, 50.0f);
+
+            float r = _position._x;
+            float azimuth = _position._y;
+            float elevation = _position._z;
+            Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+            Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+            _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)&PositionLight);
+            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_DIRECTION, (float*)&SpotDirectionLight);
             fixed (Vector4* pos = &_ambient)
             {
                 _context.glLight(GLLightTarget.Light0, GLLightParameter.AMBIENT, (float*)pos);
@@ -524,7 +546,7 @@ namespace System.Windows.Forms
                 PreRender(this, _context);
 
             foreach (IRenderedObject o in _renderList)
-                o.Render(_context);
+                o.Render(_context, _mainWindow);
 #if DEBUG
             _context.CheckErrors();
 #endif

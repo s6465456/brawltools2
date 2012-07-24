@@ -26,35 +26,39 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //Changing the version will change the conversion.
         internal int _version;
-        internal int _unk1, _unk2, _unk3, _unk4, _unk5, _unk6;
+        internal int _scalingRule, _texMtxMode, _origPathOffset;
+        public byte _needNrmMtxArray, _needTexMtxArray, _enableExtents, _envMtxMode;
         internal int _numVertices, _numFaces, _numNodes;
         internal Vector3 _min, _max;
 
         public ModelLinker _linker;
         internal AssetStorage _assets;
-        internal bool _hasTree, _hasMix, _hasOpa, _hasXlu, _isImport, _rebuildAllObj, _autoMetal, _noColors; 
+        internal bool _hasTree, _hasMix, _hasOpa, _hasXlu, _isImport, _rebuildAllObj, _autoMetal, _noColors;
 
-        public string[] Part2Entries { get { return _part2Entries.ToArray(); } set { if (Version > 9) { _part2Entries = value.ToList<string>(); SignalPropertyChange(); } else MessageBox.Show("Versions lower than 10 do not support Part 2 entries."); } }
-        internal List<string> _part2Entries = new List<string>();
+        public UserDataClass[] Part2Entries { get { return _part2Entries.ToArray(); } set { if (Version > 9) { _part2Entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } else MessageBox.Show("Versions lower than 10 do not support user data entries."); } }
+        internal List<UserDataClass> _part2Entries = new List<UserDataClass>();
+
+        public string _originPath;
+        public List<MDL0BoneNode> _billboardBones = new List<MDL0BoneNode>();
 
         public Collada.ImportOptions _importOptions = new Collada.ImportOptions();
-
+        
         public bool AutoMetalMaterials { get { return _autoMetal; } set { _autoMetal = value; CheckMetals(); } }
-        [Category("MDL0 Def")]
-        public int Unknown1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def")]
-        public int Unknown2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def")]
+        [Category("MDL0 Definition")]
+        public MDLScalingRule ScalingRule { get { return (MDLScalingRule)_scalingRule; } set { _scalingRule = (int)value; SignalPropertyChange(); } }
+        [Category("MDL0 Definition")]
+        public TexMatrixMode TextureMatrixMode { get { return (TexMatrixMode)_texMtxMode; } set { _texMtxMode = (int)value; SignalPropertyChange(); } }
+        [Category("MDL0 Definition")]
         public int NumVertices { get { return _numVertices; } }//set { _numVertices = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def")]
+        [Category("MDL0 Definition")]
         public int NumFaces { get { return _numFaces; } }//set { _numFaces = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def")]
-        public int Unknown3 { get { return _unk3; } set { _unk3 = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def")]
+        //[Category("MDL0 Definition")]
+        //public string OriginalPath { get { return _originPath; } }//set { _origPath = value; SignalPropertyChange(); } }
+        [Category("MDL0 Definition")]
         public int NumNodes { get { return _numNodes; } }// set { _numNodes = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def")]
+        [Category("MDL0 Definition")]
         public int Version 
-        { 
+        {
             get { return _version; } 
             set 
             {
@@ -72,16 +76,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             } 
         }
-        [Category("MDL0 Def")]
-        public int Unknown4 { get { return _unk4; } set { _unk4 = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def")]
-        public int Unknown5 { get { return _unk5; } set { _unk5 = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def"), TypeConverter(typeof(Vector3StringConverter))]
+        [Category("MDL0 Definition")]
+        public bool NeedsNormalMtxArray { get { return _needNrmMtxArray != 0; } set { _needNrmMtxArray = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
+        [Category("MDL0 Definition")]
+        public bool NeedsTextureMtxArray { get { return _needTexMtxArray != 0; } set { _needTexMtxArray = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
+        [Category("MDL0 Definition"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 BoxMin { get { return _min; } set { _min = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def"), TypeConverter(typeof(Vector3StringConverter))]
+        [Category("MDL0 Definition"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 BoxMax { get { return _max; } set { _max = value; SignalPropertyChange(); } }
-        [Category("MDL0 Def")]
-        public int Unknown6 { get { return _unk6; } set { _unk6 = value; SignalPropertyChange(); } }
+        [Category("MDL0 Definition")]
+        public bool EnableExtents { get { return _enableExtents != 0; } set { _enableExtents = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
+        [Category("MDL0 Definition")]
+        public MDLEnvelopeMatrixMode EnvelopeMatrixMode { get { return (MDLEnvelopeMatrixMode)_envMtxMode; } set { _envMtxMode = (byte)value; SignalPropertyChange(); } }
 
         #region Immediate accessors
         
@@ -193,7 +199,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                         mr._embossLight = 2;
                                         mr.Normalize = true;
 
-                                        mr.TexUnk3 = 1;
+                                        mr.MapMode = (MDL0MaterialRefNode.MappingMethod)1;
 
                                         mr.getTexMtxVal();
                                     }
@@ -216,7 +222,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 node._cull = n._cull;
                                 node._numLights = 2;
                                 node.EnableAlphaFunction = false;
-                                node._unk3 = -1;
+                                node._normMapRefLight1 =
+                                node._normMapRefLight2 =
+                                node._normMapRefLight3 =
+                                node._normMapRefLight4 = -1;
 
                                 node.SignalPropertyChange();
                             }
@@ -523,6 +532,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
 
+            _billboardBones = new List<MDL0BoneNode>();
+
             MDL0Header* header = Header;
             int offset;
 
@@ -532,24 +543,55 @@ namespace BrawlLib.SSBB.ResourceNodes
             MDL0Props* props = header->Properties;
 
             _version = header->_header._version;
-            _unk1 = props->_unk1;
-            _unk2 = props->_unk2;
+            _scalingRule = props->_scalingRule;
+            _texMtxMode = props->_texMatrixMode;
             _numVertices = props->_numVertices;
             _numFaces = props->_numFaces;
-            _unk3 = props->_unk3;
+            _origPathOffset = props->_origPathOffset;
             _numNodes = props->_numNodes;
-            _unk4 = props->_unk4;
-            _unk5 = props->_unk5;
+            _needNrmMtxArray = props->_needNrmMtxArray;
+            _needTexMtxArray = props->_needTexMtxArray;
             _min = props->_minExtents;
             _max = props->_maxExtents;
-            _unk6 = props->_unk6;
+            _enableExtents = props->_enableExtents;
+            _envMtxMode = props->_envMtxMode;
 
-            Part2Data* part2 = header->Part2;
+            if (props->_origPathOffset > 0)
+                _originPath = new String((sbyte*)props + props->_origPathOffset);
+
+            UserData* part2 = header->Part2;
             if (part2 != null)
             {
                 ResourceGroup* group = part2->Group;
-                for (int i = 0; i < group->_numEntries; i++)
-                    _part2Entries.Add(group->First[i].GetName());
+                ResourceEntry* pEntry = &group->_first + 1;
+                int count = group->_numEntries;
+                for (int i = 0; i < count; i++)
+                {
+                    UserDataEntry* entry = (UserDataEntry*)((VoidPtr)group + pEntry->_dataOffset);
+                    UserDataClass d = new UserDataClass() { _name = new String((sbyte*)group + pEntry->_stringOffset) };
+                    VoidPtr addr = (VoidPtr)entry + entry->_dataOffset;
+                    d._type = entry->Type;
+                    for (int x = 0; x < entry->_entryCount; x++)
+                    {
+                        switch (entry->Type)
+                        {
+                            case UserValueType.Float:
+                                d._entries.Add(((float)*(bfloat*)addr).ToString());
+                                addr += 4;
+                                break;
+                            case UserValueType.Int:
+                                d._entries.Add(((int)*(bint*)addr).ToString());
+                                addr += 4;
+                                break;
+                            case UserValueType.String:
+                                string s = new String((sbyte*)addr);
+                                d._entries.Add(s);
+                                addr += s.Length + 1;
+                                break;
+                        }
+                    }
+                    _part2Entries.Add(d);
+                }
             }
 
             return true;
@@ -632,8 +674,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_hasOpa) table.Add("DrawOpa");
             if (_hasXlu) table.Add("DrawXlu");
 
-            foreach (string s in _part2Entries)
-                table.Add(s);
+            foreach (UserDataClass s in _part2Entries)
+                table.Add(s._name);
         }
 
         public static MDL0Node FromFile(string path)
@@ -776,9 +818,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 for (int i = 0; i < count; i++)
                 {
-                    Part2DataEntry* entry = (Part2DataEntry*)((byte*)pGroup + (pEntry++)->_dataOffset);
-                    entry->_stringOffset = (int)stringTable[_part2Entries[i]] + 4 - ((int)entry + (int)dataAddress);
-                    ResourceEntry.Build(pGroup, i + 1, entry, (BRESString*)stringTable[_part2Entries[i]]);
+                    UserDataEntry* entry = (UserDataEntry*)((byte*)pGroup + (pEntry++)->_dataOffset);
+                    entry->_stringOffset = (int)stringTable[_part2Entries[i]._name] + 4 - ((int)entry + (int)dataAddress);
+                    ResourceEntry.Build(pGroup, i + 1, entry, (BRESString*)stringTable[_part2Entries[i]._name]);
                 }
             }
         }
@@ -856,10 +898,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public Matrix floorShadow;
-        public void Render(GLContext ctx)
+        public ModelEditControl _mainWindow = null;
+        public void Render(GLContext ctx, ModelEditControl mainWindow)
         {
             if (!_visible)
                 return;
+
+            if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
+                _mainWindow = mainWindow;
 
             if (_renderPolygons)
             {
@@ -886,7 +932,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 if (_boneList != null)
                     foreach (MDL0BoneNode bone in _boneList)
-                        bone.Render(ctx);
+                        bone.Render(ctx, mainWindow);
             }
 
             if (_renderVertices)
@@ -904,6 +950,23 @@ namespace BrawlLib.SSBB.ResourceNodes
                         p._manager.RenderVerts(ctx, p._singleBind);
                 }
             }
+
+            if (_billboardBones.Count > 0)
+            {
+                //Transform bones
+                if (_boneList != null)
+                    foreach (MDL0BoneNode b in _boneList)
+                        b.RecalcFrameState();
+                //Transform nodes
+                foreach (Influence inf in _influences._influences)
+                    inf.CalcMatrix();
+                //Weight Vertices
+                if (_polyList != null)
+                    foreach (MDL0PolygonNode poly in _polyList)
+                        poly.WeightVertices();
+                //Morph vertices to currently selected SHP
+                ApplySHP(currentSHP, currentSHPIndex);
+            }
         }
 
         internal void ApplyCHR(CHR0Node node, int index)
@@ -916,6 +979,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (MDL0BoneNode b in _boneList)
                     b.RecalcFrameState();
             }
+
             //Transform nodes
             foreach (Influence inf in _influences._influences)
                 inf.CalcMatrix();
@@ -957,8 +1021,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        SHP0Node currentSHP = null;
+        int currentSHPIndex = 0;
         internal void ApplySHP(SHP0Node node, int index)
         {
+            currentSHP = node;
+            currentSHPIndex = index;
+
             if (node == null || index == 0)
                 return;
 

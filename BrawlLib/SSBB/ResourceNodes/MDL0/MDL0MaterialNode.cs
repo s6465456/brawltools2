@@ -25,8 +25,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         MatModeBlock* mode;
 
-        public string[] Part2Entries { get { return _part2Entries.ToArray(); } set { _part2Entries = value.ToList<string>(); SignalPropertyChange(); } }
-        internal List<string> _part2Entries = new List<string>();
+        public UserDataClass[] Part2Entries { get { return _part2Entries.ToArray(); } set { _part2Entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } }
+        internal List<UserDataClass> _part2Entries = new List<UserDataClass>();
 
         internal int _dataLen;
         internal int _index;
@@ -34,7 +34,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal int _part2Offset = 0;
         internal byte _numTextures;
         internal byte _numLights;
-        internal int _unk2, _unk3, _unk4;
+        public byte _indirectMethod1;
+        public byte _indirectMethod2;
+        public byte _indirectMethod3;
+        public byte _indirectMethod4;
+        public sbyte _normMapRefLight1;
+        public sbyte _normMapRefLight2;
+        public sbyte _normMapRefLight3;
+        public sbyte _normMapRefLight4;
+        internal int _unk4;
         internal uint _isXLU;
         public byte _ssc;
         internal byte _clip;
@@ -280,53 +288,64 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string LayerFlags { get { return _layerFlags.ToString("X"); } }//set { if (!CheckIfMetal()) _layerFlags = UInt32.Parse(value, System.Globalization.NumberStyles.HexNumber);  } }
         public uint _layerFlags;
         [Category("Texture Flags")]
-        public string UnkFlags { get { return _unkFlags.ToString("X"); } set { if (!CheckIfMetal()) _unkFlags = UInt32.Parse(value, System.Globalization.NumberStyles.HexNumber);  } }
+        public TexMatrixMode TexMatrixFlags { get { return (TexMatrixMode)_unkFlags; } set { if (!CheckIfMetal()) _unkFlags = (uint)value; } }
         public uint _unkFlags;
+
+        [Flags]
+        public enum LightingChannelFlags
+        {
+            MatColor_Color = 0x1,
+            MatColor_Alpha = 0x2,
+            AmbColor_Color = 0x4,
+            AmbColor_Alpha = 0x8,
+            ChanCtrl_Color = 0x10,
+            ChanCtrl_Alpha = 0x20
+        }
         
-        [Category("Lighting")]
-        public uint Flags0 { get { return flags0; } set { if (!CheckIfMetal()) flags0 = value; } }
+        [Category("Lighting Channel 1")]
+        public LightingChannelFlags FlagsC1 { get { return (LightingChannelFlags)flags0; } set { if (!CheckIfMetal()) flags0 = (uint)value; } }
         public uint flags0;
-        [Category("Lighting"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel C0Color0 { get { return c00; } set { if (!CheckIfMetal()) c00 = value; } }
+        [Category("Lighting Channel 1"), TypeConverter(typeof(RGBAStringConverter))]
+        public RGBAPixel MaterialColorC1 { get { return c00; } set { if (!CheckIfMetal()) c00 = value; } }
         public RGBAPixel c00;
-        [Category("Lighting"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel C0Color1 { get { return c01; } set { if (!CheckIfMetal()) c01 = value; } }
+        [Category("Lighting Channel 1"), TypeConverter(typeof(RGBAStringConverter))]
+        public RGBAPixel AmbientColorC1 { get { return c01; } set { if (!CheckIfMetal()) c01 = value; } }
         public RGBAPixel c01;
-        [Category("Lighting")]
-        public short Pad0 { get { return Header->Light(Model._version)->pad0; } }
-        [Category("Lighting")]
-        public short Pad1 { get { return Header->Light(Model._version)->pad1; } }
-        [Category("Lighting")]
-        public byte C0Enums0 { get { return e00; } set { if (!CheckIfMetal()) e00 = value; } }
-        [Category("Lighting")]
-        public byte C0Enums1 { get { return e01; } set { if (!CheckIfMetal()) e01 = value; } }
-        [Category("Lighting")]
-        public byte C0Enums2 { get { return e02; } set { if (!CheckIfMetal()) e02 = value; } }
-        [Category("Lighting")]
-        public byte C0Enums3 { get { return e03; } set { if (!CheckIfMetal()) e03 = value; } }
+        [Category("Lighting Channel 1")]
+        public short Pad0C1 { get { return Header->Light(Model._version)->pad0; } }
+        [Category("Lighting Channel 1")]
+        public byte ParamChanCtrl1AlphaC1 { get { return e00; } set { if (!CheckIfMetal()) e00 = value; } }
+        [Category("Lighting Channel 1")]
+        public byte ParamChanCtrl2AlphaC1 { get { return e01; } set { if (!CheckIfMetal()) e01 = value; } }
+        [Category("Lighting Channel 1")]
+        public short Pad1C1 { get { return Header->Light(Model._version)->pad1; } }
+        [Category("Lighting Channel 1")]
+        public byte ParamChanCtrl1ColorC1 { get { return e02; } set { if (!CheckIfMetal()) e02 = value; } }
+        [Category("Lighting Channel 1")]
+        public byte ParamChanCtrl2ColorC1 { get { return e03; } set { if (!CheckIfMetal()) e03 = value; } }
         public byte e00, e01, e02, e03;
         
-        [Category("Lighting")]
-        public uint Flags1 { get { return flags1; } set { if (!CheckIfMetal()) flags1 = value; } }
+        [Category("Lighting Channel 2")]
+        public LightingChannelFlags FlagsC2 { get { return (LightingChannelFlags)flags1; } set { if (!CheckIfMetal()) flags1 = (uint)value; } }
         public uint flags1;
-        [Category("Lighting"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel C1Color0 { get { return c10; } set { if (!CheckIfMetal()) c10 = value; } }
+        [Category("Lighting Channel 2"), TypeConverter(typeof(RGBAStringConverter))]
+        public RGBAPixel MaterialColorC2 { get { return c10; } set { if (!CheckIfMetal()) c10 = value; } }
         public RGBAPixel c10;
-        [Category("Lighting"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel C1Color1 { get { return c11; } set { if (!CheckIfMetal()) c11 = value; } }
+        [Category("Lighting Channel 2"), TypeConverter(typeof(RGBAStringConverter))]
+        public RGBAPixel AmbientColorC2 { get { return c11; } set { if (!CheckIfMetal()) c11 = value; } }
         public RGBAPixel c11;
-        [Category("Lighting")]
-        public short Pad2 { get { return Header->Light(Model._version)->pad2; } }
-        [Category("Lighting")]
-        public short Pad3 { get { return Header->Light(Model._version)->pad3; } }
-        [Category("Lighting")]
-        public byte C1Enums0 { get { return e10; } set { if (!CheckIfMetal()) e10 = value; } }
-        [Category("Lighting")]
-        public byte C1Enums1 { get { return e11; } set { if (!CheckIfMetal()) e11 = value; } }
-        [Category("Lighting")]
-        public byte C1Enums2 { get { return e12; } set { if (!CheckIfMetal()) e12 = value; } }
-        [Category("Lighting")]
-        public byte C1Enums3 { get { return e13; } set { if (!CheckIfMetal()) e13 = value; } }
+        [Category("Lighting Channel 2")]
+        public short Pad0C2 { get { return Header->Light(Model._version)->pad0; } }
+        [Category("Lighting Channel 2")]
+        public byte ParamChanCtrl1AlphaC2 { get { return e10; } set { if (!CheckIfMetal()) e10 = value; } }
+        [Category("Lighting Channel 2")]
+        public byte ParamChanCtrl2AlphaC2 { get { return e11; } set { if (!CheckIfMetal()) e11 = value; } }
+        [Category("Lighting Channel 2")]
+        public short Pad1C2 { get { return Header->Light(Model._version)->pad1; } }
+        [Category("Lighting Channel 2")]
+        public byte ParamChanCtrl1ColorC2 { get { return e12; } set { if (!CheckIfMetal()) e12 = value; } }
+        [Category("Lighting Channel 2")]
+        public byte ParamChanCtrl2ColorC2 { get { return e13; } set { if (!CheckIfMetal()) e13 = value; } }
         public byte e10, e11, e12, e13;
         
         //[Category("Material")]
@@ -346,17 +365,42 @@ namespace BrawlLib.SSBB.ResourceNodes
         public CullMode CullMode { get { return _cull; } set { if (!CheckIfMetal()) _cull = value;  } }
         [Category("Material")]
         public bool EnableAlphaFunction { get { return _transp != 1; } set { if (!CheckIfMetal()) _transp = (byte)(value ? 0 : 1); } }
-        [Category("Material")]
+        [Category("SCN0 References")]
         public sbyte LightSet { get { return _lSet; } set { if (!CheckIfMetal()) { _lSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
-        [Category("Material")]
+        [Category("SCN0 References")]
         public sbyte FogSet { get { return _fSet; } set { if (!CheckIfMetal()) { _fSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
         [Category("Material")]
-        public byte Unknown1 { get { return _unk1; } }//set { if (!CheckIfMetal()) { _unk1 = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
+        public byte Pad { get { return _unk1; } }//set { if (!CheckIfMetal()) { _unk1 = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
+
+        public enum IndirectMethod
+        {
+            Warp = 0,
+            NormalMap,
+            NormalMapSpecular,
+            Fur,
+            Reserved0,
+            Reserved1,
+            User0,
+            User1,
+        }
         
         [Category("Material")]
-        public int Unknown2 { get { return _unk2; } }
+        public IndirectMethod IndirectMethod1 { get { return (IndirectMethod)_indirectMethod1; } set { if (!CheckIfMetal()) _indirectMethod1 = (byte)value; } }
         [Category("Material")]
-        public int Unknown3 { get { return _unk3; } }
+        public IndirectMethod IndirectMethod2 { get { return (IndirectMethod)_indirectMethod2; } set { if (!CheckIfMetal()) _indirectMethod2 = (byte)value; } }
+        [Category("Material")]
+        public IndirectMethod IndirectMethod3 { get { return (IndirectMethod)_indirectMethod3; } set { if (!CheckIfMetal()) _indirectMethod3 = (byte)value; } }
+        [Category("Material")]
+        public IndirectMethod IndirectMethod4 { get { return (IndirectMethod)_indirectMethod4; } set { if (!CheckIfMetal()) _indirectMethod4 = (byte)value; } }
+
+        [Category("SCN0 References")]
+        public sbyte NormMapRefLight1 { get { return _normMapRefLight1; } set { if (!CheckIfMetal()) _normMapRefLight1 = value; } }
+        [Category("SCN0 References")]
+        public sbyte NormMapRefLight2 { get { return _normMapRefLight2; } set { if (!CheckIfMetal()) _normMapRefLight1 = value; } }
+        [Category("SCN0 References")]
+        public sbyte NormMapRefLight3 { get { return _normMapRefLight3; } set { if (!CheckIfMetal()) _normMapRefLight1 = value; } }
+        [Category("SCN0 References")]
+        public sbyte NormMapRefLight4 { get { return _normMapRefLight4; } set { if (!CheckIfMetal()) _normMapRefLight1 = value; } }
 
         [Category("Material")]
         public int ShaderOffset { get { return Header->_shaderOffset; } }
@@ -603,9 +647,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                         mr._texFlags.TexScale = new Vector2(1);
                         mr._bindState._scale = new Vector3(1);
                         mr._texMatrix.TexMtx = Matrix43.Identity;
-                        mr._texMatrix.TexUnk1 = -1;
-                        mr._texMatrix.TexUnk2 = -1;
-                        mr._texMatrix.TexUnk4 = 1;
+                        mr._texMatrix.SCNCamera = -1;
+                        mr._texMatrix.SCNLight = -1;
+                        mr._texMatrix.Identity = 1;
 
                         if (i == MetalMaterial.Children.Count)
                         {
@@ -617,7 +661,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             mr._inputForm = (int)TexInputForm.ABC1;
                             mr._sourceRow = (int)TexSourceRow.Normals;
                             mr.Normalize = true;
-                            mr.TexUnk3 = 1;
+                            mr.MapMode = (MDL0MaterialRefNode.MappingMethod)1;
                         }
                         else
                         {
@@ -625,7 +669,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             mr._inputForm = (int)TexInputForm.AB11;
                             mr._sourceRow = (int)TexSourceRow.TexCoord0 + i;
                             mr.Normalize = false;
-                            mr.TexUnk3 = 0;
+                            mr.MapMode = (MDL0MaterialRefNode.MappingMethod)0;
                         }
 
                         mr._texGenType = (int)TexTexgenType.Regular;
@@ -651,7 +695,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _cull = MetalMaterial._cull;
                     _numLights = 2;
                     EnableAlphaFunction = false;
-                    _unk3 = -1;
+                    _normMapRefLight1 =
+                    _normMapRefLight2 =
+                    _normMapRefLight3 =
+                    _normMapRefLight4 = -1;
 
                     SignalPropertyChange();
                 }
@@ -727,15 +774,26 @@ namespace BrawlLib.SSBB.ResourceNodes
             _numTextures = header->_numTexGens;
             _numLights = header->_numLightChans;
             _isXLU = header->_isXLU;
-            _unk2 = header->_unk2;
-            _unk3 = header->_unk3;
+
+            _indirectMethod1 = header->_indirectMethod1;
+            _indirectMethod2 = header->_indirectMethod2;
+            _indirectMethod3 = header->_indirectMethod3;
+            _indirectMethod4 = header->_indirectMethod4;
+            
+            _normMapRefLight1 = header->_normMapRefLight1;
+            _normMapRefLight2 = header->_normMapRefLight2;
+            _normMapRefLight3 = header->_normMapRefLight3;
+            _normMapRefLight4 = header->_normMapRefLight4;
+
             _unk4 = header->_dlOffset_10_11;
             _ssc = header->_activeTEVStages;
             _clip = header->_numIndTexStages;
             _transp = header->_enableAlphaTest;
+
             _lSet = header->_lightSet;
             _fSet = header->_fogSet;
-            _unk1 = header->_unk1;
+            _unk1 = header->_pad;
+
             _cull = (CullMode)(int)header->_cull;
 
             if ((-header->_mdl0Offset + (int)header->DisplayListOffset(Model._version)) % 0x20 != 0)
@@ -779,12 +837,39 @@ namespace BrawlLib.SSBB.ResourceNodes
             e12 = Light->unk12;
             e13 = Light->unk13;
 
-            Part2Data* part2 = header->Part2;
+            UserData* part2 = header->Part2;
             if (part2 != null)
             {
                 ResourceGroup* group = part2->Group;
-                for (int i = 0; i < group->_numEntries; i++)
-                    _part2Entries.Add(group->First[i].GetName());
+                ResourceEntry* pEntry = &group->_first + 1;
+                int count = group->_numEntries;
+                for (int i = 0; i < count; i++)
+                {
+                    UserDataEntry* entry = (UserDataEntry*)((VoidPtr)group + pEntry->_dataOffset);
+                    UserDataClass d = new UserDataClass() { _name = new String((sbyte*)group + pEntry->_stringOffset) };
+                    VoidPtr addr = (VoidPtr)entry + entry->_dataOffset;
+                    d._type = entry->Type;
+                    for (int x = 0; x < entry->_entryCount; x++)
+                    {
+                        switch (entry->Type)
+                        {
+                            case UserValueType.Float:
+                                d._entries.Add(((float)*(bfloat*)addr).ToString());
+                                addr += 4;
+                                break;
+                            case UserValueType.Int:
+                                d._entries.Add(((int)*(bint*)addr).ToString());
+                                addr += 4;
+                                break;
+                            case UserValueType.String:
+                                string s = new String((sbyte*)addr);
+                                d._entries.Add(s);
+                                addr += s.Length + 1;
+                                break;
+                        }
+                    }
+                    _part2Entries.Add(d);
+                }
             }
 
             Populate();
@@ -802,8 +887,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             table.Add(Name);
 
-            foreach (string s in _part2Entries)
-                table.Add(s);
+            foreach (UserDataClass s in _part2Entries)
+                table.Add(s._name);
 
             foreach (MDL0MaterialRefNode n in Children)
                 n.GetStrings(table);
@@ -825,7 +910,17 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             //Add part 2 entries, if there are any
             if (_part2Entries.Count > 0)
-                size += 0x1C + _part2Entries.Count * 0x2C;
+            {
+                size += 0x18 + (_part2Entries.Count * 0x2C);
+                foreach (UserDataClass c in _part2Entries)
+                    foreach (string s in c._entries)
+                        if (c.DataType == UserValueType.Float)
+                            size += 4;
+                        else if (c.DataType == UserValueType.Int)
+                            size += 4;
+                        else if (c.DataType == UserValueType.String)
+                            size += s.Length + 1;
+            }
             
             temp = size; //Set temp align offset
 
@@ -879,7 +974,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_part2Entries.Count > 0)
             {
                 header->_part2Offset = _part2Offset = header->_matRefOffset + Children.Count * 0x34;
-                Part2Data* part2 = header->Part2;
+                UserData* part2 = header->Part2;
                 if (part2 != null)
                 {
                     part2->_totalLen = 0x1C + _part2Entries.Count * 0x2C;
@@ -887,12 +982,49 @@ namespace BrawlLib.SSBB.ResourceNodes
                     *pGroup = new ResourceGroup(_part2Entries.Count);
                     ResourceEntry* pEntry = &pGroup->_first + 1;
                     byte* pData = (byte*)pGroup + pGroup->_totalSize;
-                    foreach (string s in _part2Entries)
+                    int id = 0;
+                    foreach (UserDataClass s in _part2Entries)
                     {
                         (pEntry++)->_dataOffset = (int)pData - (int)pGroup;
-                        Part2DataEntry* p = (Part2DataEntry*)pData;
-                        *p = new Part2DataEntry(1);
-                        pData += 0x1C;
+                        UserDataEntry* p = (UserDataEntry*)pData;
+                        *p = new UserDataEntry(s._entries.Count, s._type, id++);
+                        pData += 0x18;
+                        for (int i = 0; i < s._entries.Count; i++)
+                            if (s.DataType == UserValueType.Float)
+                            {
+                                float x;
+                                if (!float.TryParse(s._entries[i], out x))
+                                    x = 0;
+                                *(bfloat*)pData = x;
+                                pData += 4;
+                            }
+                            else if (s.DataType == UserValueType.Int)
+                            {
+                                int x;
+                                if (!int.TryParse(s._entries[i], out x))
+                                    x = 0;
+                                *(bint*)pData = x;
+                                pData += 4;
+                            }
+                            else if (s.DataType == UserValueType.String)
+                            {
+                                if (s._entries[i] == null)
+                                    s._entries[i] = "";
+
+                                int len = s._entries[i].Length;
+                                int ceil = len + 1;
+
+                                sbyte* ptr = (sbyte*)pData;
+
+                                for (int x = 0; x < len; )
+                                    ptr[x] = (sbyte)s._entries[i][x++];
+
+                                for (int x = len; x < ceil; )
+                                    ptr[x++] = 0;
+
+                                pData += s._entries[i].Length + 1;
+                            }
+                        p->_totalLen = (int)pData - (int)p;
                     }
                 }
             }
@@ -906,7 +1038,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     _lSet = 20;
                     _fSet = 4;
-                    _unk3 = -1;
+                    _normMapRefLight1 =
+                    _normMapRefLight2 =
+                    _normMapRefLight3 =
+                    _normMapRefLight4 = -1;
                     _ssc = 3;
 
                     _cull = CullMode.Cull_Inside;
@@ -923,7 +1058,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     _lSet = 1;
                     _fSet = 0;
-                    _unk3 = -1;
+                    _normMapRefLight1 =
+                    _normMapRefLight2 =
+                    _normMapRefLight3 =
+                    _normMapRefLight4 = -1;
                     _ssc = 1;
                     _cull = CullMode.Cull_Inside;
                     _numLights = 1;
@@ -967,10 +1105,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                     node._texFlags.TexScale = new Vector2(1);
                     node._bindState._scale = new Vector3(1);
                     node._texMatrix.TexMtx = Matrix43.Identity;
-                    node._texMatrix.TexUnk1 = -1;
-                    node._texMatrix.TexUnk2 = -1;
-                    node._texMatrix.TexUnk3 = 0;
-                    node._texMatrix.TexUnk4 = 1;
+                    node._texMatrix.SCNCamera = -1;
+                    node._texMatrix.SCNLight = -1;
+                    node._texMatrix.MapMode = 0;
+                    node._texMatrix.Identity = 1;
                 }
             }
 
@@ -982,13 +1120,23 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_activeTEVStages = (byte)_ssc;
             header->_numIndTexStages = _clip;
             header->_enableAlphaTest = _transp;
+
             header->_lightSet = _lSet;
             header->_fogSet = _fSet;
-            header->_unk1 = _unk1;
+            header->_pad = _unk1;
+
             header->_cull = (int)_cull;
             header->_isXLU = _isXLU;
-            header->_unk2 = _unk2;
-            header->_unk3 = _unk3; //Always -1?
+
+            header->_indirectMethod1 = _indirectMethod1;
+            header->_indirectMethod2 = _indirectMethod2;
+            header->_indirectMethod3 = _indirectMethod3;
+            header->_indirectMethod4 = _indirectMethod4;
+
+            header->_normMapRefLight1 = _normMapRefLight1;
+            header->_normMapRefLight2 = _normMapRefLight2;
+            header->_normMapRefLight3 = _normMapRefLight3;
+            header->_normMapRefLight4 = _normMapRefLight4;
 
             //Generate layer flags and write texture matrices
             MDL0MtlTexSettings* TexSettings = header->TexMatrices(Model._version);
@@ -1106,7 +1254,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
             header->_index = Index;
 
-            Part2Data* part2 = header->Part2;
+            UserData* part2 = header->Part2;
             if (part2 != null && _part2Entries.Count != 0)
             {
                 ResourceGroup* group = part2->Group;
@@ -1115,9 +1263,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 for (int i = 0, x = 1; i < group->_numEntries; i++)
                 {
-                    Part2DataEntry* entry = (Part2DataEntry*)((int)group + (rEntry++)->_dataOffset);
-                    ResourceEntry.Build(group, x++, entry, (BRESString*)stringTable[_part2Entries[i]]);
-                    entry->ResourceStringAddress = stringTable[_part2Entries[i]] + 4;
+                    UserDataEntry* entry = (UserDataEntry*)((int)group + (rEntry++)->_dataOffset);
+                    ResourceEntry.Build(group, x++, entry, (BRESString*)stringTable[_part2Entries[i]._name]);
+                    entry->ResourceStringAddress = stringTable[_part2Entries[i]._name] + 4;
                 }
             }
 

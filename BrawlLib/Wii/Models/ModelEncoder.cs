@@ -345,6 +345,20 @@ namespace BrawlLib.Wii.Models
                 }
             }
 
+            int part2len = 0;
+            if (model._part2Entries.Count > 0)
+            {
+                part2len += 0x18 + (model._part2Entries.Count * 0x2C);
+                foreach (UserDataClass c in model._part2Entries)
+                    foreach (string s in c._entries)
+                        if (c.DataType == UserValueType.Float)
+                            part2len += 4;
+                        else if (c.DataType == UserValueType.Int)
+                            part2len += 4;
+                        else if (c.DataType == UserValueType.String)
+                            part2len += s.Length + 1;
+            }
+
             return
             (linker._headerLen = headerLen) +
             (linker._tableLen = tableLen) +
@@ -354,7 +368,7 @@ namespace BrawlLib.Wii.Models
             (linker._boneLen = boneLen) +
             (linker._assetLen = assetLen) +
             (linker._dataLen = dataLen) +
-            (model._part2Entries.Count > 0 ? 0x1C + model._part2Entries.Count * 0x2C : 0);
+            part2len;
         }
 
         internal static unsafe void Build(ModelLinker linker, MDL0Header* header, int length, bool force) { Build(null, linker, header, length, force); }
@@ -399,7 +413,7 @@ namespace BrawlLib.Wii.Models
             if (linker.Model._part2Entries.Count > 0 && linker.Version != 9)
             {
                 header->_part2Offset = (int)dataAddr - (int)header;
-                Part2Data* part2 = header->Part2;
+                UserData* part2 = header->Part2;
                 if (part2 != null)
                 {
                     part2->_totalLen = 0x1C + linker.Model._part2Entries.Count * 0x2C;
@@ -407,12 +421,49 @@ namespace BrawlLib.Wii.Models
                     *pGroup = new ResourceGroup(linker.Model._part2Entries.Count);
                     ResourceEntry* pEntry = &pGroup->_first + 1;
                     byte* pData = (byte*)pGroup + pGroup->_totalSize;
-                    foreach (string s in linker.Model._part2Entries)
+                    int id = 0;
+                    foreach (UserDataClass s in linker.Model._part2Entries)
                     {
                         (pEntry++)->_dataOffset = (int)pData - (int)pGroup;
-                        Part2DataEntry* p = (Part2DataEntry*)pData;
-                        *p = new Part2DataEntry(1);
-                        pData += 0x1C;
+                        UserDataEntry* p = (UserDataEntry*)pData;
+                        *p = new UserDataEntry(s._entries.Count, s._type, id++);
+                        pData += 0x18;
+                        for (int i = 0; i < s._entries.Count; i++)
+                            if (s.DataType == UserValueType.Float)
+                            {
+                                float x;
+                                if (!float.TryParse(s._entries[i], out x))
+                                    x = 0;
+                                *(bfloat*)pData = x;
+                                pData += 4;
+                            }
+                            else if (s.DataType == UserValueType.Int)
+                            {
+                                int x;
+                                if (!int.TryParse(s._entries[i], out x))
+                                    x = 0;
+                                *(bint*)pData = x;
+                                pData += 4;
+                            }
+                            else if (s.DataType == UserValueType.String)
+                            {
+                                if (s._entries[i] == null)
+                                    s._entries[i] = "";
+
+                                int len = s._entries[i].Length;
+                                int ceil = len + 1;
+
+                                sbyte* ptr = (sbyte*)pData;
+
+                                for (int x = 0; x < len; )
+                                    ptr[x] = (sbyte)s._entries[i][x++];
+
+                                for (int x = len; x < ceil; )
+                                    ptr[x++] = 0;
+
+                                pData += s._entries[i].Length + 1;
+                            }
+                        p->_totalLen = (int)pData - (int)p;
                     }
                 }
             }
@@ -430,7 +481,7 @@ namespace BrawlLib.Wii.Models
             linker.Finish();
 
             //Set new properties
-            *props = new MDL0Props(linker.Version, linker.Model._numVertices, linker.Model._numFaces, linker.Model._numNodes, linker.Model._unk1, linker.Model._unk2, linker.Model._unk3, linker.Model._unk4, linker.Model._unk5, linker.Model._unk6, linker.Model.BoxMin, linker.Model.BoxMax);
+            *props = new MDL0Props(linker.Version, linker.Model._numVertices, linker.Model._numFaces, linker.Model._numNodes, linker.Model._scalingRule, linker.Model._texMtxMode, linker.Model._needNrmMtxArray, linker.Model._needTexMtxArray, linker.Model._enableExtents, linker.Model._envMtxMode, linker.Model.BoxMin, linker.Model.BoxMax);
         }
 
         private static void WriteNodeTable(ModelLinker linker)
@@ -701,7 +752,7 @@ namespace BrawlLib.Wii.Models
                     header->_isRGBA = c._hasAlpha ? 1 : 0;
                     header->_format = (int)c._outType;
                     header->_entryStride = (byte)c._dstStride;
-                    header->_scale = 0;
+                    header->_pad = 0;
                     header->_numEntries = (ushort)c._dstCount;
 
                     c.Write(pData + 0x20);

@@ -173,12 +173,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             } 
         }
         
-        [Category("Shader Data"), Browsable(true)]
-        public byte Res0 { get { return res0; } set { res0 = value; SignalPropertyChange(); } }
-        [Category("Shader Data"), Browsable(true)]
-        public byte Res1 { get { return res1; } set { res1 = value; SignalPropertyChange(); } }
-        [Category("Shader Data"), Browsable(true)]
-        public byte Res2 { get { return res2; } set { res2 = value; SignalPropertyChange(); } }
+        //[Category("Shader Data"), Browsable(true)]
+        //public byte Res0 { get { return res0; } set { res0 = value; SignalPropertyChange(); } }
+        //[Category("Shader Data"), Browsable(true)]
+        //public byte Res1 { get { return res1; } set { res1 = value; SignalPropertyChange(); } }
+        //[Category("Shader Data"), Browsable(true)]
+        //public byte Res2 { get { return res2; } set { res2 = value; SignalPropertyChange(); } }
 
         [Category("Shader Data"), Browsable(true)]
         public bool TextureRef0 { get { return ref0 != -1; } set { ref0 = (sbyte)(value ? 0 : -1); SignalPropertyChange(); } }
@@ -197,10 +197,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Shader Data"), Browsable(true)]
         public bool TextureRef7 { get { return ref7 != -1; } set { ref7 = (sbyte)(value ? 7 : -1); SignalPropertyChange(); } }
 
-        [Category("Shader Data"), Browsable(true)]
-        public int Pad0 { get { return pad0; } }
-        [Category("Shader Data"), Browsable(true)]
-        public int Pad1 { get { return pad1; } }
+        //[Category("Shader Data"), Browsable(true)]
+        //public int Pad0 { get { return pad0; } }
+        //[Category("Shader Data"), Browsable(true)]
+        //public int Pad1 { get { return pad1; } }
 
         #region Rendering
 
@@ -852,9 +852,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             header->_stages = Model._isImport ? stages : (byte)Children.Count;
 
-            header->_res0 = res0;
-            header->_res1 = res1;
-            header->_res2 = res2;
+            header->_res0 = 0;
+            header->_res1 = 0;
+            header->_res2 = 0;
 
             header->_ref0 = ref0;
             header->_ref1 = ref1;
@@ -865,8 +865,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_ref6 = ref6;
             header->_ref7 = ref7;
 
-            header->_pad0 = pad0;
-            header->_pad1 = pad1;
+            header->_pad0 = 0;
+            header->_pad1 = 0;
 
             *header->SwapBlock = _swapBlock;
 

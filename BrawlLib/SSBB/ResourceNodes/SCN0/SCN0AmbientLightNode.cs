@@ -12,12 +12,12 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal SCN0AmbientLight* Data { get { return (SCN0AmbientLight*)WorkingUncompressed.Address; } }
         private byte fixedFlags, unk2, unk3, unk4;
-        private List<RGBAPixel> _lighting;
+        private List<RGBAPixel> _lighting = new List<RGBAPixel>();
 
         [Category("Ambient Light")]
-        public SCN0AmbLightEnableFlags Flags { get { return (SCN0AmbLightEnableFlags)unk4; } set { unk4 = (byte)value; SignalPropertyChange(); } }
-        [Category("Ambient Light")]
-        public SCN0AmbLightFlags LightFlags { get { return (SCN0AmbLightFlags)fixedFlags; } set { fixedFlags = (byte)value; SignalPropertyChange(); } }
+        public SCN0AmbLightFlags Flags { get { return (SCN0AmbLightFlags)unk4; } set { unk4 = (byte)value; SignalPropertyChange(); } }
+        //[Category("Ambient Light")]
+        //public SCN0AmbLightFlags LightFlags { get { return (SCN0AmbLightFlags)fixedFlags; } set { fixedFlags = (byte)value; SignalPropertyChange(); } }
         [Category("Ambient Light")]
         public RGBAPixel[] Lighting { get { return _lighting.ToArray(); } set { _lighting = value.ToList<RGBAPixel>(); SignalPropertyChange(); } }
 
@@ -28,9 +28,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             _lighting = new List<RGBAPixel>();
 
             fixedFlags = Data->_fixedFlags;
-            unk2 = Data->_unk2;
-            unk3 = Data->_unk3;
-            unk4 = Data->_unk4;
+            unk2 = Data->_pad1;
+            unk3 = Data->_pad2;
+            unk4 = Data->_flags;
             if ((fixedFlags >> 7 & 1) == 1)
                 _lighting.Add(Data->_lighting);
             else
@@ -66,15 +66,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             base.OnRebuild(address, length, force);
 
             SCN0AmbientLight* header = (SCN0AmbientLight*)address;
+            header->_header._length = _length = SCN0AmbientLight.Size;
 
             if (_name != "<null>")
             {
-                header->_fixedFlags = fixedFlags;
-                header->_unk2 = 0;
-                header->_unk3 = 0;
-                header->_unk4 = unk4;
+                header->_fixedFlags = 128;
+                header->_pad1 = 0;
+                header->_pad2 = 0;
+                header->_flags = unk4;
                 if (_lighting.Count > 1)
                 {
+                    header->_fixedFlags = 0;
                     *((bint*)header->_lighting.Address) = (int)lightAddr - (int)header->_lighting.Address;
                     for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
                         if (i < _lighting.Count)

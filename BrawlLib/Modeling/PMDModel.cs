@@ -525,7 +525,7 @@ namespace BrawlLib.Modeling
             }
 
             model._version = 9;
-            model._unk4 = model._unk5 = 1;
+            model._needNrmMtxArray = model._needTexMtxArray = 1;
             model._isImport = true;
 
             index = 0;

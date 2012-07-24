@@ -25,10 +25,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public override bool tLoop { get { return Loop; } set { Loop = value; } }
 
-        int _version, _numFrames, _loop;
+        int _version = 3, _numFrames = 1, _loop;
 
         public int ConversionBias = 0;
-        public int startUpVersion = 0;
+        public int startUpVersion = 3;
 
         [Category("Vertex Morph Data")]
         public int Version
@@ -252,9 +252,18 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         List<short> _indices;
         public int _flags, indexCount, nameIndex, fixedFlags;
-        
+
+        [Flags]
+        public enum SHP0EntryFlags
+        {
+            Enabled = 0x1,
+            UpdatePosition = 0x2,
+            UpdateNormals = 0x4,
+            UpdateColors = 0x8,
+        };
+
         [Category("Vertex Morph Entry")]
-        public int Unknown { get { return _flags; } set { _flags = value; SignalPropertyChange(); } }
+        public SHP0EntryFlags Flags { get { return (SHP0EntryFlags)_flags; } set { _flags = (int)value; SignalPropertyChange(); } }
         
         protected override bool OnInitialize()
         {
@@ -323,7 +332,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->Indicies[p.Index] = (short)((SHP0Node)Parent)._strings.IndexOf(p.Name);
                 if (p.isFixed)
                 {
-                    ((bfloat*)header->EntryOffset)[p.Index] = p.Keyframes.GetKeyframe(KeyFrameMode.ScaleX, 0)._value;
+                    KeyframeEntry kf; float value = 0;
+                    if ((kf = p.Keyframes.GetKeyframe(KeyFrameMode.ScaleX, 0)) != null)
+                        value = kf._value;
+                    ((bfloat*)header->EntryOffset)[p.Index] = value;
                     fixedflags = (uint)(fixedflags & ((uint)0xFFFFFFFF - (uint)(1 << p.Index))) | (uint)(1 << p.Index);
                 }
                 else

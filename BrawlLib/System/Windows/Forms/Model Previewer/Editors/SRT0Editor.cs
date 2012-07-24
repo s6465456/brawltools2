@@ -171,10 +171,10 @@ namespace System.Windows.Forms
             this.FrameTrans.Text = "Trans";
             this.FrameTrans.UseVisualStyleBackColor = true;
             // 
-            // numScale
+            // numScaleY
             // 
             this.numScaleY.Location = new System.Drawing.Point(208, 36);
-            this.numScaleY.Name = "numScale";
+            this.numScaleY.Name = "numScaleY";
             this.numScaleY.Size = new System.Drawing.Size(82, 20);
             this.numScaleY.TabIndex = 18;
             this.numScaleY.Text = "0";
@@ -265,10 +265,10 @@ namespace System.Windows.Forms
             this.lblRot.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.lblRot.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lblRot_MouseDown);
             // 
-            // lblScale
+            // lblScaleY
             // 
             this.lblScaleY.Location = new System.Drawing.Point(161, 37);
-            this.lblScaleY.Name = "lblScale";
+            this.lblScaleY.Name = "lblScaleY";
             this.lblScaleY.Size = new System.Drawing.Size(47, 20);
             this.lblScaleY.TabIndex = 10;
             this.lblScaleY.Text = "Scale Y:";
@@ -330,19 +330,19 @@ namespace System.Windows.Forms
             this.grpTransform.TabStop = false;
             this.grpTransform.Text = "Transform Frame";
             // 
-            // lblUnk
+            // lblScaleX
             // 
-            this.lblScaleX.AutoSize = true;
-            this.lblScaleX.Location = new System.Drawing.Point(161, 20);
-            this.lblScaleX.Name = "lblUnk";
-            this.lblScaleX.Size = new System.Drawing.Size(47, 13);
+            this.lblScaleX.Location = new System.Drawing.Point(161, 16);
+            this.lblScaleX.Name = "lblScaleX";
+            this.lblScaleX.Size = new System.Drawing.Size(47, 20);
             this.lblScaleX.TabIndex = 37;
             this.lblScaleX.Text = "Scale X:";
+            this.lblScaleX.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // numUnk
+            // numScaleX
             // 
             this.numScaleX.Location = new System.Drawing.Point(208, 16);
-            this.numScaleX.Name = "numUnk";
+            this.numScaleX.Name = "numScaleX";
             this.numScaleX.Size = new System.Drawing.Size(82, 20);
             this.numScaleX.TabIndex = 36;
             this.numScaleX.Text = "0";

@@ -15,10 +15,10 @@ namespace BrawlLib.SSBBTypes
         public bint _dataOffset;
         public bint _stringListOffset; //List of vertex node strings
         public bint _stringOffset;
-        public bint _pad; //0
+        public bint _origPathOffset;
         public bshort _numFrames;
         public bshort _numEntries;
-        public bint _loop; //0x00, 0x01
+        public bint _loop;
 
         public SHP0v3(int loop, short frames, short entries)
         {
@@ -28,7 +28,7 @@ namespace BrawlLib.SSBBTypes
             _header._bresOffset = 0;
 
             _dataOffset = 0x28;
-            _pad = 0;
+            _origPathOffset = 0;
             _numFrames = frames;
             _loop = loop;
             _stringOffset = 0;
@@ -60,7 +60,7 @@ namespace BrawlLib.SSBBTypes
         public BRESCommonHeader _header;
         public bint _dataOffset;
         public bint _stringListOffset; //List of vertex node strings
-        public bint _pad;
+        public bint _origPathOffset;
         public bint _stringOffset;
         public bint _loop;
         public bshort _numFrames;
@@ -74,7 +74,7 @@ namespace BrawlLib.SSBBTypes
             _header._bresOffset = 0;
 
             _dataOffset = 0x28;
-            _pad = 0;
+            _origPathOffset = 0;
             _numFrames = frames;
             _loop = loop;
             _stringOffset = 0;

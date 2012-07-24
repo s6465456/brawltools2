@@ -21,7 +21,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         CollisionDef = 0x0214,
         REFF = 0x0215,
         REFT = 0x121C,
-        REL = 0x0200,
+        REL = 0x1900,
         MRG = 0x1501,
         AI = 0x0216,
         CE = 0x0A19,
@@ -80,7 +80,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         MDL0Material = 0x0D00,
 
         CHR0Entry = 0x0800,
-        CLR0Entry = 0x0900,
+        CLR0Material = 0x0900,
+        CLR0MaterialEntry = 0xA900,
 
         RSARFolder = 0x0B01,
 
@@ -99,6 +100,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         MDefSubroutineList = 0x3201,
         MDefActionOverrideList = 0x3301,
         MDefHurtboxList = 0x3001,
+        MDefRefList = 0x2801,
         Event = 0x101B,
         Parameter = 0x1000,
     }

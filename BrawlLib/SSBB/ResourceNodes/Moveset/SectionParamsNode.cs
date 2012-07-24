@@ -94,7 +94,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (data == null)
                     {
                         AttributeInfo info = new AttributeInfo();
-
+                        
                         //Guess
                         if (((((uint)*((buint*)pIn)) >> 24) & 0xFF) != 0 && *((bint*)pIn) != -1 && !float.IsNaN(((float)*((bfloat*)pIn))))
                             info._type = 0;

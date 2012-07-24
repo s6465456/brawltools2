@@ -307,8 +307,8 @@ namespace System.Windows.Forms
                 string arg = node._name;
 
                 //Format the event and its parameters into a readable script.
-                script[i] = ResolveEventSyntax(GetEventSyntax(node._event), node.EventData);
-                if (script[i] == "") script[i] = GetDefaultSyntax(node.EventData);
+                script[i] = ResolveEventSyntax(GetEventSyntax(node._event), node);
+                if (script[i] == "") script[i] = GetDefaultSyntax(node);
 
                 //Add tabs to the script in correspondence to the code Params.
                 tabs -= MParams.TabDownEvents(node._event);
@@ -320,7 +320,7 @@ namespace System.Windows.Forms
         }
 
         //  Return the event syntax corresponding to the event id passed
-        public string GetEventSyntax(int id)
+        public string GetEventSyntax(uint id)
         {
             if (TargetNode.Root.EventDictionary.ContainsKey(id))
                 return TargetNode.Root.EventDictionary[id]._syntax;
@@ -329,7 +329,7 @@ namespace System.Windows.Forms
         }
 
         //Return the parameters contained in the keyword's parameter list.
-        public string[] GetParameters(string strParams, Event eventData)
+        public string[] GetParameters(string strParams, MoveDefEventNode Event)
         {
             string[] parameters = new string[0];
             char chrFound = '\0';
@@ -353,7 +353,7 @@ namespace System.Windows.Forms
 
             //Check each parameter for keywords and resolve if they are present.
             for (int i = 0; i < parameters.Length; i++)
-                if (parameters[i] != "") parameters[i] = ResolveEventSyntax(parameters[i], eventData);
+                if (parameters[i] != "") parameters[i] = ResolveEventSyntax(parameters[i], Event);
 
             return parameters;
         }
@@ -393,12 +393,13 @@ namespace System.Windows.Forms
         }
 
         //Return the string result from the passed keyword and its parameters.
-        public string ResolveKeyword(string keyword, string[] Params, Event eventData)
+        public string ResolveKeyword(string keyword, string[] Params, MoveDefEventNode Event)
         {
+            Event eventData = Event.EventData;
             switch (keyword)
             {
                 case "\\value":
-                    try { return ResolveParamTypes(eventData)[int.Parse(Params[0])]; }
+                    try { return ResolveParamTypes(Event)[int.Parse(Params[0])]; }
                     catch { return "Value-" + Params[0]; }
                 case "\\type":
                     try { return eventData.parameters[int.Parse(Params[0])]._type.ToString(); }
@@ -427,7 +428,7 @@ namespace System.Windows.Forms
                     {
                         int id = MParams.UnHex(Params[0]);
                         if (id >= 400)
-                            id -= 400;
+                            TargetNode.Root.GetBoneIndex(ref id);
                         if (_targetNode.Model != null && _targetNode.Model._linker.BoneCache != null && _targetNode.Model._linker.BoneCache.Length > id && id >= 0)
                             return _targetNode.Model._linker.BoneCache[id].Name;
                         else return id.ToString();
@@ -475,8 +476,9 @@ namespace System.Windows.Forms
             }
         }
         //Return a string of the parameter in the format corresponding to it's type.
-        public string[] ResolveParamTypes(Event eventData)
+        public string[] ResolveParamTypes(MoveDefEventNode Event)
         {
+            Event eventData = Event.EventData;
             string[] p = new string[eventData.parameters.Length];
 
             for (int i = 0; i < p.Length; i++)
@@ -485,7 +487,7 @@ namespace System.Windows.Forms
                 {
                     case 0: p[i] = GetValue(eventData.eventEvent, i, eventData.parameters[i]._data); break;
                     case 1: p[i] = MParams.UnScalar(eventData.parameters[i]._data).ToString(); break;
-                    case 2: p[i] = ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i]); break;
+                    case 2: p[i] = ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
                     case 3: p[i] = (eventData.parameters[i]._data != 0 ? "true" : "false"); break;
                     case 4: p[i] = MParams.Hex(eventData.parameters[i]._data); break;
                     case 5: p[i] = ResolveVariable(eventData.parameters[i]._data); break;
@@ -496,26 +498,26 @@ namespace System.Windows.Forms
         }
         //Return the name of the external pointer corresponding to the address if 
         //one is available, otherwise return the string of the value passed.
-        public string ResolvePointer(long pointer, Param parameter)
+        public string ResolvePointer(long pointer, Param parameter, MoveDefEventOffsetNode node)
         {
-            MoveDefExternalNode ext;
-            if ((ext = _targetNode.Root.IsExternal((int)pointer)) != null || (ext = _targetNode.Root.IsExternal((int)parameter._data)) != null)
-                return "External: " + ext.Name;
+            //MoveDefExternalNode ext;
+            //if ((ext = _targetNode.Root.IsExternal((int)pointer)) != null || (ext = _targetNode.Root.IsExternal((int)parameter._data)) != null)
+            //    return "External: " + ext.Name;
 
-            int list, type, index;
-            _targetNode.Root.GetLocation((int)parameter._data, out list, out type, out index);
+            if (node._extNode != null)
+                return "External: " + node._extNode.Name;
 
-            if (list == 4)
+            if (node.list == 4)
                 return "0x" + MParams.Hex(parameter._data);
             else
             {
                 string name = "", t = "", grp = "";
-                switch (list)
+                switch (node.list)
                 {
                     case 0:
                         grp = "Actions";
-                        name = _targetNode.Root._actions.Children[index].Name;
-                        switch (type)
+                        name = _targetNode.Root._actions.Children[node.index].Name;
+                        switch (node.type)
                         {
                             case 0: t = "Entry"; break;
                             case 1: t = "Exit"; break;
@@ -523,8 +525,8 @@ namespace System.Windows.Forms
                         break;
                     case 1:
                         grp = "SubActions";
-                        name = _targetNode.Root._subActions.Children[index].Name;
-                        switch (type)
+                        name = _targetNode.Root._subActions.Children[node.index].Name;
+                        switch (node.type)
                         {
                             case 0: t = "Main"; break;
                             case 1: t = "GFX"; break;
@@ -534,15 +536,13 @@ namespace System.Windows.Forms
                         break;
                     case 2:
                         grp = "SubRoutines";
-                        name = _targetNode.Root._subRoutineList[index].Name;
+                        name = _targetNode.Root._subRoutineList[node.index].Name;
                         break;
                     case 3:
-                        grp = "References";
-                        name = _targetNode.Root.references.Children[index].Name;
-                        break;
+                        return "External: " + _targetNode.Root.references.Children[node.index].Name;
                 }
-                
-                return name + (list >= 2 ? "" : " - " + t) + " in the " + grp + " list";
+
+                return name + (node.list >= 2 ? "" : " - " + t) + " in the " + grp + " list";
             }
         }
 
@@ -552,7 +552,7 @@ namespace System.Windows.Forms
             string variableName = "";
             long variableMemType = (value & 0xF0000000) / 0x10000000;
             long variableType = (value & 0xF000000) / 0x1000000;
-            long variableNumber = (value & 0xFF);
+            long variableNumber = (value & 0xFFFFFF);
             if (variableMemType == 0) variableName = "IC-";
             if (variableMemType == 1) variableName = "LA-";
             if (variableMemType == 2) variableName = "RA-";
@@ -625,8 +625,9 @@ namespace System.Windows.Forms
         }
 
         //Return the event name followed by each parameter paired with its type.
-        public string GetDefaultSyntax(Event eventData)
+        public string GetDefaultSyntax(MoveDefEventNode Event)
         {
+            Event eventData = Event.EventData;
             string script = GetEventInfo(eventData.eventEvent)._name + (eventData.lParameters > 0 ? ": " : "");
             for (int i = 0; i < eventData.lParameters; i++)
             {
@@ -635,7 +636,7 @@ namespace System.Windows.Forms
                 {
                     case 0: script += GetValue(eventData.eventEvent, i, eventData.parameters[i]._data); break;
                     case 1: script += MParams.UnScalar(eventData.parameters[i]._data).ToString(); break;
-                    case 2: script += ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i]); break;
+                    case 2: script += ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
                     case 3: script += (eventData.parameters[i]._data != 0 ? "true" : "false"); break;
                     case 4: script += MParams.Hex(eventData.parameters[i]._data); break;
                     case 5: script += ResolveVariable(eventData.parameters[i]._data); break;
@@ -648,8 +649,9 @@ namespace System.Windows.Forms
         }
 
         //Return the passed syntax with all keywords replaced with their proper values.
-        public string ResolveEventSyntax(string syntax, Event eventData)
+        public string ResolveEventSyntax(string syntax, MoveDefEventNode Event)
         {
+            Event eventData = Event.EventData;
             while (true)
             {
                 string keyword = "";
@@ -671,9 +673,9 @@ namespace System.Windows.Forms
                 keyword = syntax.Substring(keyBegin, keyEnd - keyBegin);
 
                 strParams = syntax.Substring(paramsBegin, paramsEnd - paramsBegin);
-                kParams = GetParameters(strParams, eventData);
+                kParams = GetParameters(strParams, Event);
 
-                keyResult = ResolveKeyword(keyword, kParams, eventData);
+                keyResult = ResolveKeyword(keyword, kParams, Event);
 
                 syntax = MParams.DelSubstring(syntax, keyBegin, (paramsEnd + 1) - keyBegin);
                 syntax = MParams.InsString(syntax, keyResult, keyBegin);
@@ -840,10 +842,7 @@ namespace System.Windows.Forms
         {
             string s = "";
             foreach (int i in EventList.SelectedIndices)
-            {
-                s += EventList.Items[i].ToString();
-                s += Environment.NewLine;
-            }
+                s += EventList.Items[i].ToString() + Environment.NewLine;
             Clipboard.SetText(s);
         }
 

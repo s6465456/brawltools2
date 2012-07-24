@@ -5,6 +5,7 @@ using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
 using BrawlLib.Imaging;
+using BrawlLib.Wii.Graphics;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -14,132 +15,155 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
-        internal int _unk1, _unk2, _unk5, _unk6, _unk9;
-        internal Bin16 _flags1, _flags2;
-        internal float _unk7, _unk8, _unk10, _unk12;
-        private List<RGBAPixel> _lighting1, _lighting2;
-        private List<SCN0Keyframe> xStarts, yStarts, zStarts, xEnds, yEnds, zEnds;
+        internal int _nonSpecLightId, _part2Offset, _enableOffset, _distFunc, _spotFunc;
+        internal ushort _flags1, _flags2;
+        private List<SCN0Keyframe> _refDist = new List<SCN0Keyframe>(), _refBrightness = new List<SCN0Keyframe>(), _cutoff = new List<SCN0Keyframe>(), _shininess = new List<SCN0Keyframe>();
+        private List<RGBAPixel> _lightColor = new List<RGBAPixel>(), _specColor = new List<RGBAPixel>();
+        private List<SCN0Keyframe> xStarts = new List<SCN0Keyframe>(), yStarts = new List<SCN0Keyframe>(), zStarts = new List<SCN0Keyframe>(), xEnds = new List<SCN0Keyframe>(), yEnds = new List<SCN0Keyframe>(), zEnds = new List<SCN0Keyframe>();
+        private List<bool> _enabled = new List<bool>();
 
         [Flags]
-        public enum Flags1e : ushort
+        public enum FixedFlags : ushort
         {
-            U1 = 0x1,
-            U2 = 0x2,
-            U3 = 0x4,
-            EPtXFix = 0x8,
-            EPtYFix = 0x10,
-            EPtZFix = 0x20,
-            FixL1 = 0x40,
-            U4 = 0x80,
-            SPtXFix = 0x100,
-            SPtYFix = 0x200,
-            SPtZFix = 0x400,
-            U5 = 0x800,
-            U6 = 0x1000,
-            U7 = 0x2000,
-            FixL2 = 0x4000,
-            U8 = 0x8000
+            StartXConstant = 0x8,
+            StartYConstant = 0x10,
+            StartZConstant = 0x20,
+            ColorConstant = 0x40,
+            EnabledConstant = 0x80, //Refer to Enabled in UsageFlags if constant
+            EndXConstant = 0x100,
+            EndYConstant = 0x200,
+            EndZConstant = 0x400,
+            CutoffConstant = 0x800,
+            RefDistanceConstant = 0x1000,
+            RefBrightnessConstant = 0x2000,
+            SpecColorConstant = 0x4000,
+            ShininessConstant = 0x8000
         }
-
-        [Flags]
-        public enum Flags2e : ushort
-        {
-            NoUnk6_7_8 = 0x1,
-            UseUnk10 = 0x2,
-            NotProgram = 0x4,
-            UseUnk1_11_12 = 0x8,
-            U2 = 0x10,
-            U3 = 0x20,
-            U4 = 0x40,
-            U5 = 0x80
-        }
-
-        /*
-            Flags 2
-            0000 0000 0000 0001 - Do not use Unk6 - 8
-            0000 0000 0000 0010 - Use Unk10 
-            0000 0000 0000 0100 - Is Not Program (or not referenced by all lightsets)
-            0000 0000 0000 1000 - Use Unk1, Unk11, Unk12
-            0000 0000 0001 0000 - Enabled
-            0000 0000 0010 0000 - UseLightSet
-
-            Flags 1
-            0000 0000 0000 0111 - Unknown 1 (3)
-            0000 0000 0011 1000 - EndPoints fixed in order, bits right to left
-            0000 0000 0100 0000 - Fixed Lighting 1
-            0000 0000 1000 0000 - Do not use Unk5
-            0000 0111 0000 0000 - StartPoints fixed in order, bits right to left
-            0011 1000 0000 0000 - Unknown 2 (3) 
-            0100 0000 0000 0000 - Fixed Lighting 2
-            1000 0000 0000 0000 - Unknown 3
-         */
+        
+        [Category("Specular Color")]
+        public int NonSpecularLightID { get { return _nonSpecLightId; } set { _nonSpecLightId = value; SignalPropertyChange(); } }
+        [Category("Specular Color")]
+        public RGBAPixel[] SpecularColor { get { return _specColor.ToArray(); } set { _specColor = value.ToList<RGBAPixel>(); SignalPropertyChange(); } }
+        [Category("Specular Color")]
+        public List<SCN0Keyframe> Brightness { get { return _shininess; } set { _shininess = value; SignalPropertyChange(); } }
+        
+        [Category("Light")]
+        public LightType LightType { get { return (LightType)(_flags2 & 3); } set { _flags2 = (ushort)((_flags2 & 60) | ((ushort)value & 3)); SignalPropertyChange(); } }
+        [Category("Light")]
+        public UsageFlags UsageFlags { get { return (UsageFlags)(_flags2 >> 2); } set { _flags2 = (ushort)((_flags2 & 3) | ((ushort)((ushort)value << 2) & 60)); SignalPropertyChange(); } }
+        
+        [Category("Light")]
+        public bool[] LightEnabled { get { return _enabled.ToArray(); } set { _enabled = value.ToList<bool>(); SignalPropertyChange(); } }
 
         [Category("Light")]
-        public int Unknown1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public int Unknown2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
-        [Category("Light"), TypeConverter(typeof(Bin16StringConverter))]
-        public Bin16 Flags1 { get { return _flags1; } set { _flags1 = value; SignalPropertyChange(); } }
-        [Category("Light"), TypeConverter(typeof(Bin16StringConverter))]
-        public Bin16 Flags2 { get { return _flags2; } set { _flags2 = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public int Unknown5 { get { return _unk5; } set { _unk5 = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public List<SCN0Keyframe> XEndPoints { get { return xEnds; } set { xEnds = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public List<SCN0Keyframe> YEndPoints { get { return yEnds; } set { yEnds = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public List<SCN0Keyframe> ZEndPoints { get { return zEnds; } set { zEnds = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public RGBAPixel[] Lighting { get { return _lighting1.ToArray(); } set { _lighting1 = value.ToList<RGBAPixel>(); SignalPropertyChange(); } }
-        [Category("Light")]
+        public RGBAPixel[] LightColor { get { return _lightColor.ToArray(); } set { _lightColor = value.ToList<RGBAPixel>(); SignalPropertyChange(); } }
+        
+        [Category("Light Start Points")]
         public List<SCN0Keyframe> XStartPoints { get { return xStarts; } set { xStarts = value; SignalPropertyChange(); } }
-        [Category("Light")]
+        [Category("Light Start Points")]
         public List<SCN0Keyframe> YStartPoints { get { return yStarts; } set { yStarts = value; SignalPropertyChange(); } }
-        [Category("Light")]
+        [Category("Light Start Points")]
         public List<SCN0Keyframe> ZStartPoints { get { return zStarts; } set { zStarts = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public int Unknown6 { get { return _unk6; } set { _unk6 = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public float Brightness { get { return _unk7; } set { _unk7 = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public float Intensity { get { return _unk8; } set { _unk8 = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public int Unknown9 { get { return _unk9; } set { _unk9 = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public float LightSize { get { return _unk10; } set { _unk10 = value; SignalPropertyChange(); } }
-        [Category("Light")]
-        public RGBAPixel[] Lighting2 { get { return _lighting2.ToArray(); } set { _lighting2 = value.ToList<RGBAPixel>(); SignalPropertyChange(); } }
-        [Category("Light")]
-        public float Lighting2ConstantAlpha { get { return _unk12; } set { _unk12 = value; SignalPropertyChange(); } }
+
+        [Category("Light End Points")]
+        public List<SCN0Keyframe> XEndPoints { get { return xEnds; } set { xEnds = value; SignalPropertyChange(); } }
+        [Category("Light End Points")]
+        public List<SCN0Keyframe> YEndPoints { get { return yEnds; } set { yEnds = value; SignalPropertyChange(); } }
+        [Category("Light End Points")]
+        public List<SCN0Keyframe> ZEndPoints { get { return zEnds; } set { zEnds = value; SignalPropertyChange(); } }
+
+        [Category("SourceLight")]
+        public DistAttnFn DistanceFunction { get { return (DistAttnFn)_distFunc; } set { _distFunc = (int)value; SignalPropertyChange(); } }
+        [Category("SourceLight")]
+        public List<SCN0Keyframe> RefDistance { get { return _refDist; } set { _refDist = value; SignalPropertyChange(); } }
+        [Category("SourceLight")]
+        public List<SCN0Keyframe> RefBrightness { get { return _refBrightness; } set { _refBrightness = value; SignalPropertyChange(); } }
+        
+        [Category("Spotlight")]
+        public SpotFn SpotFunction { get { return (SpotFn)_spotFunc; } set { _spotFunc = (int)value; SignalPropertyChange(); } }
+        [Category("Spotlight")]
+        public List<SCN0Keyframe> Cutoff { get { return _cutoff; } set { _cutoff = value; SignalPropertyChange(); } }
         
         protected override bool OnInitialize()
         {
             base.OnInitialize();
 
-            _unk1 = Data->_unk1;
-            _unk2 = Data->_unk2;
-            _flags1 = new Bin16(Data->_flags1);
-            _flags2 = new Bin16(Data->_flags2);
-            _unk5 = Data->_unk5;
-            _unk6 = Data->_unk6;
-            _unk7 = Data->_unk7;
-            _unk8 = Data->_unk8;
-            _unk9 = Data->_unk9;
-            _unk10 = Data->_unk10;
-            _unk12 = Data->_unk12;
+            _nonSpecLightId = Data->_nonSpecLightId;
+            _part2Offset = Data->_part2Offset;
+            _flags1 = Data->_fixedFlags;
+            _flags2 = Data->_usageFlags;
+            _enableOffset = Data->_visOffset;
+            _distFunc = Data->_distFunc;
+            _spotFunc = Data->_spotFunc;
 
-            _lighting1 = new List<RGBAPixel>();
-            _lighting2 = new List<RGBAPixel>();
+            _enabled = new List<bool>();
+            _lightColor = new List<RGBAPixel>();
+            _specColor = new List<RGBAPixel>();
             xEnds = new List<SCN0Keyframe>();
             yEnds = new List<SCN0Keyframe>();
             zEnds = new List<SCN0Keyframe>();
             xStarts = new List<SCN0Keyframe>();
             yStarts = new List<SCN0Keyframe>();
             zStarts = new List<SCN0Keyframe>();
+            _refDist = new List<SCN0Keyframe>();
+            _refBrightness = new List<SCN0Keyframe>();
+            _cutoff = new List<SCN0Keyframe>();
+            _shininess = new List<SCN0Keyframe>();
 
-            if (Flags1[3])
-                xEnds.Add(new Vector3(0, 0, Data->_vec1._x));
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.ShininessConstant))
+                _shininess.Add(new Vector3(0, 0, Data->_shininess));
+            else
+            {
+                if (Name != "<null>")
+                {
+                    SCN0KeyframesHeader* keysHeader = Data->shininessKeyframes;
+                    SCN0KeyframeStruct* addr = keysHeader->Data;
+                    for (int i = 0; i < keysHeader->_numFrames; i++)
+                        _shininess.Add(*addr++);
+                }
+            }
+
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.CutoffConstant))
+                _cutoff.Add(new Vector3(0, 0, Data->_cutoff));
+            else
+            {
+                if (Name != "<null>")
+                {
+                    SCN0KeyframesHeader* keysHeader = Data->cutoffKeyframes;
+                    SCN0KeyframeStruct* addr = keysHeader->Data;
+                    for (int i = 0; i < keysHeader->_numFrames; i++)
+                        _cutoff.Add(*addr++);
+                }
+            }
+
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.RefBrightnessConstant))
+                _refBrightness.Add(new Vector3(0, 0, Data->_refBrightness));
+            else
+            {
+                if (Name != "<null>")
+                {
+                    SCN0KeyframesHeader* keysHeader = Data->refBrightnessKeyframes;
+                    SCN0KeyframeStruct* addr = keysHeader->Data;
+                    for (int i = 0; i < keysHeader->_numFrames; i++)
+                        _refBrightness.Add(*addr++);
+                }
+            }
+
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.RefDistanceConstant))
+                _refDist.Add(new Vector3(0, 0, Data->_refDistance));
+            else
+            {
+                if (Name != "<null>")
+                {
+                    SCN0KeyframesHeader* keysHeader = Data->refDistanceKeyframes;
+                    SCN0KeyframeStruct* addr = keysHeader->Data;
+                    for (int i = 0; i < keysHeader->_numFrames; i++)
+                        _refDist.Add(*addr++);
+                }
+            }
+
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.EndXConstant))
+                xEnds.Add(new Vector3(0, 0, Data->_endPoint._x));
             else
             {
                 if (Name != "<null>")
@@ -150,8 +174,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         xEnds.Add(*addr++);
                 }
             }
-            if (Flags1[4])
-                yEnds.Add(new Vector3(0, 0, Data->_vec1._y));
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.EndYConstant))
+                yEnds.Add(new Vector3(0, 0, Data->_endPoint._y));
             else
             {
                 if (Name != "<null>")
@@ -162,8 +186,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         yEnds.Add(*addr++);
                 }
             }
-            if (Flags1[5])
-                zEnds.Add(new Vector3(0, 0, Data->_vec1._z));
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.EndZConstant))
+                zEnds.Add(new Vector3(0, 0, Data->_endPoint._z));
             else
             {
                 if (Name != "<null>")
@@ -174,19 +198,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                         zEnds.Add(*addr++);
                 }
             }
-            if (Flags1[6])
-                _lighting1.Add(Data->_lighting1);
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.ColorConstant))
+                _lightColor.Add(Data->_lightColor);
             else
             {
                 if (Name != "<null>")
                 {
-                    RGBAPixel* addr = Data->light1Entries;
+                    RGBAPixel* addr = Data->lightColorEntries;
                     for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
-                        _lighting1.Add(*addr++);
+                        _lightColor.Add(*addr++);
                 }
             }
-            if (Flags1[7])
-                xStarts.Add(new Vector3(0, 0, Data->_vec2._x));
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.StartXConstant))
+                xStarts.Add(new Vector3(0, 0, Data->_startPoint._x));
             else
             {
                 if (Name != "<null>")
@@ -197,8 +221,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         xStarts.Add(*addr++);
                 }
             }
-            if (Flags1[8])
-                yStarts.Add(new Vector3(0, 0, Data->_vec2._y));
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.StartYConstant))
+                yStarts.Add(new Vector3(0, 0, Data->_startPoint._y));
             else
             {
                 if (Name != "<null>")
@@ -209,8 +233,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         yStarts.Add(*addr++);
                 }
             }
-            if (Flags1[9])
-                zStarts.Add(new Vector3(0, 0, Data->_vec2._z));
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.StartZConstant))
+                zStarts.Add(new Vector3(0, 0, Data->_startPoint._z));
             else
             {
                 if (Name != "<null>")
@@ -221,15 +245,25 @@ namespace BrawlLib.SSBB.ResourceNodes
                         zStarts.Add(*addr++);
                 }
             }
-            if (Flags1[14])
-                _lighting2.Add(Data->_lighting2);
+            if (((FixedFlags)_flags1).HasFlag(FixedFlags.SpecColorConstant))
+                _specColor.Add(Data->_specularColor);
             else
             {
                 if (Name != "<null>")
                 {
-                    RGBAPixel* addr = Data->light2Entries;
+                    RGBAPixel* addr = Data->specColorEntries;
                     for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
-                        _lighting2.Add(*addr++);
+                        _specColor.Add(*addr++);
+                }
+            }
+            if (!((FixedFlags)_flags1).HasFlag(FixedFlags.EnabledConstant))
+            {
+                if (Name != "<null>")
+                {
+                    byte* addr = Data->visBitEntries;
+                    int index = -1;
+                    for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
+                        _enabled.Add(((addr[(i % 8 == 0 ? ++index : index)] >> (7 - (i & 7))) & 1) != 0);
                 }
             }
             return false;
@@ -241,9 +275,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             keyLen = 0;
             if (_name != "<null>")
             {
-                if (_lighting1.Count > 1)
+                if (_enabled.Count > 1)
+                    lightLen += ((((SCN0Node)Parent.Parent).FrameCount + 1).Align(32) / 8);
+                if (_lightColor.Count > 1)
                     lightLen += 4 * (((SCN0Node)Parent.Parent).FrameCount + 1);
-                if (_lighting2.Count > 1)
+                if (_specColor.Count > 1)
                     lightLen += 4 * (((SCN0Node)Parent.Parent).FrameCount + 1);
                 if (xStarts.Count > 1)
                     keyLen += 4 + xStarts.Count * 12;
@@ -257,176 +293,252 @@ namespace BrawlLib.SSBB.ResourceNodes
                     keyLen += 4 + yEnds.Count * 12;
                 if (zEnds.Count > 1)
                     keyLen += 4 + zEnds.Count * 12;
+                if (_refDist.Count > 1)
+                    keyLen += 4 + _refDist.Count * 12;
+                if (_refBrightness.Count > 1)
+                    keyLen += 4 + _refBrightness.Count * 12;
+                if (_cutoff.Count > 1)
+                    keyLen += 4 + _cutoff.Count * 12;
+                if (_shininess.Count > 1)
+                    keyLen += 4 + _shininess.Count * 12;
             }
             return SCN0Light.Size;
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            SCN0Light* header = (SCN0Light*)address;
-
             base.OnRebuild(address, length, force);
+
+            SCN0Light* header = (SCN0Light*)address;
 
             if (_name != "<null>")
             {
-                header->_unk1 = _unk1;
-                header->_unk2 = _unk2;
-                header->_unk5 = _unk5;
-                header->_unk6 = _unk6;
-                header->_unk7 = _unk7;
-                header->_unk8 = _unk8;
-                header->_unk9 = _unk9;
-                header->_unk10 = _unk10;
-                header->_unk12 = _unk12;
+                header->_nonSpecLightId = _nonSpecLightId;
+                header->_part2Offset = _part2Offset;
+                header->_visOffset = _enableOffset;
+                header->_distFunc = _distFunc;
+                header->_spotFunc = _spotFunc;
 
-                if (_lighting1.Count > 1)
+                FixedFlags newFlags = new FixedFlags();
+                if (_shininess.Count > 1)
                 {
-                    *((bint*)header->_lighting1.Address) = (int)lightAddr - (int)header->_lighting1.Address;
-                    for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
-                        if (i < _lighting1.Count)
-                            *lightAddr++ = _lighting1[i];
-                        else
-                            *lightAddr++ = new RGBAPixel();
-                    _flags1[6] = false;
+                    *((bint*)header->_shininess.Address) = (int)keyframeAddr - (int)header->_shininess.Address;
+                    ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)_shininess.Count;
+                    SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
+                    for (int i = 0; i < _shininess.Count; i++)
+                        *addr++ = _shininess[i];
+                    keyframeAddr = addr;
                 }
                 else
                 {
-                    _flags1[6] = true;
-                    if (_lighting1.Count == 1)
-                        header->_lighting1 = _lighting1[0];
+                    newFlags |= FixedFlags.ShininessConstant;
+                    if (_shininess.Count == 1)
+                        header->_shininess = _shininess[0]._value;
                     else
-                        header->_lighting1 = new RGBAPixel();
+                        header->_shininess = 0;
                 }
-
-                if (_lighting2.Count > 1)
+                if (_cutoff.Count > 1)
                 {
-                    *((bint*)header->_lighting2.Address) = (int)lightAddr - (int)header->_lighting2.Address;
-                    for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
-                        if (i < _lighting2.Count)
-                            *lightAddr++ = _lighting2[i];
-                        else
-                            *lightAddr++ = new RGBAPixel();
-                    _flags1[14] = false;
+                    *((bint*)header->_cutoff.Address) = (int)keyframeAddr - (int)header->_cutoff.Address;
+                    ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)_cutoff.Count;
+                    SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
+                    for (int i = 0; i < _cutoff.Count; i++)
+                        *addr++ = _cutoff[i];
+                    keyframeAddr = addr;
                 }
                 else
                 {
-                    _flags1[14] = true;
-                    if (_lighting2.Count == 1)
-                        header->_lighting2 = _lighting2[0];
+                    newFlags |= FixedFlags.CutoffConstant;
+                    if (_cutoff.Count == 1)
+                        header->_cutoff = _cutoff[0]._value;
                     else
-                        header->_lighting2 = new RGBAPixel();
+                        header->_cutoff = 0;
                 }
+                if (_refBrightness.Count > 1)
+                {
+                    *((bint*)header->_refBrightness.Address) = (int)keyframeAddr - (int)header->_refBrightness.Address;
+                    ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)_refBrightness.Count;
+                    SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
+                    for (int i = 0; i < _refBrightness.Count; i++)
+                        *addr++ = _refBrightness[i];
+                    keyframeAddr = addr;
+                }
+                else
+                {
+                    newFlags |= FixedFlags.RefBrightnessConstant;
+                    if (_refBrightness.Count == 1)
+                        header->_refBrightness = _refBrightness[0]._value;
+                    else
+                        header->_refBrightness = 0;
+                }
+                if (_refDist.Count > 1)
+                {
+                    *((bint*)header->_refDistance.Address) = (int)keyframeAddr - (int)header->_refDistance.Address;
+                    ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)_refDist.Count;
+                    SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
+                    for (int i = 0; i < _refDist.Count; i++)
+                        *addr++ = _refDist[i];
+                    keyframeAddr = addr;
+                }
+                else
+                {
+                    newFlags |= FixedFlags.RefDistanceConstant;
+                    if (_refDist.Count == 1)
+                        header->_refDistance = _refDist[0]._value;
+                    else
+                        header->_refDistance = 0;
+                }
+                if (_lightColor.Count > 1)
+                {
+                    *((bint*)header->_lightColor.Address) = (int)lightAddr - (int)header->_lightColor.Address;
+                    for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
+                        if (i < _lightColor.Count)
+                            *lightAddr++ = _lightColor[i];
+                        else
+                            *lightAddr++ = new RGBAPixel();
+                }
+                else
+                {
+                    newFlags |= FixedFlags.ColorConstant;
+                    if (_lightColor.Count == 1)
+                        header->_lightColor = _lightColor[0];
+                    else
+                        header->_lightColor = new RGBAPixel();
+                }
+                if (_specColor.Count > 1)
+                {
+                    *((bint*)header->_specularColor.Address) = (int)lightAddr - (int)header->_specularColor.Address;
+                    for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
+                        if (i < _specColor.Count)
+                            *lightAddr++ = _specColor[i];
+                        else
+                            *lightAddr++ = new RGBAPixel();
+                }
+                else
+                {
+                    newFlags |= FixedFlags.SpecColorConstant;
+                    if (_specColor.Count == 1)
+                        header->_specularColor = _specColor[0];
+                    else
+                        header->_specularColor = new RGBAPixel();
+                }
+                if (_enabled.Count > 1)
+                {
+                    header->_visOffset = (int)lightAddr - (int)header->_visOffset.Address;
+                    byte* addr = (byte*)lightAddr;
+                    int index = -1;
+                    for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
+                        addr[(i % 8 == 0 ? ++index : index)] |= (byte)((i < _enabled.Count ? (_enabled[i] ? 1 : 0) : 0) << (7 - (i & 7)));
+                    addr += ((((SCN0Node)Parent.Parent).FrameCount + 1).Align(32) / 8); //Align pointer
+                    lightAddr = (RGBAPixel*)addr;
+                }
+                else
+                    newFlags |= FixedFlags.EnabledConstant;
                 if (xEnds.Count > 1)
                 {
-                    *((bint*)header->_vec1._x.Address) = (int)keyframeAddr - (int)header->_vec1._x.Address;
+                    *((bint*)header->_startPoint._x.Address) = (int)keyframeAddr - (int)header->_startPoint._x.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)xEnds.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < xEnds.Count; i++)
                         *addr++ = xEnds[i];
-                    keyframeAddr += 4 + xEnds.Count * 12;
-                    _flags1[3] = false;
+                    keyframeAddr = addr;
                 }
                 else
                 {
-                    _flags1[3] = true;
+                    newFlags |= FixedFlags.EndXConstant;
                     if (xEnds.Count == 1)
-                        header->_vec1._x = xEnds[0]._value;
+                        header->_startPoint._x = xEnds[0]._value;
                     else
-                        header->_vec1._x = 0;
+                        header->_startPoint._x = 0;
                 }
                 if (yEnds.Count > 1)
                 {
-                    *((bint*)header->_vec1._y.Address) = (int)keyframeAddr - (int)header->_vec1._y.Address;
+                    *((bint*)header->_startPoint._y.Address) = (int)keyframeAddr - (int)header->_startPoint._y.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)yEnds.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < yEnds.Count; i++)
                         *addr++ = yEnds[i];
-                    keyframeAddr += 4 + yEnds.Count * 12;
-                    _flags1[4] = false;
+                    keyframeAddr = addr;
                 }
                 else
                 {
-                    _flags1[4] = true;
+                    newFlags |= FixedFlags.EndYConstant;
                     if (yEnds.Count == 1)
-                        header->_vec1._y = yEnds[0]._value;
+                        header->_startPoint._y = yEnds[0]._value;
                     else
-                        header->_vec1._y = 0;
+                        header->_startPoint._y = 0;
                 }
                 if (zEnds.Count > 1)
                 {
-                    *((bint*)header->_vec1._z.Address) = (int)keyframeAddr - (int)header->_vec1._z.Address;
+                    *((bint*)header->_startPoint._z.Address) = (int)keyframeAddr - (int)header->_startPoint._z.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)zEnds.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < zEnds.Count; i++)
                         *addr++ = zEnds[i];
-                    keyframeAddr += 4 + zEnds.Count * 12;
-                    _flags1[5] = false;
+                    keyframeAddr = addr;
                 }
                 else
                 {
-                    _flags1[5] = true;
+                    newFlags |= FixedFlags.EndZConstant;
                     if (zEnds.Count == 1)
-                        header->_vec1._z = zEnds[0]._value;
+                        header->_startPoint._z = zEnds[0]._value;
                     else
-                        header->_vec1._z = 0;
+                        header->_startPoint._z = 0;
                 }
                 if (xStarts.Count > 1)
                 {
-                    *((bint*)header->_vec2._x.Address) = (int)keyframeAddr - (int)header->_vec2._x.Address;
+                    *((bint*)header->_endPoint._x.Address) = (int)keyframeAddr - (int)header->_endPoint._x.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)xStarts.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < xStarts.Count; i++)
                         *addr++ = xStarts[i];
-                    keyframeAddr += 4 + xStarts.Count * 12;
-                    _flags1[7] = false;
+                    keyframeAddr = addr;
                 }
                 else
                 {
-                    _flags1[7] = true;
+                    newFlags |= FixedFlags.StartXConstant;
                     if (xStarts.Count == 1)
-                        header->_vec2._x = xStarts[0]._value;
+                        header->_endPoint._x = xStarts[0]._value;
                     else
-                        header->_vec2._x = 0;
+                        header->_endPoint._x = 0;
                 }
                 if (yStarts.Count > 1)
                 {
-                    *((bint*)header->_vec2._y.Address) = (int)keyframeAddr - (int)header->_vec2._y.Address;
+                    *((bint*)header->_endPoint._y.Address) = (int)keyframeAddr - (int)header->_endPoint._y.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)yStarts.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < yStarts.Count; i++)
                         *addr++ = yStarts[i];
-                    keyframeAddr += 4 + yStarts.Count * 12;
-                    _flags1[8] = false;
+                    keyframeAddr = addr;
                 }
                 else
                 {
-                    _flags1[8] = true;
+                    newFlags |= FixedFlags.StartYConstant;
                     if (yStarts.Count == 1)
-                        header->_vec2._y = yStarts[0]._value;
+                        header->_endPoint._y = yStarts[0]._value;
                     else
-                        header->_vec2._y = 0;
+                        header->_endPoint._y = 0;
                 }
                 if (zStarts.Count > 1)
                 {
-                    *((bint*)header->_vec2._z.Address) = (int)keyframeAddr - (int)header->_vec2._z.Address;
+                    *((bint*)header->_endPoint._z.Address) = (int)keyframeAddr - (int)header->_endPoint._z.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)zStarts.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < zStarts.Count; i++)
                         *addr++ = zStarts[i];
-                    keyframeAddr += 4 + zStarts.Count * 12;
-                    _flags1[9] = false;
+                    keyframeAddr = addr;
                 }
                 else
                 {
-                    _flags1[9] = true;
+                    newFlags |= FixedFlags.StartZConstant;
                     if (zStarts.Count == 1)
-                        header->_vec2._z = zStarts[0]._value;
+                        header->_endPoint._z = zStarts[0]._value;
                     else
-                        header->_vec2._z = 0;
+                        header->_endPoint._z = 0;
                 }
 
-                header->_flags1 = _flags1.data;
-                header->_flags2 = _flags2.data;
+                header->_fixedFlags = this._flags1 = (ushort)newFlags;
+                header->_usageFlags = this._flags2;
             }
         }
 

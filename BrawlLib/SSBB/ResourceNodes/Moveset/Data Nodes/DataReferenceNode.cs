@@ -15,7 +15,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MoveDefReferenceNode : MoveDefEntryNode
     {
         internal FDefStringEntry* Header { get { return (FDefStringEntry*)WorkingUncompressed.Address; } }
-        
+        public override ResourceType ResourceType { get { return ResourceType.MDefRefList; } }
+
         private FDefStringTable* stringTable;
         
         private Dictionary<string, FDefStringEntry> exSubRoutineTable = new Dictionary<string, FDefStringEntry>();
@@ -65,7 +66,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     break;
             }
             //_offsets.Add(offset);
-            Root._external.Add(this);
+            //Root._externalRefs.Add(this);
             return false;
         }
     }
