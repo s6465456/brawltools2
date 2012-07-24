@@ -982,16 +982,19 @@ namespace BrawlLib.SSBBTypes
         public bint _mdl0Offset;
         public bint _stringOffset;
         public bint _index;
-        public buint _isXLU; //0x00 or 0x80000000 for XLU textures
+        public buint _isXLU; //Negative int sign if XLU
+
         public byte _numTexGens;
         public byte _numLightChans;
         public byte _activeTEVStages;
         public byte _numIndTexStages;
-        public bint _cull; //0x02, XLU = 0
+        public bint _cull;
+
         public byte _enableAlphaTest;
         public sbyte _lightSet;
         public sbyte _fogSet;
-        public byte _pad;
+        public byte _pad1;
+
         public byte _indirectMethod1;
         public byte _indirectMethod2;
         public byte _indirectMethod3;
@@ -1000,20 +1003,19 @@ namespace BrawlLib.SSBBTypes
         public sbyte _normMapRefLight2;
         public sbyte _normMapRefLight3;
         public sbyte _normMapRefLight4;
+
         public bint _shaderOffset;
         public bint _numTextures;
-        public bint _matRefOffset; //1044 for v8 & v9 or 1048 for v10 & v11 MDL0
-        public bint _part2Offset;
+        public bint _matRefOffset;
 
-        //Offset to display list(s).
-        public bint _dlOffset_08_09; 
-        public bint _dlOffset_10_11;
+        public bint _part2Offset;
+        public bint _dlOffset; 
+        public bint _pad2;
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public MDL0Header* Parent { get { return (MDL0Header*)(Address + _mdl0Offset); } }
 
         public MDL0TextureRef* First { get { return (_matRefOffset != 0) ? (MDL0TextureRef*)(Address + _matRefOffset) : null; } }
-        public UserData* Part2 { get { return (_part2Offset != 0) ? (UserData*)(Address + _part2Offset) : null; } }
 
         public int DisplayListOffset(int version)
         {
@@ -1021,9 +1023,21 @@ namespace BrawlLib.SSBBTypes
             {
                 case 10:
                 case 11:
-                    return _dlOffset_10_11;
+                    return _pad2;
                 default:
-                    return _dlOffset_08_09;
+                    return _dlOffset;
+            }
+        }
+
+        public int Part2Offset(int version)
+        {
+            switch (version)
+            {
+                case 10:
+                case 11:
+                    return _dlOffset;
+                default:
+                    return _part2Offset;
             }
         }
 
@@ -1051,6 +1065,7 @@ namespace BrawlLib.SSBBTypes
             }
         }
 
+        public UserData* Part2(int version) { return (UserData*)(Address + Part2Offset(version)); }
         public MatModeBlock* DisplayLists(int version) { return (MatModeBlock*)(Address + DisplayListOffset(version)); }
         public MatTevColorBlock* TevColorBlock(int version) { return (MatTevColorBlock*)(Address + DisplayListOffset(version) + MatModeBlock.Size); }
         public MatTevKonstBlock* TevKonstBlock(int version) { return (MatTevKonstBlock*)(Address + DisplayListOffset(version) + MatModeBlock.Size + MatTevColorBlock.Size); }

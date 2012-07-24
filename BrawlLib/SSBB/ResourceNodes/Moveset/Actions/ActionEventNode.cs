@@ -142,47 +142,47 @@ namespace BrawlLib.SSBB.ResourceNodes
                 type = (ArgVarType)info.GetDfltParameter(i);
             if ((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && i == 12)
             {
-                child = (new HitboxFlagsNode(info != null ? info.Params[i] : "Value") { _value = value, val = new HitboxFlags() { data = value } });
+                child = (new HitboxFlagsNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value, val = new HitboxFlags() { data = value } });
                 (child as HitboxFlagsNode).GetFlags();
             }
             else if (((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && (i == 0 || i == 3 || i == 4)))
-                child = (new MoveDefEventValue2HalfNode(info != null ? info.Params[i] : "Value") { _value = value });
+                child = (new MoveDefEventValue2HalfNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
             else if (((_event == 0x11150300 || _event == 0x11001000 || _event == 0x11010A00 || _event == 0x11020A00) && i == 0))
-                child = (new MoveDefEventValue2HalfGFXNode(info != null ? info.Params[i] : "Value") { _value = value });
+                child = (new MoveDefEventValue2HalfGFXNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
             else if (i == 14 && _event == 0x06150F00)
             {
-                child = (new SpecialHitboxFlagsNode(info != null ? info.Params[i] : "Value") { _value = value, val = new SpecialHitboxFlags() { data = value } });
+                child = (new SpecialHitboxFlagsNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value, val = new SpecialHitboxFlags() { data = value } });
                 (child as SpecialHitboxFlagsNode).GetFlags();
             }
             else if ((ArgVarType)(int)type == ArgVarType.Value)
             {
                 if (EventInfo != null && EventInfo.Enums != null && EventInfo.Enums.ContainsKey(i))
-                    child = new MoveDefEventValueEnumNode(info != null ? info.Params[i] : "Value") { Enums = EventInfo.Enums[i].ToArray() };
+                    child = new MoveDefEventValueEnumNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { Enums = EventInfo.Enums[i].ToArray() };
                 else
-                    child = (new MoveDefEventValueNode(info != null ? info.Params[i] : "Value") { _value = value });
+                    child = (new MoveDefEventValueNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
             }
             else if ((ArgVarType)(int)type == ArgVarType.Scalar)
-                child = (new MoveDefEventScalarNode(info != null ? info.Params[i] : "Scalar") { _value = value });
+                child = (new MoveDefEventScalarNode(info != null && i < info.Params.Length ? info.Params[i] : "Scalar") { _value = value });
             else if ((ArgVarType)(int)type == ArgVarType.Boolean)
-                child = (new MoveDefEventBoolNode(info != null ? info.Params[i] : "Boolean") { _value = value });
+                child = (new MoveDefEventBoolNode(info != null && i < info.Params.Length ? info.Params[i] : "Boolean") { _value = value });
             else if ((ArgVarType)(int)type == ArgVarType.Unknown)
-                child = (new MoveDefEventUnkNode(info != null ? info.Params[i] : "Unknown") { _value = value });
+                child = (new MoveDefEventUnkNode(info != null && i < info.Params.Length ? info.Params[i] : "Unknown") { _value = value });
             else if ((ArgVarType)(int)type == ArgVarType.Requirement)
             {
-                MoveDefEventRequirementNode r = new MoveDefEventRequirementNode(info != null ? info.Params[i] : "Requirement") { _value = value };
+                MoveDefEventRequirementNode r = new MoveDefEventRequirementNode(info != null && i < info.Params.Length ? info.Params[i] : "Requirement") { _value = value };
                 child = r;
                 r._parent = Root;
                 r.val = r.GetRequirement(r._value);
             }
             else if ((ArgVarType)(int)type == ArgVarType.Variable)
             {
-                MoveDefEventVariableNode v = new MoveDefEventVariableNode(info != null ? info.Params[i] : "Variable") { _value = value };
+                MoveDefEventVariableNode v = new MoveDefEventVariableNode(info != null && i < info.Params.Length ? info.Params[i] : "Variable") { _value = value };
                 child = v;
                 v._parent = Root;
                 v.val = v.ResolveVariable(v._value);
             }
             else if ((ArgVarType)(int)type == ArgVarType.Offset)
-                child = (new MoveDefEventOffsetNode(info != null ? info.Params[i] : "Offset") { _value = value });
+                child = (new MoveDefEventOffsetNode(info != null && i < info.Params.Length ? info.Params[i] : "Offset") { _value = value });
             child._parent = null;
             if (i == Children.Count)
                 AddChild(child);

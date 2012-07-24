@@ -44,25 +44,34 @@ namespace BrawlLib.SSBB.ResourceNodes
                     starts.Add(new Vector3(0, 0, Data->_start));
                 else
                 {
-                    SCN0KeyframeStruct* addr = Data->startKeyframes->Data;
-                    for (int i = 0; i < Data->startKeyframes->_numFrames; i++)
-                        starts.Add(*addr++);
+                    if (!_replaced)
+                    {
+                        SCN0KeyframeStruct* addr = Data->startKeyframes->Data;
+                        for (int i = 0; i < Data->startKeyframes->_numFrames; i++)
+                            starts.Add(*addr++);
+                    }
                 }
                 if (flags.HasFlag(SCN0FogFlags.FixedEnd))
                     ends.Add(new Vector3(0, 0, Data->_end));
                 else
                 {
-                    SCN0KeyframeStruct* addr = Data->endKeyframes->Data;
-                    for (int i = 0; i < Data->endKeyframes->_numFrames; i++)
-                        ends.Add(*addr++);
+                    if (!_replaced)
+                    {
+                        SCN0KeyframeStruct* addr = Data->endKeyframes->Data;
+                        for (int i = 0; i < Data->endKeyframes->_numFrames; i++)
+                            ends.Add(*addr++);
+                    }
                 }
                 if (flags.HasFlag(SCN0FogFlags.FixedColor))
                     colors.Add(Data->_color);
                 else
                 {
-                    RGBAPixel* addr = Data->colorEntries;
-                    for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
-                        colors.Add(*addr++);
+                    if (!_replaced)
+                    {
+                        RGBAPixel* addr = Data->colorEntries;
+                        for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
+                            colors.Add(*addr++);
+                    }
                 }
             }
 

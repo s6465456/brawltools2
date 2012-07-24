@@ -24,12 +24,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
 
-            if (Data->_ambNameOffset != 0)
+            if (Data->_ambNameOffset != 0 && !_replaced)
                 _ambientLight = Data->AmbientString;
 
             numLights = Data->_numLights;
 
             bint* strings = Data->StringOffsets;
+            if (!_replaced)
             for (int i = 0; i < Data->_numLights; i++)
                 _entries.Add(new String((sbyte*)strings + strings[i]));
 

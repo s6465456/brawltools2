@@ -233,47 +233,60 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             short _lightSetCount = 0, _ambientCount = 0, _lightCount = 0, _fogCount = 0, _cameraCount = 0;
 
+            int[] indices = new int[] { -1, -1, -1, -1, -1 };
             foreach (SCN0GroupNode g in Children)
             {
                 if (g._name == "LightSet(NW4R)")
                 {
+                    indices[0] = g.Index;
                     LightSetLen = g._entryLen;
                     _lightSetCount = (short)g.Children.Count;
                 }
                 else if (g._name == "AmbLights(NW4R)")
                 {
+                    indices[1] = g.Index;
                     AmbLightSetLen = g._entryLen;
                     _ambientCount = (short)g.Children.Count;
                 }
                 else if (g._name == "Lights(NW4R)")
                 {
+                    indices[2] = g.Index;
                     LightLen = g._entryLen;
                     _lightCount = (short)g.Children.Count;
                 }
                 else if (g._name == "Fogs(NW4R)")
                 {
+                    indices[3] = g.Index;
                     FogLen = g._entryLen;
                     _fogCount = (short)g.Children.Count;
                 }
                 else if (g._name == "Cameras(NW4R)")
                 {
+                    indices[4] = g.Index;
                     CameraLen = g._entryLen;
                     _cameraCount = (short)g.Children.Count;
                 }
+            }
 
-                (entry++)->_dataOffset = (int)groupAddress - (int)group;
+            for (int i = 0; i < 5; i++)
+            {
+                SCN0GroupNode g = indices[i] >= 0 ? Children[indices[i]] as SCN0GroupNode : null;
+                if (g != null)
+                {
+                    (entry++)->_dataOffset = (int)groupAddress - (int)group;
 
-                g._dataAddr = entryAddress;
-                g.keyframeAddress = keyframeAddress;
-                g.lightArrayAddress = lightArrayAddress;
+                    g._dataAddr = entryAddress;
+                    g.keyframeAddress = keyframeAddress;
+                    g.lightArrayAddress = lightArrayAddress;
 
-                g.Rebuild(groupAddress, g._groupLen, true);
+                    g.Rebuild(groupAddress, g._groupLen, true);
 
-                groupAddress += g._groupLen;
-                GroupLen += g._groupLen;
-                entryAddress += g._entryLen;
-                keyframeAddress += g.keyLen;
-                lightArrayAddress += g.lightLen;
+                    groupAddress += g._groupLen;
+                    GroupLen += g._groupLen;
+                    entryAddress += g._entryLen;
+                    keyframeAddress += g.keyLen;
+                    lightArrayAddress += g.lightLen;
+                }
             }
             if (_version == 5)
             {
@@ -310,11 +323,30 @@ namespace BrawlLib.SSBB.ResourceNodes
             ResourceEntry* rEntry = group->First;
 
             int index = 1;
-            foreach (SCN0GroupNode n in Children)
+            int[] indices = new int[] { -1, -1, -1, -1, -1 };
+            foreach (SCN0GroupNode g in Children)
             {
-                dataAddress = (VoidPtr)group + (rEntry++)->_dataOffset;
-                ResourceEntry.Build(group, index++, dataAddress, (BRESString*)stringTable[n.Name]);
-                n.PostProcess(header, dataAddress, stringTable);
+                if (g._name == "LightSet(NW4R)")
+                    indices[0] = g.Index;
+                else if (g._name == "AmbLights(NW4R)")
+                    indices[1] = g.Index;
+                else if (g._name == "Lights(NW4R)")
+                    indices[2] = g.Index;
+                else if (g._name == "Fogs(NW4R)")
+                    indices[3] = g.Index;
+                else if (g._name == "Cameras(NW4R)")
+                    indices[4] = g.Index;
+            }
+
+            for (int i = 0; i < 5; i++)
+            {
+                SCN0GroupNode n = indices[i] >= 0 ? Children[indices[i]] as SCN0GroupNode : null;
+                if (n != null)
+                {
+                    dataAddress = (VoidPtr)group + (rEntry++)->_dataOffset;
+                    ResourceEntry.Build(group, index++, dataAddress, (BRESString*)stringTable[n.Name]);
+                    n.PostProcess(header, dataAddress, stringTable);
+                }
             }
         }
 
