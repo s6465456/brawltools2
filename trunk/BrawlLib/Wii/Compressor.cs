@@ -36,7 +36,7 @@ namespace BrawlLib.Wii.Compression
                 switch (cmpr->Algorithm)
                 {
                     case CompressionType.LZ77: return true;
-                    case CompressionType.RunLength: return true;
+                    //case CompressionType.RunLength: return true;
                     default: return false;
                 }
             }

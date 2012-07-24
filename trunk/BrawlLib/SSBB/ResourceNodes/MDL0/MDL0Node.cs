@@ -217,7 +217,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                                 node._lSet = n._lSet;
                                 node._fSet = n._fSet;
-                                node._unk1 = n._unk1;
+                                node._pad1 = n._pad1;
 
                                 node._cull = n._cull;
                                 node._numLights = 2;

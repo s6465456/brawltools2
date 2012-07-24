@@ -25,31 +25,18 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         MatModeBlock* mode;
 
-        public UserDataClass[] Part2Entries { get { return _part2Entries.ToArray(); } set { _part2Entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } }
+        public UserDataClass[] UserEntries { get { return _part2Entries.ToArray(); } set { _part2Entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } }
         internal List<UserDataClass> _part2Entries = new List<UserDataClass>();
 
-        internal int _dataLen;
-        internal int _index;
-        internal int _matRefOffset = 1044;
-        internal int _part2Offset = 0;
-        internal byte _numTextures;
-        internal byte _numLights;
-        public byte _indirectMethod1;
-        public byte _indirectMethod2;
-        public byte _indirectMethod3;
-        public byte _indirectMethod4;
-        public sbyte _normMapRefLight1;
-        public sbyte _normMapRefLight2;
-        public sbyte _normMapRefLight3;
-        public sbyte _normMapRefLight4;
-        internal int _unk4;
-        internal uint _isXLU;
+        internal int _dataLen, _index, _matRefOffset = 1044, _part2Offset = 0, _dlOffset;
+        internal byte _numTextures, _numLights, _indirectMethod1, _indirectMethod2, _indirectMethod3, _indirectMethod4;
+        public sbyte _normMapRefLight1, _normMapRefLight2, _normMapRefLight3, _normMapRefLight4, _lSet, _fSet;
+        internal int _pad2;
+        internal uint _isXLU; //Negative int sign if XLU
         public byte _ssc;
         internal byte _clip;
         public byte _transp;
-        internal sbyte _lSet;
-        internal sbyte _fSet;
-        internal byte _unk1;
+        internal byte _pad1;
         internal CullMode _cull;
 
         //In order of appearance in display list:
@@ -348,8 +335,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte ParamChanCtrl2ColorC2 { get { return e13; } set { if (!CheckIfMetal()) e13 = value; } }
         public byte e10, e11, e12, e13;
         
-        //[Category("Material")]
-        //public string Unknown1 { get { return _isXLU.ToString("X"); } set { if (!CheckIfMetal()) _isXLU = UInt32.Parse(value, System.Globalization.NumberStyles.HexNumber); } }
         [Category("Material")]
         public bool XLUMaterial { get { return _isXLU == 0x80000000; } set { if (!CheckIfMetal()) { _isXLU = value ? 0x80000000 : 0; if (value == false) _blendMode.EnableBlend = false; } } }
         
@@ -369,8 +354,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public sbyte LightSet { get { return _lSet; } set { if (!CheckIfMetal()) { _lSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
         [Category("SCN0 References")]
         public sbyte FogSet { get { return _fSet; } set { if (!CheckIfMetal()) { _fSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
-        [Category("Material")]
-        public byte Pad { get { return _unk1; } }//set { if (!CheckIfMetal()) { _unk1 = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
+        //[Category("Material")]
+        //public byte Pad { get { return _unk1; } }//set { if (!CheckIfMetal()) { _unk1 = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
 
         public enum IndirectMethod
         {
@@ -405,17 +390,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Material")]
         public int ShaderOffset { get { return Header->_shaderOffset; } }
         
-        [Category("Material")]
-        public int NumTextures { get { return Header->_numTextures; } }
+        //[Category("Material")]
+        //public int NumTextures { get { return Header->_numTextures; } }
         [Category("Material")]
         public int MaterialRefOffset { get { return _matRefOffset; } }
         [Category("Material")]
-        public int Part2Offset { get { return _part2Offset; } }
+        public int UserDataOffset { get { return _part2Offset; } }
         [Category("Material")]
-        public int DisplayListOffset_8_9 { get { return Header->_dlOffset_08_09; } }
-        [Category("Material")]
-        public int DisplayListOffset_10_11 { get { return Header->_dlOffset_10_11; } }
-
+        public int DisplayListOffset { get { return _dlOffset; } }
+        //[Category("Material")]
+        //public int Unknown { get { return _pad2; } }
+        
         public void Render(GLContext ctx)
         {
             #region LayerRendering
@@ -690,7 +675,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     _lSet = MetalMaterial._lSet;
                     _fSet = MetalMaterial._fSet;
-                    _unk1 = MetalMaterial._unk1;
+                    _pad1 = MetalMaterial._pad1;
 
                     _cull = MetalMaterial._cull;
                     _numLights = 2;
@@ -785,14 +770,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             _normMapRefLight3 = header->_normMapRefLight3;
             _normMapRefLight4 = header->_normMapRefLight4;
 
-            _unk4 = header->_dlOffset_10_11;
             _ssc = header->_activeTEVStages;
             _clip = header->_numIndTexStages;
             _transp = header->_enableAlphaTest;
 
             _lSet = header->_lightSet;
             _fSet = header->_fogSet;
-            _unk1 = header->_pad;
+            _pad1 = header->_pad1;
 
             _cull = (CullMode)(int)header->_cull;
 
@@ -803,7 +787,19 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             _matRefOffset = header->_matRefOffset;
-            _part2Offset = header->_part2Offset;
+
+            if (Model._version > 9)
+            {
+                _part2Offset = header->_dlOffset;
+                _dlOffset = header->_pad2;
+                _pad2 = header->_part2Offset;
+            }
+            else
+            {
+                _part2Offset = header->_part2Offset;
+                _dlOffset = header->_dlOffset;
+                _pad2 = header->_pad2;
+            }
 
             mode = header->DisplayLists(Model._version);
             _alphaFunc = mode->AlphaFunction;
@@ -837,7 +833,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             e12 = Light->unk12;
             e13 = Light->unk13;
 
-            UserData* part2 = header->Part2;
+            UserData* part2 = header->Part2(Model._version);
             if (part2 != null)
             {
                 ResourceGroup* group = part2->Group;
@@ -953,8 +949,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (Model._version == 11 || Model._version == 10)
             {
-                header->_dlOffset_08_09 = 0;
-                header->_dlOffset_10_11 = length - 0x180;
+                header->_dlOffset = 0;
+                header->_pad2 = length - 0x180;
                 if (Children.Count > 0)
                     header->_matRefOffset = 1048;
                 else
@@ -962,8 +958,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else
             {
-                header->_dlOffset_08_09 = length - 0x180;
-                header->_dlOffset_10_11 = 0;
+                header->_dlOffset = length - 0x180;
+                header->_pad2 = 0;
                 if (Children.Count > 0)
                     header->_matRefOffset = 1044;
                 else
@@ -973,8 +969,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Check for part2 entries
             if (_part2Entries.Count > 0)
             {
-                header->_part2Offset = _part2Offset = header->_matRefOffset + Children.Count * 0x34;
-                UserData* part2 = header->Part2;
+                _part2Offset = header->_matRefOffset + Children.Count * 0x34;
+                if (Model._version == 11 || Model._version == 10)
+                    header->_dlOffset = _part2Offset;
+                else
+                    header->_part2Offset = _part2Offset;
+                
+                UserData* part2 = header->Part2(Model._version);
                 if (part2 != null)
                 {
                     part2->_totalLen = 0x1C + _part2Entries.Count * 0x2C;
@@ -1123,7 +1124,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             header->_lightSet = _lSet;
             header->_fogSet = _fSet;
-            header->_pad = _unk1;
+            header->_pad1 = _pad1;
 
             header->_cull = (int)_cull;
             header->_isXLU = _isXLU;
@@ -1254,7 +1255,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
             header->_index = Index;
 
-            UserData* part2 = header->Part2;
+            UserData* part2 = header->Part2(Model._version);
             if (part2 != null && _part2Entries.Count != 0)
             {
                 ResourceGroup* group = part2->Group;

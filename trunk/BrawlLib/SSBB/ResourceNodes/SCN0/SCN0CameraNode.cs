@@ -92,7 +92,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 PosX.Add(new Vector3(0, 0, Data->_position._x));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->posXKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -104,7 +104,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 PosY.Add(new Vector3(0, 0, Data->_position._y));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->posYKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -116,7 +116,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 PosZ.Add(new Vector3(0, 0, Data->_position._z));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->posZKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -128,7 +128,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RotX.Add(new Vector3(0, 0, Data->_rotate._x));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->rotXKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -140,7 +140,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RotY.Add(new Vector3(0, 0, Data->_rotate._y));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->rotYKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -152,7 +152,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RotZ.Add(new Vector3(0, 0, Data->_rotate._z));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->rotZKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -164,7 +164,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _aimX.Add(new Vector3(0, 0, Data->_aim._x));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->aimXKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -176,7 +176,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _aimY.Add(new Vector3(0, 0, Data->_aim._y));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->aimYKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -188,7 +188,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _aimZ.Add(new Vector3(0, 0, Data->_aim._z));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->aimZKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -200,7 +200,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _twist.Add(new Vector3(0, 0, Data->_twist));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->twistKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -212,7 +212,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _perspFovY.Add(new Vector3(0, 0, Data->_perspFovY));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->fovYKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -224,7 +224,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _orthoHeight.Add(new Vector3(0, 0, Data->_orthoHeight));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->heightKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -236,7 +236,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _aspect.Add(new Vector3(0, 0, Data->_aspect));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->aspectKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -248,7 +248,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _nearZ.Add(new Vector3(0, 0, Data->_nearZ));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->nearZKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -260,7 +260,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _farZ.Add(new Vector3(0, 0, Data->_farZ));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->farZKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;

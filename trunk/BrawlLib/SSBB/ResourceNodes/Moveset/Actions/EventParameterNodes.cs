@@ -41,7 +41,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Browsable(false)]
-        public string Description { get { return (Parent as MoveDefEventNode).EventInfo != null ? (Parent as MoveDefEventNode).EventInfo.pDescs[Index] : "No Description Available."; } }
+        public string Description { get { return (Parent as MoveDefEventNode).EventInfo != null && Index < (Parent as MoveDefEventNode).EventInfo.pDescs.Length ? (Parent as MoveDefEventNode).EventInfo.pDescs[Index] : "No Description Available."; } }
 
         public MoveDefEventParameterNode() { }
 

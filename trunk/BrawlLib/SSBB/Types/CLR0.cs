@@ -66,7 +66,7 @@ namespace BrawlLib.SSBBTypes
             _header._tag = Tag;
             _header._size = size;
             _header._bresOffset = 0;
-            _header._version = 3;
+            _header._version = 4;
 
             _part2Offset = 0;
             _dataOffset = Size;

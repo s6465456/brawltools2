@@ -114,7 +114,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _shininess.Add(new Vector3(0, 0, Data->_shininess));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->shininessKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -127,7 +127,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _cutoff.Add(new Vector3(0, 0, Data->_cutoff));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->cutoffKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -140,7 +140,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _refBrightness.Add(new Vector3(0, 0, Data->_refBrightness));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->refBrightnessKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -153,7 +153,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _refDist.Add(new Vector3(0, 0, Data->_refDistance));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->refDistanceKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -166,7 +166,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 xEnds.Add(new Vector3(0, 0, Data->_endPoint._x));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->xEndKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -178,7 +178,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 yEnds.Add(new Vector3(0, 0, Data->_endPoint._y));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->yEndKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -190,7 +190,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 zEnds.Add(new Vector3(0, 0, Data->_endPoint._z));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->zEndKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -202,7 +202,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _lightColor.Add(Data->_lightColor);
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     RGBAPixel* addr = Data->lightColorEntries;
                     for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
@@ -213,7 +213,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 xStarts.Add(new Vector3(0, 0, Data->_startPoint._x));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->xStartKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -225,7 +225,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 yStarts.Add(new Vector3(0, 0, Data->_startPoint._y));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->yStartKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -237,7 +237,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 zStarts.Add(new Vector3(0, 0, Data->_startPoint._z));
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     SCN0KeyframesHeader* keysHeader = Data->zStartKeyframes;
                     SCN0KeyframeStruct* addr = keysHeader->Data;
@@ -249,7 +249,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _specColor.Add(Data->_specularColor);
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     RGBAPixel* addr = Data->specColorEntries;
                     for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
@@ -258,7 +258,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             if (!((FixedFlags)_flags1).HasFlag(FixedFlags.EnabledConstant))
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     byte* addr = Data->visBitEntries;
                     int index = -1;

@@ -85,16 +85,17 @@ namespace BrawlLib.SSBBTypes
         public bint _lightOffset;
         public bint _fogOffset;
         public bint _cameraOffset;
-        public bint _origPathOffset;
+        public bint _part2Offset;
         public bint _stringOffset;
-        public bint _loop;
+        public bint _origPathOffset;
         public bshort _frameCount;
         public bshort _specLightCount;
-        public bshort _cameraCount;
-        public bshort _fogCount;
+        public bint _loop;
         public bshort _lightSetCount;
         public bshort _ambientCount;
         public bshort _lightCount;
+        public bshort _fogCount;
+        public bshort _cameraCount;
         public bshort _pad;
 
         public void Set(int groupLen, int lightSetLen, int ambLightLen, int lightLen, int fogLen, int cameraLen)

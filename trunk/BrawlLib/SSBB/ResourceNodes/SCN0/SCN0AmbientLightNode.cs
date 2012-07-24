@@ -16,8 +16,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         [Category("Ambient Light")]
         public SCN0AmbLightFlags Flags { get { return (SCN0AmbLightFlags)unk4; } set { unk4 = (byte)value; SignalPropertyChange(); } }
-        //[Category("Ambient Light")]
-        //public SCN0AmbLightFlags LightFlags { get { return (SCN0AmbLightFlags)fixedFlags; } set { fixedFlags = (byte)value; SignalPropertyChange(); } }
         [Category("Ambient Light")]
         public RGBAPixel[] Lighting { get { return _lighting.ToArray(); } set { _lighting = value.ToList<RGBAPixel>(); SignalPropertyChange(); } }
 
@@ -35,7 +33,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _lighting.Add(Data->_lighting);
             else
             {
-                if (Name != "<null>")
+                if (Name != "<null>" && !_replaced)
                 {
                     RGBAPixel* addr = Data->lightEntries;
                     for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)

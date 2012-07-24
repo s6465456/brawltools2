@@ -60,7 +60,7 @@ namespace BrawlBox
 
                 Application.Run(MainForm.Instance);
             }
-            catch (Exception x) { Program.Say(x.ToString()); }
+            //catch (Exception x) { Program.Say(x.ToString()); }
             finally { Close(true); }
         }
 
