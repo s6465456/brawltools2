@@ -227,8 +227,7 @@ namespace BrawlLib.Wii.Graphics
         public WiiColorComponentType ColorFormat { get { return (WiiColorComponentType)DataFormat; } set { DataFormat = (WiiVertexComponentType)value; } }
 
         public CPElementDef(uint raw) { _data = raw; }
-        public CPElementDef(bool isSpecial, int format, int scale)
-        { _data = (uint)(((scale & 0x1F) << 4) | ((format & 0x7) << 1) | (isSpecial ? 1 : 0)); }
+        public CPElementDef(bool isSpecial, int format, int scale) { _data = (uint)(((scale & 0x1F) << 4) | ((format & 0x7) << 1) | (isSpecial ? 1 : 0)); }
 
         public string asColor()
         {
@@ -292,27 +291,3 @@ namespace BrawlLib.Wii.Graphics
         RGBA8 = 5
     }
 }
-
-//tev_z_env_0 struct
-//111111111111111111111111 ZOFF_SHIFT
-// *  tev_z_env_1 struct
-//000000000000000000000011 TEV_Z_ENV_1_TYPE_SHIFT
-//111111111111111111111100 TEV_Z_ENV_1_OP_SHIFT
-//*  tev_ksel struct
-//000000000000000000000011 TEV_KSEL_XRB_SHIFT
-//000000000000000000001100 TEV_KSEL_XGA_SHIFT
-//000000000000000111110000 TEV_KSEL_KCSEL0_SHIFT
-//000000000011111000000000 TEV_KSEL_KASEL0_SHIFT
-//000001111100000000000000 TEV_KSEL_KCSEL1_SHIFT
-//111110000000000000000000 TEV_KSEL_KASEL1_SHIFT
-// *  ras1_tref struct
-//000000000000000000000111 RAS1_TREF_TI0_SHIFT
-//000000000000000000111000 RAS1_TREF_TC0_SHIFT
-//000000000000000001000000 RAS1_TREF_TE0_SHIFT
-//000000000000001110000000 RAS1_TREF_CC0_SHIFT
-//000000000000110000000000 RAS1_TREF_PAD0_SHIFT
-//000000000111000000000000 RAS1_TREF_TI1_SHIFT
-//000000111000000000000000 RAS1_TREF_TC1_SHIFT
-//000001000000000000000000 RAS1_TREF_TE1_SHIFT
-//001110000000000000000000 RAS1_TREF_CC1_SHIFT
-//110000000000000000000000 RAS1_TREF_PAD1_SHIFT

@@ -109,7 +109,7 @@
   <ItemGroup>
     <None Include="System\ComponentModel\CustomPropertyDescriptor.cs" />
     <None Include="System\ComponentModel\DelegatePropertyDescriptor.cs" />
-    <Compile Include="Modeling\Model\Bone.cs" />
+    <None Include="Modeling\Model\Bone.cs" />
     <Compile Include="Modeling\Triangle Converter\TCParamDebug.cs" />
     <Compile Include="Modeling\Triangle Converter\TCMain.cs" />
     <Compile Include="Modeling\Triangle Converter\TCTableVariables.cs" />
@@ -136,10 +136,10 @@
     <Compile Include="Modeling\Face.cs" />
     <Compile Include="Modeling\FrameState.cs" />
     <Compile Include="Modeling\IMatrixNode.cs" />
-    <Compile Include="Modeling\Model\Material.cs" />
-    <Compile Include="Modeling\Model\Model.cs" />
-    <Compile Include="Modeling\Model\Polygon.cs" />
-    <Compile Include="Modeling\Model\Primitive.cs" />
+    <None Include="Modeling\Model\Material.cs" />
+    <None Include="Modeling\Model\Model.cs" />
+    <None Include="Modeling\Model\Polygon.cs" />
+    <None Include="Modeling\Model\Primitive.cs" />
     <Compile Include="Modeling\TextureRef.cs" />
     <Compile Include="Modeling\PrimitiveManager.cs" />
     <Compile Include="Modeling\TextureManager.cs" />
@@ -180,6 +180,8 @@
     <Compile Include="SSBB\ResourceNodes\AI\ATKDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\AI\CENode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Moveset\Items\AnimParamNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Moveset\Common Nodes\MoveDefPatternPowerMulNode.cs" />
     <Compile Include="SSBB\ResourceNodes\UserData.cs" />
     <Compile Include="SSBB\ResourceNodes\DOLNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Archives\U8Node.cs" />
@@ -209,7 +211,7 @@
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefParams.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefLookupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RASDNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\MDL0\TEVNodes\TEVStage.cs" />
+    <Compile Include="SSBB\ResourceNodes\MDL0\MDL0TEVStage.cs" />
     <Compile Include="SSBB\ResourceNodes\PhysicsNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RBNK\RBNKDataNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RBNK\RBNKGroupNode.cs" />
@@ -224,13 +226,6 @@
     <Compile Include="SSBB\ResourceNodes\SCN0\SCN0GroupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\STPMNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Graphics\REFTNode.cs" />
-    <None Include="SSBB\ResourceNodes\MDL0\MDL0ShaderStructNode.cs" />
-    <None Include="SSBB\ResourceNodes\MDL0\TEVNodes\TEVCMDNode.cs" />
-    <None Include="SSBB\ResourceNodes\MDL0\TEVNodes\TEVNode.cs" />
-    <None Include="SSBB\ResourceNodes\MDL0\TEVNodes\TEVKSelNode.cs" />
-    <None Include="SSBB\ResourceNodes\MDL0\TEVNodes\TEVTRefNode.cs" />
-    <None Include="SSBB\ResourceNodes\MDL0\TEVNodes\TEVAlphaEnvNode.cs" />
-    <None Include="SSBB\ResourceNodes\MDL0\TEVNodes\TEVColorEnvNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Actions\MoveDefActionNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataMiscNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefNode.cs" />
@@ -276,6 +271,7 @@
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDSoundNode.cs" />
     <Compile Include="SSBB\StringTable.cs" />
     <Compile Include="SSBB\Types\AI.cs" />
+    <Compile Include="SSBB\Types\RFNT.cs" />
     <Compile Include="SSBB\Types\DOL.cs" />
     <Compile Include="SSBB\Types\YAZ0U8.cs" />
     <Compile Include="SSBB\Types\RASD.cs" />
@@ -304,6 +300,19 @@
     <Compile Include="System\Audio\wAudioProvider.cs" />
     <Compile Include="System\Audio\WAV.cs" />
     <Compile Include="System\Int24.cs" />
+    <Compile Include="System\IO\GeckoStream.cs" />
+    <Compile Include="System\PowerPCAssembly\Assembly Manager.cs" />
+    <Compile Include="System\PowerPCAssembly\PowerPcAssembly.cs" />
+    <Compile Include="System\PowerPCAssembly\PowerPcDisassembler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\PowerPCAssembly\PowerPcDisassembler.Designer.cs">
+      <DependentUpon>PowerPcDisassembler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\PowerPCAssembly\PowerPcFormat.cs" />
+    <Compile Include="System\PowerPCAssembly\RelPowerPcDisassembler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="System\RoundingExtensions.cs" />
     <Compile Include="System\ViewerSettingsFile.cs" />
     <Compile Include="System\Quaternion.cs" />
@@ -343,6 +352,12 @@
     <Compile Include="System\ByteExtension.cs" />
     <Compile Include="System\Vector4.cs" />
     <Compile Include="System\VQuant.cs" />
+    <None Include="System\Windows\Forms\GradientDialog2.cs">
+      <SubType>Form</SubType>
+    </None>
+    <Compile Include="System\Windows\Forms\ModuleSectionEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="System\Windows\Forms\ExportAllAskFormat.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -598,7 +613,7 @@
     <Compile Include="Wii\Models\ElementCodec.cs" />
     <Compile Include="Wii\Models\Enum.cs" />
     <Compile Include="Wii\Models\bMatrix43.cs" />
-    <Compile Include="Wii\Models\ModelConverter.cs" />
+    <None Include="Wii\Models\ModelConverter.cs" />
     <Compile Include="Wii\Models\InfluenceManager.cs" />
     <Compile Include="Wii\Models\ModelEncoder.cs" />
     <Compile Include="Wii\Models\ModelLinker.cs" />
@@ -626,6 +641,18 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\PowerPCAssembly\PowerPcDisassembler.resx">
+      <DependentUpon>PowerPcDisassembler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\PowerPCAssembly\RelPowerPcDisassembler.resx">
+      <DependentUpon>RelPowerPcDisassembler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\ModuleSectionEditor.resx">
+      <DependentUpon>ModuleSectionEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\GradientDialog2.resx">
+      <DependentUpon>GradientDialog2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ExportAllAskFormat.resx">
       <DependentUpon>ExportAllAskFormat.cs</DependentUpon>

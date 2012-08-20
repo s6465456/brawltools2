@@ -407,19 +407,21 @@ namespace BrawlLib.Wii.Graphics
     {
         public static readonly ColorReg Konstant = new ColorReg() { _dat0 = 0x80 };
 
-        //0000 0000 0000 1111 1111 1111 Red (Lo) / Blue (Hi) - A
-        //0111 1111 1111 0000 0000 0000 Alpha (Lo) /Green (Hi) - B
+        //0000 0000 0000 1111 1111 1111 Red (Lo) / Blue (Hi)
+        //0111 1111 1111 0000 0000 0000 Alpha (Lo) /Green (Hi)
         //1000 0000 0000 0000 0000 0000 Register Type
+
+        //0000 0000 0000 0000
 
         public byte _dat0, _dat1, _dat2;
 
-        public short A { get { return (short)(((short)(_dat1 << 13) >> 5) | _dat2); } set { _dat1 = (byte)((_dat1 & 0xF8) | ((value >> 8) & 0x7)); _dat2 = (byte)(value & 0xFF); } }
-        public short B { get { return (short)(((short)(_dat0 << 9) >> 5) | (_dat1 >> 4)); } set { _dat0 = (byte)((_dat0 & 0x80) | ((value >> 4) & 0x7F)); _dat1 = (byte)((_dat1 & 0xF) | (value << 4)); } }
+        public short RB { get { return (short)(((short)(_dat1 << 13) >> 5) | _dat2); } set { _dat1 = (byte)((_dat1 & 0xF8) | ((value >> 8) & 0x7)); _dat2 = (byte)(value & 0xFF); } }
+        public short AG { get { return (short)(((short)(_dat0 << 9) >> 5) | (_dat1 >> 4)); } set { _dat0 = (byte)((_dat0 & 0x80) | ((value >> 4) & 0x7F)); _dat1 = (byte)((_dat1 & 0xF) | (value << 4)); } }
         public RegType Type { get { return (RegType)((_dat0 & 0x80) != 0 ? 1 : 0); } set { _dat0 = (byte)((_dat0 & 0x7F) | ((int)value == 1 ? 0x80 : 0)); } }
 
         public override string ToString()
         {
-            return String.Format("A:{0}, B:{1}, Type:{2}", A, B, Type);
+            return String.Format("A:{0}, B:{1}, Type:{2}", RB, AG, Type);
         }
     }
 

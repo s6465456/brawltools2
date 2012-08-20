@@ -11,6 +11,7 @@ namespace BrawlLib.Wii.Animations
         I6 = 2,
         I12 = 3,
         L1 = 4,
+        L2 = 5,
         L4 = 6
     }
 

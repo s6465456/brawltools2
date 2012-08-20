@@ -228,47 +228,51 @@ namespace System.Windows.Forms
 
         public ModelEditControl _mainWindow;
 
-        private void chkLoop_CheckedChanged(object sender, EventArgs e)
+        public void chkLoop_CheckedChanged(object sender, EventArgs e)
         {
             _mainWindow.chkLoop_CheckedChanged(sender, e);
         }
 
-        private void btnPlay_Click(object sender, EventArgs e)
+        public void btnPlay_Click(object sender, EventArgs e)
         {
             _mainWindow.btnPlay_Click(sender, e);
         }
 
-        private void btnNextFrame_Click(object sender, EventArgs e)
+        public void btnNextFrame_Click(object sender, EventArgs e)
         {
-            numFrameIndex.Value++;
+            if (numFrameIndex.Value < numFrameIndex.Maximum)
+                numFrameIndex.Value++;
+            else if (numFrameIndex.Value == numFrameIndex.Maximum && numFrameIndex.Maximum > 0)
+                numFrameIndex.Value = 1;
         }
 
-        private void btnLast_Click(object sender, EventArgs e)
+        public void btnLast_Click(object sender, EventArgs e)
         {
             numFrameIndex.Value = numTotalFrames.Value;
         }
 
-        private void btnPrevFrame_Click(object sender, EventArgs e)
+        public void btnPrevFrame_Click(object sender, EventArgs e)
         {
-            numFrameIndex.Value--;
+            if (numFrameIndex.Value > numFrameIndex.Minimum)
+                numFrameIndex.Value--;
         }
 
-        private void btnFirst_Click(object sender, EventArgs e)
+        public void btnFirst_Click(object sender, EventArgs e)
         {
             numFrameIndex.Value = 1;
         }
 
-        private void numFPS_ValueChanged(object sender, EventArgs e)
+        public void numFPS_ValueChanged(object sender, EventArgs e)
         {
             _mainWindow.numFPS_ValueChanged(sender, e);
         }
 
-        private void numFrameIndex_ValueChanged(object sender, EventArgs e)
+        public void numFrameIndex_ValueChanged(object sender, EventArgs e)
         {
             _mainWindow.numFrameIndex_ValueChanged(sender, e);
         }
 
-        private void numTotalFrames_ValueChanged(object sender, EventArgs e)
+        public void numTotalFrames_ValueChanged(object sender, EventArgs e)
         {
             _mainWindow.numTotalFrames_ValueChanged(sender, e);
         }

@@ -20,13 +20,13 @@ namespace BrawlLib.Wii.Animations
         public const int Size = 8;
 
         public bushort _numFrames;
-        public bushort _unk;
+        public bushort _pad;
         public bfloat _frameScale;
 
         public I12Header(int entries, float frameScale)
         {
             _numFrames = (ushort)entries;
-            _unk = 0;
+            _pad = 0;
             _frameScale = frameScale;
         }
 
@@ -127,10 +127,10 @@ namespace BrawlLib.Wii.Animations
             _step = (ushort)step;
 
             tangent *= 256.0f;
-            if (tangent < 0.0f)
-                tangent -= 0.5f;
-            else
-                tangent += 0.5f;
+            //if (tangent < 0.0f)
+            //    tangent -= 0.5f;
+            //else
+            //    tangent += 0.5f;
 
             _exp = (short)((int)tangent).Clamp(-32768, 32767);
         }
@@ -178,10 +178,10 @@ namespace BrawlLib.Wii.Animations
         public I4Entry(int index, int step, float tangent)
         {
             tangent *= 32.0f;
-            if (tangent < 0)
-                tangent -= 0.5f;
-            else
-                tangent += 0.5f;
+            //if (tangent < 0)
+            //    tangent -= 0.5f;
+            //else
+            //    tangent += 0.5f;
 
             _data = (uint)((index << 24) | ((step & 0xFFF) << 12) | (((int)tangent).Clamp(-2048, 2047) & 0xFFF));
         }

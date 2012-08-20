@@ -14,14 +14,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0PolygonNode[] Objects { get { return _polygons.ToArray(); } }
         internal List<MDL0PolygonNode> _polygons = new List<MDL0PolygonNode>();
 
-        [Category("UV Data")]
-        public int TotalLen { get { return Header->_dataLen; } }
-        [Category("UV Data")]
-        public int MDL0Offset { get { return Header->_mdl0Offset; } }
-        [Category("UV Data")]
-        public int DataOffset { get { return Header->_dataOffset; } }
-        [Category("UV Data")]
-        public int StringOffset { get { return Header->_stringOffset; } }
+        //[Category("UV Data")]
+        //public int TotalLen { get { return Header->_dataLen; } }
+        //[Category("UV Data")]
+        //public int MDL0Offset { get { return Header->_mdl0Offset; } }
+        //[Category("UV Data")]
+        //public int DataOffset { get { return Header->_dataOffset; } }
+        //[Category("UV Data")]
+        //public int StringOffset { get { return Header->_stringOffset; } }
         [Category("UV Data")]
         public int ID { get { return Header->_index; } }
         [Category("UV Data")]
@@ -40,14 +40,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("UV Data")]
         public Vector2 Max { get { return Header->_max; } }
 
-        [Category("UV Data")]
-        public int Pad1 { get { return Header->_pad1; } }
-        [Category("UV Data")]
-        public int Pad2 { get { return Header->_pad2; } }
-        [Category("UV Data")]
-        public int Pad3 { get { return Header->_pad3; } }
-        [Category("UV Data")]
-        public int Pad4 { get { return Header->_pad4; } }
+        //[Category("UV Data")]
+        //public int Pad1 { get { return Header->_pad1; } }
+        //[Category("UV Data")]
+        //public int Pad2 { get { return Header->_pad2; } }
+        //[Category("UV Data")]
+        //public int Pad3 { get { return Header->_pad3; } }
+        //[Category("UV Data")]
+        //public int Pad4 { get { return Header->_pad4; } }
 
         private Vector2[] _points;
         public Vector2[] Points

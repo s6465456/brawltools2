@@ -43,7 +43,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public BoneFlags _flags1;
         public BillboardFlags _flags2;
-        public uint _unknown;
+        public uint _bbNodeId;
         
         internal List<MDL0PolygonNode> _infPolys = new List<MDL0PolygonNode>();
         internal List<MDL0PolygonNode> _manPolys = new List<MDL0PolygonNode>();
@@ -58,15 +58,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Matrix _frameMatrix, _inverseFrameMatrix;
 
         private Vector3 _bMin, _bMax;
-        internal int _nodeIndex, _weightCount, _refCount;
+        internal int _nodeIndex, _weightCount, _refCount, _headerLen, _mdl0Offset, _stringOffset;
 
-        [Category("Bone"), Browsable(true)]
+        [Category("Bone"), Browsable(false)]
         public Matrix Matrix { get { return _frameMatrix; } }
-        [Category("Bone"), Browsable(true)]
+        [Category("Bone"), Browsable(false)]
         public Matrix InverseMatrix { get { return _inverseFrameMatrix; } }
-        [Category("Bone"), Browsable(true), TypeConverter(typeof(MatrixStringConverter))]
+        [Category("Bone"), Browsable(false), TypeConverter(typeof(MatrixStringConverter))]
         public Matrix BindMatrix { get { return _bindMatrix; } set { _bindMatrix = value; SignalPropertyChange(); } }
-        [Category("Bone"), Browsable(true), TypeConverter(typeof(MatrixStringConverter))]
+        [Category("Bone"), Browsable(false), TypeConverter(typeof(MatrixStringConverter))]
         public Matrix InverseBindMatrix { get { return _inverseBindMatrix; } set { _inverseBindMatrix = value; SignalPropertyChange(); } }
 
         [Browsable(false)]
@@ -80,25 +80,84 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public BoneWeight[] Weights { get { return _weightRef == null ? _weightRef = new BoneWeight[] { new BoneWeight(this, 1.0f) } : _weightRef; } }
 
-        [Category("Bone")]
-        public int HeaderLen { get { return Header->_headerLen; } }
-        [Category("Bone")]
-        public int MDL0Offset { get { return Header->_mdl0Offset; } }
-        [Category("Bone")]
-        public int StringOffset { get { return Header->_stringOffset; } }
+        [Category("Bone"), Browsable(false)]
+        public int HeaderLen { get { return _headerLen; } }
+        [Category("Bone"), Browsable(false)]
+        public int MDL0Offset { get { return _mdl0Offset; } }
+        [Category("Bone"), Browsable(false)]
+        public int StringOffset { get { return _stringOffset; } }
 
+        [Category("Bone")]
+        public bool Visible
+        {
+            get { return _flags1.HasFlag(BoneFlags.Visible); }
+            set
+            {
+                if (value)
+                    _flags1 |= BoneFlags.Visible;
+                else
+                    _flags1 &= ~BoneFlags.Visible;
+            }
+        }
+        [Category("Bone")]
+        public bool SegScaleCompApply
+        {
+            get { return _flags1.HasFlag(BoneFlags.SegScaleCompApply); }
+            set
+            {
+                if (value)
+                    _flags1 |= BoneFlags.SegScaleCompApply;
+                else
+                    _flags1 &= ~BoneFlags.SegScaleCompApply;
+            }
+        }
+        [Category("Bone")]
+        public bool SegScaleCompParent
+        {
+            get { return _flags1.HasFlag(BoneFlags.SegScaleCompParent); }
+            set
+            {
+                if (value)
+                    _flags1 |= BoneFlags.SegScaleCompParent;
+                else
+                    _flags1 &= ~BoneFlags.SegScaleCompParent;
+            }
+        }
+        [Category("Bone")]
+        public bool ClassicScale
+        {
+            get { return !_flags1.HasFlag(BoneFlags.ClassicScaleOff); }
+            set
+            {
+                if (!value)
+                    _flags1 |= BoneFlags.ClassicScaleOff;
+                else
+                    _flags1 &= ~BoneFlags.ClassicScaleOff;
+            }
+        }
         public int _boneIndex;
         [Category("Bone")]
         public int BoneIndex { get { return _boneIndex; } }
-        //public bool OverrideBoneIndex { get { return _override; } set { _override = value; } }
-        //public bool _override = false;
-        [Category("Bone")]
-        public int NodeId { get { return Header->_nodeId; } }
-        [Category("Bone")]
+        [Category("Bone"), Browsable(false)]
+        public int NodeId { get { return _nodeIndex; } }
+        [Category("Bone"), Browsable(false)]
         public BoneFlags Flags { get { return _flags1; } set { _flags1 = (BoneFlags)(int)value; SignalPropertyChange(); } }
+
+        [Category("Bone")]
+        public bool HasBillboardParent
+        {
+            get { return _flags1.HasFlag(BoneFlags.HasBillboardParent); }
+            set
+            {
+                if (value)
+                    _flags1 |= BoneFlags.HasBillboardParent;
+                else
+                    _flags1 &= ~BoneFlags.HasBillboardParent;
+            }
+        }
         [Category("Bone")]
         public BillboardFlags BillboardSetting 
-        { 
+        {
             get { return _flags2; } 
             set 
             {
@@ -111,33 +170,126 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         [Category("Bone")]
-        public uint BillboardRefNodeId { get { return _unknown; } set { _unknown = value; SignalPropertyChange(); } }
+        public uint BillboardRefNodeId { get { return _bbNodeId; } set { _bbNodeId = value; SignalPropertyChange(); } }
         
         [Category("Bone"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 Scale { get { return _bindState._scale; } set { _bindState.Scale = value; flagsChanged = true; SignalPropertyChange(); } }
+        public Vector3 Scale 
+        {
+            get { return _bindState._scale; } 
+            set 
+            {
+                _bindState.Scale = value;
+
+                if (value == new Vector3(1))
+                    _flags1 |= BoneFlags.FixedScale;
+                else
+                    _flags1 &= ~BoneFlags.FixedScale;
+
+                if (value._x == value._y && value._y == value._z)
+                    _flags1 |= BoneFlags.ScaleEqual;
+                else
+                    _flags1 &= ~BoneFlags.ScaleEqual;
+
+                RecalcBindState();
+                Model.CalcBindMatrices();
+
+                if (Parent is MDL0BoneNode)
+                {
+                    if ((BindMatrix == ((MDL0BoneNode)Parent).BindMatrix) && (InverseBindMatrix == ((MDL0BoneNode)Parent).InverseBindMatrix))
+                        _flags1 |= BoneFlags.NoTransform;
+                    else
+                        _flags1 &= ~BoneFlags.NoTransform;
+                }
+                else if (BindMatrix == Matrix.Identity && InverseBindMatrix == Matrix.Identity)
+                    _flags1 |= BoneFlags.NoTransform;
+                else
+                    _flags1 &= ~BoneFlags.NoTransform;
+
+                SignalPropertyChange();
+            }
+        }
+
         //[Category("Bone"), TypeConverter(typeof(Vector3StringConverter))]
         //public Quaternion QuaternionRotation { get { return _bindState._quaternion; } set { _bindState.QuaternionRotate = value; flagsChanged = true; SignalPropertyChange(); } }
+        
         [Category("Bone"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 Rotation { get { return _bindState._rotate; } set { _bindState.Rotate = value; flagsChanged = true; SignalPropertyChange(); } }
+        public Vector3 Rotation 
+        {
+            get { return _bindState._rotate; }
+            set
+            {
+                _bindState.Rotate = value;
+
+                if (value == new Vector3())
+                    _flags1 |= BoneFlags.FixedRotation;
+                else
+                    _flags1 &= ~BoneFlags.FixedRotation;
+
+                RecalcBindState();
+                Model.CalcBindMatrices();
+
+                if (Parent is MDL0BoneNode)
+                {
+                    if ((BindMatrix == ((MDL0BoneNode)Parent).BindMatrix) && (InverseBindMatrix == ((MDL0BoneNode)Parent).InverseBindMatrix))
+                        _flags1 |= BoneFlags.NoTransform;
+                    else
+                        _flags1 &= ~BoneFlags.NoTransform;
+                }
+                else if (BindMatrix == Matrix.Identity && InverseBindMatrix == Matrix.Identity)
+                    _flags1 |= BoneFlags.NoTransform;
+                else
+                    _flags1 &= ~BoneFlags.NoTransform;
+
+                SignalPropertyChange();
+            }
+        }
         [Category("Bone"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 Translation { get { return _bindState._translate; } set { _bindState.Translate = value; flagsChanged = true; SignalPropertyChange(); } }
+        public Vector3 Translation 
+        {
+            get { return _bindState._translate; }
+            set
+            {
+                _bindState.Translate = value;
+
+                if (value == new Vector3())
+                    _flags1 |= BoneFlags.FixedTranslation;
+                else
+                    _flags1 &= ~BoneFlags.FixedTranslation;
+
+                RecalcBindState();
+                Model.CalcBindMatrices();
+
+                if (Parent is MDL0BoneNode)
+                {
+                    if ((BindMatrix == ((MDL0BoneNode)Parent).BindMatrix) && (InverseBindMatrix == ((MDL0BoneNode)Parent).InverseBindMatrix))
+                        _flags1 |= BoneFlags.NoTransform;
+                    else
+                        _flags1 &= ~BoneFlags.NoTransform;
+                }
+                else if (BindMatrix == Matrix.Identity && InverseBindMatrix == Matrix.Identity)
+                    _flags1 |= BoneFlags.NoTransform;
+                else
+                    _flags1 &= ~BoneFlags.NoTransform;
+
+                SignalPropertyChange(); 
+            }
+        }
+
         [Category("Bone"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 BoxMin { get { return _bMin; } set { _bMin = value; SignalPropertyChange(); } }
         [Category("Bone"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 BoxMax { get { return _bMax; } set { _bMax = value; SignalPropertyChange(); } }
 
-        [Category("Bone")]
-        public int ParentOffset { get { return Header->_parentOffset / 0xD0; } }
-        [Category("Bone")]
-        public int FirstChildOffset { get { return Header->_firstChildOffset / 0xD0; } }
-        [Category("Bone")]
-        public int NextOffset { get { return Header->_nextOffset / 0xD0; } }
-        [Category("Bone")]
-        public int PrevOffset { get { return Header->_prevOffset / 0xD0; } }
-        [Category("Bone")]
-        public int Part2Offset { get { return Header->_part2Offset; } }
-
-        internal bool flagsChanged = false;
+        //[Category("Bone")]
+        //public int ParentOffset { get { return Header->_parentOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int FirstChildOffset { get { return Header->_firstChildOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int NextOffset { get { return Header->_nextOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int PrevOffset { get { return Header->_prevOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int Part2Offset { get { return Header->_part2Offset; } }
 
         //[Category("Kinect Settings"), Browsable(true)]
         //public SkeletonJoint Joint
@@ -147,7 +299,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //}
         //public SkeletonJoint _joint;
 
-        [Category("MDL0 Bone User Data")]
+        [Category("User Data")]
         public UserDataClass[] Entries { get { return _entries.ToArray(); } set { _entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } }
 
         internal override void GetStrings(StringTable table)
@@ -189,12 +341,15 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Assign fields
             _flags1 = (BoneFlags)(uint)header->_flags;
             _flags2 = (BillboardFlags)(uint)header->_bbFlags;
-            _unknown = header->_bbNodeId;
+            _bbNodeId = header->_bbNodeId;
             _nodeIndex = header->_nodeId;
             _boneIndex = header->_index;
+            _headerLen = header->_headerLen;
+            _mdl0Offset = header->_mdl0Offset;
+            _stringOffset = header->_stringOffset;
 
             if (_flags2 != 0 && _flags1.HasFlag(BoneFlags.HasGeometry))
-                Model._billboardBones.Add(this);
+                Model._billboardBones.Add(this); //Update mesh in T-Pose
 
             _permanentID = header->_index;
 
@@ -408,8 +563,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else if (BindMatrix == Matrix.Identity && InverseBindMatrix == Matrix.Identity)
                 _flags1 += (int)BoneFlags.NoTransform;
-
-            flagsChanged = false;
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -418,36 +571,24 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             RecalcOffsets(header, address, length);
 
-            if (_flags1 == 0 || flagsChanged)
-                CalcFlags();
+            if (_refCount > 0)
+                _flags1 |= BoneFlags.HasGeometry;
+            else
+                _flags1 &= ~BoneFlags.HasGeometry;
 
             header->_headerLen = length;
-
-            //if (!_override)
-                header->_index = _boneIndex = _entryIndex;// - Model._overrideCount;
-            //else
-            //    header->_index = _boneIndex = Model._linker.BoneCache.Length - 1 + Model._overrideCount++;
-            
+            header->_index = _boneIndex = _entryIndex;
             header->_nodeId = _nodeIndex;
             header->_flags = (uint)_flags1;
             header->_bbFlags = (uint)_flags2;
-            header->_bbNodeId = _unknown;
+            header->_bbNodeId = _bbNodeId;
             header->_scale = _bindState._scale;
             header->_rotation = _bindState._rotate;
             header->_translation = _bindState._translate;
             header->_boxMin = _bMin;
             header->_boxMax = _bMax;
-
-            //if (_bindMatrix != _frameMatrix)
-            //{
-            //    header->_transform = (bMatrix43)_frameMatrix;
-            //    header->_transformInv = (bMatrix43)_inverseFrameMatrix;
-            //}
-            //else
-            //{
-                header->_transform = (bMatrix43)_bindMatrix;
-                header->_transformInv = (bMatrix43)_inverseBindMatrix;
-            //}
+            header->_transform = (bMatrix43)_bindMatrix;
+            header->_transformInv = (bMatrix43)_inverseBindMatrix;
 
             _moved = false;
         }
@@ -621,25 +762,30 @@ namespace BrawlLib.SSBB.ResourceNodes
             fixed (Matrix* m = &_frameState._transform)
                 ctx.glMultMatrix((float*)m);
 
-            Vector3 center = _frameMatrix.GetPoint();
-            Vector3 cam = _mainWindow.modelPanel1._camera.GetPoint();
-            Matrix m2 = new Matrix();
-            Vector3 scale = new Vector3(1);
-            Vector3 rot = new Vector3();
-            Vector3 trans = new Vector3();
+            if (BillboardSetting != 0)
+            {
+                Vector3 center = _frameMatrix.GetPoint();
+                Vector3 cam = _mainWindow.modelPanel1._camera.GetPoint();
+                Matrix m2 = new Matrix();
+                Vector3 scale = new Vector3(1);
+                Vector3 rot = new Vector3();
+                Vector3 trans = new Vector3();
 
-            if (BillboardSetting == BillboardFlags.PerspectiveSTD)
-                rot = center.LookatAngles(cam) * Maths._rad2degf;
+                if (BillboardSetting == BillboardFlags.PerspectiveSTD)
+                    rot = center.LookatAngles(cam) * Maths._rad2degf;
 
-            m2 = Matrix.TransformMatrix(scale, rot, trans);
-            ctx.glPushMatrix();
-            ctx.glMultMatrix((float*)&m2);
+                m2 = Matrix.TransformMatrix(scale, rot, trans);
+                ctx.glPushMatrix();
+                ctx.glMultMatrix((float*)&m2);
+            }
 
             //Render children
             foreach (MDL0BoneNode n in Children)
                 n.Render(ctx, _mainWindow);
 
-            ctx.glPopMatrix();
+            if (BillboardSetting != 0)
+                ctx.glPopMatrix();
+
             ctx.glPopMatrix();
         }
 

@@ -32,90 +32,95 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        #region Attributes
+
         int _totalLength, _mdl0Offset, _stringOffset;
 
-        [Category("Polygon Data")]
-        public int TotalLen { get { return _totalLength; } }
-        [Category("Polygon Data")]
-        public int MDL0Offset { get { return _mdl0Offset; } }
-        [Category("Polygon Data")]
-        public int NodeId { get { return _nodeId; } }
+        //[Category("Object Data")]
+        //public int TotalLen { get { return _totalLength; } }
+        //[Category("Object Data")]
+        //public int MDL0Offset { get { return _mdl0Offset; } }
+        //[Category("Object Data")]
+        //public int NodeId { get { return _nodeId; } }
 
-        [Browsable(true), Category("Vertex Flags")]
-        public CPVertexFormat VertexFormat { get { return _vertexFormat; } }
+        //[Browsable(true), Category("Vertex Flags")]
+        //public CPVertexFormat VertexFormat { get { return _vertexFormat; } }
         public CPVertexFormat _vertexFormat;
 
-        [Browsable(true), Category("Vertex Flags")]
-        public XFArrayFlags ArrayFlags { get { return _arrayFlags; } }
+        //[Browsable(true), Category("Vertex Flags")]
+        //public XFArrayFlags ArrayFlags { get { return _arrayFlags; } }
         public XFArrayFlags _arrayFlags;
 
-        [Browsable(true), Category("Vertex Flags")]
-        public XFVertexSpecs VertexSpecs { get { return _vertexSpecs; } }
+        //[Browsable(true), Category("Vertex Flags")]
+        //public XFVertexSpecs VertexSpecs { get { return _vertexSpecs; } }
         public XFVertexSpecs _vertexSpecs;
 
         public CPElementSpec UVATGroups;
         
-        [Browsable(true), Category("UVAT Flags")]
-        public bool ByteDequant { get { return UVATGroups.ByteDequant; } }
-        [Browsable(true), Category("UVAT Flags")]
-        public bool NormalIndex3 { get { return UVATGroups.NormalIndex3; } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public bool ByteDequant { get { return UVATGroups.ByteDequant; } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public bool NormalIndex3 { get { return UVATGroups.NormalIndex3; } }
 
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef PosDef { get { return UVATGroups.PositionDef; } }
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef NormDef { get { return UVATGroups.NormalDef; } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef PosDef { get { return UVATGroups.PositionDef; } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef NormDef { get { return UVATGroups.NormalDef; } }
         
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef UVDef0 { get { return UVATGroups.GetUVDef(0); } }
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef UVDef1 { get { return UVATGroups.GetUVDef(1); } }
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef UVDef2 { get { return UVATGroups.GetUVDef(2); } }
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef UVDef3 { get { return UVATGroups.GetUVDef(3); } }
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef UVDef4 { get { return UVATGroups.GetUVDef(4); } }
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef UVDef5 { get { return UVATGroups.GetUVDef(5); } }
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef UVDef6 { get { return UVATGroups.GetUVDef(6); } }
-        [Browsable(true), Category("UVAT Flags")]
-        public CPElementDef UVDef7 { get { return UVATGroups.GetUVDef(7); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef UVDef0 { get { return UVATGroups.GetUVDef(0); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef UVDef1 { get { return UVATGroups.GetUVDef(1); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef UVDef2 { get { return UVATGroups.GetUVDef(2); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef UVDef3 { get { return UVATGroups.GetUVDef(3); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef UVDef4 { get { return UVATGroups.GetUVDef(4); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef UVDef5 { get { return UVATGroups.GetUVDef(5); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef UVDef6 { get { return UVATGroups.GetUVDef(6); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public CPElementDef UVDef7 { get { return UVATGroups.GetUVDef(7); } }
 
-        [Browsable(true), Category("UVAT Flags")]
-        public string ColorDef0 { get { return UVATGroups.GetColorDef(0).asColor(); } }
-        [Browsable(true), Category("UVAT Flags")]
-        public string ColorDef1 { get { return UVATGroups.GetColorDef(1).asColor(); } }
-        
-        [Category("Polygon Data")]
-        public int DefSize { get { return _defSize; } }
-        [Category("Polygon Data")]
-        public int DefFlags { get { return _defFlags; } set { _defFlags = value; SignalPropertyChange(); } }
-        [Category("Polygon Data")]
-        public int DefOffset { get { return _defOffset; } }
-        
-        [Category("Polygon Data")]
-        public int PrimitivesLength1 { get { return _dataLen1; } }
-        [Category("Polygon Data")]
-        public int PrimitivesLength2 { get { return _dataLen2; } }
-        [Category("Polygon Data")]
-        public int PrimitivesOffset { get { return _dataOffset; } }
-        
-        [Category("Polygon Data")]
-        public int Unknown3 { get { return _unk3; } }
-        [Category("Polygon Data")]
-        public int StringOffset { get { return _stringOffset; } }
-        [Category("Polygon Data")]
-        public int ItemId { get { return _entryIndex; } }
-        [Category("Polygon Data")]
-        public int NumVertices { get { return _numVertices; } }
-        [Category("Polygon Data")]
-        public int Faces { get { return _numFaces; } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public string ColorDef0 { get { return UVATGroups.GetColorDef(0).asColor(); } }
+        //[Browsable(true), Category("UVAT Flags")]
+        //public string ColorDef1 { get { return UVATGroups.GetColorDef(1).asColor(); } }
+
+        //[Category("Object Data")]
+        //public int DefBufferSize { get { return _defBufferSize; } }
+        //[Category("Object Data")]
+        //public int DefSize { get { return _defSize; } }
+        //[Category("Object Data")]
+        //public int DefOffset { get { return _defOffset; } }
+
+        //[Category("Object Data")]
+        //public int PrimBufferSize { get { return _primBufferSize; } }
+        //[Category("Object Data")]
+        //public int PrimSize { get { return _primSize; } }
+        //[Category("Object Data")]
+        //public int PrimOffset { get { return _primOffset; } }
+
+        [Category("Object Data")]
+        public ObjFlag Flags { get { return (ObjFlag)_flag; } set { _flag = (int)value; SignalPropertyChange(); } }
+        //[Category("Object Data")]
+        //public int StringOffset { get { return _stringOffset; } }
+        [Category("Object Data")]
+        public int ID { get { return _entryIndex; } }
+        [Category("Object Data")]
+        public int FacepointCount { get { return _numVertices; } }
+        [Category("Object Data")]
+        public int VertexCount { get { return _manager._vertices.Count; } }
+        [Category("Object Data")]
+        public int FaceCount { get { return _numFaces; } }
+
+        #endregion
 
         public List<Vertex3> Vertices { get { return _manager != null ? _manager._vertices : null; } }
 
-        public MDL0UVNode[] UVNodes { get { return _uvSet; } }
-        internal MDL0UVNode[] _uvSet = new MDL0UVNode[8];
+        #region Linked Sets
 
         public bool _c0Changed = false;
         [TypeConverter(typeof(DropDownListColors))]
@@ -169,7 +174,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     }
                     else return;
                 }
-                //_rebuild = true;
                 SignalPropertyChange();
             }
         }
@@ -225,7 +229,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     }
                     else return;
                 }
-                //_rebuild = true;
                 SignalPropertyChange();
             }
         }
@@ -262,29 +265,323 @@ namespace BrawlLib.SSBB.ResourceNodes
                         }
                     }
                 }
-                _rebuild = true;
                 SignalPropertyChange();
             }
         }
         //public MDL0VertexNode VertexNode { get { return _vertexNode; } set { _vertexNode = value; SignalPropertyChange(); _rebuild = true; } }
         public MDL0VertexNode _vertexNode;
-        
-        public MDL0NormalNode NormalNode { get { return _normalNode; } }
+
+        [TypeConverter(typeof(DropDownListNormals))]
+        public string NormalNode
+        {
+            get { return _normalNode == null ? null : _normalNode._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_normalNode = null;
+                    //_elementIndices[1] = -1;
+                }
+                else
+                {
+                    MDL0NormalNode node = Model.FindChild(String.Format("Normals/{0}", value), false) as MDL0NormalNode;
+                    if (node != null)
+                    {
+                        if (_normalNode != null && node.NumEntries == _normalNode.NumEntries)
+                        {
+                            _normalNode = node;
+                            _elementIndices[1] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        //public MDL0NormalNode NormalNode { get { return _normalNode; } }
         internal MDL0NormalNode _normalNode;
 
+        [TypeConverter(typeof(DropDownListUVs))]
+        public string TexCoord0
+        {
+            get { return _uvSet[0] == null ? null : _uvSet[0]._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_uvSet[0] = null;
+                    //_elementIndices[4] = -1;
+                }
+                else
+                {
+                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                    if (node != null)
+                    {
+                        if (_uvSet[0] != null && node.NumEntries == _uvSet[0].NumEntries)
+                        {
+                            _uvSet[0] = node;
+                            _elementIndices[4] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        [TypeConverter(typeof(DropDownListUVs))]
+        public string TexCoord1
+        {
+            get { return _uvSet[1] == null ? null : _uvSet[1]._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_uvSet[1] = null;
+                    //_elementIndices[5] = -1;
+                }
+                else
+                {
+                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                    if (node != null)
+                    {
+                        if (_uvSet[1] != null && node.NumEntries == _uvSet[1].NumEntries)
+                        {
+                            _uvSet[1] = node;
+                            _elementIndices[5] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        [TypeConverter(typeof(DropDownListUVs))]
+        public string TexCoord2
+        {
+            get { return _uvSet[2] == null ? null : _uvSet[2]._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_uvSet[2] = null;
+                    //_elementIndices[6] = -1;
+                }
+                else
+                {
+                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                    if (node != null)
+                    {
+                        if (_uvSet[2] != null && node.NumEntries == _uvSet[0].NumEntries)
+                        {
+                            _uvSet[2] = node;
+                            _elementIndices[6] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        [TypeConverter(typeof(DropDownListUVs))]
+        public string TexCoord3
+        {
+            get { return _uvSet[3] == null ? null : _uvSet[3]._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_uvSet[3] = null;
+                    //_elementIndices[7] = -1;
+                }
+                else
+                {
+                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                    if (node != null)
+                    {
+                        if (_uvSet[3] != null && node.NumEntries == _uvSet[3].NumEntries)
+                        {
+                            _uvSet[3] = node;
+                            _elementIndices[7] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        [TypeConverter(typeof(DropDownListUVs))]
+        public string TexCoord4
+        {
+            get { return _uvSet[4] == null ? null : _uvSet[4]._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_uvSet[4] = null;
+                    //_elementIndices[8] = -1;
+                }
+                else
+                {
+                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                    if (node != null)
+                    {
+                        if (_uvSet[4] != null && node.NumEntries == _uvSet[4].NumEntries)
+                        {
+                            _uvSet[4] = node;
+                            _elementIndices[8] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        [TypeConverter(typeof(DropDownListUVs))]
+        public string TexCoord5
+        {
+            get { return _uvSet[5] == null ? null : _uvSet[5]._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_uvSet[5] = null;
+                    //_elementIndices[9] = -1;
+                }
+                else
+                {
+                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                    if (node != null)
+                    {
+                        if (_uvSet[5] != null && node.NumEntries == _uvSet[5].NumEntries)
+                        {
+                            _uvSet[5] = node;
+                            _elementIndices[4] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        [TypeConverter(typeof(DropDownListUVs))]
+        public string TexCoord6
+        {
+            get { return _uvSet[6] == null ? null : _uvSet[6]._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_uvSet[6] = null;
+                    //_elementIndices[10] = -1;
+                }
+                else
+                {
+                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                    if (node != null)
+                    {
+                        if (_uvSet[6] != null && node.NumEntries == _uvSet[6].NumEntries)
+                        {
+                            _uvSet[6] = node;
+                            _elementIndices[10] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        [TypeConverter(typeof(DropDownListUVs))]
+        public string TexCoord7
+        {
+            get { return _uvSet[7] == null ? null : _uvSet[7]._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_uvSet[7] = null;
+                    //_elementIndices[11] = -1;
+                }
+                else
+                {
+                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                    if (node != null)
+                    {
+                        if (_uvSet[7] != null && node.NumEntries == _uvSet[7].NumEntries)
+                        {
+                            _uvSet[7] = node;
+                            _elementIndices[11] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+
+        //public MDL0UVNode[] UVNodes { get { return _uvSet; } }
+        internal MDL0UVNode[] _uvSet = new MDL0UVNode[8];
+
+        #endregion
+
         internal List<IMatrixNode> _influences;
+        [Browsable(false)]
         public List<IMatrixNode> Influences { get { return _influences; } }
 
         public int _numVertices;
         public int _numFaces;
         public int _nodeId;
-        public int _defSize = 0xE0;
-        public int _defFlags = 0x80;
+        public int _defBufferSize = 0xE0;
+        public int _defSize = 0x80;
         public int _defOffset;
-        public int _dataLen1;
-        public int _dataLen2;
-        public int _dataOffset;
-        public int _unk3 = 0;
+        public int _primBufferSize;
+        public int _primSize;
+        public int _primOffset;
+        public int _flag = 0;
         public int _index;
 
         internal short[] _elementIndices = new short[12];
@@ -414,40 +711,23 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             attachSingleBind();
 
-            //Debug stuff
-            if (header->_defFlags != 0x80)
-                Console.WriteLine("Def Flags is not 0x80!");
-            if (header->_defSize != 0xE0)
-                Console.WriteLine("Def Size is not 0xE0!");
-            if (header->_dataLen1 != header->_dataLen2)
-                Console.WriteLine("DataLen deviation!");
-            if (header->_unk3 != 0)
-                Console.WriteLine("Unk 3 is not 0!");
-            if (header->_totalLength - header->_dataOffset - header->_dataLen1 != 0x24)
-                Console.WriteLine("Improper data offsets!");
-            if (header->_totalLength % 0x20 != 0)
-            {
-                Model._errors.Add("Object " + Index + " has an improper data length.");
-                SignalPropertyChange(); _rebuild = true;
-            }
-            if ((int)(0x24 + header->_dataOffset) % 0x20 != 0)
-            {
-                Model._errors.Add("Object " + Index + " has an improper primitives start offset.");
-                SignalPropertyChange(); _rebuild = true;
-            }
-
             _vertexFormat = header->_vertexFormat;
             _vertexSpecs = header->_vertexSpecs;
             _arrayFlags = header->_arrayFlags;
 
             _numVertices = header->_numVertices;
             _numFaces = header->_numFaces;
-            _dataLen1 = header->_dataLen1;
-            _dataLen2 = header->_dataLen2;
-            _defFlags = header->_defFlags;
-            _defOffset = header->_defOffset;
-            _defSize = header->_defSize;
-            _dataOffset = header->_dataOffset;
+
+            _flag = header->_flag;
+
+            _primBufferSize = header->_primitives._bufferSize;
+            _primSize = header->_primitives._size;
+            _primOffset = header->_primitives._offset;
+
+            _defBufferSize = header->_defintions._bufferSize;
+            _defSize = header->_defintions._size;
+            _defOffset = header->_defintions._offset;
+
             _entryIndex = header->_index;
 
             //Conditional name assignment
@@ -465,7 +745,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (Vertex3 v in _manager._vertices)
                     v.Index = i++;
             }
-                
+
             //Link nodes
             if (header->_vertexId >= 0)
                 foreach (MDL0VertexNode v in Model._vertList)
@@ -525,6 +805,24 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
 
+            //Debug stuff
+            if (header->_primitives._bufferSize != header->_primitives._size)
+                Console.WriteLine("DataLen deviation!");
+            if (header->_flag != 0)
+                Console.WriteLine("Flag is not 0!");
+            if (header->_totalLength - header->_primitives._offset - header->_primitives._bufferSize != 0x24)
+                Console.WriteLine("Improper data offsets!");
+            if (header->_totalLength % 0x20 != 0)
+            {
+                Model._errors.Add("Object " + Index + " has an improper data length.");
+                SignalPropertyChange(); _rebuild = true;
+            }
+            if ((int)(0x24 + header->_primitives._offset) % 0x20 != 0)
+            {
+                Model._errors.Add("Object " + Index + " has an improper primitives start offset.");
+                SignalPropertyChange(); _rebuild = true;
+            }
+
             return false;
         }
 
@@ -544,6 +842,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<Tristrip> Tristrips = new List<Tristrip>();
 
         public bool _rebuild = false;
+
+        #region Rebuilding
 
         public void RecalcIndices()
         {
@@ -584,7 +884,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 int size = (int)MDL0Polygon.Size;
 
-                if (Model._version == 11 || Model._version == 10)
+                if (Model._version >= 10)
                     size += 4; //Add extra -1 value
 
                 if (Model._isImport)
@@ -1034,15 +1334,22 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 //header->_numVertices = _numVertices = triCount + stripCount;
                 //header->_numFaces = _numFaces = (triCount / 3) + (stripCount <= 2 ? 0 : stripCount - 2);
+
                 _numVertices = header->_numVertices = _manager._pointCount;
                 _numFaces = header->_numFaces = _manager._faceCount;
 
-                _dataLen1 = header->_dataLen1 = primitiveSize;
-                _dataLen2 = header->_dataLen2 = primitiveSize;
-                header->_defFlags = _defFlags;
-                _defOffset = header->_defOffset = tableLen - 0x18;
-                header->_defSize = _defSize;
-                _dataOffset = header->_dataOffset = tableLen + 0xBC;
+                _primBufferSize = header->_primitives._bufferSize = primitiveSize;
+                _primSize = header->_primitives._size = primitiveSize;
+                _primOffset = header->_primitives._offset = tableLen + 0xBC;
+
+                _defOffset = tableLen - 0x18;
+
+                header->_defintions._bufferSize = _defBufferSize;
+                header->_defintions._size = _defSize;
+                header->_defintions._offset = _defOffset;
+
+                header->_flag = _flag;
+
                 header->_index = _entryIndex;
 
                 if (Model._version < 10)
@@ -1066,9 +1373,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_vertexId = _elementIndices[0];
                 header->_normalId = _elementIndices[1];
                 for (int i = 2; i < 4; i++)
-                    header->_colorIds[i - 2] = (short)(_elementIndices[i] != -1 ? _elementIndices[i] << 8 : -1);
+                    *(bshort*)&header->_colorIds[i - 2] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
                 for (int i = 4; i < 12; i++)
-                    header->_uids[i - 4] = (short)(_elementIndices[i] != -1 ? _elementIndices[i] << 8 : -1);
+                    *(bshort*)&header->_uids[i - 4] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
 
                 //Write def list
                 MDL0PolygonDefs* Defs = (MDL0PolygonDefs*)header->DefList;
@@ -1081,7 +1388,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 fixed (GXVtxDescList* desc = _descList) { _manager.SetVtxDescriptor(desc, this); }
 
                 //Set UVAT groups using format list (writes directly to header)
-                fixed (GXVtxAttrFmtList* format = _fmtList) { _manager.SetUVATGroups(GXVtxFmt.GX_VTXFMT0, format, header); }
+                fixed (GXVtxAttrFmtList* format = _fmtList) { _manager.SetVertexFormat(GXVtxFmt.GX_VTXFMT0, format, header); }
 
                 //Write newly set flags
                 header->_vertexFormat._lo = Defs->VtxFmtLo = _vertexFormat._lo;
@@ -1126,10 +1433,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_vertexId = _elementIndices[0];
                 header->_normalId = _elementIndices[1];
                 for (int i = 2; i < 4; i++)
-                    header->_colorIds[i - 2] = (short)(_elementIndices[i] != -1 ? _elementIndices[i] << 8 : -1);
+                    *(bshort*)&header->_colorIds[i - 2] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
                 for (int i = 4; i < 12; i++)
-                    header->_uids[i - 4] = (short)(_elementIndices[i] != -1 ? _elementIndices[i] << 8 : -1);
-                header->_defFlags = _defFlags;
+                    *(bshort*)&header->_uids[i - 4] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
             }
 
             _rebuild = false;
@@ -1168,6 +1474,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
             header->_index = Index;
         }
+
+        #endregion
 
         public MDL0PolygonNode Clone()
         {
@@ -1474,7 +1782,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //else
                 //    ctx.glDisable((uint)GLEnableCap.AlphaTest);
 
-                //_material.Render(ctx);
+                _material.Render(ctx);
                 if (_material.Children.Count > 0)
                 foreach (MDL0MaterialRefNode mr in _material.Children)
                 {

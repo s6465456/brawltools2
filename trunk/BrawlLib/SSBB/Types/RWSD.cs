@@ -31,97 +31,72 @@ namespace BrawlLib.SSBBTypes
         public bint _length;
         public RuintList _list;
 
-        //public uint _numEntries;
-
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-        //public VoidPtr OffsetAddress { get { return Address + 8; } }
-
-        //public ruint* Entries { get { return (ruint*)(Address + 12); } }
-
-        //public DATAEntry* GetEntry(int index)
-        //{
-        //    return (DATAEntry*)(OffsetAddress + Entries[index]._data);
-        //}
-
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct RWSD_DATAEntry
     {
-        public ruint _part1Offset;
-        public ruint _part2Offset;
-        public ruint _part3Offset;
+        public ruint _wsdInfo;
+        public ruint _trackTable;
+        public ruint _noteTable;
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public RWSD_DATAEntryPart1* GetPart1(VoidPtr offset) { return (RWSD_DATAEntryPart1*)_part1Offset.Offset(offset); }
-        public RuintList* GetPart2(VoidPtr offset) { return (RuintList*)_part2Offset.Offset(offset); }
-        public RuintList* GetPart3(VoidPtr offset) { return (RuintList*)_part3Offset.Offset(offset); }
+        public RWSD_WSDEntry* GetPart1(VoidPtr offset) { return (RWSD_WSDEntry*)_wsdInfo.Offset(offset); }
+        public RuintList* GetPart2(VoidPtr offset) { return (RuintList*)_trackTable.Offset(offset); }
+        public RuintList* GetPart3(VoidPtr offset) { return (RuintList*)_noteTable.Offset(offset); }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct RWSD_DATAEntryPart1
+    unsafe struct RWSD_WSDEntry
     {
-        public bfloat _unk1;
-        public bfloat _unk2;
-        public bshort _unk3;
-        public bshort _unk4;
-        public bint _unk5;
-        public bint _unk6;
-        public bint _unk7;
-        public bint _unk8;
-        public bint _unk9;
+        public bfloat _pitch;
+        public byte _pan;
+        public byte _surroundPan;
+        public byte _fxSendA;
+        public byte _fxSendB;
+        public byte _fxSendC;
+        public byte _mainSend;
+        public byte _pad1;
+        public byte _pad2;
+        public ruint _graphEnvTablevRef;
+        public ruint _randomizerTableRef;
+        public bint _reserved;
     }
 
     //These entries are embedded in a list of lists, using RuintList
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct RWSD_DATAEntryPart2
+    public unsafe struct RWSD_NoteEvent
     {
-        public bint _unk1; //0
-        public bint _unk2; //0
-        public bint _unk3; //0
-        public bint _unk4; //0
-
-        //[TypeConverter(typeof(IntToHex))]
-        //public int Unknown1 { get { return _unk1; } set { _unk1 = value; } }
-        //[TypeConverter(typeof(IntToHex))]
-        //public int Unknown2 { get { return _unk2; } set { _unk2 = value; } }
-        //[TypeConverter(typeof(IntToHex))]
-        //public int Unknown3 { get { return _unk3; } set { _unk3 = value; } }
-        //[TypeConverter(typeof(IntToHex))]
-        //public int Unknown4 { get { return _unk4; } set { _unk4 = value; } }
+        public bfloat position;
+        public bfloat length;
+        public buint noteIndex;
+        public buint reserved;
     }
 
     //These entries are embedded in a list, using RuintList
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct RWSD_DATAEntryPart3
+    public unsafe struct RWSD_NoteInfo
     {
-        public bint _index;
-        public buint _magic; //0x7F7F7F7F
-        public bint _unk1; //0
-        public bfloat _unk2; //0.01557922
-        public bfloat _unk3; //1.0
-        public bint _unk4; //0
-        public bint _unk5; //0
-        public bint _unk6; //0
-        public bint _unk7; //0
-        public bint _unk8; //0
-        public bint _unk9; //0
-        public bint _unk10; //0
-
-        public int Index { get { return _index; } set { _index = value; } }
-        public uint Magic { get { return _magic; } set { _magic = value; } }
-        public int Unknown1 { get { return _unk1; } set { _unk1 = value; } }
-        public float Float1 { get { return _unk2; } set { _unk2 = value; } }
-        public float Float2 { get { return _unk3; } set { _unk3 = value; } }
-        public int Unknown4 { get { return _unk4; } set { _unk4 = value; } }
-        public int Unknown5 { get { return _unk5; } set { _unk5 = value; } }
-        public int Unknown6 { get { return _unk6; } set { _unk6 = value; } }
-        public int Unknown7 { get { return _unk7; } set { _unk7 = value; } }
-        public int Unknown8 { get { return _unk8; } set { _unk8 = value; } }
-        public int Unknown9 { get { return _unk9; } set { _unk9 = value; } }
-        public int Unknown10 { get { return _unk10; } set { _unk10 = value; } }
-
+        public bint _waveIndex;
+        public byte _attack;
+        public byte _decay;
+        public byte _sustain;
+        public byte _release;
+        public byte _hold;
+        public byte _pad1;
+        public byte _pad2;
+        public byte _pad3;
+        public byte _originalKey;
+        public byte _volume;
+        public byte _pan;
+        public byte _surroundPan;
+        public bfloat _pitch; //1.0
+        public ruint _lfoTableRef;
+        public ruint _graphEnvTablevRef;
+        public ruint _randomizerTableRef;
+        public bint _reserved; //0
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -132,12 +107,17 @@ namespace BrawlLib.SSBBTypes
         public buint _tag;
         public buint _length;
         public bint _entries;
-        //bint Data Offsets
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public bint* Entries { get { return (bint*)(Address + 12); } }
 
         public RWSD_WAVEEntry* GetEntry(int index) { return (RWSD_WAVEEntry*)(Address + Entries[index]); }
+    }
+
+    enum WaveDataLocationType
+    {
+        WAVE_DATA_LOCATION_OFFSET = 0,
+        WAVE_DATA_LOCATION_ADDRESS = 1
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -148,12 +128,14 @@ namespace BrawlLib.SSBBTypes
         public AudioFormatInfo _format;
 
         public bushort _sampleRate;
-        public bushort _unk1; //0x00
+        public byte _dataLocationType; //WaveDataLocationType
+        public byte _pad;
         public buint _loopStartSample;
         public bint _nibbles; //Includes ALL data, not just samples
-        public bint _unk4; //0x1C
+        public bint _channelInfoTableOffset; //0x1C
         public bint _offset; //Data offset from beginning of sample block
-        public bint _unk5; //0
+        public bint _reserved; //0
+
         public bint _unk6; //0x20
         public bint _unk7; //0
         public bint _unk8; //0x3C

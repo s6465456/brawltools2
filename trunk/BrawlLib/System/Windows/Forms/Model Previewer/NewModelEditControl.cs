@@ -2003,8 +2003,6 @@ namespace System.Windows.Forms
             if (!_playing) 
                 UpdatePropDisplay();
 
-            
-
             modelPanel1.Invalidate();
         }
 
@@ -2388,54 +2386,18 @@ namespace System.Windows.Forms
                 Keys key = (Keys)m.WParam;
                 if (key == Keys.PageUp)
                 {
-                    if (pnlMoveset._mainMoveset != null && pnlMoveset.selectedActionNodes.Count > 0)
-                    {
-                        if (pnlMoveset.ActionsIdling || (pnlMoveset.subactions && pnlMoveset._animFrame >= _maxFrame - 1))
-                        {
-                            if (pnlMoveset.subactions && pnlMoveset.selectedSubActionGrp != null)
-                            {
-                                if (_animFrame < _maxFrame)
-                                {
-                                    SetFrame(_animFrame + 1);
-                                    pnlMoveset._animFrame = _animFrame - 1;
-                                }
-                                else
-                                    pnlMoveset.SetFrame(0);
-                            }
-                        }
-                        else
-                            pnlMoveset.SetFrame(pnlMoveset._animFrame + 1);
-                    }
+                    if (Control.ModifierKeys == (Keys.Control))
+                        pnlPlayback.btnLast_Click(this, null);
                     else
-                    if (GetSelectedBRRESFile(pnlAssets.fileType.SelectedIndex) != null)
-                    {
-                        if (_animFrame >= _maxFrame)
-                            SetFrame(1);
-                        else
-                            SetFrame(_animFrame + 1);
-                    }
+                        pnlPlayback.btnNextFrame_Click(this, null);
                     return true;
                 }
                 else if (key == Keys.PageDown)
                 {
-                    if (pnlMoveset._mainMoveset != null && pnlMoveset.selectedActionNodes.Count > 0)
-                    {
-                        if (pnlMoveset._animFrame > 0)
-                            pnlMoveset.SetFrame(pnlMoveset._animFrame - 1);
-                        else if (pnlMoveset.subactions)
-                        {
-                            pnlMoveset.SetFrame(_maxFrame - 1);
-                            pnlMoveset._animFrame = _animFrame - 1;
-                        }
-                    }
+                    if (Control.ModifierKeys == (Keys.Control))
+                        pnlPlayback.btnFirst_Click(this, null);
                     else
-                    if (GetSelectedBRRESFile(pnlAssets.fileType.SelectedIndex) != null)
-                    {
-                        if (_animFrame == 0)
-                            SetFrame(_maxFrame);
-                        else
-                            SetFrame(_animFrame - 1);
-                    }
+                        pnlPlayback.btnPrevFrame_Click(this, null);
                     return true;
                 }
                 else if (key == Keys.Left)
@@ -2863,7 +2825,48 @@ namespace System.Windows.Forms
         {
             int val = (int)pnlPlayback.numFrameIndex.Value;
             if (val != _animFrame)
-                SetFrame(val);
+            {
+                int difference = val - _animFrame;
+                if (pnlMoveset._mainMoveset != null && pnlMoveset.selectedActionNodes.Count > 0)
+                {
+                    //Run frame value through the moveset panel.
+                    if (val < _animFrame)
+                    {
+                        if (pnlMoveset._animFrame > 0)
+                            pnlMoveset.SetFrame(pnlMoveset._animFrame + difference);
+                        else if (pnlMoveset.subactions)
+                        {
+                            pnlMoveset.SetFrame(_maxFrame - 1);
+                            //pnlMoveset._animFrame = _animFrame - 1;
+                        }
+                    }
+                    else if (val > _animFrame)
+                    {
+                        if (pnlMoveset.ActionsIdling || (pnlMoveset.subactions && pnlMoveset._animFrame >= _maxFrame - 1))
+                        {
+                            if (pnlMoveset.subactions && pnlMoveset.selectedSubActionGrp != null)
+                            {
+                                if (_animFrame < _maxFrame)
+                                {
+                                    SetFrame(_animFrame + difference);
+                                    pnlMoveset._animFrame += difference;
+                                }
+                                else
+                                    pnlMoveset.SetFrame(0);
+                            }
+                        }
+                        else
+                            pnlMoveset.SetFrame(pnlMoveset._animFrame + difference);
+                    }
+                }
+                else if (GetSelectedBRRESFile(pnlAssets.fileType.SelectedIndex) != null)
+                {
+                    if (_animFrame == 0)
+                        SetFrame(_maxFrame);
+                    else
+                        SetFrame(_animFrame - 1);
+                }
+            }
         }
         public void numFPS_ValueChanged(object sender, EventArgs e) { pnlMoveset.animTimer.Interval = animTimer.Interval = 1000 / (int)pnlPlayback.numFPS.Value; }
         public void chkLoop_CheckedChanged(object sender, EventArgs e) 
@@ -3346,7 +3349,6 @@ namespace System.Windows.Forms
         #endregion
 
         #region Rendering
-        //public float _xTranslate = 0, _prevX = 0, _yTranslate = 0, _prevY = 0;
         private unsafe void modelPanel1_PreRender(object sender, GLContext context)
         {
             if (RenderFloor)
@@ -3358,6 +3360,8 @@ namespace System.Windows.Forms
 
                 context.glDisable((int)GLEnableCap.TEXTURE_GEN_S);
                 context.glDisable((int)GLEnableCap.TEXTURE_GEN_T);
+                context.glDisable((int)GLEnableCap.TEXTURE_GEN_R);
+                context.glDisable((int)GLEnableCap.TEXTURE_GEN_Q);
                 context.glDisable((uint)GLEnableCap.CullFace);
                 context.glDisable((uint)GLEnableCap.Lighting);
                 context.glEnable(GLEnableCap.DepthTest);
@@ -3526,7 +3530,7 @@ namespace System.Windows.Forms
                     GLDisplayList axis = new GLDisplayList(context);
                     axis.Begin();
 
-                    //Disable cull mode so square bases for the arrows aren't necessary to draw
+                    //Disable culling so square bases for the arrows aren't necessary to draw
                     context.glDisable((uint)GLEnableCap.CullFace);
                     context.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
 

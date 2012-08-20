@@ -98,7 +98,7 @@ namespace System
         {
             if (fstream == null) return (void*)0;
             byte[] buffer = new byte[fstream.Length];
-            void* address = Alloc((int)fstream.Length.RUp(sizeof(uint)));
+            void* address = Alloc((int)fstream.Length.RoundUp(sizeof(uint)));
 
             fstream.Read(buffer, 0, buffer.Length);
             fstream.Close();

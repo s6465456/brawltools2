@@ -186,7 +186,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     {
                                         mr._minFltr = 5;
                                         mr._magFltr = 1;
-                                        mr._float = -2;
+                                        mr._lodBias = -2;
 
                                         mr.HasTextureMatrix = true;
                                         node.Rebuild(true);
@@ -284,8 +284,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         {
                             MDL0ShaderNode shader = new MDL0ShaderNode();
                             _shadGroup.AddChild(shader);
-                            node.ShaderNode = shader;
                             shader.DefaultAsMetal(node.Children.Count);
+                            node.ShaderNode = shader;
                         }
                     }
                     foreach (MDL0MaterialNode m in _matList)
@@ -863,7 +863,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             _visible = true;
             ApplyCHR(null, 0);
             ApplySRT(null, 0);
-            //ApplySHP(null, 0);
 
             foreach (MDL0GroupNode g in Children)
                 g.Bind(context);
@@ -904,7 +903,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_visible)
                 return;
 
-            if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
+            //if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
                 _mainWindow = mainWindow;
 
             if (_renderPolygons)
@@ -988,6 +987,27 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_polyList != null)
                 foreach (MDL0PolygonNode poly in _polyList)
                     poly.WeightVertices();
+        }
+
+        internal void CalcBindMatrices()
+        {
+            foreach (MDL0BoneNode b in _boneList)
+                b.RecalcFrameState();
+
+            //Transform nodes
+            foreach (Influence inf in _influences._influences)
+                inf.CalcMatrix();
+
+            //Weight Vertices
+            if (_polyList != null)
+                foreach (MDL0PolygonNode poly in _polyList)
+                    poly.WeightVertices();
+
+            foreach (MDL0BoneNode b in _linker.BoneCache)
+            {
+                b._bindMatrix = b._frameMatrix;
+                b._inverseBindMatrix = b._inverseFrameMatrix;
+            }
         }
 
         internal void ApplySRT(SRT0Node node, int index)

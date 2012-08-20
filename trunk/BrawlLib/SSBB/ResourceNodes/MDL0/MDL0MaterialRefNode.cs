@@ -13,6 +13,7 @@ using BrawlLib.Modeling;
 using BrawlLib.Wii.Graphics;
 using System.Windows.Forms;
 using BrawlLib.Wii.Models;
+using BrawlLib.IO;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -25,7 +26,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public MDL0MaterialNode Material { get { return Parent as MDL0MaterialNode; } }
 
-        public TextureFlags _texFlags;
+        public TextureSRT _texFlags;
         public TexMtxEffect _texMatrix;
 
         [Browsable(false)]
@@ -46,8 +47,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public float Rotation { get { return _texFlags.TexRotation; } set { if (!CheckIfMetal()) { _texFlags.TexRotation = value; _bindState._rotate = new Vector3(value, 0, 0); } } }
         [Category("Texture Coordinates"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 Translation { get { return _texFlags.TexTranslation; } set { if (!CheckIfMetal()) { _texFlags.TexTranslation = value; _bindState._translate = new Vector3(value._x, value._y, 0); } } }
-        [Category("Texture Coordinates")]
-        public TexFlags Flags { get { return _flags; } }
+        //[Category("Texture Coordinates")]
+        //public TexFlags Flags { get { return _flags; } }
         public TexFlags _flags;
 
         public enum MappingMethod
@@ -169,19 +170,19 @@ namespace BrawlLib.SSBB.ResourceNodes
             _embossLight = (int)TexMtxFlags.EmbossLight;
         }
 
-        internal int _unk2;
-        internal int _unk3;
+        internal int _texPtr;
+        internal int _pltPtr;
         internal int _index1;
         internal int _index2;
         internal int _uWrap; 
         internal int _vWrap;
         internal int _minFltr;
         internal int _magFltr;
-        internal float _float;
-        internal int _unk10;
-        internal bool _unk11;
-        internal bool _unk12;
-        internal int _unk13;
+        internal float _lodBias;
+        internal int _maxAniso;
+        internal bool _clampBias;
+        internal bool _texelInterp;
+        internal int _pad;
         
         public enum WrapMode
         {
@@ -283,15 +284,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         //[Category("Texture Reference")]
-        //public string Palette { get { return _palette == null ? null : _palette.Name; } }//set { _secondaryTexture = value; SignalPropertyChange(); } }
-        [Category("Texture Reference")]
-        public int Unknown1 { get { return _unk2; } set { if (!CheckIfMetal()) _unk2 = value; } }
-        [Category("Texture Reference")]
-        public int Unknown2 { get { return _unk3; } set { if (!CheckIfMetal()) _unk3 = value; } }
-        [Category("Texture Reference")]
-        public int Index1 { get { return _index1; } set { if (!CheckIfMetal()) _index1 = value; } }
-        [Category("Texture Reference")]
-        public int Index2 { get { return _index2; } set { if (!CheckIfMetal()) _index2 = value; } }
+        //public int TexMapID { get { return _index1; } set { if (!CheckIfMetal()) _index1 = value; } }
+        //[Category("Texture Reference")]
+        //public int PaletteID { get { return _index2; } set { if (!CheckIfMetal()) _index2 = value; } }
         [Category("Texture Reference")]
         public WrapMode UWrapMode { get { return (WrapMode)_uWrap; } set { if (!CheckIfMetal()) _uWrap = (int)value; } }
         [Category("Texture Reference")]
@@ -301,15 +296,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Texture Reference")]
         public TextureMagFilter MagFilter { get { return (TextureMagFilter)_magFltr; } set { if (!CheckIfMetal()) _magFltr = (int)value; } }
         [Category("Texture Reference")]
-        public float LODBias { get { return _float; } set { if (!CheckIfMetal()) _float = value; } }
+        public float LODBias { get { return _lodBias; } set { if (!CheckIfMetal()) _lodBias = value; } }
         [Category("Texture Reference")]
-        public Anisotropy MaxAnisotropy { get { return (Anisotropy)_unk10; } set { if (!CheckIfMetal()) _unk10 = (int)value; } }
+        public Anisotropy MaxAnisotropy { get { return (Anisotropy)_maxAniso; } set { if (!CheckIfMetal()) _maxAniso = (int)value; } }
         [Category("Texture Reference")]
-        public bool ClampBias { get { return _unk11; } set { if (!CheckIfMetal()) _unk11 = value; } }
+        public bool ClampBias { get { return _clampBias; } set { if (!CheckIfMetal()) _clampBias = value; } }
         [Category("Texture Reference")]
-        public bool TexelInterpolate { get { return _unk12; } set { if (!CheckIfMetal()) _unk12 = value; } }
-        [Category("Texture Reference")]
-        public int Unknown3 { get { return _unk13; } set { if (!CheckIfMetal()) _unk13 = value; } }
+        public bool TexelInterpolate { get { return _texelInterp; } set { if (!CheckIfMetal()) _texelInterp = value; } }
         
         public enum Anisotropy
         {
@@ -331,38 +324,32 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             MDL0TextureRef* header = Header;
 
-            _unk2 = header->_unk2;
-            _unk3 = header->_unk3;
+            _texPtr = header->_texPtr;
+            _pltPtr = header->_pltPtr;
             _index1 = header->_index1;
             _index2 = header->_index2;
             _uWrap = header->_uWrap;
             _vWrap = header->_vWrap;
             _minFltr = header->_minFltr;
             _magFltr = header->_magFltr;
-            _float = header->_lodBias;
-            _unk10 = header->_unk10;
-            _unk11 = header->_unk11 == 1;
-            _unk12 = header->_unk12 == 1;
-            _unk13 = header->_unk13;
+            _lodBias = header->_lodBias;
+            _maxAniso = header->_maxAniso;
+            _clampBias = header->_clampBias == 1;
+            _texelInterp = header->_texelInterp == 1;
+            _pad = header->_pad;
 
-            if (header->_stringOffset != 0)
+            if (header->_texOffset != 0)
             {
-                if (!Material._replaced)
-                    _name = header->ResourceString;
+                if (_replaced)
+                    Name = header->TextureName;
                 else
-                    _name = Material._name + "_Texture" + Index;
-
+                    _name = header->TextureName;
                 _texture = Model.FindOrCreateTexture(_name);
                 _texture._references.Add(this);
             }
-            if (header->_secondaryOffset != 0)
+            if (header->_pltOffset != 0)
             {
-                string name;
-                if (!Material._replaced)
-                    name = header->SecondaryTexture;
-                else
-                    name = Material._name + "_Texture" + Index;
-
+                string name = header->PaletteName;
                 _palette = Model.FindOrCreatePalette(name);
                 _palette._references.Add(this);
             }
@@ -388,7 +375,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //    }
             //}
 
-            MDL0MtlTexSettings* TexSettings = ((MDL0MaterialNode)Parent).Header->TexMatrices(Model._version);
+            MDL0TexSRTData* TexSettings = ((MDL0MaterialNode)Parent).Header->TexMatrices(Model._version);
             
             _texFlags = TexSettings->GetTexFlags(Index);
             _texMatrix = TexSettings->GetTexMatrices(Index);
@@ -413,44 +400,44 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             MDL0TextureRef* header = (MDL0TextureRef*)address;
-            header->_unk2 = _unk2;
-            header->_unk3 = _unk3;
-            header->_index1 = _index1;
-            header->_index2 = _index2;
+            header->_texPtr = 0;
+            header->_pltPtr = 0;
+            header->_index1 = Index;
+            header->_index2 = Index;
             header->_uWrap = _uWrap;
             header->_vWrap = _vWrap;
             header->_minFltr = _minFltr;
             header->_magFltr = _magFltr;
-            header->_unk10 = _unk10;
-            header->_unk11 = (byte)(_unk11 ? 1 : 0);
-            header->_unk12 = (byte)(_unk12 ? 1 : 0);
-            header->_unk13 = (short)_unk13;
-            header->_lodBias = _float;
+            header->_lodBias = _lodBias;
+            header->_maxAniso = _maxAniso;
+            header->_clampBias = (byte)(_clampBias ? 1 : 0);
+            header->_texelInterp = (byte)(_texelInterp ? 1 : 0);
+            header->_pad = 0;
         }
 
         protected internal override void PostProcess(VoidPtr mdlAddress, VoidPtr dataAddress, StringTable stringTable)
         {
             MDL0TextureRef* header = (MDL0TextureRef*)dataAddress;
-            header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
+            header->_texOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
 
             if (_palette != null)
-                header->_secondaryOffset = (int)stringTable[_palette.Name] + 4 - (int)dataAddress;
+                header->_pltOffset = (int)stringTable[_palette.Name] + 4 - (int)dataAddress;
             else
-                header->_secondaryOffset = 0;
+                header->_pltOffset = 0;
 
-            header->_unk2 = _unk2;
-            header->_unk3 = _unk3;
-            header->_index1 = _index1;
-            header->_index2 = _index2;
+            header->_texPtr = 0;
+            header->_pltPtr = 0;
+            header->_index1 = Index;
+            header->_index2 = Index;
             header->_uWrap = _uWrap;
             header->_vWrap = _vWrap;
             header->_minFltr = _minFltr;
             header->_magFltr = _magFltr;
-            header->_unk10 = _unk10;
-            header->_unk11 = (byte)(_unk11 ? 1 : 0);
-            header->_unk12 = (byte)(_unk12 ? 1 : 0);
-            header->_unk13 = (short)_unk13;
-            header->_lodBias = _float;
+            header->_lodBias = _lodBias;
+            header->_maxAniso = _maxAniso;
+            header->_clampBias = (byte)(_clampBias ? 1 : 0);
+            header->_texelInterp = (byte)(_texelInterp ? 1 : 0);
+            header->_pad = (short)0;
         }
 
         internal override void Bind(GLContext ctx)
@@ -520,8 +507,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void Default()
         {
             Name = "NewRef";
-            Index1 = Index;
-            Index2 = Index;
             _minFltr = 1;
             _magFltr = 1;
             UWrapMode = WrapMode.Repeat;
@@ -598,6 +583,25 @@ namespace BrawlLib.SSBB.ResourceNodes
             _index1 = _index2 = index;
 
             return true;
+        }
+
+        public override unsafe void Export(string outPath)
+        {
+            StringTable table = new StringTable();
+            GetStrings(table);
+            int dataLen = OnCalculateSize(true);
+            int totalLen = dataLen + table.GetTotalSize();
+
+            using (FileStream stream = new FileStream(outPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 8, FileOptions.RandomAccess))
+            {
+                stream.SetLength(totalLen);
+                using (FileMap map = FileMap.FromStream(stream))
+                {
+                    Rebuild(map.Address, dataLen, false);
+                    table.WriteTable(map.Address + dataLen);
+                    PostProcess(map.Address, map.Address, table);
+                }
+            }
         }
     }
 }

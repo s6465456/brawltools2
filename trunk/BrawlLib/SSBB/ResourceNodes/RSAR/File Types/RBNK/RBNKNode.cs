@@ -30,7 +30,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 for (int i = 0; i < count; i++)
                 {
                     RSEQ_LABLEntry* entry = labl->Get(i);
-                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_id };
+                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_offset };
                 }
                 return true;
             }
@@ -158,7 +158,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 for (int i = 0; i < count; i++)
                 {
                     RSEQ_LABLEntry* entry = labl->Get(i);
-                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_id };
+                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_offset };
                 }
                 len += labl->_size;
             }

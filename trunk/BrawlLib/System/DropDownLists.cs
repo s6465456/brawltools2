@@ -138,6 +138,26 @@ namespace System
         }
     }
 
+    public class DropDownListNormals : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            return new StandardValuesCollection(model._normList);
+        }
+    }
+
+    public class DropDownListUVs : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            return new StandardValuesCollection(model._uvList);
+        }
+    }
+
     public class DropDownListPAT0Textures : StringConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }

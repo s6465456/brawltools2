@@ -140,26 +140,30 @@ namespace BrawlLib.SSBB.ResourceNodes
                 type = (ArgVarType)typeOverride;
             else if (info != null)
                 type = (ArgVarType)info.GetDfltParameter(i);
-            if ((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && i == 12)
+
+            if ((ArgVarType)(int)type == ArgVarType.Value)
             {
-                child = (new HitboxFlagsNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value, val = new HitboxFlags() { data = value } });
-                (child as HitboxFlagsNode).GetFlags();
-            }
-            else if (((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && (i == 0 || i == 3 || i == 4)))
-                child = (new MoveDefEventValue2HalfNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
-            else if (((_event == 0x11150300 || _event == 0x11001000 || _event == 0x11010A00 || _event == 0x11020A00) && i == 0))
-                child = (new MoveDefEventValue2HalfGFXNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
-            else if (i == 14 && _event == 0x06150F00)
-            {
-                child = (new SpecialHitboxFlagsNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value, val = new SpecialHitboxFlags() { data = value } });
-                (child as SpecialHitboxFlagsNode).GetFlags();
-            }
-            else if ((ArgVarType)(int)type == ArgVarType.Value)
-            {
-                if (EventInfo != null && EventInfo.Enums != null && EventInfo.Enums.ContainsKey(i))
-                    child = new MoveDefEventValueEnumNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { Enums = EventInfo.Enums[i].ToArray() };
-                else
-                    child = (new MoveDefEventValueNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
+                if ((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && i == 12)
+                {
+                    child = (new HitboxFlagsNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value, val = new HitboxFlags() { data = value } });
+                    (child as HitboxFlagsNode).GetFlags();
+                }
+                else if (((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && (i == 0 || i == 3 || i == 4)))
+                    child = (new MoveDefEventValue2HalfNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
+                else if (((_event == 0x11150300 || _event == 0x11001000 || _event == 0x11010A00 || _event == 0x11020A00) && i == 0))
+                    child = (new MoveDefEventValue2HalfGFXNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
+                else if (i == 14 && _event == 0x06150F00)
+                {
+                    child = (new SpecialHitboxFlagsNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value, val = new SpecialHitboxFlags() { data = value } });
+                    (child as SpecialHitboxFlagsNode).GetFlags();
+                }
+                else //Not a special value
+                {
+                    if (EventInfo != null && EventInfo.Enums != null && EventInfo.Enums.ContainsKey(i))
+                        child = new MoveDefEventValueEnumNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { Enums = EventInfo.Enums[i].ToArray() };
+                    else
+                        child = (new MoveDefEventValueNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
+                }
             }
             else if ((ArgVarType)(int)type == ArgVarType.Scalar)
                 child = (new MoveDefEventScalarNode(info != null && i < info.Params.Length ? info.Params[i] : "Scalar") { _value = value });

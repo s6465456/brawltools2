@@ -59,8 +59,14 @@ namespace BrawlLib.SSBBTypes
         public byte _format;
         public byte _pltFormat;
         public bushort _colorCount;
-        public fixed byte pad[16];
 
+        public buint _pltSize;
+        public byte _mipmap;
+        public byte _min_filt;
+        public byte _mag_filt;
+        public byte _reserved1;
+        public bfloat _lod_bias;
+        
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 
         public REFTData(ushort width, ushort height, byte format)
@@ -72,6 +78,12 @@ namespace BrawlLib.SSBBTypes
             _format = format;
             _pltFormat = 0;
             _colorCount = 0;
+            _pltSize = 0;
+            _mipmap = 0;
+            _min_filt = 0;
+            _mag_filt = 0;
+            _reserved1 = 0;
+            _lod_bias = 0;
         }
 
         //From here starts the image.

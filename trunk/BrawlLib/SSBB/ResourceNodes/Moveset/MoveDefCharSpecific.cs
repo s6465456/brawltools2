@@ -193,7 +193,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override void OnPopulate()
         {
             for (int i = 0; i < Count; i++)
-                new MoveDefHitDataNode() { _extOverride = true }.Initialize(this, BaseAddress + DataOffset + i * 32, 32);
+                new MoveDefHurtBoxNode() { _extOverride = true }.Initialize(this, BaseAddress + DataOffset + i * 32, 32);
         }
 
         protected override int OnCalculateSize(bool force)
@@ -204,8 +204,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            hitData* data = (hitData*)address;
-            foreach (MoveDefHitDataNode h in Children)
+            FDefHurtBox* data = (FDefHurtBox*)address;
+            foreach (MoveDefHurtBoxNode h in Children)
                 h.Rebuild(data++, 32, true);
             _entryOffset = data;
             FDefListOffset* header = (FDefListOffset*)data;
@@ -602,14 +602,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             int size = Root.GetSize(DataOffset) / Count;
             for (int i = 0; i < Count; i++)
-                new MoveDefHitDataNode() { _name = "HitData" + i }.Initialize(this, BaseAddress + DataOffset + i * size, size);
+                new MoveDefHurtBoxNode() { _name = "HitData" + i }.Initialize(this, BaseAddress + DataOffset + i * size, size);
         }
 
         protected override int OnCalculateSize(bool force)
         {
             _lookupCount = (Children.Count > 0 ? 1 : 0);
             int size = 32;
-            foreach (MoveDefHitDataNode p in Children)
+            foreach (MoveDefHurtBoxNode p in Children)
                 size += p.CalculateSize(true);
             return size;
         }
@@ -617,7 +617,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address;
-            foreach (MoveDefHitDataNode p in Children)
+            foreach (MoveDefHurtBoxNode p in Children)
             {
                 p.Rebuild(addr, p._calcSize, true);
                 addr += p._calcSize;

@@ -54,20 +54,30 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct ruint
+    public unsafe struct ruint
     {
-        public int _control;
+        public enum RefType
+        {
+            Address = 0,
+            Offset = 1
+        }
+
+        public byte _refType;
+        public byte _dataType;
+        public bushort _reserved;
         public bint _data;
 
-        public ruint(int control, int data)
+        public ruint(RefType refType, byte dataType, int data)
         {
-            _control = control;
+            _refType = (byte)refType;
+            _dataType = dataType;
+            _reserved = 0;
             _data = data;
         }
 
         public VoidPtr Offset(VoidPtr baseAddr) { return baseAddr + _data; }
 
-        public static implicit operator ruint(int r) { return new ruint() { _control = 1, _data = r }; }
+        public static implicit operator ruint(int r) { return new ruint() { _refType = 1, _data = r }; }
         public static implicit operator int(ruint r) { return r._data; }
     }
 
@@ -107,12 +117,9 @@ namespace BrawlLib.SSBBTypes
 
         public VoidPtr Get(int index) { return Address + Entries[index]; }
 
-        public void Set(int index, int control, VoidPtr address)
+        public void Set(int index, ruint.RefType refType, byte dataType, VoidPtr address)
         {
-            int addr = Address;
-            ruint* e = (ruint*)addr + index;
-            e->_control = control;
-            e->_data = (int)address - addr;
+            *((ruint*)Address + index) = new ruint(refType, dataType, (int)address - Address);
         }
     }
 
@@ -316,6 +323,13 @@ namespace BrawlLib.SSBBTypes
             }
         }
     }
+    
+    public enum WaveEncoding
+    {
+        FORMAT_PCM8 = 0,
+        FORMAT_PCM16 = 1,
+        FORMAT_ADPCM = 2
+    }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     struct AudioFormatInfo
@@ -323,10 +337,10 @@ namespace BrawlLib.SSBBTypes
         public byte _encoding;
         public byte _looped;
         public byte _channels;
-        public byte _unk;
+        public byte _sampleRate24;
 
         public AudioFormatInfo(byte encoding, byte looped, byte channels, byte unk)
-        { _encoding = encoding; _looped = looped; _channels = channels; _unk = unk; }
+        { _encoding = encoding; _looped = looped; _channels = channels; _sampleRate24 = unk; }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

@@ -12,6 +12,8 @@ namespace BrawlLib.Wii.Compression
         LZ77 = 0x1,
         Huffman = 0x2,
         RunLength = 0x3,
+        LZ77Huffman = 0x4,
+        LZ77RangeCoder = 0x5,
         Differential = 0x8
     }
 
@@ -34,7 +36,7 @@ namespace BrawlLib.Wii.Compression
         }
         public int ExpandedSize
         {
-            get  {return (int)(_data >> 8); }
+            get { return (int)(_data >> 8); }
             set { _data = ((uint)value << 8) | (_data & 0xFF); }
         }
 

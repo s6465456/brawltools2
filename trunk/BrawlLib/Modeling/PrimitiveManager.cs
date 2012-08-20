@@ -67,7 +67,7 @@ namespace BrawlLib.Modeling
         //Repeat. It is read as a pointer. 
 
         internal NewPrimitive _triangles, _tristrips, _trifans, _lines, _points;
-        internal List<Primitive2> Primitives = new List<Primitive2>();
+        //internal List<Primitive2> Primitives = new List<Primitive2>();
 
         #region Asset Lists
         private Vector3[] _rawVertices;
@@ -1273,7 +1273,7 @@ namespace BrawlLib.Modeling
             return list.ToArray();
         }
 
-        public void SetUVATGroups(GXVtxFmt vtxfmt, GXVtxAttrFmtList* list, MDL0Polygon* polygon)
+        public void SetVertexFormat(GXVtxFmt vtxfmt, GXVtxAttrFmtList* list, MDL0Polygon* polygon)
         {
             //These are default values.
 

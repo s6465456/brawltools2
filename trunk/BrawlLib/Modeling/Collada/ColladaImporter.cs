@@ -345,6 +345,7 @@ namespace BrawlLib.Modeling
                 bone._parent = parent;
 
                 bone.RecalcBindState();
+                bone.CalcFlags();
 
                 foreach (NodeEntry e in node._children)
                     EnumNode(e, bone, scene, model, shell);

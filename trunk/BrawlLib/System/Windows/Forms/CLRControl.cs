@@ -174,7 +174,6 @@ namespace System.Windows.Forms
             set { _colorSource = value; SourceChanged(); }
         }
 
-
         private GoodColorDialog _dlgColor;
         private GradientDialog _dlgGradient;
 
@@ -342,8 +341,5 @@ namespace System.Windows.Forms
                 lstColors.SelectedIndex = index;
             }
         }
-
-
-
     }
 }

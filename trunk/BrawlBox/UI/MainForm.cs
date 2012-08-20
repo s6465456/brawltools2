@@ -212,6 +212,14 @@ namespace BrawlBox
                     else
                         newControl = clrControl;
                 }
+                else if (node is RELSectionNode)
+                {
+                    if (((RELSectionNode)node).CodeSection)
+                    {
+                        relDisassembler1.Section = (RELSectionNode)node;
+                        newControl = relDisassembler1;
+                    }
+                }
 
                 if ((editToolStripMenuItem.DropDown = w.ContextMenuStrip) != null)
                     editToolStripMenuItem.Enabled = true;

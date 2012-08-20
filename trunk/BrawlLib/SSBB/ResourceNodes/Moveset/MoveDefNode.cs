@@ -563,9 +563,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new long[] { 1 }));
             EventDictionary.Add(0x0C230200, new ActionEventInfo(0x0C230200, "Time Manipulation",
                 "Change the speed of time for various parts of the environment.",
-                new string[] { "Undefined", "Undefined" },
-                new string[] { "Undefined.", "Undefined" },
-                "",
+                new string[] { "Multiplier", "Frames" },
+                new string[] { "How many times faster the frames are.", "How long the time is multiplied." },
+                "\\name(): Amount=\\value(0), Frames=\\value(0)",
                 new long[] { 0, 0 }));
             EventDictionary.Add(0x0E000100, new ActionEventInfo(0x0E000100, "Set Air/Ground",
                 "Specify whether the character is on or off the ground.",
@@ -707,8 +707,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new long[] { 5 }));
             EventDictionary.Add(0x1A040500, new ActionEventInfo(0x1A040500, "Camera Closeup",
                 "Zoom the camera on the character.",
-                new string[] { "Zoom Time", "Undefined", "Undefined", "Undefined", "Undefined" },
-                new string[] { "The time it takes to zoom in on the target.", "Undefined.", "Undefined.", "Undefined.", "Undefined" },
+                new string[] { "Zoom Time", "Undefined", "Distance", "X Angle", "Y Angle" },
+                new string[] { "The time it takes to zoom in on the target.", "Undefined.", "How far away the camera is from the character.", "The horizontal rotation around the character.", "The vertical rotation around the character." },
                 "\\name(): Zoom Time=\\value(0), Undefined=\\value(1), Distance=\\value(2), X Rotation=\\value(3), Y Rotation=\\value(4)",
                 new long[] { 0, 0, 1, 1, 1 }));
             EventDictionary.Add(0x1A080000, new ActionEventInfo(0x1A080000, "Normal Camera",
@@ -3589,40 +3589,50 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             _sectionList = new List<MoveDefEntryNode>();
 
+            int offsetID = 0;
+
             //Parse external offsets first
             foreach (var data in DataTable)
-                if (data.Key.Name != "data" && data.Key.Name != "dataCommon")
+            {
+                if (data.Key.Name != "data" && data.Key.Name != "dataCommon" && data.Key.Name != "animParam" && data.Key.Name != "subParam")
                 {
-                    //if (data.Key.Name != null && data.Key.Name.Contains("AnimCmd") && !data.Key.Name.Contains("DisguiseList"))
-                    //{
-                    //    MoveDefActionNode r = new MoveDefActionNode(data.Key.Name, false, this) { _parent = this };
-                    //    r.Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
-                    //    Root._externalSections.Add(r);
-                    //    _sectionList.Add(r);
-                    //}
-                    //else
-                    //{
-                        MoveDefRawDataNode r = new MoveDefRawDataNode(data.Key.Name) { _parent = this };
-                        r.Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
-                        Root._externalSections.Add(r);
-                        _sectionList.Add(r);
-                    //}
+                    MoveDefRawDataNode r = new MoveDefRawDataNode(data.Key.Name) { _parent = this, offsetID = offsetID };
+                    r.Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
+                    Root._externalSections.Add(r);
+                    _sectionList.Add(r);
                 }
+                offsetID++;
+            }
+
+            offsetID = 0;
 
             //Now add the data node
             foreach (var data in DataTable)
+            {
                 if (data.Key.Name == "data")
                 {
-                    (Root.data = new MoveDefDataNode((uint)DataSize, data.Key.Name)).Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
+                    (Root.data = new MoveDefDataNode((uint)DataSize, data.Key.Name) { offsetID = offsetID }).Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
                     _sectionList.Add(Root.data);
                     break;
                 }
                 else if (data.Key.Name == "dataCommon")
                 {
-                    (Root.dataCommon = new MoveDefDataCommonNode((uint)DataSize, data.Key.Name)).Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
+                    (Root.dataCommon = new MoveDefDataCommonNode((uint)DataSize, data.Key.Name) { offsetID = offsetID }).Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
                     _sectionList.Add(Root.dataCommon);
                     break;
                 }
+                //else if (data.Key.Name == "animParam")
+                //{
+                //    (Root.animParam = new MoveDefAnimParamNode(data.Key.Name) { offsetID = offsetID }).Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
+                //    _sectionList.Add(Root.animParam);
+                //}
+                //else if (data.Key.Name == "subParam")
+                //{
+                //    (Root.subParam = new MoveDefSubParamNode(data.Key.Name) { offsetID = offsetID }).Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
+                //    _sectionList.Add(Root.subParam);
+                //}
+                offsetID++;
+            }
 
             SortChildren();
             _sectionList.Sort(MoveDefEntryNode.Compare);

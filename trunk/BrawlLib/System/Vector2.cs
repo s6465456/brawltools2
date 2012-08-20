@@ -94,6 +94,19 @@ namespace System
             else
                 return (float)(lenX / Math.Cos(Math.Atan(lenY / lenX)));
         }
-
+        public override int GetHashCode()
+        {
+            fixed (Vector2* p = &this)
+            {
+                int* p2 = (int*)p;
+                return p2[0] ^ p2[1];
+            }
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj is Vector2)
+                return this == (Vector2)obj;
+            return false;
+        }
     }
 }

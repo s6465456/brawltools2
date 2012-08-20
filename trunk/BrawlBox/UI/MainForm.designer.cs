@@ -53,11 +53,13 @@ namespace BrawlBox
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.animEditControl = new System.Windows.Forms.AnimEditControl();
+            this.relDisassembler1 = new PowerPcAssembly.RelDisassembler();
             this.offsetEditor1 = new System.Windows.Forms.OffsetEditor();
             this.shpAnimEditControl = new System.Windows.Forms.ShpAnimEditControl();
             this.texAnimEditControl = new System.Windows.Forms.TexAnimEditControl();
             this.eventDescription1 = new System.Windows.Forms.EventDescription();
             this.attributeControl = new System.Windows.Forms.AttributeGrid();
+            this.articleAttributeGrid = new System.Windows.Forms.ArticleAttributeGrid();
             this.audioPlaybackPanel1 = new System.Windows.Forms.AudioPlaybackPanel();
             this.movesetEditor1 = new System.Windows.Forms.ScriptEditor();
             this.visEditor = new System.Windows.Forms.VisEditor();
@@ -66,7 +68,6 @@ namespace BrawlBox
             this.msBinEditor1 = new System.Windows.Forms.MSBinEditor();
             this.previewPanel1 = new System.Windows.Forms.GoodPictureBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.articleAttributeGrid = new System.Windows.Forms.ArticleAttributeGrid();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -265,6 +266,7 @@ namespace BrawlBox
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.animEditControl);
+            this.splitContainer2.Panel2.Controls.Add(this.relDisassembler1);
             this.splitContainer2.Panel2.Controls.Add(this.offsetEditor1);
             this.splitContainer2.Panel2.Controls.Add(this.shpAnimEditControl);
             this.splitContainer2.Panel2.Controls.Add(this.texAnimEditControl);
@@ -300,6 +302,18 @@ namespace BrawlBox
             this.animEditControl.Size = new System.Drawing.Size(384, 169);
             this.animEditControl.TabIndex = 1;
             this.animEditControl.Visible = false;
+            // 
+            // relDisassembler1
+            // 
+            this.relDisassembler1.Address = ((uint)(0u));
+            this.relDisassembler1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.relDisassembler1.Index = 0;
+            this.relDisassembler1.Location = new System.Drawing.Point(0, 0);
+            this.relDisassembler1.Name = "relDisassembler1";
+            this.relDisassembler1.Size = new System.Drawing.Size(384, 169);
+            this.relDisassembler1.Source = null;
+            this.relDisassembler1.TabIndex = 10;
+            this.relDisassembler1.Visible = false;
             // 
             // offsetEditor1
             // 
@@ -343,6 +357,14 @@ namespace BrawlBox
             this.attributeControl.TabIndex = 0;
             this.attributeControl.Visible = false;
             // 
+            // articleAttributeGrid
+            // 
+            this.articleAttributeGrid.Location = new System.Drawing.Point(0, 0);
+            this.articleAttributeGrid.Name = "articleAttributeGrid";
+            this.articleAttributeGrid.Size = new System.Drawing.Size(479, 305);
+            this.articleAttributeGrid.TabIndex = 9;
+            this.articleAttributeGrid.Visible = false;
+            // 
             // audioPlaybackPanel1
             // 
             this.audioPlaybackPanel1.Location = new System.Drawing.Point(149, 92);
@@ -356,6 +378,7 @@ namespace BrawlBox
             this.movesetEditor1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.movesetEditor1.Location = new System.Drawing.Point(0, 0);
             this.movesetEditor1.Name = "movesetEditor1";
+            this.movesetEditor1.Padding = new System.Windows.Forms.Padding(1);
             this.movesetEditor1.Size = new System.Drawing.Size(384, 169);
             this.movesetEditor1.TabIndex = 0;
             this.movesetEditor1.Visible = false;
@@ -400,14 +423,6 @@ namespace BrawlBox
             this.previewPanel1.Picture = null;
             this.previewPanel1.Size = new System.Drawing.Size(98, 86);
             this.previewPanel1.TabIndex = 0;
-            // 
-            // articleAttributeGrid
-            // 
-            this.articleAttributeGrid.Location = new System.Drawing.Point(0, 0);
-            this.articleAttributeGrid.Name = "articleAttributeGrid";
-            this.articleAttributeGrid.Size = new System.Drawing.Size(479, 305);
-            this.articleAttributeGrid.TabIndex = 9;
-            this.articleAttributeGrid.Visible = false;
             // 
             // MainForm
             // 
@@ -474,6 +489,7 @@ namespace BrawlBox
         private AttributeGrid attributeControl;
         private OffsetEditor offsetEditor1;
         private ArticleAttributeGrid articleAttributeGrid;
+        private PowerPcAssembly.RelDisassembler relDisassembler1;
     }
 }
 

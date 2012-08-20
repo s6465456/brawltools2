@@ -152,11 +152,9 @@ namespace BrawlLib.SSBBTypes
 
         public bfloat _unk9;
         public bfloat _unk10;
-
-        public patternPowerMulEntry _entry1;
-        public patternPowerMulEntry _entry2;
-        public patternPowerMulEntry _entry3;
-        public patternPowerMulEntry _entry4;
+        
+        //Four action nodes in a row start here
+        public byte _first;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
@@ -171,10 +169,59 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct CommonUnk21
+    public unsafe struct AnimParamHeader
     {
-        public FDefListOffset _list1;
-        public FDefListOffset _list2;
+        public bint Unknown0;
+        public bint Unknown1;
+        public bint Unknown2;
+        public bint Unknown3;
+        public bint Unknown4;
+        public bint Unknown5;
+        public bint Unknown6;
+        public bint Unknown7;
+        public bint Unknown8;
+        public bint Unknown9;
+        public bint Unknown10;
+        public bint Unknown11;
+        public bint Unknown12;
+        public bint Unknown13;
+        public bint Unknown14;
+        public bint Unknown15;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct SubParamHeader
+    {
+        public bint Unknown0;
+        public bint Unknown1;
+        public bint Unknown2;
+        public bint Unknown3;
+        public bint Unknown4;
+        public bint Unknown5;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct FDefCommonUnk7Entry
+    {
+        public bint _unk1;
+        public bint _unk2;
+        public bshort _unk3;
+        public bshort _unk4;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct FDefCommonUnk11Entry
+    {
+        public bint _unk1;
+        public FDefListOffset _list;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -260,21 +307,6 @@ namespace BrawlLib.SSBBTypes
         public bint _unk2; //0x64
         public bint _unk3; //-1
         public bint _unk4; //-1
-
-        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct hitData
-    {
-        public bfloat _unk1;
-        public bfloat _unk2;
-        public bfloat _unk3;
-        public bfloat _unk4;
-        public bfloat _unk5;
-        public bfloat _unk6;
-        public bfloat _unk7;
-        public buint _flags;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
@@ -436,7 +468,7 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct MiscSection
+    public unsafe struct FDefMiscSection
     {
         public const int Size = 0x4C;
 

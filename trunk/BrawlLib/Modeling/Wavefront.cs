@@ -183,94 +183,94 @@ namespace BrawlLib.Modeling
             }
         }
 
-        private static void WriteTriFan(StreamWriter writer, Primitive p)
-        {
-            if ((p._vertexIndices == null) || (p._normalIndices == null))
-                return;
+        //private static void WriteTriFan(StreamWriter writer, Primitive p)
+        //{
+        //    if ((p._vertexIndices == null) || (p._normalIndices == null))
+        //        return;
 
-            writer.WriteLine();
-            writer.WriteLine("#Trifan");
-            int count = p._elementCount - 2;
-            if (p._uvIndices[0] != null)
-                for (int i = 0; i < count; i++)
-                    writer.WriteLine(String.Format("f {0}/{1}/{2} {3}/{4}/{5} {6}/{7}/{8}",
-                        p._vertexIndices[0] + 1, p._uvIndices[0][0] + 1, p._normalIndices[0] + 1,
-                        p._vertexIndices[i + 1] + 1, p._uvIndices[0][i + 1] + 1, p._normalIndices[i + 1] + 1,
-                        p._vertexIndices[i + 2] + 1, p._uvIndices[0][i + 2] + 1, p._normalIndices[i + 2] + 1));
-            else
-                for (int i = 0; i < count; i++)
-                    writer.WriteLine(String.Format("f {0}//{1} {2}//{3} {4}//{5}",
-                            p._vertexIndices[0] + 1, p._normalIndices[0] + 1,
-                            p._vertexIndices[i + 1] + 1, p._normalIndices[i + 1] + 1,
-                            p._vertexIndices[i + 2] + 1, p._normalIndices[i + 2] + 1));
-        }
-        private static void WriteTriStrip(StreamWriter writer, Primitive p)
-        {
-            if ((p._vertexIndices == null) || (p._normalIndices == null))
-                return;
+        //    writer.WriteLine();
+        //    writer.WriteLine("#Trifan");
+        //    int count = p._elementCount - 2;
+        //    if (p._uvIndices[0] != null)
+        //        for (int i = 0; i < count; i++)
+        //            writer.WriteLine(String.Format("f {0}/{1}/{2} {3}/{4}/{5} {6}/{7}/{8}",
+        //                p._vertexIndices[0] + 1, p._uvIndices[0][0] + 1, p._normalIndices[0] + 1,
+        //                p._vertexIndices[i + 1] + 1, p._uvIndices[0][i + 1] + 1, p._normalIndices[i + 1] + 1,
+        //                p._vertexIndices[i + 2] + 1, p._uvIndices[0][i + 2] + 1, p._normalIndices[i + 2] + 1));
+        //    else
+        //        for (int i = 0; i < count; i++)
+        //            writer.WriteLine(String.Format("f {0}//{1} {2}//{3} {4}//{5}",
+        //                    p._vertexIndices[0] + 1, p._normalIndices[0] + 1,
+        //                    p._vertexIndices[i + 1] + 1, p._normalIndices[i + 1] + 1,
+        //                    p._vertexIndices[i + 2] + 1, p._normalIndices[i + 2] + 1));
+        //}
+        //private static void WriteTriStrip(StreamWriter writer, Primitive p)
+        //{
+        //    if ((p._vertexIndices == null) || (p._normalIndices == null))
+        //        return;
 
-            writer.WriteLine();
-            writer.WriteLine("#Tristrip");
-            int count = p._elementCount - 2;
-            int l1 = 0, l2 = 2;
-            if (p._uvIndices[0] != null)
-                for (int i = 0; i < count; i++)
-                {
-                    if ((i & 1) == 0)
-                    {
-                        l1 = i;
-                        l2 = i + 1;
-                    }
-                    else
-                    {
-                        l1 = i + 1;
-                        l2 = i;
-                    }
-                    writer.WriteLine(String.Format("f {0}/{1}/{2} {3}/{4}/{5} {6}/{7}/{8}",
-                        p._vertexIndices[l1] + 1, p._uvIndices[0][l1] + 1, p._normalIndices[l1] + 1,
-                        p._vertexIndices[l2] + 1, p._uvIndices[0][l2] + 1, p._normalIndices[l2] + 1,
-                        p._vertexIndices[i + 2] + 1, p._uvIndices[0][i + 2] + 1, p._normalIndices[i + 2] + 1));
-                }
-            else
-                for (int i = 0; i < count; i++)
-                {
-                    if ((i & 1) == 0)
-                    {
-                        l1 = i;
-                        l2 = i + 1;
-                    }
-                    else
-                    {
-                        l1 = i + 1;
-                        l2 = i;
-                    }
-                    writer.WriteLine(String.Format("f {0}//{1} {2}//{3} {4}//{5}",
-                            p._vertexIndices[l1] + 1, p._normalIndices[l1] + 1,
-                            p._vertexIndices[l2] + 1, p._normalIndices[l2] + 1,
-                            p._vertexIndices[i + 2] + 1, p._normalIndices[i + 2] + 1));
-                }
-        }
-        private static void WriteTriList(StreamWriter writer, Primitive p)
-        {
-            if ((p._vertexIndices == null) || (p._normalIndices == null))
-                return;
+        //    writer.WriteLine();
+        //    writer.WriteLine("#Tristrip");
+        //    int count = p._elementCount - 2;
+        //    int l1 = 0, l2 = 2;
+        //    if (p._uvIndices[0] != null)
+        //        for (int i = 0; i < count; i++)
+        //        {
+        //            if ((i & 1) == 0)
+        //            {
+        //                l1 = i;
+        //                l2 = i + 1;
+        //            }
+        //            else
+        //            {
+        //                l1 = i + 1;
+        //                l2 = i;
+        //            }
+        //            writer.WriteLine(String.Format("f {0}/{1}/{2} {3}/{4}/{5} {6}/{7}/{8}",
+        //                p._vertexIndices[l1] + 1, p._uvIndices[0][l1] + 1, p._normalIndices[l1] + 1,
+        //                p._vertexIndices[l2] + 1, p._uvIndices[0][l2] + 1, p._normalIndices[l2] + 1,
+        //                p._vertexIndices[i + 2] + 1, p._uvIndices[0][i + 2] + 1, p._normalIndices[i + 2] + 1));
+        //        }
+        //    else
+        //        for (int i = 0; i < count; i++)
+        //        {
+        //            if ((i & 1) == 0)
+        //            {
+        //                l1 = i;
+        //                l2 = i + 1;
+        //            }
+        //            else
+        //            {
+        //                l1 = i + 1;
+        //                l2 = i;
+        //            }
+        //            writer.WriteLine(String.Format("f {0}//{1} {2}//{3} {4}//{5}",
+        //                    p._vertexIndices[l1] + 1, p._normalIndices[l1] + 1,
+        //                    p._vertexIndices[l2] + 1, p._normalIndices[l2] + 1,
+        //                    p._vertexIndices[i + 2] + 1, p._normalIndices[i + 2] + 1));
+        //        }
+        //}
+        //private static void WriteTriList(StreamWriter writer, Primitive p)
+        //{
+        //    if ((p._vertexIndices == null) || (p._normalIndices == null))
+        //        return;
 
-            writer.WriteLine();
-            writer.WriteLine("#Trilist");
-            int count = p._elementCount / 3;
-            if (p._uvIndices[0] != null)
-                for (int i = 0, x = 0; i < count; i++, x += 3)
-                    writer.WriteLine(String.Format("f {0}/{1}/{2} {3}/{4}/{5} {6}/{7}/{8}",
-                        p._vertexIndices[x] + 1, p._uvIndices[0][x] + 1, p._normalIndices[x] + 1,
-                        p._vertexIndices[x + 1] + 1, p._uvIndices[0][x + 1] + 1, p._normalIndices[x + 1] + 1,
-                        p._vertexIndices[x + 2] + 1, p._uvIndices[0][x + 2] + 1, p._normalIndices[x + 2] + 1));
-            else
-                for (int i = 0, x = 0; i < count; i++, x += 3)
-                    writer.WriteLine(String.Format("f {0}//{1} {2}//{3} {4}//{5}",
-                        p._vertexIndices[x] + 1, p._normalIndices[x] + 1,
-                        p._vertexIndices[x + 1] + 1, p._normalIndices[x + 1] + 1,
-                        p._vertexIndices[x + 2] + 1, p._normalIndices[x + 2] + 1));
-        }
+        //    writer.WriteLine();
+        //    writer.WriteLine("#Trilist");
+        //    int count = p._elementCount / 3;
+        //    if (p._uvIndices[0] != null)
+        //        for (int i = 0, x = 0; i < count; i++, x += 3)
+        //            writer.WriteLine(String.Format("f {0}/{1}/{2} {3}/{4}/{5} {6}/{7}/{8}",
+        //                p._vertexIndices[x] + 1, p._uvIndices[0][x] + 1, p._normalIndices[x] + 1,
+        //                p._vertexIndices[x + 1] + 1, p._uvIndices[0][x + 1] + 1, p._normalIndices[x + 1] + 1,
+        //                p._vertexIndices[x + 2] + 1, p._uvIndices[0][x + 2] + 1, p._normalIndices[x + 2] + 1));
+        //    else
+        //        for (int i = 0, x = 0; i < count; i++, x += 3)
+        //            writer.WriteLine(String.Format("f {0}//{1} {2}//{3} {4}//{5}",
+        //                p._vertexIndices[x] + 1, p._normalIndices[x] + 1,
+        //                p._vertexIndices[x + 1] + 1, p._normalIndices[x + 1] + 1,
+        //                p._vertexIndices[x + 2] + 1, p._normalIndices[x + 2] + 1));
+        //}
         private unsafe static void WriteTriList(StreamWriter writer, PrimitiveManager p)
         {
             ushort* pData = (ushort*)p._triangles._indices.Address;
@@ -319,28 +319,28 @@ namespace BrawlLib.Modeling
                 }
             }
         }
-        private static void WriteQuadList(StreamWriter writer, Primitive p)
-        {
-            if ((p._vertexIndices == null) || (p._normalIndices == null))
-                return;
+        //private static void WriteQuadList(StreamWriter writer, Primitive p)
+        //{
+        //    if ((p._vertexIndices == null) || (p._normalIndices == null))
+        //        return;
 
-            writer.WriteLine();
-            writer.WriteLine("#Quadlist");
-            int count = p._elementCount / 4;
-            if (p._uvIndices[0] != null)
-                for (int i = 0, x = 0; i < count; i++, x += 4)
-                    writer.WriteLine(String.Format("f {0}/{1}/{2} {3}/{4}/{5} {6}/{7}/{8} {9}/{10}/{11}",
-                        p._vertexIndices[x] + 1, p._uvIndices[0][x] + 1, p._normalIndices[x] + 1,
-                        p._vertexIndices[x + 1] + 1, p._uvIndices[0][x + 1] + 1, p._normalIndices[x + 1] + 1,
-                        p._vertexIndices[x + 2] + 1, p._uvIndices[0][x + 2] + 1, p._normalIndices[x + 2] + 1,
-                        p._vertexIndices[x + 3] + 1, p._uvIndices[0][x + 3] + 1, p._normalIndices[x + 3] + 1));
-            else
-                for (int i = 0, x = 0; i < count; i++, x += 4)
-                    writer.WriteLine(String.Format("f {0}//{1} {2}//{3} {4}//{5} {6}//{7}",
-                        p._vertexIndices[x] + 1, p._normalIndices[x] + 1,
-                        p._vertexIndices[x + 1] + 1, p._normalIndices[x + 1] + 1,
-                        p._vertexIndices[x + 2] + 1, p._normalIndices[x + 2] + 1,
-                        p._vertexIndices[x + 3] + 1, p._normalIndices[x + 3] + 1));
-        }
+        //    writer.WriteLine();
+        //    writer.WriteLine("#Quadlist");
+        //    int count = p._elementCount / 4;
+        //    if (p._uvIndices[0] != null)
+        //        for (int i = 0, x = 0; i < count; i++, x += 4)
+        //            writer.WriteLine(String.Format("f {0}/{1}/{2} {3}/{4}/{5} {6}/{7}/{8} {9}/{10}/{11}",
+        //                p._vertexIndices[x] + 1, p._uvIndices[0][x] + 1, p._normalIndices[x] + 1,
+        //                p._vertexIndices[x + 1] + 1, p._uvIndices[0][x + 1] + 1, p._normalIndices[x + 1] + 1,
+        //                p._vertexIndices[x + 2] + 1, p._uvIndices[0][x + 2] + 1, p._normalIndices[x + 2] + 1,
+        //                p._vertexIndices[x + 3] + 1, p._uvIndices[0][x + 3] + 1, p._normalIndices[x + 3] + 1));
+        //    else
+        //        for (int i = 0, x = 0; i < count; i++, x += 4)
+        //            writer.WriteLine(String.Format("f {0}//{1} {2}//{3} {4}//{5} {6}//{7}",
+        //                p._vertexIndices[x] + 1, p._normalIndices[x] + 1,
+        //                p._vertexIndices[x + 1] + 1, p._normalIndices[x + 1] + 1,
+        //                p._vertexIndices[x + 2] + 1, p._normalIndices[x + 2] + 1,
+        //                p._vertexIndices[x + 3] + 1, p._normalIndices[x + 3] + 1));
+        //}
     }
 }
