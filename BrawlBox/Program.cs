@@ -117,7 +117,8 @@ namespace BrawlBox
                 else
                     Say("Unable to recognize input file.");
             }
-            catch (Exception x) { Say(x.ToString()); }
+            //catch (Exception x) { Say(x.ToString()); }
+            finally { }
 
             Close();
             return false;
@@ -232,7 +233,7 @@ namespace BrawlBox
                         return true;
                     }
                 }
-                catch (Exception x) { Say(x.Message); }
+                //catch (Exception x) { Say(x.Message); }
                 finally { }
             }
             return false;

@@ -480,7 +480,7 @@ namespace BrawlBox.NodeWrappers
         {
             DialogResult res;
             MoveDefEventNode e = _resource as MoveDefEventNode;
-            long ev = e._event;
+            uint ev = e._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
             if (e.Root.EventDictionary.ContainsKey(ev))
                 temp.Name = e.Root.EventDictionary[ev]._name;
@@ -494,7 +494,7 @@ namespace BrawlBox.NodeWrappers
                 else
                     e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Children.Count], pDescs = new string[_resource.Children.Count], _name = temp.Name, idNumber = ev });
                 e.Root._dictionaryChanged = true;
-                foreach (MoveDefEventNode n in e.Root._events[(uint)ev])
+                foreach (MoveDefEventNode n in e.Root._events[ev])
                 {
                     n.Name = temp.Name;
                     n.HasChanged = false;
@@ -585,7 +585,7 @@ namespace BrawlBox.NodeWrappers
         {
             DialogResult res;
             MoveDefEventParameterNode e = _resource as MoveDefEventParameterNode;
-            long ev = (e.Parent as MoveDefEventNode)._event;
+            uint ev = (e.Parent as MoveDefEventNode)._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
             if (e.Root.EventDictionary.ContainsKey(ev))
                 temp.Name = e.Root.EventDictionary[ev].Params[_resource.Index];
@@ -598,7 +598,7 @@ namespace BrawlBox.NodeWrappers
                     e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Parent.Children.Count], pDescs = new string[_resource.Parent.Children.Count], idNumber = ev });
                 e.Root.EventDictionary[ev].Params[_resource.Index] = temp.Name;
                 e.Root._dictionaryChanged = true;
-                foreach (MoveDefEventNode n in e.Root._events[(uint)ev])
+                foreach (MoveDefEventNode n in e.Root._events[ev])
                 {
                     n.Children[_resource.Index].Name = temp.Name;
                     n.Children[_resource.Index].HasChanged = false;

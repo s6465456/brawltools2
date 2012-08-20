@@ -115,7 +115,7 @@ namespace System.Windows.Forms
                     fixed (Vector4* pos = &_ambient)
                     {
                         _context.glLight(GLLightTarget.Light0, GLLightParameter.AMBIENT, (float*)pos);
-                        _context.glMaterial(GLFace.Back, GLMaterialParameter.AMBIENT, (float*)pos);
+                        //_context.glMaterial(GLFace.Back, GLMaterialParameter.AMBIENT, (float*)pos);
                         _context.glColorMaterial(GLFace.Back, GLMaterialParameter.AMBIENT);
                     }
                     _context.Release();
@@ -136,8 +136,8 @@ namespace System.Windows.Forms
                     _context.glEnable(GLEnableCap.Lighting);
                     _context.glEnable(GLEnableCap.Light0);
                     float r = value._x;
-                    float azimuth = value._y;
-                    float elevation = value._z;
+                    float azimuth = value._y * Maths._deg2radf;
+                    float elevation = value._z * Maths._deg2radf;
                     Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
                     Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
                     _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)&PositionLight);
@@ -162,7 +162,7 @@ namespace System.Windows.Forms
                     fixed (Vector4* pos = &_diffuse)
                     {
                         _context.glLight(GLLightTarget.Light0, GLLightParameter.DIFFUSE, (float*)pos);
-                        _context.glMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE, (float*)pos);
+                        //_context.glMaterial(GLFace.Front, GLMaterialParameter.DIFFUSE, (float*)pos);
                         _context.glColorMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE);
                     }
                     _context.Release();
@@ -185,7 +185,7 @@ namespace System.Windows.Forms
                     fixed (Vector4* pos = &_specular)
                     {
                         _context.glLight(GLLightTarget.Light0, GLLightParameter.SPECULAR, (float*)pos);
-                        _context.glMaterial(GLFace.Back, GLMaterialParameter.SPECULAR, (float*)pos);
+                        //_context.glMaterial(GLFace.Back, GLMaterialParameter.SPECULAR, (float*)pos);
                         _context.glColorMaterial(GLFace.Back, GLMaterialParameter.SPECULAR);
                     }
                     _context.Release();
@@ -462,6 +462,39 @@ namespace System.Windows.Forms
             this.Invalidate();
         }
 
+        public void RecalcLight()
+        {
+            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_CUTOFF, 360.0f);
+            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_EXPONENT, 100.0f);
+
+            float r = _position._x;
+            float azimuth = _position._y * Maths._deg2radf;
+            float elevation = _position._z * Maths._deg2radf;
+            Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+            Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+            _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)&PositionLight);
+            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_DIRECTION, (float*)&SpotDirectionLight);
+            fixed (Vector4* pos = &_ambient)
+            {
+                _context.glLight(GLLightTarget.Light0, GLLightParameter.AMBIENT, (float*)pos);
+                //_context.glMaterial(GLFace.Back, GLMaterialParameter.AMBIENT, (float*)pos);
+                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.AMBIENT);
+            }
+            fixed (Vector4* pos = &_diffuse)
+            {
+                _context.glLight(GLLightTarget.Light0, GLLightParameter.DIFFUSE, (float*)pos);
+                //_context.glMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE, (float*)pos);
+                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE);
+            }
+            fixed (Vector4* pos = &_specular)
+            {
+                _context.glLight(GLLightTarget.Light0, GLLightParameter.SPECULAR, (float*)pos);
+                //_context.glMaterial(GLFace.Back, GLMaterialParameter.SPECULAR, (float*)pos);
+                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.SPECULAR);
+                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.EMISSION);
+            }
+        }
+
         protected internal unsafe override void OnInit()
         {
             //_context.glEnable(GLEnableCap.Fog);
@@ -499,35 +532,7 @@ namespace System.Windows.Forms
             _context.glEnable(GLEnableCap.Light0);
             _context.glEnable(GLEnableCap.COLOR_MATERIAL);
 
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_CUTOFF, 180.0f);
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_EXPONENT, 50.0f);
-
-            float r = _position._x;
-            float azimuth = _position._y;
-            float elevation = _position._z;
-            Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
-            Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)&PositionLight);
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_DIRECTION, (float*)&SpotDirectionLight);
-            fixed (Vector4* pos = &_ambient)
-            {
-                _context.glLight(GLLightTarget.Light0, GLLightParameter.AMBIENT, (float*)pos);
-                //_context.glMaterial(GLFace.Back, GLMaterialParameter.AMBIENT, (float*)pos);
-                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.AMBIENT);
-            }
-            fixed (Vector4* pos = &_diffuse)
-            {
-                _context.glLight(GLLightTarget.Light0, GLLightParameter.DIFFUSE, (float*)pos);
-                //_context.glMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE, (float*)pos);
-                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE);
-            }
-            fixed (Vector4* pos = &_specular)
-            {
-                _context.glLight(GLLightTarget.Light0, GLLightParameter.SPECULAR, (float*)pos);
-                //_context.glMaterial(GLFace.Back, GLMaterialParameter.SPECULAR, (float*)pos);
-                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.SPECULAR);
-                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.EMISSION);
-            }
+            RecalcLight();
 
             //_context.glActiveTexture(GLMultiTextureTarget.TEXTURE0);
             _context.glTexEnv(GLTexEnvTarget.TextureEnvironment, GLTexEnvParam.TEXTURE_ENV_MODE, GL.GL_MODULATE);
@@ -541,6 +546,8 @@ namespace System.Windows.Forms
         protected internal override void OnRender()
         {
             _context.glClear(GLClearMask.ColorBuffer | GLClearMask.DepthBuffer);
+
+            RecalcLight();
 
             if (PreRender != null)
                 PreRender(this, _context);

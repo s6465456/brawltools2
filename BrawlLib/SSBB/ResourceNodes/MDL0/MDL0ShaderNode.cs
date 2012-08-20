@@ -121,7 +121,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("TEV RAS1 IRef"), Browsable(true)]
         public TexCoordID IndTex3Coord { get { return (TexCoordID)bc3; } set { bc3 = (int)value; getRawIRef(); } }
 
-        public int bc0, bi0, bc1, bi1, bc2, bi2, bc3, bi3;
+        public int bc0 = 7, bi0 = 7, bc1 = 7, bi1 = 7, bc2 = 7, bi2 = 7, bc3 = 7, bi3 = 7;
 
         private void getRawIRef()
         {
@@ -148,12 +148,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte stages, res0, res1, res2;
         int _datalen, _mdl0offset, pad0, pad1;
 
-        [Category("Shader Data"), Browsable(true)]
+        [Category("Shader Data"), Browsable(false)]
         public int DataLength { get { return _datalen; } }
-        [Category("Shader Data"), Browsable(true)]
+        [Category("Shader Data"), Browsable(false)]
         public int MDL0Offset { get { return _mdl0offset; } }
-        
-        [Category("Shader Data"), Browsable(true)]
+
+        [Category("Shader Data"), Browsable(false)]
         public byte Stages { get { return stages; } } //Max 16 (2 stages per group - 8 groups)
         [Browsable(false)]
         public byte STGs 
@@ -669,10 +669,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             stages = 1;
 
-            //MDL0ShaderStructNode s = new MDL0ShaderStructNode();
-            //AddChild(s, true);
-            //s.Default();
-
             TEVStage stage = new TEVStage(Children.Count);
             AddChild(stage, true);
             stage.Default();
@@ -716,11 +712,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 AddChild(s = new TEVStage(i));
                 s.DefaultAsMetal(texcount - 1);
             }
-
-            //MDL0ShaderStructNode s1 = new MDL0ShaderStructNode(); AddChild(s1);
-            //MDL0ShaderStructNode s2 = new MDL0ShaderStructNode(); AddChild(s2);
-            //s1.DefaultAsMetal(texcount - 1);
-            //s2.DefaultAsMetal(texcount - 1);
         }
 
         internal override void GetStrings(StringTable table)
@@ -822,8 +813,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         s1.getValues();
                         AddChild(s1, false);
                     }
-
-                    //new MDL0ShaderStructNode().Initialize(this, grp, StageGroup.Size);
                 }
         }
 
@@ -870,13 +859,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             *header->SwapBlock = _swapBlock;
 
-            //int offset = 0x80;
-            //foreach (MDL0ShaderStructNode s in Children)
-            //{
-            //    s.Rebuild(address + offset, 0x30, force);
-            //    offset += 0x30;
-            //}
-
             StageGroup* grp = (StageGroup*)(address + 0x80);
             for (int i = 0; i < Children.Count; i++)
             {
@@ -921,10 +903,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 StageGroup* struct0 = header->First;
                 *struct0 = StageGroup.Default;
                 struct0->SetGroup(0);
+
                 switch (Model._importOptions._mdlType)
                 {
                     case 0: //Character
-                        
+
                         struct0->SetStage(0);
                         struct0->SetStage(1);
 
@@ -935,8 +918,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         struct0->oClrEnv.Data.Value = 0x08FEB0;
                         struct0->eAlpEnv.Data.Value = 0x08F2F0;
                         struct0->oAlpEnv.Data.Value = 0x081FF0;
-
-                        //new MDL0ShaderStructNode().Initialize(this, header->First, StageGroup.Size);
 
                         StageGroup* struct1 = struct0->Next;
                         *struct1 = StageGroup.Default;
@@ -950,7 +931,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         struct1->eClrEnv.Data.Value = 0x0806EF;
                         struct1->eAlpEnv.Data.Value = 0x081FF0;
 
-                        //new MDL0ShaderStructNode().Initialize(this, struct0->Next, StageGroup.Size);
                         break;
 
                     case 1: //Stage/Item
@@ -963,7 +943,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         struct0->eClrEnv.Data.Value = 0x28F8AF;
                         struct0->eAlpEnv.Data.Value = 0x08F2F0;
 
-                        //new MDL0ShaderStructNode().Initialize(this, header->First, StageGroup.Size);
                         break;
                 }
             }
@@ -973,20 +952,5 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             return 512; //Shaders are always 0x200 in length!
         }
-
-        //public override void RemoveChild(ResourceNode child)
-        //{
-        //    base.RemoveChild(child);
-        //    //foreach (MDL0ShaderStructNode s in Children)
-        //    //    s.RecalcStages();
-        //}
-
-        //public override void Remove()
-        //{
-        //    //MDL0Node node = Model;
-        //    base.Remove();
-        //    //foreach (ResourceNode n in node._shadList)
-        //    //    n.Name = "Shader" + n.Index;
-        //}
     }
 }

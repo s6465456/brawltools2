@@ -11,6 +11,7 @@ using BrawlLib.Imaging;
 using BrawlLib.Wii.Graphics;
 using BrawlLib.Wii.Models;
 using System.Windows.Forms;
+using BrawlLib.IO;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -28,11 +29,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         public UserDataClass[] UserEntries { get { return _part2Entries.ToArray(); } set { _part2Entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } }
         internal List<UserDataClass> _part2Entries = new List<UserDataClass>();
 
-        internal int _dataLen, _index, _matRefOffset = 1044, _part2Offset = 0, _dlOffset;
+        internal int _dataLen, _index, _matRefOffset = 1044, _part2Offset = 0, _dlOffset, _mdl0Offset, _stringOffset;
         internal byte _numTextures, _numLights, _indirectMethod1, _indirectMethod2, _indirectMethod3, _indirectMethod4;
         public sbyte _normMapRefLight1, _normMapRefLight2, _normMapRefLight3, _normMapRefLight4, _lSet, _fSet;
-        internal int _pad2;
-        internal uint _isXLU; //Negative int sign if XLU
+        internal int _furDataOffset;
+        internal uint _usageFlags;
         public byte _ssc;
         internal byte _clip;
         public byte _transp;
@@ -53,80 +54,82 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal MatTevKonstBlock _tevKonstBlock = MatTevKonstBlock.Default;
         //Pad 24
         //Indirect texture scale for CMD stages
+        internal MatIndMtxBlock _indMtx = MatIndMtxBlock.Default;
         //XF Texture matrix info
 
-        internal List<XFData> XFCmds = new List<XFData>();
+        [Browsable(false)]
         public XFData[] XFCommands { get { return XFCmds.ToArray(); } }
+        internal List<XFData> XFCmds = new List<XFData>();
 
         [Category("TEV Konstant Block"), TypeConverter(typeof(GXColorS10StringConverter))]
-        public GXColorS10 KReg0Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg0Lo.A, A = _tevKonstBlock.TevReg0Lo.B, B = _tevKonstBlock.TevReg0Hi.A, G = _tevKonstBlock.TevReg0Hi.B }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg0Lo.A = value.R; _tevKonstBlock.TevReg0Lo.B = value.A; _tevKonstBlock.TevReg0Hi.A = value.B; _tevKonstBlock.TevReg0Hi.B = value.G; } } }
+        public GXColorS10 KReg0Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg0Lo.RB, A = _tevKonstBlock.TevReg0Lo.AG, B = _tevKonstBlock.TevReg0Hi.RB, G = _tevKonstBlock.TevReg0Hi.AG }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg0Lo.RB = value.R; _tevKonstBlock.TevReg0Lo.AG = value.A; _tevKonstBlock.TevReg0Hi.RB = value.B; _tevKonstBlock.TevReg0Hi.AG = value.G; } } }
         [Category("TEV Konstant Block"), TypeConverter(typeof(GXColorS10StringConverter))]
-        public GXColorS10 KReg1Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg1Lo.A, A = _tevKonstBlock.TevReg1Lo.B, B = _tevKonstBlock.TevReg1Hi.A, G = _tevKonstBlock.TevReg1Hi.B }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg1Lo.A = value.R; _tevKonstBlock.TevReg1Lo.B = value.A; _tevKonstBlock.TevReg1Hi.A = value.B; _tevKonstBlock.TevReg1Hi.B = value.G; } } }
+        public GXColorS10 KReg1Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg1Lo.RB, A = _tevKonstBlock.TevReg1Lo.AG, B = _tevKonstBlock.TevReg1Hi.RB, G = _tevKonstBlock.TevReg1Hi.AG }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg1Lo.RB = value.R; _tevKonstBlock.TevReg1Lo.AG = value.A; _tevKonstBlock.TevReg1Hi.RB = value.B; _tevKonstBlock.TevReg1Hi.AG = value.G; } } }
         [Category("TEV Konstant Block"), TypeConverter(typeof(GXColorS10StringConverter))]
-        public GXColorS10 KReg2Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg2Lo.A, A = _tevKonstBlock.TevReg2Lo.B, B = _tevKonstBlock.TevReg2Hi.A, G = _tevKonstBlock.TevReg2Hi.B }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg2Lo.A = value.R; _tevKonstBlock.TevReg2Lo.B = value.A; _tevKonstBlock.TevReg2Hi.A = value.B; _tevKonstBlock.TevReg2Hi.B = value.G; } } }
+        public GXColorS10 KReg2Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg2Lo.RB, A = _tevKonstBlock.TevReg2Lo.AG, B = _tevKonstBlock.TevReg2Hi.RB, G = _tevKonstBlock.TevReg2Hi.AG }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg2Lo.RB = value.R; _tevKonstBlock.TevReg2Lo.AG = value.A; _tevKonstBlock.TevReg2Hi.RB = value.B; _tevKonstBlock.TevReg2Hi.AG = value.G; } } }
         [Category("TEV Konstant Block"), TypeConverter(typeof(GXColorS10StringConverter))]
-        public GXColorS10 KReg3Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg3Lo.A, A = _tevKonstBlock.TevReg3Lo.B, B = _tevKonstBlock.TevReg3Hi.A, G = _tevKonstBlock.TevReg3Hi.B }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg3Lo.A = value.R; _tevKonstBlock.TevReg3Lo.B = value.A; _tevKonstBlock.TevReg3Hi.A = value.B; _tevKonstBlock.TevReg3Hi.B = value.G; } } }
+        public GXColorS10 KReg3Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg3Lo.RB, A = _tevKonstBlock.TevReg3Lo.AG, B = _tevKonstBlock.TevReg3Hi.RB, G = _tevKonstBlock.TevReg3Hi.AG }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg3Lo.RB = value.R; _tevKonstBlock.TevReg3Lo.AG = value.A; _tevKonstBlock.TevReg3Hi.RB = value.B; _tevKonstBlock.TevReg3Hi.AG = value.G; } } }
 
         [Category("TEV Color Block"), TypeConverter(typeof(GXColorS10StringConverter))]
         public GXColorS10 CReg0Color 
         { 
-            get { return new GXColorS10() { R = _tevColorBlock.TevReg1Lo.A, A = _tevColorBlock.TevReg1Lo.B, B = _tevColorBlock.TevReg1Hi0.A, G = _tevColorBlock.TevReg1Hi0.B }; }
+            get { return new GXColorS10() { R = _tevColorBlock.TevReg1Lo.RB, A = _tevColorBlock.TevReg1Lo.AG, B = _tevColorBlock.TevReg1Hi0.RB, G = _tevColorBlock.TevReg1Hi0.AG }; }
             set
             {
                 if (!CheckIfMetal())
                 {
-                    _tevColorBlock.TevReg1Lo.A = value.R;
-                    _tevColorBlock.TevReg1Lo.B = value.A;
+                    _tevColorBlock.TevReg1Lo.RB = value.R;
+                    _tevColorBlock.TevReg1Lo.AG = value.A;
 
                     //Hi values are always the same...
-                    _tevColorBlock.TevReg1Hi0.A =
-                    _tevColorBlock.TevReg1Hi1.A =
-                    _tevColorBlock.TevReg1Hi2.A = value.B;
-                    _tevColorBlock.TevReg1Hi0.B =
-                    _tevColorBlock.TevReg1Hi1.B =
-                    _tevColorBlock.TevReg1Hi2.B = value.G;
+                    _tevColorBlock.TevReg1Hi0.RB =
+                    _tevColorBlock.TevReg1Hi1.RB =
+                    _tevColorBlock.TevReg1Hi2.RB = value.B;
+                    _tevColorBlock.TevReg1Hi0.AG =
+                    _tevColorBlock.TevReg1Hi1.AG =
+                    _tevColorBlock.TevReg1Hi2.AG = value.G;
                 }
             } 
         }
         [Category("TEV Color Block"), TypeConverter(typeof(GXColorS10StringConverter))]
         public GXColorS10 CReg1Color 
         { 
-            get { return new GXColorS10() { R = _tevColorBlock.TevReg2Lo.A, A = _tevColorBlock.TevReg2Lo.B, B = _tevColorBlock.TevReg2Hi0.A, G = _tevColorBlock.TevReg2Hi0.B }; }
+            get { return new GXColorS10() { R = _tevColorBlock.TevReg2Lo.RB, A = _tevColorBlock.TevReg2Lo.AG, B = _tevColorBlock.TevReg2Hi0.RB, G = _tevColorBlock.TevReg2Hi0.AG }; }
             set
             {
                 if (!CheckIfMetal())
                 {
-                    _tevColorBlock.TevReg2Lo.A = value.R;
-                    _tevColorBlock.TevReg2Lo.B = value.A;
+                    _tevColorBlock.TevReg2Lo.RB = value.R;
+                    _tevColorBlock.TevReg2Lo.AG = value.A;
 
                     //Hi values are always the same...
-                    _tevColorBlock.TevReg2Hi0.A =
-                    _tevColorBlock.TevReg2Hi1.A =
-                    _tevColorBlock.TevReg2Hi2.A = value.B;
-                    _tevColorBlock.TevReg2Hi0.B =
-                    _tevColorBlock.TevReg2Hi1.B =
-                    _tevColorBlock.TevReg2Hi2.B = value.G;
+                    _tevColorBlock.TevReg2Hi0.RB =
+                    _tevColorBlock.TevReg2Hi1.RB =
+                    _tevColorBlock.TevReg2Hi2.RB = value.B;
+                    _tevColorBlock.TevReg2Hi0.AG =
+                    _tevColorBlock.TevReg2Hi1.AG =
+                    _tevColorBlock.TevReg2Hi2.AG = value.G;
                 }
             } 
         }
         [Category("TEV Color Block"), TypeConverter(typeof(GXColorS10StringConverter))]
         public GXColorS10 CReg2Color 
         { 
-            get { return new GXColorS10() { R = _tevColorBlock.TevReg3Lo.A, A = _tevColorBlock.TevReg3Lo.B, B = _tevColorBlock.TevReg3Hi0.A, G = _tevColorBlock.TevReg3Hi0.B }; } 
+            get { return new GXColorS10() { R = _tevColorBlock.TevReg3Lo.RB, A = _tevColorBlock.TevReg3Lo.AG, B = _tevColorBlock.TevReg3Hi0.RB, G = _tevColorBlock.TevReg3Hi0.AG }; } 
             set 
             { 
                 if (!CheckIfMetal()) 
                 { 
-                    _tevColorBlock.TevReg3Lo.A = value.R; 
-                    _tevColorBlock.TevReg3Lo.B = value.A; 
+                    _tevColorBlock.TevReg3Lo.RB = value.R; 
+                    _tevColorBlock.TevReg3Lo.AG = value.A; 
 
                     //Hi values are always the same...
-                    _tevColorBlock.TevReg3Hi0.A =
-                    _tevColorBlock.TevReg3Hi1.A =
-                    _tevColorBlock.TevReg3Hi2.A = value.B; 
-                    _tevColorBlock.TevReg3Hi0.B =
-                    _tevColorBlock.TevReg3Hi1.B =
-                    _tevColorBlock.TevReg3Hi2.B = value.G; 
+                    _tevColorBlock.TevReg3Hi0.RB =
+                    _tevColorBlock.TevReg3Hi1.RB =
+                    _tevColorBlock.TevReg3Hi2.RB = value.B; 
+                    _tevColorBlock.TevReg3Hi0.AG =
+                    _tevColorBlock.TevReg3Hi1.AG =
+                    _tevColorBlock.TevReg3Hi2.AG = value.G; 
                 } 
             } 
         }
@@ -216,7 +219,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public GXCompare DepthFunction { get { return _zMode.DepthFunction; } set { if (!CheckIfMetal()) _zMode.DepthFunction = value;  } }
 
         [Category("Blend Mode")] //Allows textures to be opaque. Cannot be used with Alpha Function
-        public bool EnableBlend { get { return _blendMode.EnableBlend; } set { if (!CheckIfMetal()) { _blendMode.EnableBlend = value; _isXLU = value ? 0x80000000 : 0; } } }
+        public bool EnableBlend { get { return _blendMode.EnableBlend; } set { if (!CheckIfMetal()) { _blendMode.EnableBlend = value; _usageFlags = value ? 0x80000000 : 0; } } }
         [Category("Blend Mode")]
         public bool EnableBlendLogic { get { return _blendMode.EnableLogicOp; } set { if (!CheckIfMetal()) _blendMode.EnableLogicOp = value;  } }
         
@@ -243,40 +246,40 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Constant Alpha")]
         public byte Value { get { return _constantAlpha.Value; } set { if (!CheckIfMetal()) _constantAlpha.Value = value; } }
 
-        [Category("Material")]
-        public int TotalLen { get { return _dataLen; } }
-        [Category("Material")]
-        public int MDL0Offset { get { return Header->_mdl0Offset; } }
-        [Category("Material")]
-        public int StringOffset { get { return Header->_stringOffset; } }
+        //[Category("Material"), Browsable(false)]
+        //public int TotalLen { get { return _dataLen; } }
+        //[Category("Material"), Browsable(false)]
+        //public int MDL0Offset { get { return _mdl0Offset; } }
+        //[Category("Material"), Browsable(false)]
+        //public int StringOffset { get { return _stringOffset; } }
         [Category("Material")]
         public int ID { get { return _index; } }
 
         [Category("Indirect Texture Scale"), Browsable(true)]
-        public IndTexScale IndTexStg0_S_Scale { get { return (IndTexScale)_tevKonstBlock.SS0val.S_Scale0; } set { if (!CheckIfMetal()) _tevKonstBlock.SS0val.S_Scale0 = value; } }
+        public IndTexScale IndirectTex0ScaleS { get { return (IndTexScale)_indMtx.SS0val.S_Scale0; } set { if (!CheckIfMetal()) _indMtx.SS0val.S_Scale0 = value; } }
         [Category("Indirect Texture Scale"), Browsable(true)]
-        public IndTexScale IndTexStg0_T_Scale { get { return (IndTexScale)_tevKonstBlock.SS0val.T_Scale0; } set { if (!CheckIfMetal()) _tevKonstBlock.SS0val.T_Scale0 = value; } }
+        public IndTexScale IndirectTex0ScaleT { get { return (IndTexScale)_indMtx.SS0val.T_Scale0; } set { if (!CheckIfMetal()) _indMtx.SS0val.T_Scale0 = value; } }
         [Category("Indirect Texture Scale"), Browsable(true)]
-        public IndTexScale IndTexStg1_S_Scale { get { return (IndTexScale)_tevKonstBlock.SS0val.S_Scale1; } set { if (!CheckIfMetal()) _tevKonstBlock.SS0val.S_Scale1 = value; } }
+        public IndTexScale IndirectTex1ScaleS { get { return (IndTexScale)_indMtx.SS0val.S_Scale1; } set { if (!CheckIfMetal()) _indMtx.SS0val.S_Scale1 = value; } }
         [Category("Indirect Texture Scale"), Browsable(true)]
-        public IndTexScale IndTexStg1_T_Scale { get { return (IndTexScale)_tevKonstBlock.SS0val.T_Scale1; } set { if (!CheckIfMetal()) _tevKonstBlock.SS0val.T_Scale1 = value; } }
+        public IndTexScale IndirectTex1ScaleT { get { return (IndTexScale)_indMtx.SS0val.T_Scale1; } set { if (!CheckIfMetal()) _indMtx.SS0val.T_Scale1 = value; } }
         
         [Category("Indirect Texture Scale"), Browsable(true)]
-        public IndTexScale IndTexStg2_S_Scale { get { return (IndTexScale)_tevKonstBlock.SS1val.S_Scale0; } set { if (!CheckIfMetal()) _tevKonstBlock.SS1val.S_Scale0 = value; } }
+        public IndTexScale IndirectTex2ScaleS { get { return (IndTexScale)_indMtx.SS1val.S_Scale0; } set { if (!CheckIfMetal()) _indMtx.SS1val.S_Scale0 = value; } }
         [Category("Indirect Texture Scale"), Browsable(true)]
-        public IndTexScale IndTexStg2_T_Scale { get { return (IndTexScale)_tevKonstBlock.SS1val.T_Scale0; } set { if (!CheckIfMetal()) _tevKonstBlock.SS1val.T_Scale0 = value; } }
+        public IndTexScale IndirectTex2ScaleT { get { return (IndTexScale)_indMtx.SS1val.T_Scale0; } set { if (!CheckIfMetal()) _indMtx.SS1val.T_Scale0 = value; } }
         [Category("Indirect Texture Scale"), Browsable(true)]
-        public IndTexScale IndTexStg3_S_Scale { get { return (IndTexScale)_tevKonstBlock.SS1val.S_Scale1; } set { if (!CheckIfMetal()) _tevKonstBlock.SS1val.S_Scale1 = value; } }
+        public IndTexScale IndirectTex3ScaleS { get { return (IndTexScale)_indMtx.SS1val.S_Scale1; } set { if (!CheckIfMetal()) _indMtx.SS1val.S_Scale1 = value; } }
         [Category("Indirect Texture Scale"), Browsable(true)]
-        public IndTexScale IndTexStg3_T_Scale { get { return (IndTexScale)_tevKonstBlock.SS1val.T_Scale1; } set { if (!CheckIfMetal()) _tevKonstBlock.SS1val.T_Scale1 = value; } }
+        public IndTexScale IndirectTex3ScaleT { get { return (IndTexScale)_indMtx.SS1val.T_Scale1; } set { if (!CheckIfMetal()) _indMtx.SS1val.T_Scale1 = value; } }
         
         //Usage flags. Each set of 4 bits represents one texture layer.
-        [Category("Texture Flags")]
+        [Category("Texture Flags"), Browsable(false)]
         public string LayerFlags { get { return _layerFlags.ToString("X"); } }//set { if (!CheckIfMetal()) _layerFlags = UInt32.Parse(value, System.Globalization.NumberStyles.HexNumber);  } }
         public uint _layerFlags;
         [Category("Texture Flags")]
-        public TexMatrixMode TexMatrixFlags { get { return (TexMatrixMode)_unkFlags; } set { if (!CheckIfMetal()) _unkFlags = (uint)value; } }
-        public uint _unkFlags;
+        public TexMatrixMode TexMatrixFlags { get { return (TexMatrixMode)_texMtxFlags; } set { if (!CheckIfMetal()) _texMtxFlags = (uint)value; } }
+        public uint _texMtxFlags;
 
         [Flags]
         public enum LightingChannelFlags
@@ -290,56 +293,305 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         
         [Category("Lighting Channel 1")]
-        public LightingChannelFlags FlagsC1 { get { return (LightingChannelFlags)flags0; } set { if (!CheckIfMetal()) flags0 = (uint)value; } }
+        public LightingChannelFlags C1Flags { get { return (LightingChannelFlags)flags0; } set { if (!CheckIfMetal()) flags0 = (uint)value; } }
         public uint flags0;
         [Category("Lighting Channel 1"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel MaterialColorC1 { get { return c00; } set { if (!CheckIfMetal()) c00 = value; } }
+        public RGBAPixel C1MaterialColor { get { return c00; } set { if (!CheckIfMetal()) c00 = value; } }
         public RGBAPixel c00;
         [Category("Lighting Channel 1"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel AmbientColorC1 { get { return c01; } set { if (!CheckIfMetal()) c01 = value; } }
+        public RGBAPixel C1AmbientColor { get { return c01; } set { if (!CheckIfMetal()) c01 = value; } }
         public RGBAPixel c01;
+
         [Category("Lighting Channel 1")]
-        public short Pad0C1 { get { return Header->Light(Model._version)->pad0; } }
+        public GXColorSrc C1ColorMaterialSource { get { return (GXColorSrc)(_colorCtrl0C[0] ? 1 : 0); } set { if (!CheckIfMetal()) _colorCtrl0C[0] = ((int)value != 0); } }
         [Category("Lighting Channel 1")]
-        public byte ParamChanCtrl1AlphaC1 { get { return e00; } set { if (!CheckIfMetal()) e00 = value; } }
+        public bool C1ColorEnabled { get { return _colorCtrl0C[1]; } set { if (!CheckIfMetal()) _colorCtrl0C[1] = value; } }
         [Category("Lighting Channel 1")]
-        public byte ParamChanCtrl2AlphaC1 { get { return e01; } set { if (!CheckIfMetal()) e01 = value; } }
+        public GXColorSrc C1ColorAmbientSource { get { return (GXColorSrc)(_colorCtrl0C[6] ? 1 : 0); } set { if (!CheckIfMetal()) _colorCtrl0C[6] = ((int)value != 0); } }
         [Category("Lighting Channel 1")]
-        public short Pad1C1 { get { return Header->Light(Model._version)->pad1; } }
+        public GXDiffuseFn C1ColorDiffuseFunction { get { return (GXDiffuseFn)(_colorCtrl0C[7, 2]); } set { if (!CheckIfMetal()) _colorCtrl0C[7, 2] = ((uint)value); } }
         [Category("Lighting Channel 1")]
-        public byte ParamChanCtrl1ColorC1 { get { return e02; } set { if (!CheckIfMetal()) e02 = value; } }
+        public GXAttnFn C1ColorAttenuation 
+        {
+            get
+            {
+                if (!_colorCtrl0C[9])
+                    return GXAttnFn.None;
+                else
+                    return (GXAttnFn)(_colorCtrl0C[10] ? 1 : 0);
+            } 
+            set 
+            {
+                if (!CheckIfMetal())
+                {
+                    if (value != GXAttnFn.None)
+                    {
+                        _colorCtrl0C[9] = true;
+                        _colorCtrl0C[10] = ((int)value) != 0;
+                    }
+                    else
+                    {
+                        _colorCtrl0C[9] = false;
+                        _colorCtrl0C[10] = false;
+                    }
+                }
+            }
+        }
         [Category("Lighting Channel 1")]
-        public byte ParamChanCtrl2ColorC1 { get { return e03; } set { if (!CheckIfMetal()) e03 = value; } }
-        public byte e00, e01, e02, e03;
-        
+        public MatChanLights C1ColorLights
+        {
+            get
+            {
+                return (MatChanLights)(_colorCtrl0C[2, 4] | (_colorCtrl0C[11, 4] << 4));
+            }
+            set
+            {
+                if (!CheckIfMetal())
+                {
+                    uint val = (uint)value;
+                    _colorCtrl0C[2, 4] = (val & 0xF);
+                    _colorCtrl0C[11, 4] = ((val >> 4) & 0xF);
+                }
+            }
+        }
+
+        [Category("Lighting Channel 1")]
+        public GXColorSrc C1AlphaMaterialSource { get { return (GXColorSrc)(_colorCtrl0A[0] ? 1 : 0); } set { if (!CheckIfMetal()) _colorCtrl0A[0] = ((int)value != 0); } }
+        [Category("Lighting Channel 1")]
+        public bool C1AlphaEnabled { get { return _colorCtrl0A[1]; } set { if (!CheckIfMetal()) _colorCtrl0A[1] = value; } }
+        [Category("Lighting Channel 1")]
+        public GXColorSrc C1AlphaAmbientSource { get { return (GXColorSrc)(_colorCtrl0A[6] ? 1 : 0); } set { if (!CheckIfMetal()) _colorCtrl0A[6] = ((int)value != 0); } }
+        [Category("Lighting Channel 1")]
+        public GXDiffuseFn C1AlphaDiffuseFunction { get { return (GXDiffuseFn)(_colorCtrl0A[7, 2]); } set { if (!CheckIfMetal()) _colorCtrl0A[7, 2] = ((uint)value); } }
+        [Category("Lighting Channel 1")]
+        public GXAttnFn C1AlphaAttenuation
+        {
+            get
+            {
+                if (!_colorCtrl0A[9])
+                    return GXAttnFn.None;
+                else
+                    return (GXAttnFn)(_colorCtrl0A[10] ? 1 : 0);
+            }
+            set
+            {
+                if (!CheckIfMetal())
+                {
+                    if (value != GXAttnFn.None)
+                    {
+                        _colorCtrl0A[9] = true;
+                        _colorCtrl0A[10] = ((int)value) != 0;
+                    }
+                    else
+                    {
+                        _colorCtrl0A[9] = false;
+                        _colorCtrl0A[10] = false;
+                    }
+                }
+            }
+        }
+        [Category("Lighting Channel 1")]
+        public MatChanLights C1AlphaLights
+        {
+            get
+            {
+                return (MatChanLights)(_colorCtrl0A[2, 4] | (_colorCtrl0A[11, 4] << 4));
+            }
+            set
+            {
+                if (!CheckIfMetal())
+                {
+                    uint val = (uint)value;
+                    _colorCtrl0A[2, 4] = (val & 0xF);
+                    _colorCtrl0A[11, 4] = ((val >> 4) & 0xF);
+                }
+            }
+        }
+
+        //0000 0000 0000 0000 0000 0000 0000 0001   Material Source (GXColorSrc)
+        //0000 0000 0000 0000 0000 0000 0000 0010   Light Enabled
+        //0000 0000 0000 0000 0000 0000 0011 1100   Light 0123
+        //0000 0000 0000 0000 0000 0000 0100 0000   Ambient Source (GXColorSrc)
+        //0000 0000 0000 0000 0000 0001 1000 0000   Diffuse Func
+        //0000 0000 0000 0000 0000 0010 0000 0000   Attenuation Enable
+        //0000 0000 0000 0000 0000 0100 0000 0000   Attenuation Function (0 = Specular)
+        //0000 0000 0000 0000 0111 1000 0000 0000   Light 4567
+
+        public enum GXColorSrc
+        {
+            Register,
+            Vertex
+        }
+
+        [Flags]
+        public enum MatChanLights
+        {
+            None = 0x0,
+            Light0 = 0x1,
+            Light1 = 0x2,
+            Light2 = 0x4,
+            Light3 = 0x8,
+            Light4 = 0x10,
+            Light5 = 0x20,
+            Light6 = 0x40,
+            Light7 = 0x80,
+        }
+
+        public enum GXDiffuseFn
+        {
+            Disabled,
+            Enabled,
+            Clamped
+        }
+
+        public enum GXAttnFn
+        {
+            Specular,
+            Spotlight,
+            None
+        }
+
         [Category("Lighting Channel 2")]
-        public LightingChannelFlags FlagsC2 { get { return (LightingChannelFlags)flags1; } set { if (!CheckIfMetal()) flags1 = (uint)value; } }
+        public LightingChannelFlags C2Flags { get { return (LightingChannelFlags)flags1; } set { if (!CheckIfMetal()) flags1 = (uint)value; } }
         public uint flags1;
         [Category("Lighting Channel 2"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel MaterialColorC2 { get { return c10; } set { if (!CheckIfMetal()) c10 = value; } }
+        public RGBAPixel C2MaterialColor { get { return c10; } set { if (!CheckIfMetal()) c10 = value; } }
         public RGBAPixel c10;
         [Category("Lighting Channel 2"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel AmbientColorC2 { get { return c11; } set { if (!CheckIfMetal()) c11 = value; } }
+        public RGBAPixel C2AmbientColor { get { return c11; } set { if (!CheckIfMetal()) c11 = value; } }
         public RGBAPixel c11;
+
         [Category("Lighting Channel 2")]
-        public short Pad0C2 { get { return Header->Light(Model._version)->pad0; } }
+        public GXColorSrc C2ColorMaterialSource { get { return (GXColorSrc)(_colorCtrl1C[0] ? 1 : 0); } set { if (!CheckIfMetal()) _colorCtrl1C[0] = ((int)value != 0); } }
         [Category("Lighting Channel 2")]
-        public byte ParamChanCtrl1AlphaC2 { get { return e10; } set { if (!CheckIfMetal()) e10 = value; } }
+        public bool C2ColorEnabled { get { return _colorCtrl1C[1]; } set { if (!CheckIfMetal()) _colorCtrl1C[1] = value; } }
         [Category("Lighting Channel 2")]
-        public byte ParamChanCtrl2AlphaC2 { get { return e11; } set { if (!CheckIfMetal()) e11 = value; } }
+        public GXColorSrc C2ColorAmbientSource { get { return (GXColorSrc)(_colorCtrl1C[6] ? 1 : 0); } set { if (!CheckIfMetal()) _colorCtrl1C[6] = ((int)value != 0); } }
         [Category("Lighting Channel 2")]
-        public short Pad1C2 { get { return Header->Light(Model._version)->pad1; } }
+        public GXDiffuseFn C2ColorDiffuseFunction { get { return (GXDiffuseFn)(_colorCtrl1C[7, 2]); } set { if (!CheckIfMetal()) _colorCtrl1C[7, 2] = ((uint)value); } }
         [Category("Lighting Channel 2")]
-        public byte ParamChanCtrl1ColorC2 { get { return e12; } set { if (!CheckIfMetal()) e12 = value; } }
+        public GXAttnFn C2ColorAttenuation
+        {
+            get
+            {
+                if (!_colorCtrl1C[9])
+                    return GXAttnFn.None;
+                else
+                    return (GXAttnFn)(_colorCtrl1C[10] ? 1 : 0);
+            }
+            set
+            {
+                if (!CheckIfMetal())
+                {
+                    if (value != GXAttnFn.None)
+                    {
+                        _colorCtrl1C[9] = true;
+                        _colorCtrl1C[10] = ((int)value) != 0;
+                    }
+                    else
+                    {
+                        _colorCtrl1C[9] = false;
+                        _colorCtrl1C[10] = false;
+                    }
+                }
+            }
+        }
         [Category("Lighting Channel 2")]
-        public byte ParamChanCtrl2ColorC2 { get { return e13; } set { if (!CheckIfMetal()) e13 = value; } }
-        public byte e10, e11, e12, e13;
+        public MatChanLights C2ColorLights
+        {
+            get
+            {
+                return (MatChanLights)(_colorCtrl1C[2, 4] | (_colorCtrl1C[11, 4] << 4));
+            }
+            set
+            {
+                if (!CheckIfMetal())
+                {
+                    uint val = (uint)value;
+                    _colorCtrl1C[2, 4] = (val & 0xF);
+                    _colorCtrl1C[11, 4] = ((val >> 4) & 0xF);
+                }
+            }
+        }
+
+        [Category("Lighting Channel 2")]
+        public GXColorSrc C2AlphaMaterialSource { get { return (GXColorSrc)(_colorCtrl1A[0] ? 1 : 0); } set { if (!CheckIfMetal()) _colorCtrl1A[0] = ((int)value != 0); } }
+        [Category("Lighting Channel 2")]
+        public bool C2AlphaEnabled { get { return _colorCtrl1A[1]; } set { if (!CheckIfMetal()) _colorCtrl1A[1] = value; } }
+        [Category("Lighting Channel 2")]
+        public GXColorSrc C2AlphaAmbientSource { get { return (GXColorSrc)(_colorCtrl1A[6] ? 1 : 0); } set { if (!CheckIfMetal()) _colorCtrl1A[6] = ((int)value != 0); } }
+        [Category("Lighting Channel 2")]
+        public GXDiffuseFn C2AlphaDiffuseFunction { get { return (GXDiffuseFn)(_colorCtrl1A[7, 2]); } set { if (!CheckIfMetal()) _colorCtrl1A[7, 2] = ((uint)value); } }
+        [Category("Lighting Channel 2")]
+        public GXAttnFn C2AlphaAttenuation
+        {
+            get
+            {
+                if (!_colorCtrl1A[9])
+                    return GXAttnFn.None;
+                else
+                    return (GXAttnFn)(_colorCtrl1A[10] ? 1 : 0);
+            }
+            set
+            {
+                if (!CheckIfMetal())
+                {
+                    if (value != GXAttnFn.None)
+                    {
+                        _colorCtrl1A[9] = true;
+                        _colorCtrl1A[10] = ((int)value) != 0;
+                    }
+                    else
+                    {
+                        _colorCtrl1A[9] = false;
+                        _colorCtrl1A[10] = false;
+                    }
+                }
+            }
+        }
+        [Category("Lighting Channel 2")]
+        public MatChanLights C2AlphaLights
+        {
+            get
+            {
+                return (MatChanLights)(_colorCtrl1A[2, 4] | (_colorCtrl1A[11, 4] << 4));
+            }
+            set
+            {
+                if (!CheckIfMetal())
+                {
+                    uint val = (uint)value;
+                    _colorCtrl1A[2, 4] = (val & 0xF);
+                    _colorCtrl1A[11, 4] = ((val >> 4) & 0xF);
+                }
+            }
+        }
+
+        public Bin32 _colorCtrl0C, _colorCtrl0A, _colorCtrl1C, _colorCtrl1A;
+
+        //For compatibility
+        [Browsable(false)]
+        public byte e00 { get { return (byte)_colorCtrl0C[0, 8]; } set { _colorCtrl0C[0, 8] = value; } }
+        [Browsable(false)]
+        public byte e01 { get { return (byte)_colorCtrl0C[8, 8]; } set { _colorCtrl0C[8, 8] = value; } }
+        [Browsable(false)]
+        public byte e02 { get { return (byte)_colorCtrl0A[0, 8]; } set { _colorCtrl0A[0, 8] = value; } }
+        [Browsable(false)]
+        public byte e03 { get { return (byte)_colorCtrl0A[8, 8]; } set { _colorCtrl0A[8, 8] = value; } }
+        [Browsable(false)]
+        public byte e10 { get { return (byte)_colorCtrl1C[0, 8]; } set { _colorCtrl1C[0, 8] = value; } }
+        [Browsable(false)]
+        public byte e11 { get { return (byte)_colorCtrl1C[8, 8]; } set { _colorCtrl1C[8, 8] = value; } }
+        [Browsable(false)]
+        public byte e12 { get { return (byte)_colorCtrl1A[0, 8]; } set { _colorCtrl1A[0, 8] = value; } }
+        [Browsable(false)]
+        public byte e13 { get { return (byte)_colorCtrl1A[8, 8]; } set { _colorCtrl1A[8, 8] = value; } }
         
         [Category("Material")]
-        public bool XLUMaterial { get { return _isXLU == 0x80000000; } set { if (!CheckIfMetal()) { _isXLU = value ? 0x80000000 : 0; if (value == false) _blendMode.EnableBlend = false; } } }
+        public bool XLUMaterial { get { return (_usageFlags & 0x80000000) == 0x80000000; } set { if (!CheckIfMetal()) { if (value == false) { _usageFlags &= ~0x80000000; _blendMode.EnableBlend = false; } else { _usageFlags |= 0x80000000; } } } }
         
-        [Category("Material")]
-        public byte Texgens { get { return _numTextures; } }//set { if (!CheckIfMetal()) _numTextures = value;  } }
+        //[Category("Material")]
+        //public byte Texgens { get { return _numTextures; } }//set { if (!CheckIfMetal()) _numTextures = value;  } }
         [Category("Material")]
         public byte LightChannels { get { return _numLights; } set { if (!CheckIfMetal()) _numLights = (value > 2 ? (byte)2 : value < 0 ? (byte)0 : value); } }
         [Category("Material")]
@@ -366,7 +618,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             Reserved0,
             Reserved1,
             User0,
-            User1,
+            User1
         }
         
         [Category("Material")]
@@ -386,23 +638,25 @@ namespace BrawlLib.SSBB.ResourceNodes
         public sbyte NormMapRefLight3 { get { return _normMapRefLight3; } set { if (!CheckIfMetal()) _normMapRefLight1 = value; } }
         [Category("SCN0 References")]
         public sbyte NormMapRefLight4 { get { return _normMapRefLight4; } set { if (!CheckIfMetal()) _normMapRefLight1 = value; } }
-
-        [Category("Material")]
-        public int ShaderOffset { get { return Header->_shaderOffset; } }
         
         //[Category("Material")]
         //public int NumTextures { get { return Header->_numTextures; } }
-        [Category("Material")]
-        public int MaterialRefOffset { get { return _matRefOffset; } }
-        [Category("Material")]
-        public int UserDataOffset { get { return _part2Offset; } }
-        [Category("Material")]
-        public int DisplayListOffset { get { return _dlOffset; } }
+        //[Category("Material"), Browsable(false)]
+        //public int ShaderOffset { get { return Header->_shaderOffset; } }
+        //[Category("Material"), Browsable(false)]
+        //public int MaterialRefOffset { get { return _matRefOffset; } }
+        //[Category("Material"), Browsable(false)]
+        //public int UserDataOffset { get { return _part2Offset; } }
+        //[Category("Material"), Browsable(false)]
+        //public int DisplayListOffset { get { return _dlOffset; } }
         //[Category("Material")]
-        //public int Unknown { get { return _pad2; } }
+        //public int Pad { get { return _pad2; } }
         
         public void Render(GLContext ctx)
         {
+            //if (!ShaderNode.rendered)
+            //ShaderNode.Render(ctx, this);
+
             #region LayerRendering
 
             ////Write struct variables
@@ -555,8 +809,70 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             #endregion
 
-            //if (!ShaderNode.rendered)
-                //ShaderNode.Render(ctx, this);
+            if (Model._mainWindow != null && Model._mainWindow._scn0 != null && (LightSet >= 0 || FogSet >= 0))
+            {
+                ModelEditControl m = Model._mainWindow;
+                SCN0Node scn = m._scn0;
+                int animFrame = m._animFrame;
+                SCN0GroupNode fog;
+                if (FogSet >= 0 && (fog = scn.GetFolder<SCN0FogNode>()) != null && fog.Children.Count > FogSet)
+                {
+                    SCN0FogNode f = fog.Children[FogSet] as SCN0FogNode;
+                    ctx.glEnable(GLEnableCap.Fog);
+                    uint mode = 0;
+                    switch (f.Type)
+                    {
+                        case FogType.OrthographicExp:
+                        case FogType.PerspectiveExp:
+                            mode = (uint)FogMode.Exp;
+                            break;
+                        case FogType.OrthographicExp2:
+                        case FogType.PerspectiveExp2:
+                            mode = (uint)FogMode.Exp2;
+                            break;
+                        case FogType.OrthographicLinear:
+                        case FogType.PerspectiveLinear:
+                            mode = (uint)FogMode.Linear;
+                            break;
+                        case FogType.OrthographicRevExp:
+                        case FogType.PerspectiveRevExp:
+                            mode = (uint)FogMode.Linear;
+                            break;
+                        case FogType.OrthographicRevExp2:
+                        case FogType.PerspectiveRevExp2:
+                            mode = (uint)FogMode.Linear;
+                            break;
+                    }
+                    ctx.glFog(FogParameter.FogMode, mode);
+                    float* l = stackalloc float[4];
+                    if (f.ColorsArr.Length == 1)
+                    {
+                        l[0] = (float)f.Colors[0].R / 255f;
+                        l[1] = (float)f.Colors[0].G / 255f;
+                        l[2] = (float)f.Colors[0].B / 255f;
+                        l[3] = (float)f.Colors[0].A / 255f;
+                    }
+                    else if (animFrame - 1 < f.ColorsArr.Length)
+                    {
+                        l[0] = (float)f.Colors[animFrame - 1].R / 255f;
+                        l[1] = (float)f.Colors[animFrame - 1].G / 255f;
+                        l[2] = (float)f.Colors[animFrame - 1].B / 255f;
+                        l[3] = (float)f.Colors[animFrame - 1].A / 255f;
+                    }
+                    ctx.glFog(FogParameter.FogColor, l);
+                    //ctx.glFog(FogParameter.FogDensity, 0.05f);
+                    ctx.glHint(GLHintTarget.FOG_HINT, GLHintMode.NICEST);
+                    ctx.glFog(FogParameter.FogStart, f._startKeys.GetFrameValue(animFrame - 1));
+                    ctx.glFog(FogParameter.FogEnd, f._endKeys.GetFrameValue(animFrame - 1));
+                }
+                else
+                    ctx.glDisable((uint)GLEnableCap.Fog);
+            }
+            else
+            {
+                ctx.glDisable((uint)GLEnableCap.Fog);
+
+            }
         }
 
         public bool updating = false;
@@ -600,8 +916,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     MDL0ShaderNode shader = new MDL0ShaderNode();
                     Model._shadGroup.AddChild(shader);
-                    ShaderNode = shader;
                     shader.DefaultAsMetal(Children.Count);
+                    ShaderNode = shader;
                 }
             }
 
@@ -640,7 +956,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         {
                             mr._minFltr = 5;
                             mr._magFltr = 1;
-                            mr._float = -2;
+                            mr._lodBias = -2;
                             mr.HasTextureMatrix = true;
                             mr._projection = (int)TexProjection.STQ;
                             mr._inputForm = (int)TexInputForm.ABC1;
@@ -736,7 +1052,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if ((_name == null) && (header->_stringOffset != 0))
                 _name = header->ResourceString;
-            
+
             XFCmds.Clear();
 
             //Get XF Commands
@@ -748,17 +1064,23 @@ namespace BrawlLib.SSBB.ResourceNodes
                 int count = (ushort)*(bushort*)pData; pData += 2;
                 dat.addr = (XFMemoryAddr)(ushort)*(bushort*)pData; pData += 2;
                 dat.values = new List<uint>();
-                for (int i = 0; i < count + 1; i++)
-                { dat.values.Add(*(buint*)pData); pData += 4; }
+                for (int i = 0; i < count + 1; i++) 
+                {
+                    dat.values.Add(*(buint*)pData); 
+                    pData += 4; 
+                }
                 XFCmds.Add(dat);
                 goto Top;
             }
+
+            _mdl0Offset = header->_mdl0Offset;
+            _stringOffset = header->_stringOffset;
 
             _dataLen = header->_dataLen;
             _index = header->_index;
             _numTextures = header->_numTexGens;
             _numLights = header->_numLightChans;
-            _isXLU = header->_isXLU;
+            _usageFlags = header->_usageFlags;
 
             _indirectMethod1 = header->_indirectMethod1;
             _indirectMethod2 = header->_indirectMethod2;
@@ -791,14 +1113,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (Model._version > 9)
             {
                 _part2Offset = header->_dlOffset;
-                _dlOffset = header->_pad2;
-                _pad2 = header->_part2Offset;
+                _dlOffset = header->_dlOffsetv10p;
+                _furDataOffset = header->_userDataOffset;
             }
             else
             {
-                _part2Offset = header->_part2Offset;
+                _part2Offset = header->_userDataOffset;
                 _dlOffset = header->_dlOffset;
-                _pad2 = header->_pad2;
+                _furDataOffset = 0;
             }
 
             mode = header->DisplayLists(Model._version);
@@ -809,31 +1131,27 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _tevColorBlock = *header->TevColorBlock(Model._version);
             _tevKonstBlock = *header->TevKonstBlock(Model._version);
+            _indMtx = *header->IndMtxBlock(Model._version);
 
-            MDL0MtlTexSettings* TexMatrices = header->TexMatrices(Model._version);
+            MDL0TexSRTData* TexMatrices = header->TexMatrices(Model._version);
 
-            _layerFlags = TexMatrices->LayerFlags;
-            _unkFlags = TexMatrices->UnkFlags;
+            _layerFlags = TexMatrices->_layerFlags;
+            _texMtxFlags = TexMatrices->_mtxFlags;
 
             MDL0MaterialLighting* Light = header->Light(Model._version);
 
             c00 = Light->c00;
             c01 = Light->c01;
             flags0 = Light->flags0;
-            e00 = Light->unk00;
-            e01 = Light->unk01;
-            e02 = Light->unk02;
-            e03 = Light->unk03;
-            
+            _colorCtrl0C = new Bin32(Light->_colorCtrl00);
+            _colorCtrl0A = new Bin32(Light->_colorCtrl01);
             c10 = Light->c10;
             c11 = Light->c11;
             flags1 = Light->flags1;
-            e10 = Light->unk10;
-            e11 = Light->unk11;
-            e12 = Light->unk12;
-            e13 = Light->unk13;
+            _colorCtrl1C = new Bin32(Light->_colorCtrl10);
+            _colorCtrl1A = new Bin32(Light->_colorCtrl11);
 
-            UserData* part2 = header->Part2(Model._version);
+            UserData* part2 = header->UserData(Model._version);
             if (part2 != null)
             {
                 ResourceGroup* group = part2->Group;
@@ -868,6 +1186,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
 
+            if (_replaced)
+                foreach (MDL0MaterialRefNode m in Children)
+                    m._replaced = true;
+
             Populate();
             return true;
         }
@@ -896,7 +1218,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int temp, size;
 
             //Add header and tex matrices size at start
-            if (Model._version == 11 || Model._version == 10)
+            if (Model._version >= 10)
                 size = 0x418;
             else
                 size = 0x414;
@@ -947,10 +1269,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Set offsets
             header->_dataLen = _dataLen = length;
 
-            if (Model._version == 11 || Model._version == 10)
+            if (Model._version >= 10)
             {
-                header->_dlOffset = 0;
-                header->_pad2 = length - 0x180;
+                header->_dlOffset = 0; //Fur Data not supported
+                header->_dlOffsetv10p = length - 0x180;
                 if (Children.Count > 0)
                     header->_matRefOffset = 1048;
                 else
@@ -959,7 +1281,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
             {
                 header->_dlOffset = length - 0x180;
-                header->_pad2 = 0;
                 if (Children.Count > 0)
                     header->_matRefOffset = 1044;
                 else
@@ -973,9 +1294,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (Model._version == 11 || Model._version == 10)
                     header->_dlOffset = _part2Offset;
                 else
-                    header->_part2Offset = _part2Offset;
+                    header->_userDataOffset = _part2Offset;
                 
-                UserData* part2 = header->Part2(Model._version);
+                UserData* part2 = header->UserData(Model._version);
                 if (part2 != null)
                 {
                     part2->_totalLen = 0x1C + _part2Entries.Count * 0x2C;
@@ -1030,7 +1351,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
             else
-                _part2Offset = header->_part2Offset = 0;
+                _part2Offset = header->_userDataOffset = 0;
 
             //Set defaults if the model is an import or the material was created
             if (Model._isImport || New)
@@ -1127,7 +1448,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_pad1 = _pad1;
 
             header->_cull = (int)_cull;
-            header->_isXLU = _isXLU;
+            header->_usageFlags = _usageFlags;
 
             header->_indirectMethod1 = _indirectMethod1;
             header->_indirectMethod2 = _indirectMethod2;
@@ -1140,8 +1461,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_normMapRefLight4 = _normMapRefLight4;
 
             //Generate layer flags and write texture matrices
-            MDL0MtlTexSettings* TexSettings = header->TexMatrices(Model._version);
-            *TexSettings = MDL0MtlTexSettings.Default;
+            MDL0TexSRTData* TexSettings = header->TexMatrices(Model._version);
+            *TexSettings = MDL0TexSRTData.Default;
 
             _layerFlags = 0;
             for (int i = Children.Count - 1; i >= 0; i--)
@@ -1176,8 +1497,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _layerFlags = ((_layerFlags << 4) | (byte)node._flags);
             }
 
-            TexSettings->LayerFlags = _layerFlags;
-            TexSettings->UnkFlags = _unkFlags;
+            TexSettings->_layerFlags = _layerFlags;
+            TexSettings->_mtxFlags = _texMtxFlags;
 
             //Write lighting flags
             MDL0MaterialLighting* Light = header->Light(Model._version);
@@ -1185,18 +1506,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             Light->c00 = c00;
             Light->c01 = c01;
             Light->flags0 = flags0;
-            Light->unk00 = e00;
-            Light->unk01 = e01;
-            Light->unk02 = e02;
-            Light->unk03 = e03;
+            Light->_colorCtrl00 = _colorCtrl0C.data;
+            Light->_colorCtrl01 = _colorCtrl0A.data;
 
             Light->c10 = c10;
             Light->c11 = c11;
             Light->flags1 = flags1;
-            Light->unk10 = e10;
-            Light->unk11 = e11;
-            Light->unk12 = e12;
-            Light->unk13 = e13;
+            Light->_colorCtrl10 = _colorCtrl1C.data;
+            Light->_colorCtrl11 = _colorCtrl1A.data;
 
             //The shader offset will be written later
 
@@ -1208,6 +1525,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Set Display Lists
             *header->TevKonstBlock(Model._version) = _tevKonstBlock;
             *header->TevColorBlock(Model._version) = _tevColorBlock;
+            *header->IndMtxBlock(Model._version) = _indMtx;
 
             mode = header->DisplayLists(Model._version);
             *mode = MatModeBlock.Default;
@@ -1255,7 +1573,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
             header->_index = Index;
 
-            UserData* part2 = header->Part2(Model._version);
+            UserData* part2 = header->UserData(Model._version);
             if (part2 != null && _part2Entries.Count != 0)
             {
                 ResourceGroup* group = part2->Group;
@@ -1274,6 +1592,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (MDL0MaterialRefNode n in Children)
                 n.PostProcess(mdlAddress, first++, stringTable);
         }
+        
         public override void Remove()
         {
             ShaderNode = null;
@@ -1334,6 +1653,24 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (!updating && Model._autoMetal && MetalMaterial != null && !this.isMetal)
                 MetalMaterial.UpdateAsMetal();
+        }
+        public override unsafe void Export(string outPath)
+        {
+            StringTable table = new StringTable();
+            GetStrings(table);
+            int dataLen = OnCalculateSize(true);
+            int totalLen = dataLen + table.GetTotalSize();
+
+            using (FileStream stream = new FileStream(outPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 8, FileOptions.RandomAccess))
+            {
+                stream.SetLength(totalLen);
+                using (FileMap map = FileMap.FromStream(stream))
+                {
+                    Rebuild(map.Address, dataLen, false);
+                    table.WriteTable(map.Address + dataLen);
+                    PostProcess(map.Address, map.Address, table);
+                }
+            }
         }
     }
 }

@@ -100,9 +100,9 @@ namespace System.Windows.Forms
                 (newNode._normalNode = (MDL0NormalNode)_internalModel.NormalGroup.Children[_internalModel._normList.Count - 1])._polygons.Add(newNode);
             }
             for (int i = 0; i < 8; i++)
-                if (node.UVNodes[i] != null)
+                if (node._uvSet[i] != null)
                 {
-                    _internalModel.UVGroup.AddChild(node.UVNodes[i]);
+                    _internalModel.UVGroup.AddChild(node._uvSet[i]);
                     newNode._uvSet[i] = (MDL0UVNode)_internalModel.UVGroup.Children[_internalModel._uvList.Count - 1];
                     newNode._uvSet[i].Name = "#" + (_internalModel._uvList.Count - 1);
                     newNode._uvSet[i]._polygons.Add(newNode);

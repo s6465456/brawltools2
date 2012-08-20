@@ -168,7 +168,6 @@ namespace BrawlLib.Wii.Models
             }
             else
                 _matrix = _invMatrix = Matrix.Identity;
-
         }
 
         //public override bool Equals(object obj)

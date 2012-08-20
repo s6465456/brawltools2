@@ -203,6 +203,18 @@ namespace BrawlLib.Wii.Animations
 
                         break;
                     }
+                case AnimDataFormat.L2:
+                    {
+                        L1Header* header = (L1Header*)dataAddr;
+                        vStep = header->_step;
+                        vBase = header->_base;
+
+                        bushort* sPtr = (bushort*)header->Data;
+                        for (int i = 0; i < kf.FrameLimit; i++)
+                            kf[mode, i] = vBase + (*sPtr++ * vStep);
+
+                        break;
+                    }
                 case AnimDataFormat.L4:
                     {
                         bfloat* sPtr = (bfloat*)dataAddr;

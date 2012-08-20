@@ -17,14 +17,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0PolygonNode[] Objects { get { return _polygons.ToArray(); } }
         internal List<MDL0PolygonNode> _polygons = new List<MDL0PolygonNode>();
 
-        [Category("Vertex Data")]
-        public int TotalLen { get { return Header->_dataLen; } }
-        [Category("Vertex Data")]
-        public int MDL0Offset { get { return Header->_mdl0Offset; } }
-        [Category("Vertex Data")]
-        public int DataOffset { get { return Header->_dataOffset; } }
-        [Category("Vertex Data")]
-        public int StringOffset { get { return Header->_stringOffset; } }
+        //[Category("Vertex Data")]
+        //public int TotalLen { get { return Header->_dataLen; } }
+        //[Category("Vertex Data")]
+        //public int MDL0Offset { get { return Header->_mdl0Offset; } }
+        //[Category("Vertex Data")]
+        //public int DataOffset { get { return Header->_dataOffset; } }
+        //[Category("Vertex Data")]
+        //public int StringOffset { get { return Header->_stringOffset; } }
         [Category("Vertex Data")]
         public int ID { get { return Header->_index; } }
         [Category("Vertex Data")]
@@ -41,10 +41,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Vector3 EMin { get { return Header->_eMin; } }
         [Category("Vertex Data")]
         public Vector3 EMax { get { return Header->_eMax; } }
-        [Category("Vertex Data")]
-        public int Pad1 { get { return Header->_pad1; } }
-        [Category("Vertex Data")]
-        public int Pad2 { get { return Header->_pad2; } }
+        //[Category("Vertex Data")]
+        //public int Pad1 { get { return Header->_pad1; } }
+        //[Category("Vertex Data")]
+        //public int Pad2 { get { return Header->_pad2; } }
 
         public Vector3[] _vertices;
         public Vector3[] Vertices

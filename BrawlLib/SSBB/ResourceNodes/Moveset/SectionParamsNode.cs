@@ -357,7 +357,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class MoveDefHitDataListNode : MoveDefCharSpecificNode
     {
-        internal hitData* First { get { return (hitData*)WorkingUncompressed.Address; } }
+        internal FDefHurtBox* First { get { return (FDefHurtBox*)WorkingUncompressed.Address; } }
         
         protected override bool OnInitialize()
         {
@@ -369,7 +369,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override void OnPopulate()
         {
             for (int i = 0; i < Size / 32; i++)
-                new MoveDefHitDataNode() { _extOverride = true }.Initialize(this, First + i, 32);
+                new MoveDefHurtBoxNode() { _extOverride = true }.Initialize(this, First + i, 32);
         }
 
         protected override int OnCalculateSize(bool force)
@@ -381,73 +381,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             _entryOffset = address;
-            hitData* data = (hitData*)address;
-            foreach (MoveDefHitDataNode h in Children)
+            FDefHurtBox* data = (FDefHurtBox*)address;
+            foreach (MoveDefHurtBoxNode h in Children)
                 h.Rebuild(data++, 32, true);
-        }
-    }
-
-    public unsafe class MoveDefHitDataNode : MoveDefEntryNode
-    {
-        internal hitData* Header { get { return (hitData*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
-
-        public uint unk8;
-        public float unk1, unk2, unk3, unk4, unk5, unk6, unk7;
-        
-        [Category("Hit Data")]
-        public float Unknown1 { get { return unk1; } set { unk1 = value; SignalPropertyChange(); } }
-        [Category("Hit Data")]
-        public float Unknown2 { get { return unk2; } set { unk2 = value; SignalPropertyChange(); } }
-        [Category("Hit Data")]
-        public float Unknown3 { get { return unk3; } set { unk3 = value; SignalPropertyChange(); } }
-        [Category("Hit Data")]
-        public float Unknown4 { get { return unk4; } set { unk4 = value; SignalPropertyChange(); } }
-        [Category("Hit Data")]
-        public float Unknown5 { get { return unk5; } set { unk5 = value; SignalPropertyChange(); } }
-        [Category("Hit Data")]
-        public float Unknown6 { get { return unk6; } set { unk6 = value; SignalPropertyChange(); } }
-        [Category("Hit Data")]
-        public float Unknown7 { get { return unk7; } set { unk7 = value; SignalPropertyChange(); } }
-        [Category("Hit Data"), TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 Flags { get { return new Bin32(unk8); } set { unk8 = value.data; SignalPropertyChange(); } }
-
-        protected override bool OnInitialize()
-        {
-            base.OnInitialize();
-
-            if (_name == null)
-                _name = "HitData" + Index;
-
-            unk1 = Header->_unk1;
-            unk2 = Header->_unk2;
-            unk3 = Header->_unk3;
-            unk4 = Header->_unk4;
-            unk5 = Header->_unk5;
-            unk6 = Header->_unk6;
-            unk7 = Header->_unk7;
-            unk8 = Header->_flags;
-            return false;
-        }
-
-        protected override int OnCalculateSize(bool force)
-        {
-            _lookupCount = 0;
-            return 32;
-        }
-
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
-        {
-            _entryOffset = address;
-            hitData* data = (hitData*)address;
-            data->_flags = unk8;
-            data->_unk1 = unk1;
-            data->_unk2 = unk2;
-            data->_unk3 = unk3;
-            data->_unk4 = unk4;
-            data->_unk5 = unk5;
-            data->_unk6 = unk6;
-            data->_unk7 = unk7;
         }
     }
 }

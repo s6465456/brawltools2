@@ -126,15 +126,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         private WiiPixelFormat _format;
         private WiiPaletteFormat _pltFormat;
-        int numColors, _imgLen;
+        int numColors, _imgLen, _pltLen;
         int _width, _height;
         uint _unk;
         
         [Browsable(false)]
         public bool hasPlt { get { return Header->_colorCount > 0; } }
 
-        [Category("REFT Image")]
-        public uint Unknown { get { return _unk; } }
+        //[Category("REFT Image")]
+        //public uint Unknown { get { return _unk; } }
         [Category("REFT Image")]
         public WiiPixelFormat TextureFormat { get { return _format; } }
         [Category("REFT Image")]
@@ -147,6 +147,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int Height { get { return _height; } }
         [Category("REFT Image")]
         public int ImageLength { get { return _imgLen; } }
+        [Category("REFT Image")]
+        public int PaletteLength { get { return _pltLen; } }
         
         [Category("REFT Entry")]
         public int REFTOffset { get { return _offset; } }
@@ -204,6 +206,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _imgLen = (int)Header->_imagelen;
             _width = Header->_width;
             _height = Header->_height;
+            _pltLen = (int)Header->_pltSize;
 
             return false;
         }

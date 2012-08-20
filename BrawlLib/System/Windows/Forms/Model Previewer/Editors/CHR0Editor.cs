@@ -838,9 +838,10 @@ namespace System.Windows.Forms
                 FrameState state = bone._bindState;
                 float* p = (float*)&state;
                 p[index] = float.IsNaN(box.Value) ? (index > 2 ? 0.0f : 1.0f) : box.Value;
-                state.CalcTransforms();
                 bone._bindState = state;
+                bone._bindState.CalcTransforms();
                 //bone.RecalcBindState();
+                //TargetModel.CalcBindMatrices();
                 bone.SignalPropertyChange();
             }
 
@@ -1036,8 +1037,8 @@ namespace System.Windows.Forms
             {
                 if (group.FindChild(entry._name, true) == null)
                     badNodes.Add(entry);
-                //else
-                //    entry.Keyframes.Clean();
+                else
+                    entry.Keyframes.Clean();
             }
             int temp = badNodes.Count;
             foreach (CHR0EntryNode n in badNodes)

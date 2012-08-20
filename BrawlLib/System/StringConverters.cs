@@ -25,9 +25,9 @@ namespace System
 
             if (arr.Length == 3)
             {
-                float.TryParse(arr[0], NumberStyles.Any, CultureInfo.InvariantCulture, out v._x);
-                float.TryParse(arr[1], NumberStyles.Any, CultureInfo.InvariantCulture, out v._y);
-                float.TryParse(arr[2], NumberStyles.Any, CultureInfo.InvariantCulture, out v._z);
+                float.TryParse(arr[0], out v._x);
+                float.TryParse(arr[1], out v._y);
+                float.TryParse(arr[2], out v._z);
             }
 
             return v;
@@ -51,8 +51,8 @@ namespace System
 
             if (arr.Length == 2)
             {
-                float.TryParse(arr[0], NumberStyles.Any, CultureInfo.InvariantCulture, out v._x);
-                float.TryParse(arr[1], NumberStyles.Any, CultureInfo.InvariantCulture, out v._y);
+                float.TryParse(arr[0], out v._x);
+                float.TryParse(arr[1], out v._y);
             }
 
             return v;
@@ -136,18 +136,18 @@ namespace System
 
             if (arr.Length == 12)
             {
-                float.TryParse(arr[0], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[0]);
-                float.TryParse(arr[1], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[1]);
-                float.TryParse(arr[2], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[2]);
-                float.TryParse(arr[3], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[3]);
-                float.TryParse(arr[4], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[4]);
-                float.TryParse(arr[5], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[5]);
-                float.TryParse(arr[6], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[6]);
-                float.TryParse(arr[7], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[7]);
-                float.TryParse(arr[8], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[8]);
-                float.TryParse(arr[9], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[9]);
-                float.TryParse(arr[10], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[10]);
-                float.TryParse(arr[11], NumberStyles.Any, CultureInfo.InvariantCulture, out m._data[11]);
+                float.TryParse(arr[0], out m._data[0]);
+                float.TryParse(arr[1], out m._data[1]);
+                float.TryParse(arr[2], out m._data[2]);
+                float.TryParse(arr[3], out m._data[3]);
+                float.TryParse(arr[4], out m._data[4]);
+                float.TryParse(arr[5], out m._data[5]);
+                float.TryParse(arr[6], out m._data[6]);
+                float.TryParse(arr[7], out m._data[7]);
+                float.TryParse(arr[8], out m._data[8]);
+                float.TryParse(arr[9], out m._data[9]);
+                float.TryParse(arr[10], out m._data[10]);
+                float.TryParse(arr[11], out m._data[11]);
             }
             return m;
         }
@@ -170,22 +170,22 @@ namespace System
 
             if (arr.Length == 16)
             {
-                float.TryParse(arr[0], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[0]);
-                float.TryParse(arr[1], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[1]);
-                float.TryParse(arr[2], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[2]);
-                float.TryParse(arr[3], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[3]);
-                float.TryParse(arr[4], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[4]);
-                float.TryParse(arr[5], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[5]);
-                float.TryParse(arr[6], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[6]);
-                float.TryParse(arr[7], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[7]);
-                float.TryParse(arr[8], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[8]);
-                float.TryParse(arr[9], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[9]);
-                float.TryParse(arr[10], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[10]);
-                float.TryParse(arr[11], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[11]);
-                float.TryParse(arr[12], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[12]);
-                float.TryParse(arr[13], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[13]);
-                float.TryParse(arr[14], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[14]);
-                float.TryParse(arr[15], NumberStyles.Any, CultureInfo.InvariantCulture, out m.Data[15]);
+                float.TryParse(arr[0], out m.Data[0]);
+                float.TryParse(arr[1], out m.Data[1]);
+                float.TryParse(arr[2], out m.Data[2]);
+                float.TryParse(arr[3], out m.Data[3]);
+                float.TryParse(arr[4], out m.Data[4]);
+                float.TryParse(arr[5], out m.Data[5]);
+                float.TryParse(arr[6], out m.Data[6]);
+                float.TryParse(arr[7], out m.Data[7]);
+                float.TryParse(arr[8], out m.Data[8]);
+                float.TryParse(arr[9], out m.Data[9]);
+                float.TryParse(arr[10], out m.Data[10]);
+                float.TryParse(arr[11], out m.Data[11]);
+                float.TryParse(arr[12], out m.Data[12]);
+                float.TryParse(arr[13], out m.Data[13]);
+                float.TryParse(arr[14], out m.Data[14]);
+                float.TryParse(arr[15], out m.Data[15]);
             }
             return m;
         }
@@ -208,10 +208,10 @@ namespace System
 
             if (arr.Length == 4)
             {
-                float.TryParse(arr[0], NumberStyles.Any, CultureInfo.InvariantCulture, out q._x);
-                float.TryParse(arr[1], NumberStyles.Any, CultureInfo.InvariantCulture, out q._y);
-                float.TryParse(arr[2], NumberStyles.Any, CultureInfo.InvariantCulture, out q._z);
-                float.TryParse(arr[3], NumberStyles.Any, CultureInfo.InvariantCulture, out q._w);
+                float.TryParse(arr[0], out q._x);
+                float.TryParse(arr[1], out q._y);
+                float.TryParse(arr[2], out q._z);
+                float.TryParse(arr[3], out q._w);
             }
 
             return q;

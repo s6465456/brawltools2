@@ -436,7 +436,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     newFlags |= FixedFlags.EnabledConstant;
                 if (xEnds.Count > 1)
                 {
-                    *((bint*)header->_startPoint._x.Address) = (int)keyframeAddr - (int)header->_startPoint._x.Address;
+                    *((bint*)header->_endPoint._x.Address) = (int)keyframeAddr - (int)header->_endPoint._x.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)xEnds.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < xEnds.Count; i++)
@@ -447,13 +447,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     newFlags |= FixedFlags.EndXConstant;
                     if (xEnds.Count == 1)
-                        header->_startPoint._x = xEnds[0]._value;
+                        header->_endPoint._x = xEnds[0]._value;
                     else
-                        header->_startPoint._x = 0;
+                        header->_endPoint._x = 0;
                 }
                 if (yEnds.Count > 1)
                 {
-                    *((bint*)header->_startPoint._y.Address) = (int)keyframeAddr - (int)header->_startPoint._y.Address;
+                    *((bint*)header->_endPoint._y.Address) = (int)keyframeAddr - (int)header->_endPoint._y.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)yEnds.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < yEnds.Count; i++)
@@ -464,13 +464,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     newFlags |= FixedFlags.EndYConstant;
                     if (yEnds.Count == 1)
-                        header->_startPoint._y = yEnds[0]._value;
+                        header->_endPoint._y = yEnds[0]._value;
                     else
-                        header->_startPoint._y = 0;
+                        header->_endPoint._y = 0;
                 }
                 if (zEnds.Count > 1)
                 {
-                    *((bint*)header->_startPoint._z.Address) = (int)keyframeAddr - (int)header->_startPoint._z.Address;
+                    *((bint*)header->_endPoint._z.Address) = (int)keyframeAddr - (int)header->_endPoint._z.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)zEnds.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < zEnds.Count; i++)
@@ -481,13 +481,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     newFlags |= FixedFlags.EndZConstant;
                     if (zEnds.Count == 1)
-                        header->_startPoint._z = zEnds[0]._value;
+                        header->_endPoint._z = zEnds[0]._value;
                     else
-                        header->_startPoint._z = 0;
+                        header->_endPoint._z = 0;
                 }
                 if (xStarts.Count > 1)
                 {
-                    *((bint*)header->_endPoint._x.Address) = (int)keyframeAddr - (int)header->_endPoint._x.Address;
+                    *((bint*)header->_startPoint._x.Address) = (int)keyframeAddr - (int)header->_startPoint._x.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)xStarts.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < xStarts.Count; i++)
@@ -498,13 +498,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     newFlags |= FixedFlags.StartXConstant;
                     if (xStarts.Count == 1)
-                        header->_endPoint._x = xStarts[0]._value;
+                        header->_startPoint._x = xStarts[0]._value;
                     else
-                        header->_endPoint._x = 0;
+                        header->_startPoint._x = 0;
                 }
                 if (yStarts.Count > 1)
                 {
-                    *((bint*)header->_endPoint._y.Address) = (int)keyframeAddr - (int)header->_endPoint._y.Address;
+                    *((bint*)header->_startPoint._y.Address) = (int)keyframeAddr - (int)header->_startPoint._y.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)yStarts.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < yStarts.Count; i++)
@@ -515,13 +515,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     newFlags |= FixedFlags.StartYConstant;
                     if (yStarts.Count == 1)
-                        header->_endPoint._y = yStarts[0]._value;
+                        header->_startPoint._y = yStarts[0]._value;
                     else
-                        header->_endPoint._y = 0;
+                        header->_startPoint._y = 0;
                 }
                 if (zStarts.Count > 1)
                 {
-                    *((bint*)header->_endPoint._z.Address) = (int)keyframeAddr - (int)header->_endPoint._z.Address;
+                    *((bint*)header->_startPoint._z.Address) = (int)keyframeAddr - (int)header->_startPoint._z.Address;
                     ((SCN0KeyframesHeader*)keyframeAddr)->_numFrames = (ushort)zStarts.Count;
                     SCN0KeyframeStruct* addr = ((SCN0KeyframesHeader*)keyframeAddr)->Data;
                     for (int i = 0; i < zStarts.Count; i++)
@@ -532,9 +532,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     newFlags |= FixedFlags.StartZConstant;
                     if (zStarts.Count == 1)
-                        header->_endPoint._z = zStarts[0]._value;
+                        header->_startPoint._z = zStarts[0]._value;
                     else
-                        header->_endPoint._z = 0;
+                        header->_startPoint._z = 0;
                 }
 
                 header->_fixedFlags = this._flags1 = (ushort)newFlags;

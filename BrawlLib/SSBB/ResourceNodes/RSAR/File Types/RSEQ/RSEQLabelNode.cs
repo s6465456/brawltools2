@@ -23,7 +23,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     _name = string.Format("Label[{0:X2}]", Index);
 
-            _id = Header->_id;
+            _id = Header->_offset;
 
             return false;
         }

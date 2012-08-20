@@ -21,14 +21,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             NBT3 = 2, // one index per each of N/B/T
         }
 
-        [Category("Normal Data")]
-        public int TotalLen { get { return Header->_dataLen; } }
-        [Category("Normal Data")]
-        public int MDL0Offset { get { return Header->_mdl0Offset; } }
-        [Category("Normal Data")]
-        public int DataOffset { get { return Header->_dataOffset; } }
-        [Category("Normal Data")]
-        public int StringOffset { get { return Header->_stringOffset; } }
+        //[Category("Normal Data")]
+        //public int TotalLen { get { return Header->_dataLen; } }
+        //[Category("Normal Data")]
+        //public int MDL0Offset { get { return Header->_mdl0Offset; } }
+        //[Category("Normal Data")]
+        //public int DataOffset { get { return Header->_dataOffset; } }
+        //[Category("Normal Data")]
+        //public int StringOffset { get { return Header->_stringOffset; } }
         [Category("Normal Data")]
         public int ID { get { return Header->_index; } }
         [Category("Normal Data")]

@@ -14,7 +14,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public delegate void ResourceEventHandler(ResourceNode node);
     public delegate void ResourceChildEventHandler(ResourceNode node, ResourceNode child);
     public delegate void ResourceChildInsertEventHandler(int index, ResourceNode node, ResourceNode child);
-    public struct DataSource
+    public unsafe struct DataSource
     {
         public static readonly DataSource Empty = new DataSource();
 

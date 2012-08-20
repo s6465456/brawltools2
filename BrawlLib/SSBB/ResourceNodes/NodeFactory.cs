@@ -124,7 +124,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             return n;
         }
-
         public static ResourceNode GetRaw(DataSource source)
         {
             ResourceNode n = null;

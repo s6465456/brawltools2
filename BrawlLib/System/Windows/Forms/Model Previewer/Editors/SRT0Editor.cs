@@ -778,8 +778,8 @@ namespace System.Windows.Forms
                             badTextures.Add(tex);
                             count++;
                         }
-                        //else
-                        //    entry.Keyframes.Clean();
+                        else
+                            tex.Keyframes.Clean();
                     }
                     if (count == entry.Children.Count)
                         badMaterials.Add(entry);

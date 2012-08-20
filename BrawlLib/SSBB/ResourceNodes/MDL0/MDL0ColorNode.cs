@@ -16,14 +16,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0PolygonNode[] Objects { get { return _polygons.ToArray(); } }
         internal List<MDL0PolygonNode> _polygons = new List<MDL0PolygonNode>();
 
-        [Category("Color Data")]
-        public int TotalLen { get { return Header->_dataLen; } }
-        [Category("Color Data")]
-        public int MDL0Offset { get { return Header->_mdl0Offset; } }
-        [Category("Color Data")]
-        public int DataOffset { get { return Header->_dataOffset; } }
-        [Category("Color Data")]
-        public int StringOffset { get { return Header->_stringOffset; } }
+        //[Category("Color Data")]
+        //public int TotalLen { get { return Header->_dataLen; } }
+        //[Category("Color Data")]
+        //public int MDL0Offset { get { return Header->_mdl0Offset; } }
+        //[Category("Color Data")]
+        //public int DataOffset { get { return Header->_dataOffset; } }
+        //[Category("Color Data")]
+        //public int StringOffset { get { return Header->_stringOffset; } }
         [Category("Color Data")]
         public int ID { get { return Header->_index; } }
         [Category("Color Data")]
@@ -32,8 +32,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public WiiColorComponentType Format { get { return (WiiColorComponentType)(int)Header->_format; } }
         [Category("Color Data")]
         public byte EntryStride { get { return Header->_entryStride; } }
-        [Category("Color Data")]
-        public byte Pad { get { return Header->_pad; } }
+        //[Category("Color Data")]
+        //public byte Pad { get { return Header->_pad; } }
         [Category("Color Data")]
         public int NumEntries { get { return Header->_numEntries; } }
 

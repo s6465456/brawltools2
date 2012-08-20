@@ -5,6 +5,7 @@ using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
 using BrawlLib.Imaging;
+using BrawlLib.Wii.Animations;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -114,13 +115,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class SCN0EntryNode : ResourceNode
     {
         internal SCN0CommonHeader* Header { get { return (SCN0CommonHeader*)WorkingUncompressed.Address; } }
-        public override bool AllowNullNames
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool AllowNullNames { get { return true; } }
 
         public VoidPtr keyframeAddr;
         public RGBAPixel* lightAddr;
@@ -128,7 +123,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public int _length, _scn0Offset, _stringOffset, _nodeIndex, _realIndex;
 
-        [Category("SCN0 Entry")]
+        [Category("SCN0 Entry"), Browsable(false)]
         public int Length 
         {
             get 
@@ -147,8 +142,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             }
         }
-        [Category("SCN0 Entry")]
-        public int SCN0Offset { get { return _scn0Offset; } }
+        //[Category("SCN0 Entry")]
+        //public int SCN0Offset { get { return _scn0Offset; } }
         [Category("SCN0 Entry")]
         public int NodeIndex { get { return ((SCN0GroupNode)Parent).UsedChildren.IndexOf(this); } }
         [Category("SCN0 Entry")]
@@ -197,6 +192,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_nodeIndex = header->_realIndex = -1;
                 header->_stringOffset = 0;
             }
+        }
+
+        public static void DecodeFrames(KeyframeArray kf, void* dataAddr)
+        {
+            SCN0KeyframesHeader* header = (SCN0KeyframesHeader*)dataAddr;
+            int fCount = header->_numFrames;
+
+            SCN0KeyframeStruct* entry = header->Data;
+            for (int i = 0; i < fCount; i++, entry++)
+                kf.SetFrameValue((int)entry->_index, entry->_value)._tangent = entry->_tangent;
         }
     }
 }

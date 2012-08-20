@@ -88,7 +88,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (((SpecialName.Contains(_name) && RootNode == this) || ((FileType == ARCFileType.Type7 && Name.EndsWith("Param")) || Name == "Fighter")) && i == 0)
                         new MoveDefNode().Initialize(this, entry->Data, entry->Length);
                     else
-                        new ARCEntryNode().Initialize(this, entry->Data, entry->Length);
+                    {
+                        VoidPtr addr = entry->Data;
+                        CompressionHeader* cmpr = (CompressionHeader*)addr;
+                        if (cmpr->ExpandedSize >= entry->Length && cmpr->Algorithm == CompressionType.LZ77)
+                        {
+                            //Expand the whole resource and initialize
+                            FileMap map = FileMap.FromTempFile(cmpr->ExpandedSize);
+                            Compressor.Expand(cmpr, map.Address, map.Length);
+                            DataSource source = new DataSource(entry->Data, entry->Length, cmpr->Algorithm);
+                            new ARCEntryNode().Initialize(this, source, new DataSource(map));
+                        }
+                        else
+                            new ARCEntryNode().Initialize(this, addr, entry->Length);
+                    }
         }
 
         internal override void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
@@ -187,8 +200,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 ExportPair(outPath);
             else if (outPath.EndsWith(".mrg", StringComparison.OrdinalIgnoreCase))
                 ExportAsMRG(outPath);
-            //else if (outPath.EndsWith(".pac", StringComparison.OrdinalIgnoreCase))
-            //    ExportPAC(outPath);
             else
                 base.Export(outPath);
         }
@@ -301,5 +312,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             else if (_name == null)
                 _name = Path.GetFileName(_origPath);
         }
+
+        //public override unsafe void Export(string outPath)
+        //{
+        //    ExportUncompressed(outPath);
+        //}
     }
 }

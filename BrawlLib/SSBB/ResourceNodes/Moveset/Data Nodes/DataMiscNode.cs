@@ -15,9 +15,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class MoveDefMiscNode : MoveDefEntryNode
     {
-        internal MiscSection* Header { get { return (MiscSection*)WorkingUncompressed.Address; } }
+        internal FDefMiscSection* Header { get { return (FDefMiscSection*)WorkingUncompressed.Address; } }
 
-        MiscSection misc;
+        FDefMiscSection misc;
 
         [Category("Misc Offsets")]
         public int UnknownSection1Offset { get { return misc.UnknownSection1Offset; } }
@@ -1161,7 +1161,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override bool OnInitialize()
         {
             base.OnInitialize();
-            _name = "Misc Bone Section";
+            _name = "Misc Final Smash Aura";
             return true;
         }
 
@@ -1201,13 +1201,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             set { boneIndex = value.BoneIndex; Name = value.Name; }
         }
 
-        [Category("Misc Bone Entry"), Browsable(true), TypeConverter(typeof(DropDownListBonesMDef))]
+        [Category("Final Smash Aura"), Browsable(true), TypeConverter(typeof(DropDownListBonesMDef))]
         public string Bone { get { return BoneNode == null ? boneIndex.ToString() : BoneNode.Name; } set { if (Model == null) { boneIndex = Convert.ToInt32(value); Name = boneIndex.ToString(); } else { BoneNode = String.IsNullOrEmpty(value) ? BoneNode : Model.FindBone(value); } SignalPropertyChange(); } }
-        [Category("Misc Bone Entry"), TypeConverter(typeof(Vector2StringConverter))]
+        [Category("Final Smash Aura"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 XY { get { return new Vector2(x, y); } set { x = value._x; y = value._y; SignalPropertyChange(); } }
-        [Category("Misc Bone Entry")]
+        [Category("Final Smash Aura")]
         public float Height { get { return width; } set { height = value; SignalPropertyChange(); } }
-        [Category("Misc Bone Entry")]
+        [Category("Final Smash Aura")]
         public float Width { get { return height; } set { width = value; SignalPropertyChange(); } }
 
         public override string Name

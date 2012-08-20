@@ -296,6 +296,7 @@ namespace BrawlLib.SSBBTypes
                 case 3: { n = new MDL0Node3Class((MDL0NodeType3*)addr); addr += ((MDL0Node3Class)n).GetSize(); break; }
                 case 4: { n = Marshal.PtrToStructure(addr, typeof(MDL0NodeType4)); addr += MDL0NodeType4.Size; break; }
                 case 5: { n = Marshal.PtrToStructure(addr, typeof(MDL0NodeType5)); addr += MDL0NodeType5.Size; break; }
+                case 6: n = null; addr += 4; break;
             }
             return n;
         }
@@ -370,6 +371,13 @@ namespace BrawlLib.SSBBTypes
 
         public MDL0NodeType3Entry* Entries { get { return (MDL0NodeType3Entry*)(Address + 3); } }
 
+        public ushort Id { get { return _id; } set { _id = value; } }
+        public byte NumEntries { get { return _numEntries; } set { _numEntries = value; } }
+
+        public override string ToString()
+        {
+            return String.Format("NodeMix (ID:{0},Entries:{1})", Id, NumEntries);
+        }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct MDL0NodeType3Entry
@@ -384,7 +392,7 @@ namespace BrawlLib.SSBBTypes
 
         public override string ToString()
         {
-            return String.Format("Type3Entry (ID:{0},Weight:{1})", Id, Value);
+            return String.Format("NodeWeight (ID:{0},Weight:{1})", Id, Value);
         }
     }
 
@@ -396,16 +404,15 @@ namespace BrawlLib.SSBBTypes
         public bushort _materialIndex;
         public bushort _polygonIndex;
         public bushort _boneIndex;
-        public byte _val4;
+        public byte _pad;
 
         public ushort MaterialId { get { return _materialIndex; } set { _materialIndex = value; } }
         public ushort PolygonId { get { return _polygonIndex; } set { _polygonIndex = value; } }
         public ushort BoneIndex { get { return _boneIndex; } set { _boneIndex = value; } }
-        public byte Val4 { get { return _val4; } set { _val4 = value; } }
 
         public override string ToString()
         {
-            return string.Format("Type4 (MatID:{0},PolyID:{1},BoneIndex:{2},Unk:{3})", MaterialId, PolygonId, BoneIndex, Val4);
+            return string.Format("Draw (MatID:{0},PolyID:{1},BoneIndex:{2})", MaterialId, PolygonId, BoneIndex);
         }
     }
 
@@ -423,7 +430,7 @@ namespace BrawlLib.SSBBTypes
 
         public override string ToString()
         {
-            return string.Format("Type5 (ID:{0},Index:{1})", Id, Index);
+            return string.Format("EnvMtx (ID:{0},Index:{1})", Id, Index);
         }
     }
 
@@ -683,13 +690,13 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct TextureFlags
+    public struct TextureSRT
     {
         public BVec2 TexScale;
         public bfloat TexRotation;
         public BVec2 TexTranslation;
 
-        public static readonly TextureFlags Default = new TextureFlags()
+        public static readonly TextureSRT Default = new TextureSRT()
         {
             TexScale = new Vector2(1),
             TexRotation = 0,
@@ -727,18 +734,18 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct MDL0MtlTexSettings
+    public unsafe struct MDL0TexSRTData
     {
-        public static readonly MDL0MtlTexSettings Default = new MDL0MtlTexSettings()
+        public static readonly MDL0TexSRTData Default = new MDL0TexSRTData()
         {
-            Tex1Flags = TextureFlags.Default,
-            Tex2Flags = TextureFlags.Default,
-            Tex3Flags = TextureFlags.Default,
-            Tex4Flags = TextureFlags.Default,
-            Tex5Flags = TextureFlags.Default,
-            Tex6Flags = TextureFlags.Default,
-            Tex7Flags = TextureFlags.Default,
-            Tex8Flags = TextureFlags.Default,
+            Tex1Flags = TextureSRT.Default,
+            Tex2Flags = TextureSRT.Default,
+            Tex3Flags = TextureSRT.Default,
+            Tex4Flags = TextureSRT.Default,
+            Tex5Flags = TextureSRT.Default,
+            Tex6Flags = TextureSRT.Default,
+            Tex7Flags = TextureSRT.Default,
+            Tex8Flags = TextureSRT.Default,
 
             Tex1Matrices = TexMtxEffect.Default,
             Tex2Matrices = TexMtxEffect.Default,
@@ -750,17 +757,17 @@ namespace BrawlLib.SSBBTypes
             Tex8Matrices = TexMtxEffect.Default,
         };
 
-        public buint LayerFlags;
-        public buint UnkFlags;
+        public buint _layerFlags;
+        public buint _mtxFlags;
 
-        public TextureFlags Tex1Flags;
-        public TextureFlags Tex2Flags;
-        public TextureFlags Tex3Flags;
-        public TextureFlags Tex4Flags;
-        public TextureFlags Tex5Flags;
-        public TextureFlags Tex6Flags;
-        public TextureFlags Tex7Flags;
-        public TextureFlags Tex8Flags;
+        public TextureSRT Tex1Flags;
+        public TextureSRT Tex2Flags;
+        public TextureSRT Tex3Flags;
+        public TextureSRT Tex4Flags;
+        public TextureSRT Tex5Flags;
+        public TextureSRT Tex6Flags;
+        public TextureSRT Tex7Flags;
+        public TextureSRT Tex8Flags;
 
         public TexMtxEffect Tex1Matrices;
         public TexMtxEffect Tex2Matrices;
@@ -773,8 +780,8 @@ namespace BrawlLib.SSBBTypes
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public TextureFlags GetTexFlags(int Index) { return *(TextureFlags*)((byte*)Address + 8 + (Index * 20)); }
-        public void SetTexFlags(TextureFlags value, int Index) { *(TextureFlags*)((byte*)Address + 8 + (Index * 20)) = value; }
+        public TextureSRT GetTexFlags(int Index) { return *(TextureSRT*)((byte*)Address + 8 + (Index * 20)); }
+        public void SetTexFlags(TextureSRT value, int Index) { *(TextureSRT*)((byte*)Address + 8 + (Index * 20)) = value; }
         
         public TexMtxEffect GetTexMatrices(int Index) { return *(TexMtxEffect*)((byte*)Address + 168 + (Index * 52)); }
         public void SetTexMatrices(TexMtxEffect value, int Index) { *(TexMtxEffect*)((byte*)Address + 168 + (Index * 52)) = value; }
@@ -786,22 +793,14 @@ namespace BrawlLib.SSBBTypes
         public buint flags0;
         public RGBAPixel c00;
         public RGBAPixel c01;
-        public short pad0;
-        public byte unk00;
-        public byte unk01;
-        public short pad1;
-        public byte unk02;
-        public byte unk03;
+        public buint _colorCtrl00;
+        public buint _colorCtrl01;
         
         public buint flags1;
         public RGBAPixel c10;
         public RGBAPixel c11;
-        public short pad2;
-        public byte unk10;
-        public byte unk11;
-        public short pad3;
-        public byte unk12;
-        public byte unk13;
+        public buint _colorCtrl10;
+        public buint _colorCtrl11;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -848,14 +847,14 @@ namespace BrawlLib.SSBBTypes
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
-                    mask += 1 << i;
-                return (uint)(data >> shift & mask);
+                    mask |= 1 << i;
+                return (uint)((data >> shift) & mask);
             }
             set
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
-                    mask += 1 << i;
+                    mask |= 1 << i;
                 data = (uint)((data & ~(mask << shift)) | ((value & mask) << shift));
             }
         }
@@ -904,14 +903,14 @@ namespace BrawlLib.SSBBTypes
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
-                    mask += 1 << i;
-                return (ushort)(data >> shift & mask); 
+                    mask |= 1 << i;
+                return (ushort)((data >> shift) & mask); 
             }
             set
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
-                    mask += 1 << i;
+                    mask |= 1 << i;
                 data = (ushort)((data & ~(mask << shift)) | ((value & mask) << shift)); 
             }
         }
@@ -960,14 +959,14 @@ namespace BrawlLib.SSBBTypes
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
-                    mask += 1 << i;
-                return (byte)(data >> shift & mask);
+                    mask |= 1 << i;
+                return (byte)((data >> shift) & mask);
             }
             set
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
-                    mask += 1 << i;
+                    mask |= 1 << i;
                 data = (byte)((data & ~(mask << shift)) | ((value & mask) << shift));
             }
         }
@@ -976,25 +975,41 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct MDL0Material
     {
-        public const int Size = 64;
-
         public bint _dataLen;
         public bint _mdl0Offset;
         public bint _stringOffset;
         public bint _index;
-        public buint _isXLU; //Negative int sign if XLU
+        public buint _usageFlags;
 
+        //DO_NOT_SEND_XXX is not set as long as a user/programmer does not set it at runtime.
+        //Specifying it will forcibly omit sending the display list(s) held by this material (even if this material is animated).
+        public enum MatUsageFlags : uint
+        {
+            DO_NOT_SEND_PIXDL = 0x00000001, // Does not send the data in ResPixDL
+            DO_NOT_SEND_TEVCOLORDL = 0x00000002, // Does not send the data in ResTevColorDL
+            DO_NOT_SEND_TEXCOORDSCALEDL = 0x00000004, // Does not send the data in ResTexCoordScaleDL
+            DO_NOT_SEND_INDMTXANDSCALEDL = 0x00000008, // Does not send the data in ResIndMtxAndScaleDL
+            DO_NOT_SEND_CHANDL = 0x00000010, // Does not send the data in ResChanDL
+            DO_NOT_SEND_GENMODE2DL = 0x00000020, // Does not send the data in ResGenMode2DL
+            DO_NOT_SEND_TEXCOORDGENDL = 0x00000040, // Does not send the data in ResTexCoordGenDL
+            DO_NOT_SEND_TEXMTXDL = 0x00000080, // Does not send the data in ResTexMtxDL
+            MASK_DO_NOT_SENDDL = 0x000000ff, // Mask
+
+            TRANSPARENCY_MODE_XLU = 0x80000000  // This is set when transparency_mode has been set to xlu in the intermediate file.
+        }
+
+        //GenModeData
         public byte _numTexGens;
         public byte _numLightChans;
         public byte _activeTEVStages;
         public byte _numIndTexStages;
         public bint _cull;
 
+        //MiscData
         public byte _enableAlphaTest;
         public sbyte _lightSet;
         public sbyte _fogSet;
         public byte _pad1;
-
         public byte _indirectMethod1;
         public byte _indirectMethod2;
         public byte _indirectMethod3;
@@ -1005,12 +1020,14 @@ namespace BrawlLib.SSBBTypes
         public sbyte _normMapRefLight4;
 
         public bint _shaderOffset;
+
         public bint _numTextures;
         public bint _matRefOffset;
 
-        public bint _part2Offset;
-        public bint _dlOffset; 
-        public bint _pad2;
+        public bint _userDataOffset;
+        public bint _dlOffset;
+        
+        public bint _dlOffsetv10p; //Not here in v9 MDL0 or lower
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public MDL0Header* Parent { get { return (MDL0Header*)(Address + _mdl0Offset); } }
@@ -1023,13 +1040,13 @@ namespace BrawlLib.SSBBTypes
             {
                 case 10:
                 case 11:
-                    return _pad2;
+                    return _dlOffsetv10p;
                 default:
                     return _dlOffset;
             }
         }
 
-        public int Part2Offset(int version)
+        public int UserDataOffset(int version)
         {
             switch (version)
             {
@@ -1037,45 +1054,121 @@ namespace BrawlLib.SSBBTypes
                 case 11:
                     return _dlOffset;
                 default:
-                    return _part2Offset;
+                    return _userDataOffset;
             }
         }
 
-        public MDL0MtlTexSettings* TexMatrices(int version)
+        public int FurDataOffset(int version)
         {
             switch (version)
             {
                 case 10:
                 case 11:
-                    return (MDL0MtlTexSettings*)(Address + 0x1A8);
-                default:
-                    return (MDL0MtlTexSettings*)(Address + 0x1A4);
+                    return _userDataOffset;
+                default: return 0;
             }
         }
 
-        public MDL0MaterialLighting* Light(int version)
-        {
-            switch (version)
-            {
-                case 10:
-                case 11:
-                    return (MDL0MaterialLighting*)(Address + 0x3F0);
-                default:
-                    return (MDL0MaterialLighting*)(Address + 0x3EC);
-            }
-        }
-
-        public UserData* Part2(int version) { return (UserData*)(Address + Part2Offset(version)); }
+        public MDL0TexSRTData* TexMatrices(int version) { return (MDL0TexSRTData*)(Address + 0x1A0 + (_matRefOffset & 0xF)); }
+        public MDL0MaterialLighting* Light(int version) { return (MDL0MaterialLighting*)(Address + 0x3E8 + (_matRefOffset & 0xF)); }
+        public UserData* UserData(int version) { if (UserDataOffset(version) > 0) return (UserData*)(Address + UserDataOffset(version)); else return null; }
         public MatModeBlock* DisplayLists(int version) { return (MatModeBlock*)(Address + DisplayListOffset(version)); }
         public MatTevColorBlock* TevColorBlock(int version) { return (MatTevColorBlock*)(Address + DisplayListOffset(version) + MatModeBlock.Size); }
         public MatTevKonstBlock* TevKonstBlock(int version) { return (MatTevKonstBlock*)(Address + DisplayListOffset(version) + MatModeBlock.Size + MatTevColorBlock.Size); }
-
+        public MatIndMtxBlock* IndMtxBlock(int version) { return (MatIndMtxBlock*)(Address + DisplayListOffset(version) + MatModeBlock.Size + MatTevColorBlock.Size + MatTevKonstBlock.Size); }
+        
         public string ResourceString { get { return new String((sbyte*)ResourceStringAddress); } }
         public VoidPtr ResourceStringAddress
         {
             get { return (VoidPtr)Address + _stringOffset; }
             set { _stringOffset = (int)value - (int)Address; }
         }
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct MatDLData
+    {
+        public static readonly MatDLData Default = new MatDLData()
+        {
+            _mode = MatModeBlock.Default,
+            _color = MatTevColorBlock.Default,
+            _konst = MatTevKonstBlock.Default,
+            _indMtx = MatIndMtxBlock.Default,
+        };
+
+        public MatModeBlock _mode;
+        public MatTevColorBlock _color;
+        public MatTevKonstBlock _konst;
+        public MatIndMtxBlock _indMtx;
+        public byte XFCmds;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct MatIndMtxBlock
+    {
+        public static readonly MatIndMtxBlock Default = new MatIndMtxBlock()
+        {
+            bpReg1 = 0x61,
+            RAS1_SS0 = BPMemory.BPMEM_RAS1_SS0,
+            bpReg2 = 0x61,
+            RAS1_SS1 = BPMemory.BPMEM_RAS1_SS1
+        };
+
+        private byte bpReg1;
+        public BPMemory RAS1_SS0;
+        public RAS1_SS SS0val;
+        private byte bpReg2;
+        public BPMemory RAS1_SS1;
+        public RAS1_SS SS1val;
+        public fixed byte Mtx0[15];
+        public fixed byte pad1[7];
+        public fixed byte Mtx1[15];
+        public fixed byte Mtx2[15];
+        public fixed byte pad2[2];
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct TexInit
+    {
+        public ResTexObjData _texData;
+        public ResTlutObjData _pltData;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct ResTexObjData
+    {
+        //0x01: GX_TEXMAP0
+        //0x02: GX_TEXMAP1
+        //0x04: GX_TEXMAP2
+        //0x08: GX_TEXMAP3
+        //0x10: GX_TEXMAP4
+        //0x20: GX_TEXMAP5
+        //0x40: GX_TEXMAP6
+        //0x80: GX_TEXMAP7
+        //Whether or not to load texture objects is determined by looking at this bitmap.
+        //This decides whether or not GXTexObj is enabled.
+        //Set during initialization.
+        buint _flagUsedTexMapID;
+        
+        //sizeof(GXTexObj) == 32 is assumed
+        //32 * 8 = 256
+        public fixed byte _texObj[256];
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct ResTlutObjData
+    {
+        //0x01: GX_TLUT0
+        //0x02: GX_TLUT1
+        //0x04: GX_TLUT2
+        //0x08: GX_TLUT3
+        //0x10: GX_TLUT4
+        //0x20: GX_TLUT5
+        //0x40: GX_TLUT6
+        //0x80: GX_TLUT7
+        //Whether or not to load TLUTs is determined by looking at this bitmap.
+        //This decides whether or not GXTlutObj is enabled.
+        //Set during initialization.
+        buint _flagUsedTlutID;
+        
+        //sizeof(GXTlutObj) == 12 is assumed
+        //12 * 8 = 96
+        public fixed byte _tlutObj[96];
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -1182,11 +1275,6 @@ namespace BrawlLib.SSBBTypes
             TevReg3Lo = ColorReg.Konstant,
             _tr3HiCmd = 0xE761,
             TevReg3Hi = ColorReg.Konstant,
-
-            bpReg1 = 0x61,
-            RAS1_SS0 = BPMemory.BPMEM_RAS1_SS0,
-            bpReg2 = 0x61,
-            RAS1_SS1 = BPMemory.BPMEM_RAS1_SS1
         };
 
         private ushort _tr0LoCmd;
@@ -1207,13 +1295,6 @@ namespace BrawlLib.SSBBTypes
         public ColorReg TevReg3Hi;
 
         private fixed byte _pad1[24];
-
-        private byte bpReg1;
-        public BPMemory RAS1_SS0;
-        public RAS1_SS SS0val;
-        private byte bpReg2;
-        public BPMemory RAS1_SS1;
-        public RAS1_SS SS1val;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -1415,10 +1496,10 @@ namespace BrawlLib.SSBBTypes
     {
         public const int Size = 52;
 
-        public bint _stringOffset;
-        public bint _secondaryOffset;
-        public bint _unk2;
-        public bint _unk3;
+        public bint _texOffset;
+        public bint _pltOffset;
+        public bint _texPtr; //Set at runtime
+        public bint _pltPtr; //Set at runtime
         public bint _index1;
         public bint _index2;
         public bint _uWrap;
@@ -1426,25 +1507,25 @@ namespace BrawlLib.SSBBTypes
         public bint _minFltr;
         public bint _magFltr;
         public bfloat _lodBias;
-        public bint _unk10;
-        public byte _unk11;
-        public byte _unk12;
-        public bshort _unk13;
+        public bint _maxAniso;
+        public byte _clampBias;
+        public byte _texelInterp;
+        public bshort _pad;
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public string ResourceString { get { return new String((sbyte*)this.ResourceStringAddress); } }
-        public VoidPtr ResourceStringAddress
+        public string TextureName { get { return new String((sbyte*)this.TextureNameAddress); } }
+        public VoidPtr TextureNameAddress
         {
-            get { return (VoidPtr)this.Address + _stringOffset; }
-            set { _stringOffset = (int)value - (int)Address; }
+            get { return (VoidPtr)this.Address + _texOffset; }
+            set { _texOffset = (int)value - (int)Address; }
         }
 
-        public string SecondaryTexture { get { return (_secondaryOffset == 0) ? null : new String((sbyte*)this.SecondaryTextureAddress); } }
-        public VoidPtr SecondaryTextureAddress
+        public string PaletteName { get { return (_pltOffset == 0) ? null : new String((sbyte*)this.PaletteNameAddress); } }
+        public VoidPtr PaletteNameAddress
         {
-            get { return Address + _secondaryOffset; }
-            set { _secondaryOffset = (int)value - (int)Address; }
+            get { return Address + _pltOffset; }
+            set { _pltOffset = (int)value - (int)Address; }
         }
     }
 
@@ -1521,6 +1602,27 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct PrimDataGroup
+    {
+        public bint _bufferSize; //The amount of bytes usable
+        public bint _size; //The amount of bytes actually used
+        public bint _offset; //Offset to the data. Relative to this struct
+
+        private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+
+        public VoidPtr Data { get { return Address + _offset; } }
+    }
+
+    [Flags]
+    public enum ObjFlag
+    {
+        None = 0,
+        ChangeCurrentMatrix = 1, // When rewriting the current matrix (including texture matrix)
+        // In other words, when a matrix index is included in the primitive
+        Invisible = 2  // When this is turned ON, shape is not sent (this is always OFF at time of conversion)
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct MDL0Polygon
     {
         public const uint Size = 0x64;
@@ -1532,17 +1634,12 @@ namespace BrawlLib.SSBBTypes
         public CPVertexFormat _vertexFormat;
         public XFVertexSpecs _vertexSpecs;
 
-        public bint _defSize; //Size of def block including padding? Always 0xE0?
-        public bint _defFlags; //0x80, sometimes 0xA0
-        public bint _defOffset; //Relative to defSize field
-
-        public bint _dataLen1; //Size of primitives
-        public bint _dataLen2; //Same as previous
-        public bint _dataOffset; //Relative to dataLen1
+        public PrimDataGroup _defintions; //Pre-Prim data
+        public PrimDataGroup _primitives; //Prim data
 
         public XFArrayFlags _arrayFlags; //Used to enable element arrays
 
-        public bint _unk3; //0
+        public bint _flag;
         public bint _stringOffset;
         public bint _index;
 
@@ -1554,6 +1651,10 @@ namespace BrawlLib.SSBBTypes
         public fixed short _colorIds[2];        
         public fixed short _uids[8];
 
+        //ids used in v10+ only
+        //public bshort _furVectorId;
+        //public bshort _furLayerCoordId;
+
         public bint _nodeTableOffset;
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
@@ -1562,15 +1663,15 @@ namespace BrawlLib.SSBBTypes
         public bshort* ColorIds { get { return (bshort*)(Address + 0x4C); } }
         public bshort* UVIds { get { return (bshort*)(Address + 0x50); } }
 
-        public MDL0PolygonDefs* DefList { get { return (MDL0PolygonDefs*)(Address + 0x18 + _defOffset); } }
+        public MDL0PolygonDefs* DefList { get { return (MDL0PolygonDefs*)_defintions.Data; } }
         public bushort* WeightIndices(int version)
         {
-            if (version != 11)
+            if (version <= 9)
                 return (bushort*)(Address + 0x64);
             else
                 return (bushort*)(Address + 0x68);
         }
-        public VoidPtr PrimitiveData { get { return Address + 0x24 + _dataOffset; } }
+        public VoidPtr PrimitiveData { get { return _primitives.Data; } }
 
         public string ResourceString { get { return new String((sbyte*)ResourceStringAddress); } }
         public VoidPtr ResourceStringAddress
@@ -1598,7 +1699,7 @@ namespace BrawlLib.SSBBTypes
         public XFVertexSpecs VtxSpecs;
         public byte pad0;
 
-        //CP UVAT Flags. Used for direct primitives only?
+        //CP Vertex Format Flags. Used for direct primitives only?
         public bushort CPSetUVATA; //0x0870
         public buint UVATA;
         public bushort CPSetUVATB; //0x0880

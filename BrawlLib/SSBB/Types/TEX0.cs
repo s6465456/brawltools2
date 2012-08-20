@@ -18,8 +18,8 @@ namespace BrawlLib.SSBBTypes
         public bshort _height;
         public bint _pixelFormat;
         public bint _levelOfDetail;
-        public bint _unknown;
-        public bfloat _lodBias;
+        public bint _minLod;
+        public bfloat _maxLod;
         fixed uint _padding[4];
 
         internal VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
@@ -56,8 +56,8 @@ namespace BrawlLib.SSBBTypes
             _height = (short)height;
             _pixelFormat = (int)format;
             _levelOfDetail = mipLevels;
-            _unknown = 0;
-            _lodBias = mipLevels - 1.0f;
+            _minLod = 0;
+            _maxLod = mipLevels - 1.0f;
 
             fixed (uint* p = _padding)
                 for (int i = 0; i < 4; i++) p[i] = 0;

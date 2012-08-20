@@ -377,7 +377,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             bint* SFXOffsets =  (bint*)((VoidPtr)GFXOffsets + RootNode._subActions.Children.Count * 4);
             bint* otherOffsets = (bint*)((VoidPtr)SFXOffsets + RootNode._subActions.Children.Count * 4);
 
-            MiscSection* miscOffsetsAddr = (MiscSection*)(dataAddress + (node._childLength - 0x4C));
+            FDefMiscSection* miscOffsetsAddr = (FDefMiscSection*)(dataAddress + (node._childLength - 0x4C));
 
             if (node != null)
             {

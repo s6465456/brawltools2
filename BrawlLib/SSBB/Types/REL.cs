@@ -11,24 +11,41 @@ namespace BrawlLib.SSBBTypes
         public ModuleInfo _info;
 
         //0x20
-        public buint _bssSize;
-        public buint _relOffset;
-        public buint _impOffset;
-        public buint _impSize;
+        public buint _bssSize; //Size of command list for this module
+        public buint _relOffset; //Offset to relocations
+        public buint _impOffset; //Offset to imports
+        public buint _impSize; //Size of import entry headers
 
         //0x30
-        public byte _prologSection;
-        public byte _epilogSection;
-        public byte _unresolvedSection;
-        public byte _bssSection;
+
+        //IDs for sections that contain these
+        public byte _prologSection; //1
+        public byte _epilogSection; //1
+        public byte _unresolvedSection; //1
+        public byte _bssSection; //0
+
+        //Offsets into certain sections specified above
         public buint _prologOffset;
         public buint _epilogOffset;
         public buint _unresolvedOffset;
 
         //0x40
-        public buint _moduleAlign;
-        public buint _bssAlign;
-        public buint _fixSize;
+        public buint _moduleAlign; //Alignment of this model (32 bytes)
+        public buint _bssAlign; //Alignment of the command list for this module (8 bytes)
+        public buint _fixSize; //Pointer to the command list for this module
+
+        //Data Order
+
+        //Header
+        //Section Info
+        //Section Data
+        //Imports
+        //Relocations
+
+        //Imports order
+        //Smallest to largest module IDs
+        //This module
+        //Static module 0
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 
@@ -36,8 +53,6 @@ namespace BrawlLib.SSBBTypes
         public RELImport* Imports { get { return (RELImport*)(Address + _impOffset); } }
         
         public int ImportListCount { get { return (int)(_impSize / RELImport.Size); } }
-
-        public string Name { get { return new String((sbyte*)Address + _info.nameOffset); } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -77,7 +92,7 @@ namespace BrawlLib.SSBBTypes
         public bushort _prevOffset; //Size of previous
         public byte _type;
         public byte _section;
-        public buint _addEnd;
+        public buint _value;
 
         public RELLinkType Type { get { return (RELLinkType)_type; } }
 
@@ -112,8 +127,8 @@ namespace BrawlLib.SSBBTypes
     {
         public const int Size = 8;
 
-        public buint _linkNext;
-        public buint _linkPrev;
+        public bint _linkNext;
+        public bint _linkPrev;
 
         public ModuleInfo* Next { get { return (ModuleInfo*)(Address + _linkNext); } }
         public ModuleInfo* Prev { get { return (ModuleInfo*)(Address + _linkPrev); } }

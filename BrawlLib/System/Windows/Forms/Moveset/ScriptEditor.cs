@@ -426,7 +426,7 @@ namespace System.Windows.Forms
                 case "\\bone":
                     try
                     {
-                        int id = MParams.UnHex(Params[0]);
+                        int id = int.Parse(Params[0]);
                         if (id >= 400)
                             TargetNode.Root.GetBoneIndex(ref id);
                         if (_targetNode.Model != null && _targetNode.Model._linker.BoneCache != null && _targetNode.Model._linker.BoneCache.Length > id && id >= 0)
@@ -435,37 +435,40 @@ namespace System.Windows.Forms
                     }
                     catch { return int.Parse(Params[0]).ToString(); }
                 case "\\unhex":
-                    try { return MParams.UnHex(Params[0]).ToString(); }
-                    catch { return Params[0]; }
+                    /*try { return MParams.UnHex(Params[0]).ToString(); }
+                    catch { */
+                    return Params[0];// }
                 case "\\hex":
-                    try { return MParams.Hex(int.Parse(Params[0])); }
-                    catch { return Params[0]; }
+                    /*try { return MParams.Hex(int.Parse(Params[0])); }
+                    catch { */
+                    return Params[0];// }
                 case "\\hex8":
-                    try { return MParams.Hex8(int.Parse(Params[0])); }
-                    catch { return Params[0]; }
+                    /*try { return MParams.Hex8(int.Parse(Params[0])); }
+                    catch { */
+                    return Params[0];// }
                 case "\\half1":
-                    return MParams.WordH(Params[0], 0);
+                    return (uint.Parse(Params[0]) >> 16).ToString();
                 case "\\half2":
-                    return MParams.WordH(Params[0], 1);
+                    return (uint.Parse(Params[0]) & 0xFFFF).ToString();
                 case "\\byte1":
-                    return MParams.WordB(Params[0], 0);
+                    return (uint.Parse(Params[0]) >> 24).ToString();
                 case "\\byte2":
-                    return MParams.WordB(Params[0], 1);
+                    return ((uint.Parse(Params[0]) >> 16) & 0xFF).ToString();
                 case "\\byte3":
-                    return MParams.WordB(Params[0], 2);
+                    return ((uint.Parse(Params[0]) >> 8) & 0xFF).ToString();
                 case "\\byte4":
-                    return MParams.WordB(Params[0], 3);
+                    return ((uint.Parse(Params[0])) & 0xFF).ToString();
                 case "\\collision":
-                    try { return GetCollisionStatus(MParams.UnHex(Params[0])); }
+                    try { return GetCollisionStatus(int.Parse(Params[0])); }
                     catch { return Params[0]; }
                 case "\\airground":
-                    try { return GetAirGroundStatus(MParams.UnHex(Params[0])); }
+                    try { return GetAirGroundStatus(int.Parse(Params[0])); }
                     catch { return Params[0]; }
                 case "\\enum":
-                    try { return GetEnum(int.Parse(Params[1]), MParams.UnHex(Params[0]), eventData); }
+                    try { return GetEnum(int.Parse(Params[1]), int.Parse(Params[0]), eventData); }
                     catch { return "Undefined(" + Params[1] + ")"; }
                 case "\\cmpsign":
-                    try { return MParams.GetComparisonSign(MParams.UnHex(Params[0])); }
+                    try { return MParams.GetComparisonSign(int.Parse(Params[0])); }
                     catch { return Params[0]; }
                 case "\\name":
                     return GetEventInfo(eventData.eventEvent)._name;
@@ -596,7 +599,7 @@ namespace System.Windows.Forms
                 //            return TargetNode.Root._actions.Children[(int)value].Name;
                 //    break;
             }
-            return s == null ? MParams.Hex((int)value) : s;
+            return s == null ? value.ToString() : s;
         }
 
         //Return the requirement corresponding to the value passed.
@@ -638,7 +641,7 @@ namespace System.Windows.Forms
                     case 1: script += MParams.UnScalar(eventData.parameters[i]._data).ToString(); break;
                     case 2: script += ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
                     case 3: script += (eventData.parameters[i]._data != 0 ? "true" : "false"); break;
-                    case 4: script += MParams.Hex(eventData.parameters[i]._data); break;
+                    case 4: script += eventData.parameters[i]._data; break;
                     case 5: script += ResolveVariable(eventData.parameters[i]._data); break;
                     case 6: script += GetRequirement(eventData.parameters[i]._data); break;
                 }
@@ -726,8 +729,8 @@ namespace System.Windows.Forms
         {
             int[] indices = new int[EventList.SelectedIndices.Count];
             EventList.SelectedIndices.CopyTo(indices, 0);
-            for (int i = 0; i < indices.Length; i++)
-                TargetNode.Children[indices[0]].Remove();
+            for (int i = indices.Length - 1; i >= 0 ; i--)
+                TargetNode.Children[indices[i]].Remove();
             MakeScript();
             if (TargetNode != null && indices.Length == 1)
                 foreach (int i in indices)

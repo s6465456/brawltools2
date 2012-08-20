@@ -505,7 +505,7 @@ namespace System.Windows.Forms
 
             cboType.Enabled = true;
             try { cboType.SelectedIndex = (int)param._type; }
-            catch { cboType.SelectedIndex = -1; cboType.Text = "(" + MParams.Hex((int)param._type) + ")"; }
+            catch { cboType.SelectedIndex = -1; cboType.Text = "(" + param._type + ")"; }
             DisplayInType(param);
 
             lblParamDescription.Text = param.Description;

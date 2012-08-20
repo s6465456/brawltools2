@@ -6,6 +6,7 @@ using BrawlLib.SSBBTypes;
 using System.ComponentModel;
 using BrawlLib.Imaging;
 using BrawlLib.Wii.Graphics;
+using BrawlLib.Wii.Animations;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -14,11 +15,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal SCN0Fog* Data { get { return (SCN0Fog*)WorkingUncompressed.Address; } }
 
         private int type;
-        private SCN0FogFlags flags;
+        public SCN0FogFlags flags;
 
         private List<SCN0Keyframe> starts = new List<SCN0Keyframe>(), ends = new List<SCN0Keyframe>();
-        private List<RGBAPixel> colors = new List<RGBAPixel>();
-        
+
+        public KeyframeArray _startKeys, _endKeys;
+
         [Category("Fog")]
         public FogType Type { get { return (FogType)type; } set { type = (int)value; SignalPropertyChange(); } }
         [Category("Fog")]
@@ -26,51 +28,93 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Fog")]
         public List<SCN0Keyframe> EndZ { get { return ends; } set { ends = value; SignalPropertyChange(); } }
         [Category("Fog")]
-        public RGBAPixel[] Colors { get { return colors.ToArray(); } set { colors = value.ToList<RGBAPixel>(); SignalPropertyChange(); } }
-        
+        public ARGBPixel[] ColorsArr { get { return _colors.ToArray(); } set { _colors = value.ToList<ARGBPixel>(); SignalPropertyChange(); } }
+
+        internal List<ARGBPixel> _colors = new List<ARGBPixel>();
+        [Browsable(false)]
+        public List<ARGBPixel> Colors { get { return _colors; } set { _colors = value; SignalPropertyChange(); } }
+
+        internal ARGBPixel _solidColor;
+        [Browsable(false)]
+        public ARGBPixel SolidColor { get { return _solidColor; } set { _solidColor = value; SignalPropertyChange(); } }
+
+        internal int _numEntries;
+        [Browsable(false)]
+        internal int NumEntries
+        {
+            get { return _numEntries; }
+            set
+            {
+                if (_numEntries == 0)
+                    return;
+
+                if (value > _numEntries)
+                {
+                    ARGBPixel p = _numEntries > 0 ? _colors[_numEntries - 1] : new ARGBPixel(255, 0, 0, 0);
+                    for (int i = value - _numEntries; i-- > 0; )
+                        _colors.Add(p);
+                }
+                else if (value < _colors.Count)
+                    _colors.RemoveRange(value, _colors.Count - value);
+
+                _numEntries = value;
+            }
+        }
+
         protected override bool OnInitialize()
         {
             base.OnInitialize();
 
             starts = new List<SCN0Keyframe>();
             ends = new List<SCN0Keyframe>();
-            colors = new List<RGBAPixel>();
+            _colors = new List<ARGBPixel>();
+
+            _startKeys = new KeyframeArray(((SCN0Node)Parent.Parent).FrameCount + 1);
+            _endKeys = new KeyframeArray(((SCN0Node)Parent.Parent).FrameCount + 1);
 
             flags = (SCN0FogFlags)Data->_flags;
             type = Data->_type;
             if (Name != "<null>")
             {
                 if (flags.HasFlag(SCN0FogFlags.FixedStart))
+                {
+                    _startKeys[0] = Data->_start;
                     starts.Add(new Vector3(0, 0, Data->_start));
+                }
                 else
                 {
                     if (!_replaced)
                     {
+                        SCN0EntryNode.DecodeFrames(_startKeys, Data->startKeyframes);
                         SCN0KeyframeStruct* addr = Data->startKeyframes->Data;
                         for (int i = 0; i < Data->startKeyframes->_numFrames; i++)
                             starts.Add(*addr++);
                     }
                 }
                 if (flags.HasFlag(SCN0FogFlags.FixedEnd))
+                {
+                    _endKeys[0] = Data->_end;
                     ends.Add(new Vector3(0, 0, Data->_end));
+                }
                 else
                 {
                     if (!_replaced)
                     {
+                        SCN0EntryNode.DecodeFrames(_endKeys, Data->endKeyframes);
                         SCN0KeyframeStruct* addr = Data->endKeyframes->Data;
                         for (int i = 0; i < Data->endKeyframes->_numFrames; i++)
                             ends.Add(*addr++);
                     }
                 }
                 if (flags.HasFlag(SCN0FogFlags.FixedColor))
-                    colors.Add(Data->_color);
+                    _colors.Add((ARGBPixel)Data->_color);
                 else
                 {
                     if (!_replaced)
                     {
                         RGBAPixel* addr = Data->colorEntries;
                         for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
-                            colors.Add(*addr++);
+                            _colors.Add((ARGBPixel)(*addr++));
                     }
                 }
             }
@@ -86,7 +130,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 keyLen += 4 + starts.Count * 12;
             if (ends.Count > 1)
                 keyLen += 4 + ends.Count * 12;
-            if (colors.Count > 1)
+            if (_colors.Count > 1)
                 lightLen += 4 * (((SCN0Node)Parent.Parent).FrameCount + 1);
             return SCN0Fog.Size;
         }
@@ -97,13 +141,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             SCN0Fog* header = (SCN0Fog*)address;
 
-            flags = (SCN0FogFlags)0;
-            if (colors.Count > 1)
+            flags = SCN0FogFlags.None;
+            if (_colors.Count > 1)
             {
                 *((bint*)header->_color.Address) = (int)lightAddr - (int)header->_color.Address;
                 for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
-                    if (i < colors.Count)
-                        *lightAddr++ = colors[i];
+                    if (i < _colors.Count)
+                        *lightAddr++ = (RGBAPixel)_colors[i];
                     else
                         *lightAddr++ = new RGBAPixel();
                 flags &= ~SCN0FogFlags.FixedColor;
@@ -111,8 +155,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
             {
                 flags |= SCN0FogFlags.FixedColor;
-                if (colors.Count == 1)
-                    header->_color = colors[0];
+                if (_colors.Count == 1)
+                    header->_color = (RGBAPixel)_colors[0];
                 else
                     header->_color = new RGBAPixel();
             }

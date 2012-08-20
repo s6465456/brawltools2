@@ -142,14 +142,14 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct INFOFooter
     {
-        bshort _unk1; //8
-        bshort _unk2; //16
-        bshort _unk3; //4
-        bshort _unk4; //4
-        bshort _unk5; //8
-        bshort _unk6; //32
-        bshort _unk7; //32
-        bshort _unk8; //0
+        bshort _seqSoundCount; //8
+        bshort _seqTrackCount; //16
+        bshort _strmSoundCount; //4
+        bshort _strmTrackCount; //4
+        bshort _strmChannelCount; //8
+        bshort _waveSoundCount; //32
+        bshort _waveTrackCount; //32
+        bshort _padding; //0
     }
 
     #region Sounds
@@ -158,18 +158,21 @@ namespace BrawlLib.SSBBTypes
     {
         public bint _stringId;
         public bint _fileId;
-        public bint _unk1; // 0
-        public ruint _part1Offset; //control 1
-        public byte _flag1; //0x20
-        public byte _flag2; //0x40
-        public byte _flag3; //0x03
-        public byte _flag4; //0x00
+        public bint _playerId; // 0
+        public ruint _param3dRefOffset; //control 1
+        public byte _volume; //0x20
+        public byte _playerPriority; //0x40
+        public byte _soundType; //0x03
+        public byte _remoteFilter; //0x00
         public ruint _part2Offset; //control 0x0103
-        public bint _unk2; //0
-        public bint _unk3; //0
-        public bint _unk4; //0
+        public bint _userParam1; //0
+        public bint _userParam2; //0
+        public byte _panMode;
+        public byte _panCurve;
+        public byte _actorPlayerId;
+        public byte _reserved;
 
-        public INFOSoundPart1* GetPart1(VoidPtr baseAddr) { return (INFOSoundPart1*)(baseAddr + _part1Offset); }
+        public Sound3DParam* GetPart1(VoidPtr baseAddr) { return (Sound3DParam*)(baseAddr + _param3dRefOffset); }
         public INFOSoundPart2* GetPart2(VoidPtr baseAddr) { return (INFOSoundPart2*)(baseAddr + _part2Offset); }
     }
 
@@ -183,12 +186,15 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct INFOSoundPart1
+    struct Sound3DParam
     {
-        public bint _unk1;
-        public bint _unk2;
-        public bint _unk3;
-    }
+        public buint flags;
+        public byte decayCurve;
+        public byte decayRatio;
+        public byte dopplerFactor;
+        public byte padding;
+        public buint reserved;
+    };
     #endregion
 
     #region Banks
@@ -225,9 +231,9 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct INFOFileHeader
     {
-        public bint _headerLen; //Includes padding. Set to file size if external file.
-        public bint _dataLen; //Includes padding. Zero if external file.
-        public bint _magic; //-1
+        public buint _headerLen; //Includes padding. Set to file size if external file.
+        public buint _dataLen; //Includes padding. Zero if external file.
+        public bint _entryNumber; //-1
         public ruint _stringOffset; //External file path, only for BGMs. Path is relative to sound folder
         public ruint _listOffset; //List of groups this file belongs to. Empty if external file.
 
@@ -288,8 +294,8 @@ namespace BrawlLib.SSBBTypes
         public bint _headerLength;
         public bint _dataOffset;
         public bint _dataLength;
-        public bint _unk;
-
+        public bint _reserved;
+        
         public override string ToString()
         {
             return String.Format("[{0:X}]", (uint)_fileId);

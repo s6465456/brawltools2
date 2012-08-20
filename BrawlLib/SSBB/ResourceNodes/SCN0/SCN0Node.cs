@@ -148,20 +148,28 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             return group;
         }
-        public T CreateResource<T>(string name) where T : SCN0EntryNode
+
+        public SCN0GroupNode GetFolder<T>() where T : SCN0EntryNode
         {
-            SCN0GroupNode group = GetOrCreateFolder<T>();
-            if (group == null)
+            string groupName;
+            if (typeof(T) == typeof(SCN0LightSetNode))
+                groupName = "LightSet(NW4R)";
+            else if (typeof(T) == typeof(SCN0AmbientLightNode))
+                groupName = "AmbLights(NW4R)";
+            else if (typeof(T) == typeof(SCN0LightNode))
+                groupName = "Lights(NW4R)";
+            else if (typeof(T) == typeof(SCN0FogNode))
+                groupName = "Fogs(NW4R)";
+            else if (typeof(T) == typeof(SCN0CameraNode))
+                groupName = "Cameras(NW4R)";
+            else
                 return null;
 
-            T n = Activator.CreateInstance<T>();
-            n.Name = group.FindName(name);
-            group.AddChild(n);
+            SCN0GroupNode group = null;
+            foreach (SCN0GroupNode node in Children)
+                if (node.Name == groupName) { group = node; break; }
 
-            n._realIndex = n.Index;
-            n._nodeIndex = group.UsedChildren.IndexOf(n);
-
-            return n;
+            return group;
         }
 
         internal override void GetStrings(StringTable table)
@@ -351,5 +359,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((SCN0v4*)source.Address)->_header._tag == SCN0v4.Tag ? new SCN0Node() : null; }
+
+        public T CreateResource<T>(string name) where T : SCN0EntryNode
+        {
+            SCN0GroupNode group = GetOrCreateFolder<T>();
+            if (group == null)
+                return null;
+
+            T n = Activator.CreateInstance<T>();
+            n.Name = group.FindName(name);
+            group.AddChild(n);
+
+            n._realIndex = n.Index;
+            n._nodeIndex = group.UsedChildren.IndexOf(n);
+
+            return n;
+        }
     }
 }

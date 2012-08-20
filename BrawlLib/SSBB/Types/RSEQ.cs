@@ -82,7 +82,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct RSEQ_LABLEntry
     {
-        public bint _id; //Index for something?
+        public bint _offset; //Index for something?
         public bint _stringLength;
 
         public void Set(int id, string str)
@@ -92,7 +92,7 @@ namespace BrawlLib.SSBBTypes
             sbyte* dPtr = (sbyte*)(Address + 8);
             char* sPtr;
 
-            _id = id;
+            _offset = id;
             _stringLength = len;
 
             fixed (char* s = str)
