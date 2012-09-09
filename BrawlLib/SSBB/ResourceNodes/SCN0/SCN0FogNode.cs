@@ -27,8 +27,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<SCN0Keyframe> StartZ { get { return starts; } set { starts = value; SignalPropertyChange(); } }
         [Category("Fog")]
         public List<SCN0Keyframe> EndZ { get { return ends; } set { ends = value; SignalPropertyChange(); } }
-        [Category("Fog")]
-        public ARGBPixel[] ColorsArr { get { return _colors.ToArray(); } set { _colors = value.ToList<ARGBPixel>(); SignalPropertyChange(); } }
 
         internal List<ARGBPixel> _colors = new List<ARGBPixel>();
         [Browsable(false)]

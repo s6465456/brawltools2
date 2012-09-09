@@ -9,6 +9,7 @@ using BrawlLib.Wii.Graphics;
 using System.Windows.Forms;
 using BrawlLib.Imaging;
 using System.Runtime.InteropServices;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -18,10 +19,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.MDL0Polygon; } }
 
+        #region Attributes
+
+        //public List<Vertex3> Vertices { get { return _manager != null ? _manager._vertices : null; } }
+
         public List<IMatrixNode> Nodes = new List<IMatrixNode>();
 
         internal bool Weighted { get { return _nodeId == -1 || _singleBind == null; } }
-        internal bool TexMtx 
+        internal bool TexMtx
         {
             get
             {
@@ -32,14 +37,24 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        #region Attributes
+        public byte _drawIndex;
+        public byte DrawPriority
+        {
+            get { return _drawIndex; }
+            set
+            {
+                if (value < 0 || value >= Model._polyList.Count)
+                    return;
 
-        int _totalLength, _mdl0Offset, _stringOffset;
+                _drawIndex = value;
+                SignalPropertyChange();
+            }
+        }
 
-        //[Category("Object Data")]
-        //public int TotalLen { get { return _totalLength; } }
-        //[Category("Object Data")]
-        //public int MDL0Offset { get { return _mdl0Offset; } }
+        [Category("Object Data")]
+        public int TotalLen { get { return _totalLength; } }
+        [Category("Object Data")]
+        public int MDL0Offset { get { return _mdl0Offset; } }
         //[Category("Object Data")]
         //public int NodeId { get { return _nodeId; } }
 
@@ -116,9 +131,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Object Data")]
         public int FaceCount { get { return _numFaces; } }
 
-        #endregion
+        internal List<IMatrixNode> _influences;
+        [Browsable(false)]
+        public List<IMatrixNode> Influences { get { return _influences; } }
 
-        public List<Vertex3> Vertices { get { return _manager != null ? _manager._vertices : null; } }
+        #endregion
 
         #region Linked Sets
 
@@ -568,9 +585,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #endregion
 
-        internal List<IMatrixNode> _influences;
-        [Browsable(false)]
-        public List<IMatrixNode> Influences { get { return _influences; } }
+        #region Variables
+
+        int _totalLength, _mdl0Offset, _stringOffset;
 
         public int _numVertices;
         public int _numFaces;
@@ -586,7 +603,26 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal short[] _elementIndices = new short[12];
 
-        #region Single Bind Linkage
+        public int[] _nodeCache;
+        private int tableLen = 0;
+        private int triCount = 0;
+        private int stripCount = 0;
+        private int primitiveStart = 0;
+        private int primitiveSize = 0;
+        public GXVtxDescList[] _descList;
+        public GXVtxAttrFmtList[] _fmtList;
+        public int fpStride = 0;
+        public Facepoint[] _facepoints;
+        //public List<PrimitiveGroup> Primitives { get { return groups; } }
+        public List<PrimitiveGroup> groups = new List<PrimitiveGroup>();
+        public List<Triangle> Triangles = new List<Triangle>();
+        public List<Tristrip> Tristrips = new List<Tristrip>();
+
+        public bool _rebuild = false;
+
+        #endregion
+
+        #region Single Bind linkage
         [Browsable(true), TypeConverter(typeof(DropDownListBones))]
         public string SingleBind
         {
@@ -642,14 +678,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _material._polygons.Remove(this);
                 if ((_material = value) != null)
                     _material._polygons.Add(this);
-                Model.SignalPropertyChange();
             }
         }
         [Browsable(true), TypeConverter(typeof(DropDownListMaterials))]
         public string Material
         {
             get { return _material == null ? null : _material._name; }
-            set { MaterialNode = String.IsNullOrEmpty(value) ? null : Model.FindOrCreateMaterial(value); }
+            set { if (String.IsNullOrEmpty(value)) return; MaterialNode = Model.FindOrCreateMaterial(value); Model.SignalPropertyChange(); }
         }
         #endregion
 
@@ -680,7 +715,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         #endregion
 
-        internal bool _render = true;
+        #region Reading & Writing
+
         internal PrimitiveManager _manager;
 
         public override void Dispose()
@@ -825,23 +861,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             return false;
         }
-
-        public int[] _nodeCache;
-        private int tableLen = 0;
-        private int triCount = 0;
-        private int stripCount = 0;
-        private int primitiveStart = 0;
-        private int primitiveSize = 0;
-        public GXVtxDescList[] _descList;
-        public GXVtxAttrFmtList[] _fmtList;
-        public int fpStride = 0;
-        public Facepoint[] _facepoints;
-        //public List<PrimitiveGroup> Primitives { get { return groups; } }
-        public List<PrimitiveGroup> groups = new List<PrimitiveGroup>();
-        public List<Triangle> Triangles = new List<Triangle>();
-        public List<Tristrip> Tristrips = new List<Tristrip>();
-
-        public bool _rebuild = false;
 
         #region Rebuilding
 
@@ -1477,6 +1496,574 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #endregion
 
+        #endregion
+
+        #region Rendering
+        internal bool _render = true;
+        public void EvalAlphaFunc(out double near, out double far)
+        {
+            near = 0;
+            far = 1;
+
+            GXAlphaFunction func = MaterialNode._alphaFunc;
+            //Simplify the alpha equation.
+            switch (func.Logic)
+            {
+                case AlphaOp.And: //&&
+                    if (func.ref0 > func.ref1)
+                    {
+
+                    }
+                    
+                    break;
+                case AlphaOp.Or: //||
+
+                    break; //==
+                case AlphaOp.InverseExclusiveOr:
+
+                    break; //!=
+                case AlphaOp.ExclusiveOr:
+                    
+                    break;
+            }
+        }
+
+        public void PreRender()
+        {
+            if (_singleBind != null)
+            {
+                GL.PushMatrix();
+                Matrix m = _singleBind.Matrix;
+                GL.MultMatrix((float*)&m);
+            }
+
+            if (_material != null)
+            {
+                switch ((int)_material.CullMode)
+                {
+                    case 0: //None
+                        GL.Disable(EnableCap.CullFace);
+                        break;
+                    case 1: //Outside
+                        GL.Enable(EnableCap.CullFace);
+                        GL.CullFace(CullFaceMode.Front);
+                        break;
+                    case 2: //Inside
+                        GL.Enable(EnableCap.CullFace);
+                        GL.CullFace(CullFaceMode.Back);
+                        break;
+                    case 3: //Double
+                        GL.Enable(EnableCap.CullFace);
+                        GL.CullFace(CullFaceMode.FrontAndBack);
+                        break;
+                }
+
+                if (_material.EnableDepthTest)
+                {
+                    GL.Enable(EnableCap.DepthTest);
+                    DepthFunction depth = DepthFunction.Lequal;
+                    switch (_material.DepthFunction)
+                    {
+                        case GXCompare.Never:
+                            depth = DepthFunction.Never; break;
+                        case GXCompare.Less:
+                            depth = DepthFunction.Less; break;
+                        case GXCompare.Equal:
+                            depth = DepthFunction.Equal; break;
+                        case GXCompare.LessOrEqual:
+                            depth = DepthFunction.Lequal; break;
+                        case GXCompare.Greater:
+                            depth = DepthFunction.Greater; break;
+                        case GXCompare.NotEqual:
+                            depth = DepthFunction.Notequal; break;
+                        case GXCompare.GreaterOrEqual:
+                            depth = DepthFunction.Gequal; break;
+                        case GXCompare.Always:
+                            depth = DepthFunction.Always; break;
+                    }
+                    GL.DepthFunc(depth);
+                }
+                else
+                    GL.Disable(EnableCap.DepthTest);
+
+                if (_material._blendMode.EnableBlend)
+                {
+                    GL.Enable(EnableCap.Blend);
+                    BlendingFactorSrc src = BlendingFactorSrc.OneMinusSrcAlpha;
+                    switch (_material._blendMode.SrcFactor)
+                    {
+                        case BlendFactor.DestinationAlpha:
+                            src = BlendingFactorSrc.DstAlpha; break;
+                        case BlendFactor.DestinationColor:
+                            src = BlendingFactorSrc.DstColor; break;
+                        case BlendFactor.InverseDestinationAlpha:
+                            src = BlendingFactorSrc.OneMinusDstAlpha; break;
+                        case BlendFactor.InverseDestinationColor:
+                            src = BlendingFactorSrc.OneMinusDstColor; break;
+                        case BlendFactor.InverseSourceAlpha:
+                            src = BlendingFactorSrc.OneMinusSrcAlpha; break;
+                        //case BlendFactor.InverseSourceColor:
+                        //    src = BlendingFactorSrc.ONE_MINUS_SRC_COLOR; break;
+                        case BlendFactor.One:
+                            src = BlendingFactorSrc.One; break;
+                        case BlendFactor.SourceAlpha:
+                            src = BlendingFactorSrc.SrcAlpha; break;
+                        //case BlendFactor.SourceColor:
+                        //    src = BlendingFactorSrc.SrcColor; break;
+                        case BlendFactor.Zero:
+                            src = BlendingFactorSrc.Zero; break;
+                    }
+                    BlendingFactorDest dst = BlendingFactorDest.OneMinusSrcAlpha;
+                    switch (_material._blendMode.DstFactor)
+                    {
+                        case BlendFactor.DestinationAlpha:
+                            dst = BlendingFactorDest.DstAlpha; break;
+                        case BlendFactor.DestinationColor:
+                            dst = BlendingFactorDest.DstColor; break;
+                        case BlendFactor.InverseDestinationAlpha:
+                            dst = BlendingFactorDest.OneMinusDstAlpha; break;
+                        case BlendFactor.InverseDestinationColor:
+                            dst = BlendingFactorDest.OneMinusDstColor; break;
+                        case BlendFactor.InverseSourceAlpha:
+                            dst = BlendingFactorDest.OneMinusSrcAlpha; break;
+                        //case BlendFactor.InverseSourceColor:
+                        //    dst = BlendingFactorDest.ONE_MINUS_SRC_COLOR; break;
+                        case BlendFactor.One:
+                            dst = BlendingFactorDest.One; break;
+                        case BlendFactor.SourceAlpha:
+                            dst = BlendingFactorDest.SrcAlpha; break;
+                        //case BlendFactor.SourceColor:
+                        //    dst = BlendingFactorDest.SrcColor; break;
+                        case BlendFactor.Zero:
+                            dst = BlendingFactorDest.Zero; break;
+                    }
+                    GL.BlendFunc(src, dst);
+                }
+                else
+                    GL.Disable(EnableCap.Blend);
+
+                //if (_material.EnableAlphaFunction)
+                //{
+                //    GL.Enable(EnableCap.AlphaTest);
+
+                //    double near = 0.0f, far = 1.0f;
+                //    EvalAlphaFunc(out near, out far);
+                //    GL.DepthRange(near, far);
+                    
+                //    AlphaFunction alpha = AlphaFunction.Greater;
+                //    switch (_material._alphaFunc.Comp0)
+                //    {
+                //        case AlphaCompare.Never:
+                //            alpha = AlphaFunction.Never; break;
+                //        case AlphaCompare.Less:
+                //            alpha = AlphaFunction.Less; break;
+                //        case AlphaCompare.Equal:
+                //            alpha = AlphaFunction.Equal; break;
+                //        case AlphaCompare.LessOrEqual:
+                //            alpha = AlphaFunction.Lequal; break;
+                //        case AlphaCompare.Greater:
+                //            alpha = AlphaFunction.Greater; break;
+                //        case AlphaCompare.NotEqual:
+                //            alpha = AlphaFunction.Notequal; break;
+                //        case AlphaCompare.GreaterOrEqual:
+                //            alpha = AlphaFunction.Gequal; break;
+                //        case AlphaCompare.Always:
+                //            alpha = AlphaFunction.Always; break;
+                //    }
+                //    GL.AlphaFunc(alpha, ((float)_material._alphaFunc.ref0) / 255.0f);
+                //    switch (_material._alphaFunc.Comp1)
+                //    {
+                //        case AlphaCompare.Never:
+                //            alpha = AlphaFunction.Never; break;
+                //        case AlphaCompare.Less:
+                //            alpha = AlphaFunction.Less; break;
+                //        case AlphaCompare.Equal:
+                //            alpha = AlphaFunction.Equal; break;
+                //        case AlphaCompare.LessOrEqual:
+                //            alpha = AlphaFunction.Lequal; break;
+                //        case AlphaCompare.Greater:
+                //            alpha = AlphaFunction.Greater; break;
+                //        case AlphaCompare.NotEqual:
+                //            alpha = AlphaFunction.Notequal; break;
+                //        case AlphaCompare.GreaterOrEqual:
+                //            alpha = AlphaFunction.Gequal; break;
+                //        case AlphaCompare.Always:
+                //            alpha = AlphaFunction.Always; break;
+                //    }
+                //    GL.AlphaFunc(alpha, ((float)_material._alphaFunc.ref1) / 255.0f);
+                //}
+                //else
+                //    GL.Disable(EnableCap.AlphaTest);
+            }
+        }
+
+        public string GenVertexShader()
+        {
+            string shader = "";
+            for (int i = 0; i < 12; i++)
+                if (_manager._faceData[i] != null)
+                    switch (i)
+                    {
+                        case 0:
+                            shader += "in vec3 poscoords;\n";
+                            break;
+                        case 1:
+                            shader += "in vec3 normcoords;\n";
+                            break;
+                        case 2:
+                        case 3:
+                            shader += String.Format("in vec3 rascolor{0};\n", i);
+                            break;
+                        default:
+                            shader += String.Format("in vec2 texcoord{0};\n", i);
+                            break;
+                    }
+            shader += "void main(void)\n{";
+            shader += "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;";
+            shader += "\n}";
+            return shader;
+        }
+
+        public string GenerateVSOutputStruct()
+        {
+            string s = "";
+            s += String.Format("struct VS_OUTPUT\n{\n");
+            s += String.Format("  vec4 pos : POSITION;\n");
+            s += String.Format("  vec4 colors_0 : COLOR0;\n");
+            s += String.Format("  vec4 colors_1 : COLOR1;\n");
+
+            if (MaterialNode.Children.Count < 7)
+            {
+                for (uint i = 0; i < MaterialNode.Children.Count; ++i)
+                    s += String.Format("  vec3 tex{0} : TEXCOORD{0};\n", i);
+                s += String.Format("  vec4 clipPos : TEXCOORD{0};\n", MaterialNode.Children.Count);
+                s += String.Format("  vec4 Normal : TEXCOORD{0};\n", MaterialNode.Children.Count + 1);
+            }
+            else
+            {
+                // clip position is in w of first 4 texcoords
+                //if(g_ActiveConfig.bEnablePixelLighting && g_ActiveConfig.backend_info.bSupportsPixelLighting)
+                //{
+                    for (int i = 0; i < 8; ++i)
+                        s += String.Format("  vec4 tex{0} : TEXCOORD{0};\n", i);
+                //}
+                //else
+                //{
+                //    for (uint i = 0; i < MaterialNode.Children.Count; ++i)
+                //        s += String.Format("  float{0} tex{1} : TEXCOORD{1};\n", i < 4 ? 4 : 3, i);
+                //}
+            }      
+            s += String.Format("};\n");
+            return s;
+        }
+
+        // coloralpha - 1 if color, 2 if alpha
+        public string GenerateLightShader(int index, LightChannelControl chan, string lightsName, int coloralpha)
+        {
+            string s = "";
+
+            string swizzle = "xyzw";
+            if (coloralpha == 1 ) swizzle = "xyz";
+            else if (coloralpha == 2 ) swizzle = "w";
+
+            if (chan.Attenuation == GXAttnFn.None) 
+            {
+                // atten disabled
+                switch (chan.DiffuseFunction) 
+                {
+                    case GXDiffuseFn.Disabled:
+                        s += String.Format("lacc.{0} += {1}.lights[{2}].col.{0};\n", swizzle, lightsName, index);
+                        break;
+                    case GXDiffuseFn.Enabled:
+                    case GXDiffuseFn.Clamped:
+                        s += String.Format("ldir = normalize({0}.lights[{1}].pos.xyz - pos.xyz);\n", lightsName, index);
+                        s += String.Format("lacc.{0} += {1}dot(ldir, _norm0)) * {2}.lights[{3}].col.{4};\n",
+                            swizzle, chan.DiffuseFunction != GXDiffuseFn.Enabled ? "max(0.0f," :"(", lightsName, index, swizzle);
+                        break;
+                    //default: _assert_(0);
+                }
+            }
+            else
+            {
+                // spec and spot
+                if (chan.Attenuation == GXAttnFn.Spotlight)
+                {
+                    // spot
+                    s += String.Format("ldir = {0}.lights[{1}].pos.xyz - pos.xyz;\n", lightsName, index);
+                    s += String.Format("dist2 = dot(ldir, ldir);\n" + 
+                            "dist = sqrt(dist2);\n" + 
+                            "ldir = ldir / dist;\n" + 
+                            "attn = max(0.0f, dot(ldir, {0}.lights[{1}].dir.xyz));\n", lightsName, index);
+                    s += String.Format("attn = max(0.0f, dot({0}.lights[{1}].cosatt.xyz, vec3(1.0f, attn, attn*attn))) / dot({2}.lights[{3}].distatt.xyz, vec3(1.0f,dist,dist2));\n", lightsName, index, lightsName, index);
+                }
+                if (chan.Attenuation == GXAttnFn.Specular)
+                {
+                    // specular
+                    s += String.Format("ldir = normalize({0}.lights[{1}].pos.xyz);\n", lightsName, index);
+                    s += String.Format("attn = (dot(_norm0,ldir) >= 0.0f) ? max(0.0f, dot(_norm0, {0}.lights[{1}].dir.xyz)) : 0.0f;\n", lightsName, index);
+                    s += String.Format("attn = max(0.0f, dot({0}.lights[{1}].cosatt.xyz, vec3(1,attn,attn*attn))) / dot({2}.lights[{3}].distatt.xyz, vec3(1,attn,attn*attn));\n", lightsName, index, lightsName, index);
+                }
+
+                switch (chan.DiffuseFunction)
+                {
+                    case GXDiffuseFn.Disabled:
+                        s += String.Format("lacc.{0} += attn * {1}.lights[{2}].col.{3};\n", swizzle, lightsName, index, swizzle);
+                        break;
+                    case GXDiffuseFn.Enabled:
+                    case GXDiffuseFn.Clamped:
+                        s += String.Format("lacc.{0} += attn * {1}dot(ldir, _norm0)) * {2}.lights[{3}].col.{4};\n",
+                            swizzle,
+                            chan.DiffuseFunction != GXDiffuseFn.Enabled ? "max(0.0f," : "(",
+                            lightsName,
+                            index,
+                            swizzle);
+                        break;
+                    //default: _assert_(0);
+                }
+            }
+            s += "\n";
+            return s;
+        }
+
+        // vertex shader
+        // lights/colors
+        // materials name is I_MATERIALS in vs and I_PMATERIALS in ps
+        // inColorName is color in vs and colors_ in ps
+        // dest is o.colors_ in vs and colors_ in ps
+        public string GenerateLightingShader(string materialsName, string lightsName, string inColorName, string dest)
+        {
+            string s = "{\n";
+            for (uint j = 0; j < MaterialNode.LightChannels; j++)
+            {
+                LightChannelControl color = j == 0 ? MaterialNode._chan1._color : MaterialNode._chan2._color;
+                LightChannelControl alpha = j == 0 ? MaterialNode._chan1._alpha : MaterialNode._chan2._alpha;
+
+                if (color.MaterialSource == GXColorSrc.Vertex) 
+                {
+                    // from vertex
+                    if (_colorSet[j] != null)
+                        s += String.Format("mat = {0}{1};\n", inColorName, j);
+                    else if (_colorSet[0] != null)
+                        s += String.Format("mat = {0}0;\n", inColorName);
+                    else
+                        s += String.Format("mat = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n");
+                }
+                else // from color
+                    s += String.Format("mat = {0}.C{1};\n", materialsName, j + 2);
+
+                if (color.Enabled) 
+                {
+                    if (color.AmbientSource == GXColorSrc.Vertex) 
+                    {
+                        // from vertex
+                        if (_colorSet[j] != null)
+                            s += String.Format("lacc = {0}{1};\n", inColorName, j);
+                        else if (_colorSet[0] != null)
+                            s += String.Format("lacc = {0}0;\n", inColorName);
+                        else
+                            s += String.Format("lacc = vec4(0.0f, 0.0f, 0.0f, 0.0f);\n");
+                    }
+                    else // from color
+                        s += String.Format("lacc = {0}.C{1};\n", materialsName, j);
+                }
+                else
+                    s += "lacc = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n";
+
+                // check if alpha is different
+                if (alpha.MaterialSource != color.MaterialSource) 
+                {
+                    if (alpha.MaterialSource == GXColorSrc.Vertex) 
+                    {
+                        // from vertex
+                        if (_colorSet[j] != null)
+                            s += String.Format("mat.w = {0}{1}.w;\n", inColorName, j);
+                        else if (_colorSet[0] != null)
+                            s += String.Format("mat.w = {0}0.w;\n", inColorName);
+                        else
+                            s += String.Format("mat.w = 1.0f;\n");
+                    }
+                    else // from color
+                        s += String.Format("mat.w = {0}.C{1}.w;\n", materialsName, j+2);
+                }
+
+                if (alpha.Enabled)
+                {
+                    if (alpha.AmbientSource == GXColorSrc.Vertex) 
+                    {
+                        // from vertex
+                        if (_colorSet[j] != null)
+                            s += String.Format("lacc.w = {0}{1}.w;\n", inColorName, j);
+                        else if (_colorSet[0] != null)
+                            s += String.Format("lacc.w = {0}0.w;\n", inColorName);
+                        else
+                            s += String.Format("lacc.w = 0.0f;\n");
+                    }
+                    else // from color
+                        s += String.Format("lacc.w = {0}.C{1}.w;\n", materialsName, j);
+                }
+                else
+                    s += "lacc.w = 1.0f;\n";
+
+                if (color.Enabled && alpha.Enabled)
+                {
+                    // both have lighting, test if they use the same lights
+                    int mask = 0;
+                    if (color.Lights == alpha.Lights)
+                    {
+                        mask = (int)color.Lights & (int)alpha.Lights;
+                        if (mask != 0)
+                            for (int i = 0; i < 8; i++)
+                                if ((mask & (1 << i)) != 0)
+                                    s += GenerateLightShader(i, color, lightsName, 3);
+                    }
+
+                    // no shared lights
+                    for (int i = 0; i < 8; i++)
+                    {
+                        if (((mask & (1 << i)) == 0) && ((int)color.Lights & (1 << i)) != 0)
+                            s += GenerateLightShader(i, color, lightsName, 1);
+                        if (((mask & (1 << i)) == 0) && ((int)alpha.Lights & (1 << i)) != 0)
+                            s += GenerateLightShader(i, alpha, lightsName, 2);
+                    }
+                }
+                else if (color.Enabled || alpha.Enabled)
+                {
+                    // lights are disabled on one channel so process only the active ones
+                    LightChannelControl workingchannel = color.Enabled ? color : alpha;
+                    int coloralpha = color.Enabled ? 1 : 2;
+                    for (int i = 0; i < 8; i++)
+                        if (((int)workingchannel.Lights & (1 << i)) != 0)
+                            s += GenerateLightShader(i, workingchannel, lightsName, coloralpha);
+                }
+                s += String.Format("{0}{1} = mat * saturate(lacc);\n}\n", dest, j);
+            }
+            return s;
+        }
+        
+        public int shaderProgramHandle = 0;
+        internal void Render(TKContext ctx)
+        {
+            if (!_render)
+                return;
+
+            if (ctx._canUseShaders)
+            {
+                bool updateProgram = _renderUpdate || MaterialNode._renderUpdate || MaterialNode.ShaderNode._renderUpdate;
+                if (updateProgram)
+                {
+                    if (shaderProgramHandle > 0)
+                        GL.DeleteProgram(shaderProgramHandle);
+
+                    shaderProgramHandle = GL.CreateProgram();
+
+                    if (_renderUpdate)
+                    {
+                        vertexShaderSource = GenVertexShader();
+                        GL.ShaderSource(vertexShaderHandle, vertexShaderSource);
+                        GL.CompileShader(vertexShaderHandle);
+                        GL.AttachShader(shaderProgramHandle, vertexShaderHandle);
+                    }
+                    if (MaterialNode._renderUpdate || MaterialNode.ShaderNode._renderUpdate)
+                    {
+                        MaterialNode.GenFragShader();
+                        GL.AttachShader(shaderProgramHandle, MaterialNode.fragmentShaderHandle);
+                        MaterialNode.SetUniforms(shaderProgramHandle);
+                    }
+                    GL.LinkProgram(shaderProgramHandle);
+                }
+                GL.UseProgram(shaderProgramHandle);
+            }
+
+            _manager.PrepareStream();
+
+            PreRender();
+
+            if (_material != null)
+                if (_material.Children.Count == 0) _manager.RenderTexture(null);
+                else foreach (MDL0MaterialRefNode mr in _material.Children)
+                {
+                    if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
+                        continue;
+
+                    GL.MatrixMode(MatrixMode.Texture);
+                    GL.PushMatrix();
+
+                    //Add bind transform
+                    GL.Scale(mr.Scale._x, mr.Scale._y, 0);
+                    GL.Rotate(mr.Rotation, 1, 0, 0);
+                    GL.Translate(-mr.Translation._x, mr.Translation._y, 0);
+
+                    //Now add frame transform
+                    GL.Scale(mr._frameState._scale._x, mr._frameState._scale._y, 1);
+                    GL.Rotate(mr._frameState._rotate._x, 1, 0, 0);
+                    GL.Translate(-mr._frameState._translate._x, mr._frameState._translate._y - ((mr._frameState._scale._y - 1) / 2), 0);
+
+                    GL.MatrixMode(MatrixMode.Modelview);
+
+                    mr.Bind(ctx, shaderProgramHandle);
+                    
+                    _manager.RenderTexture(mr);
+
+                    switch ((int)mr.VWrapMode)
+                    {
+                        case 0: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge); break;
+                        case 1: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat); break;
+                        case 2: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.MirroredRepeat); break;
+                    }
+
+                    switch ((int)mr.VWrapMode)
+                    {
+                        case 0: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge); break;
+                        case 1: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat); break;
+                        case 2: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.MirroredRepeat); break;
+                    }
+
+                    GL.MatrixMode(MatrixMode.Texture);
+                    GL.PopMatrix();
+                    GL.MatrixMode(MatrixMode.Modelview);
+
+                    //mr._texture.Rendered = true;
+                }
+            else
+                _manager.RenderTexture(null);
+            
+            _manager.DetachStreams();
+
+            if (_singleBind != null)
+                GL.PopMatrix();
+        }
+
+        public bool _renderUpdate = false;
+
+        public string vertexShaderSource;
+        public int vertexShaderHandle;
+
+        internal void WeightVertices() { _manager.Weight(); }
+        internal void UnWeightVertices() { _manager.UnWeight(); }
+
+        internal override void Bind(TKContext ctx) 
+        {
+            _render = (_bone != null ? _bone._flags1.HasFlag(BoneFlags.Visible) ? true : false : true);
+
+            vertexShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.VertexShader);
+
+            _renderUpdate = true;
+        }
+        internal override void Unbind() 
+        {
+            _render = false;
+
+            if (vertexShaderHandle != 0)
+                GL.DeleteShader(vertexShaderHandle);
+
+            if (shaderProgramHandle != 0)
+                GL.DeleteProgram(shaderProgramHandle);
+        }
+
+        #endregion
+
+        #region Etc
+
         public MDL0PolygonNode Clone()
         {
             MDL0PolygonNode node = this.MemberwiseClone() as MDL0PolygonNode;
@@ -1542,9 +2129,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (_vertexNode != null)
                 if (_vertexNode._polygons.Count == 1)
-                if (MessageBox.Show("Do you want to remove this object's vertex node?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    _vertexNode.Remove();
-                else _vertexNode._polygons.Remove(this);
+                    if (MessageBox.Show("Do you want to remove this object's vertex node?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                        _vertexNode.Remove();
+                    else _vertexNode._polygons.Remove(this);
                 else _vertexNode._polygons.Remove(this);
 
             if (_normalNode != null)
@@ -1583,294 +2170,22 @@ namespace BrawlLib.SSBB.ResourceNodes
                 p.RecalcIndices();
         }
 
-        #region Rendering
-        internal void Render(GLContext ctx)
+        public static int DrawCompare(ResourceNode n1, ResourceNode n2)
         {
-            if (!_render)
-                return;
-
-            //Matrix x = Model.floorShadow;
-
-            _manager.PrepareStream(ctx);
-
-            if (_singleBind != null)
-            {
-                ctx.glPushMatrix();
-                Matrix m = _singleBind.Matrix;
-                ctx.glMultMatrix((float*)&m);
-            }
-
-            //ctx.glStencilFunc((uint)GLFunction.LESS, 2, 0xffffffff);
-            //ctx.glStencilOp((uint)GLTexEnvMode.REPLACE, (uint)GLTexEnvMode.REPLACE, (uint)GLTexEnvMode.REPLACE);
-
-            //ctx.glEnable(GLEnableCap.Blend);
-            //ctx.glBlendFunc(GLBlendFactor.SRC_ALPHA, GLBlendFactor.ONE_MINUS_SRC_ALPHA);
-            //ctx.glDisable((uint)GLEnableCap.Lighting); 
-            //ctx.glColor(0.0f, 0.0f, 0.0f, 0.5f);
-
-            //ctx.glPushMatrix();
-            //ctx.glMultMatrix((float*)&x);
-
-            if (_material != null)
-            {
-                switch ((int)_material.CullMode)
-                {
-                    case 0: //None
-                        ctx.glDisable((uint)GLEnableCap.CullFace);
-                        break;
-                    case 1: //Outside
-                        ctx.glEnable(GLEnableCap.CullFace);
-                        ctx.glCullFace(GLFace.Front);
-                        break;
-                    case 2: //Inside
-                        ctx.glEnable(GLEnableCap.CullFace);
-                        ctx.glCullFace(GLFace.Back);
-                        break;
-                    case 3: //Double
-                        ctx.glEnable(GLEnableCap.CullFace);
-                        ctx.glCullFace(GLFace.FrontAndBack);
-                        break;
-                }
-
-                //if (_material.EnableDepthTest)
-                //{
-                //    GLFunction depth = GLFunction.LEQUAL;
-                //    switch (_material.DepthFunction)
-                //    {
-                //        case GXCompare.GX_NEVER:
-                //            depth = GLFunction.NEVER; break;
-                //        case GXCompare.GX_LESS:
-                //            depth = GLFunction.LESS; break;
-                //        case GXCompare.GX_EQUAL:
-                //            depth = GLFunction.EQUAL; break;
-                //        case GXCompare.GX_LEQUAL:
-                //            depth = GLFunction.LEQUAL; break;
-                //        case GXCompare.GX_GREATER:
-                //            depth = GLFunction.GREATER; break;
-                //        case GXCompare.GX_NEQUAL:
-                //            depth = GLFunction.NOTEQUAL; break;
-                //        case GXCompare.GX_GEQUAL:
-                //            depth = GLFunction.GEQUAL; break;
-                //        case GXCompare.GX_ALWAYS:
-                //            depth = GLFunction.ALWAYS; break;
-                //    }
-                //    ctx.glDepthFunc(depth);
-                //    ctx.glEnable(GLEnableCap.DepthTest);
-                //}
-                //else
-                //    ctx.glDisable((uint)GLEnableCap.DepthTest);
-
-                //if (_material._blendMode.EnableBlend)
-                //{
-                //    GLBlendFactor value1 = GLBlendFactor.ONE_MINUS_SRC_ALPHA;
-                //    switch (_material._blendMode.SrcFactor)
-                //    {
-                //        case BlendFactor.GX_BL_DSTALPHA:
-                //            value1 = GLBlendFactor.DST_ALPHA; break;
-                //        case BlendFactor.GX_BL_DSTCLR:
-                //            value1 = GLBlendFactor.DST_COLOR; break;
-                //        case BlendFactor.GX_BL_INVDSTALPHA:
-                //            value1 = GLBlendFactor.ONE_MINUS_DST_ALPHA; break;
-                //        case BlendFactor.GX_BL_INVDSTCLR:
-                //            value1 = GLBlendFactor.ONE_MINUS_DST_COLOR; break;
-                //        case BlendFactor.GX_BL_INVSRCALPHA:
-                //            value1 = GLBlendFactor.ONE_MINUS_SRC_ALPHA; break;
-                //        //case BlendFactor.GX_BL_INVSRCCLR:
-                //        //    blend = GLBlendFactor.ONE_MINUS_SRC_COLOR; break;
-                //        case BlendFactor.GX_BL_ONE:
-                //            value1 = GLBlendFactor.ONE; break;
-                //        case BlendFactor.GX_BL_SRCALPHA:
-                //            value1 = GLBlendFactor.SRC_ALPHA; break;
-                //        //case BlendFactor.GX_BL_SRCCLR:
-                //        //    value1 = GLBlendFactor.SRC_COLOR; break;
-                //        case BlendFactor.GX_BL_ZERO:
-                //            value1 = GLBlendFactor.ZERO; break;
-                //    }
-                //    GLBlendFactor value2 = GLBlendFactor.ONE_MINUS_SRC_ALPHA;
-                //    switch (_material._blendMode.DstFactor)
-                //    {
-                //        case BlendFactor.GX_BL_DSTALPHA:
-                //            value2 = GLBlendFactor.DST_ALPHA; break;
-                //        case BlendFactor.GX_BL_DSTCLR:
-                //            value2 = GLBlendFactor.DST_COLOR; break;
-                //        case BlendFactor.GX_BL_INVDSTALPHA:
-                //            value2 = GLBlendFactor.ONE_MINUS_DST_ALPHA; break;
-                //        case BlendFactor.GX_BL_INVDSTCLR:
-                //            value2 = GLBlendFactor.ONE_MINUS_DST_COLOR; break;
-                //        case BlendFactor.GX_BL_INVSRCALPHA:
-                //            value2 = GLBlendFactor.ONE_MINUS_SRC_ALPHA; break;
-                //        //case BlendFactor.GX_BL_INVSRCCLR:
-                //        //    value2 = GLBlendFactor.ONE_MINUS_SRC_COLOR; break;
-                //        case BlendFactor.GX_BL_ONE:
-                //            value2 = GLBlendFactor.ONE; break;
-                //        case BlendFactor.GX_BL_SRCALPHA:
-                //            value2 = GLBlendFactor.SRC_ALPHA; break;
-                //        //case BlendFactor.GX_BL_SRCCLR:
-                //        //    value2 = GLBlendFactor.SRC_COLOR; break;
-                //        case BlendFactor.GX_BL_ZERO:
-                //            value2 = GLBlendFactor.ZERO; break;
-                //    }
-                //    ctx.glBlendFunc(value1, value2);
-                //    ctx.glEnable(GLEnableCap.Blend);
-                //}
-                //else
-                //    ctx.glDisable((uint)GLEnableCap.Blend);
-
-                //if (_material.EnableAlphaTest)
-                //{
-                //    ctx.glEnable(GLEnableCap.AlphaTest);
-                //    bool value;
-                //    switch (_material._alphaFunc.Logic)
-                //    {
-
-                //        case AlphaOp.ALPHAOP_AND:
-                //            &&
-                //            break;
-                //        case AlphaOp.ALPHAOP_OR:
-                //            ||
-                //            break;
-                //        case AlphaOp.ALPHAOP_XNOR:
-                //            ==
-                //            break;
-                //        case AlphaOp.ALPHAOP_XOR:
-                //            !=
-                //            break;
-                //    }
-
-                //    GLAlphaFunc alpha = GLAlphaFunc.Greater;
-                //    switch (_material._alphaFunc.Comp0)
-                //    {
-                //        case AlphaCompare.COMPARE_NEVER:
-                //            alpha = GLAlphaFunc.Never; break;
-                //        case AlphaCompare.COMPARE_LESS:
-                //            alpha = GLAlphaFunc.Less; break;
-                //        case AlphaCompare.COMPARE_EQUAL:
-                //            alpha = GLAlphaFunc.Equal; break;
-                //        case AlphaCompare.COMPARE_LEQUAL:
-                //            alpha = GLAlphaFunc.LEqual; break;
-                //        case AlphaCompare.COMPARE_GREATER:
-                //            alpha = GLAlphaFunc.Greater; break;
-                //        case AlphaCompare.COMPARE_NEQUAL:
-                //            alpha = GLAlphaFunc.NotEqual; break;
-                //        case AlphaCompare.COMPARE_GEQUAL:
-                //            alpha = GLAlphaFunc.GEqual; break;
-                //        case AlphaCompare.COMPARE_ALWAYS:
-                //            alpha = GLAlphaFunc.Always; break;
-                //    }
-                //    ctx.glAlphaFunc(alpha, (float)(((float)_material._alphaFunc.ref0) / 255));
-                //    switch (_material._alphaFunc.Comp1)
-                //    {
-                //        case AlphaCompare.COMPARE_NEVER:
-                //            alpha = GLAlphaFunc.Never; break;
-                //        case AlphaCompare.COMPARE_LESS:
-                //            alpha = GLAlphaFunc.Less; break;
-                //        case AlphaCompare.COMPARE_EQUAL:
-                //            alpha = GLAlphaFunc.Equal; break;
-                //        case AlphaCompare.COMPARE_LEQUAL:
-                //            alpha = GLAlphaFunc.LEqual; break;
-                //        case AlphaCompare.COMPARE_GREATER:
-                //            alpha = GLAlphaFunc.Greater; break;
-                //        case AlphaCompare.COMPARE_NEQUAL:
-                //            alpha = GLAlphaFunc.NotEqual; break;
-                //        case AlphaCompare.COMPARE_GEQUAL:
-                //            alpha = GLAlphaFunc.GEqual; break;
-                //        case AlphaCompare.COMPARE_ALWAYS:
-                //            alpha = GLAlphaFunc.Always; break;
-                //    }
-                //    ctx.glAlphaFunc(alpha, (float)(((float)_material._alphaFunc.ref1) / 255));
-                //}
-                //else
-                //    ctx.glDisable((uint)GLEnableCap.AlphaTest);
-
-                _material.Render(ctx);
-                if (_material.Children.Count > 0)
-                foreach (MDL0MaterialRefNode mr in _material.Children)
-                {
-                    if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
-                        continue;
-
-                    ctx.glMatrixMode(GLMatrixMode.Texture);
-                    ctx.glPushMatrix();
-
-                    Matrix m = mr._texMatrix.TexMtx;
-                    ctx.glLoadMatrix((float*)&m);
-
-                    //Add bind transform
-                    ctx.glScale(mr.Scale.X, mr.Scale.Y, 0);
-                    ctx.glRotate(mr.Rotation, 1, 0, 0);
-                    ctx.glTranslate(-mr.Translation.X, mr.Translation.Y, 0);
-
-                    //Now add frame transform
-                    ctx.glScale(mr._frameState._scale._x, mr._frameState._scale._y, 1);
-                    ctx.glRotate(mr._frameState._rotate.X, 1, 0, 0);
-                    ctx.glTranslate(-mr._frameState._translate.X, mr._frameState._translate._y - ((mr._frameState._scale._y - 1) / 2), 0);
-
-                    ctx.glMatrixMode(GLMatrixMode.ModelView);
-
-                    mr.Bind(ctx);
-                    
-                    _manager.RenderTexture(ctx, mr);
-
-                    switch ((int)mr.UWrapMode)
-                    {
-                        case 0: ctx.glTexParameter(
-                                GLTextureTarget.Texture2D,
-                                GLTextureParameter.WrapS,
-                                (int)GLTextureWrapMode.CLAMP_TO_EDGE); break;
-                        case 1: ctx.glTexParameter(
-                                GLTextureTarget.Texture2D,
-                                GLTextureParameter.WrapS,
-                                (int)GLTextureWrapMode.REPEAT); break;
-                        case 2: ctx.glTexParameter(
-                                GLTextureTarget.Texture2D,
-                                GLTextureParameter.WrapS,
-                                (int)GLTextureWrapMode.MIRRORED_REPEAT); break;
-                    }
-
-                    switch ((int)mr.VWrapMode)
-                    {
-                        case 0: ctx.glTexParameter(
-                                GLTextureTarget.Texture2D,
-                                GLTextureParameter.WrapT,
-                                (int)GLTextureWrapMode.CLAMP_TO_EDGE); break;
-                        case 1: ctx.glTexParameter(
-                                GLTextureTarget.Texture2D,
-                                GLTextureParameter.WrapT,
-                                (int)GLTextureWrapMode.REPEAT); break;
-                        case 2: ctx.glTexParameter(
-                                GLTextureTarget.Texture2D,
-                                GLTextureParameter.WrapT,
-                                (int)GLTextureWrapMode.MIRRORED_REPEAT); break;
-                    }
-
-                    ctx.glMatrixMode(GLMatrixMode.Texture);
-                    ctx.glPopMatrix();
-                    ctx.glMatrixMode(GLMatrixMode.ModelView);
-
-                    //mr._texture.Rendered = true;
-                }
-                else
-                    _manager.RenderTexture(ctx, null);
-            }
-            else
-                _manager.RenderTexture(ctx, null);
-            //_manager.Render(ctx);
-            //ctx.glPopMatrix();
-            
-            _manager.DetachStreams(ctx);
-
-            if (_singleBind != null)
-                ctx.glPopMatrix();
-
-            //ctx.glActiveTexture(GLMultiTextureTarget.TEXTURE0);
+            //First compare draw priorities
+            if (((MDL0PolygonNode)n1).DrawPriority > ((MDL0PolygonNode)n2).DrawPriority)
+                return 1;
+            if (((MDL0PolygonNode)n1).DrawPriority < ((MDL0PolygonNode)n2).DrawPriority)
+                return -1;
+            //They were equal. Fall back on material draw priority
+            if (((MDL0PolygonNode)n1).MaterialNode.Index > ((MDL0PolygonNode)n2).MaterialNode.Index)
+                return 1;
+            if (((MDL0PolygonNode)n1).MaterialNode.Index < ((MDL0PolygonNode)n2).MaterialNode.Index)
+                return -1;
+            //Should never return equal
+            return 0;
         }
 
-        internal void WeightVertices() { _manager.Weight(); }
-        internal void UnWeightVertices() { _manager.UnWeight(); }
-
-        internal override void Bind(GLContext ctx) { _render = (_bone != null ? _bone._flags1.HasFlag(BoneFlags.Visible) ? true : false : true); }
-        internal override void Unbind(GLContext ctx) { _render = false; }
-
-        #endregion
+#endregion
     }
 }

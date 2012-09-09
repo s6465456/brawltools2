@@ -188,7 +188,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((CLR0v3*)source.Address)->_header._tag == CLR0v3.Tag ? new CLR0Node() : null; }
-
     }
 
     public unsafe class CLR0MaterialNode : ResourceNode

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using BrawlLib.Wii.Models;
 using BrawlLib.Wii.Graphics;
 using BrawlLib.Imaging;
+using BrawlLib.SSBB.ResourceNodes;
 
 namespace BrawlLib.SSBBTypes
 {
@@ -315,7 +316,7 @@ namespace BrawlLib.SSBBTypes
         
         public override string ToString()
         {
-            return string.Format("Type2 (Bone Index:{0}, Parent Node Index:{1})", BoneIndex, ParentNodeIndex);
+            return string.Format("Node (Bone Index:{0}, Parent Node Index:{1})", BoneIndex, ParentNodeIndex);
         }
     }
 
@@ -338,7 +339,7 @@ namespace BrawlLib.SSBBTypes
 
         public override string ToString()
         {
-            return string.Format("Type3 (ID:{0})", Id);
+            return string.Format("NodeMix (ID:{0})", Id);
         }
     }
 
@@ -355,7 +356,7 @@ namespace BrawlLib.SSBBTypes
 
         public override string ToString()
         {
-            return string.Format("Type2 (Index:{0},ParentID:{1})", Index, ParentId);
+            return string.Format("Node (Index:{0},ParentID:{1})", Index, ParentId);
         }
     }
 
@@ -404,15 +405,16 @@ namespace BrawlLib.SSBBTypes
         public bushort _materialIndex;
         public bushort _polygonIndex;
         public bushort _boneIndex;
-        public byte _pad;
+        public byte _zIndex;
 
         public ushort MaterialId { get { return _materialIndex; } set { _materialIndex = value; } }
         public ushort PolygonId { get { return _polygonIndex; } set { _polygonIndex = value; } }
         public ushort BoneIndex { get { return _boneIndex; } set { _boneIndex = value; } }
+        public byte ZIndex { get { return _zIndex; } set { _zIndex = value; } }
 
         public override string ToString()
         {
-            return string.Format("Draw (MatID:{0},PolyID:{1},BoneIndex:{2})", MaterialId, PolygonId, BoneIndex);
+            return string.Format("Draw (MatID:{0},PolyID:{1},BoneIndex:{2},ZIndex:{3})", MaterialId, PolygonId, BoneIndex, ZIndex);
         }
     }
 
@@ -801,6 +803,31 @@ namespace BrawlLib.SSBBTypes
         public RGBAPixel c11;
         public buint _colorCtrl10;
         public buint _colorCtrl11;
+        
+        public LightChannel Channel1 
+        { 
+            get { return new LightChannel(flags0, c00, c01, _colorCtrl00, _colorCtrl01); }
+            set
+            {
+                flags0 = value._flags;
+                c00 = value.MaterialColor;
+                c01 = value.AmbientColor;
+                _colorCtrl00 = value._color._binary.data;
+                _colorCtrl01 = value._alpha._binary.data;
+            }
+        }
+        public LightChannel Channel2 
+        { 
+            get { return new LightChannel(flags1, c10, c11, _colorCtrl10, _colorCtrl11); }
+            set
+            {
+                flags1 = value._flags;
+                c10 = value.MaterialColor;
+                c11 = value.AmbientColor;
+                _colorCtrl10 = value._color._binary.data;
+                _colorCtrl11 = value._alpha._binary.data;
+            }
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -1069,8 +1096,8 @@ namespace BrawlLib.SSBBTypes
             }
         }
 
-        public MDL0TexSRTData* TexMatrices(int version) { return (MDL0TexSRTData*)(Address + 0x1A0 + (_matRefOffset & 0xF)); }
-        public MDL0MaterialLighting* Light(int version) { return (MDL0MaterialLighting*)(Address + 0x3E8 + (_matRefOffset & 0xF)); }
+        public MDL0TexSRTData* TexMatrices(int version) { return (MDL0TexSRTData*)(Address + 0x1A0 + (_matRefOffset == 0 ? (version < 10 ? 4 : 8) : (_matRefOffset & 0xF))); }
+        public MDL0MaterialLighting* Light(int version) { return (MDL0MaterialLighting*)(Address + 0x3E8 + (_matRefOffset == 0 ? (version < 10 ? 4 : 8) : (_matRefOffset & 0xF))); }
         public UserData* UserData(int version) { if (UserDataOffset(version) > 0) return (UserData*)(Address + UserDataOffset(version)); else return null; }
         public MatModeBlock* DisplayLists(int version) { return (MatModeBlock*)(Address + DisplayListOffset(version)); }
         public MatTevColorBlock* TevColorBlock(int version) { return (MatTevColorBlock*)(Address + DisplayListOffset(version) + MatModeBlock.Size); }
@@ -1178,7 +1205,7 @@ namespace BrawlLib.SSBBTypes
         public static readonly MatModeBlock Default = new MatModeBlock()
         {
             _alphafuncCmd = 0xF361,
-            AlphaFunction = AlphaFunction.Default,
+            AlphaFunction = GXAlphaFunction.Default,
             _zmodeCmd = 0x4061,
             ZMode = ZMode.Default,
             _maskCmd = 0xFE61,
@@ -1191,7 +1218,7 @@ namespace BrawlLib.SSBBTypes
         };
 
         private ushort _alphafuncCmd;
-        public AlphaFunction AlphaFunction;
+        public GXAlphaFunction AlphaFunction;
         private ushort _zmodeCmd;
         public ZMode ZMode;
         private ushort _maskCmd;
@@ -1802,7 +1829,7 @@ namespace BrawlLib.SSBBTypes
     {
         public bint _numEntries;
 
-        private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public MDL0TextureEntry* Entries { get { return (MDL0TextureEntry*)(Address + 4); } }
     }
 

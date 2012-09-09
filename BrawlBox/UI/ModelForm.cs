@@ -80,10 +80,6 @@ namespace BrawlBox
                 BBVS* settings = (BBVS*)map.Address;
 
                 modelEditControl1.syncAnimationsTogetherToolStripMenuItem.Checked = settings->RetrieveCorrAnims;
-                //modelEditControl1._updating = true;
-                //modelEditControl1.alwaysSyncFrameCountsToolStripMenuItem.Checked = settings->SyncFCs;
-                //modelEditControl1.displayFrameCountDifferencesToolStripMenuItem.Checked = settings->WarnIfFCsDiffer;
-                //modelEditControl1._updating = false;
                 modelEditControl1.syncLoopToAnimationToolStripMenuItem.Checked = settings->SyncLoopToAnim;
                 modelEditControl1.syncTexObjToolStripMenuItem.Checked = settings->SyncTexToObj;
                 modelEditControl1.syncObjectsListToVIS0ToolStripMenuItem.Checked = settings->SyncObjToVIS0;
@@ -93,10 +89,18 @@ namespace BrawlBox
                 modelEditControl1.modelPanel1._position = settings->pos;
                 modelEditControl1.modelPanel1._diffuse = settings->diff;
                 modelEditControl1.modelPanel1._specular = settings->spec;
-                modelEditControl1.modelPanel1._defaultTranslate = settings->defaultCam;
+
+                if (settings->CameraSet)
+                {
+                    modelEditControl1.btnSaveCam.Text = "Clear Camera";
+                    modelEditControl1.modelPanel1._defaultTranslate = settings->defaultCam;
+                    modelEditControl1.modelPanel1._defaultRotate = settings->defaultRot;
+                }
+
                 modelEditControl1.modelPanel1._fovY = settings->yFov;
                 modelEditControl1.modelPanel1._nearZ = settings->_nearZ;
                 modelEditControl1.modelPanel1._farZ = settings->_farz;
+
                 modelEditControl1.modelPanel1.ZoomScale = settings->zScale;
                 modelEditControl1.modelPanel1.TranslationScale = settings->tScale;
                 modelEditControl1.modelPanel1.RotationScale = settings->rScale;

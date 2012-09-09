@@ -71,7 +71,7 @@ namespace BrawlLib
         public static string REFT =
             "REFT (*.breft)|*.breft";
 
-        public static string REFTImage =
+        public static string Images =
             "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif,*.*)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif;*.*|" +
             "Portable Network Graphics (*.png)|*.png|" +
             "Truevision TARGA (*.tga)|*.tga|" +

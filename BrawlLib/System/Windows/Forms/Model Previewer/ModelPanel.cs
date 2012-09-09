@@ -7,10 +7,11 @@ using System.ComponentModel;
 using System.Drawing;
 using BrawlLib.Modeling;
 using BrawlLib.SSBB.ResourceNodes;
+using OpenTK.Graphics.OpenGL;
 
 namespace System.Windows.Forms
 {
-    public delegate void GLRenderEventHandler(object sender, GLContext context);
+    public delegate void GLRenderEventHandler(object sender, TKContext ctx);
 
     public unsafe class ModelPanel : GLPanel
     {
@@ -44,6 +45,7 @@ namespace System.Windows.Forms
         private Matrix43 _viewMatrix = Matrix43.Identity;
 
         public Vector3 _defaultTranslate;
+        public Vector2 _defaultRotate;
 
         public event GLRenderEventHandler PreRender, PostRender;
 
@@ -73,13 +75,8 @@ namespace System.Windows.Forms
                 if (base.BackColor != value)
                 {
                     base.BackColor = value;
-                    if (_context != null)
-                    {
-                        Vector3 v = (Vector3)value;
-                        _context.Capture();
-                        _context.glClearColor(v._x, v._y, v._z, 0.0f);
-                        _context.Release();
-                    }
+                    Vector3 v = (Vector3)value;
+                    GL.ClearColor(v._x, v._y, v._z, 0.0f);
                 }
             }
         }
@@ -89,14 +86,9 @@ namespace System.Windows.Forms
             get { return base.BackgroundImage; }
             set
             {
-                if (_context != null)
-                {
-                    _context.Capture();
-                    _context.glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-                    _context.Release();
-                }
+                //GL.ClearColor(0, 0, 0, 0);
                 base.BackgroundImage = value;
-                base.BackColor = Color.Transparent;
+                //base.BackColor = Color.Transparent;
                 Invalidate();
             }
         }
@@ -107,20 +99,14 @@ namespace System.Windows.Forms
             set
             {
                 _ambient = value;
-                if (_context != null)
+                GL.Enable(EnableCap.Lighting);
+                GL.Enable(EnableCap.Light0);
+                fixed (Vector4* pos = &_ambient)
                 {
-                    _context.Capture();
-                    _context.glEnable(GLEnableCap.Lighting);
-                    _context.glEnable(GLEnableCap.Light0);
-                    fixed (Vector4* pos = &_ambient)
-                    {
-                        _context.glLight(GLLightTarget.Light0, GLLightParameter.AMBIENT, (float*)pos);
-                        //_context.glMaterial(GLFace.Back, GLMaterialParameter.AMBIENT, (float*)pos);
-                        _context.glColorMaterial(GLFace.Back, GLMaterialParameter.AMBIENT);
-                    }
-                    _context.Release();
-                    Invalidate();
+                    GL.Light(LightName.Light0, LightParameter.Ambient, (float*)pos);
+                    GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Ambient);
                 }
+                Invalidate();
             }
         }
 
@@ -130,21 +116,15 @@ namespace System.Windows.Forms
             set
             {
                 _position = value;
-                if (_context != null)
-                {
-                    _context.Capture();
-                    _context.glEnable(GLEnableCap.Lighting);
-                    _context.glEnable(GLEnableCap.Light0);
-                    float r = value._x;
-                    float azimuth = value._y * Maths._deg2radf;
-                    float elevation = value._z * Maths._deg2radf;
-                    Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
-                    Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
-                    _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)&PositionLight);
-                    _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_DIRECTION, (float*)&SpotDirectionLight);
-                    _context.Release();
-                    Invalidate();
-                }
+                GL.Enable(EnableCap.Lighting);
+                GL.Enable(EnableCap.Light0);
+                float r = value._x;
+                float azimuth = value._y * Maths._deg2radf;
+                float elevation = value._z * Maths._deg2radf;
+                Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+                Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+                GL.Light(LightName.Light0, LightParameter.Position, (float*)&PositionLight);
+                GL.Light(LightName.Light0, LightParameter.SpotDirection, (float*)&SpotDirectionLight);
             }
         }
 
@@ -154,20 +134,14 @@ namespace System.Windows.Forms
             set
             {
                 _diffuse = value;
-                if (_context != null)
+                GL.Enable(EnableCap.Lighting);
+                GL.Enable(EnableCap.Light0);
+                fixed (Vector4* pos = &_diffuse)
                 {
-                    _context.Capture();
-                    _context.glEnable(GLEnableCap.Lighting);
-                    _context.glEnable(GLEnableCap.Light0);
-                    fixed (Vector4* pos = &_diffuse)
-                    {
-                        _context.glLight(GLLightTarget.Light0, GLLightParameter.DIFFUSE, (float*)pos);
-                        //_context.glMaterial(GLFace.Front, GLMaterialParameter.DIFFUSE, (float*)pos);
-                        _context.glColorMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE);
-                    }
-                    _context.Release();
-                    Invalidate();
+                    GL.Light(LightName.Light0, LightParameter.Diffuse, (float*)pos);
+                    GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Diffuse);
                 }
+                Invalidate();
             }
         }
 
@@ -177,20 +151,14 @@ namespace System.Windows.Forms
             set
             {
                 _specular = value;
-                if (_context != null)
+                GL.Enable(EnableCap.Lighting);
+                GL.Enable(EnableCap.Light0);
+                fixed (Vector4* pos = &_specular)
                 {
-                    _context.Capture();
-                    _context.glEnable(GLEnableCap.Lighting);
-                    _context.glEnable(GLEnableCap.Light0);
-                    fixed (Vector4* pos = &_specular)
-                    {
-                        _context.glLight(GLLightTarget.Light0, GLLightParameter.SPECULAR, (float*)pos);
-                        //_context.glMaterial(GLFace.Back, GLMaterialParameter.SPECULAR, (float*)pos);
-                        _context.glColorMaterial(GLFace.Back, GLMaterialParameter.SPECULAR);
-                    }
-                    _context.Release();
-                    Invalidate();
+                    GL.Light(LightName.Light0, LightParameter.Specular, (float*)pos);
+                    GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Specular);
                 }
+                Invalidate();
             }
         }
 
@@ -223,11 +191,20 @@ namespace System.Windows.Forms
             }
         }
 
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            _camera.Reset();
+            _camera.Translate(_defaultTranslate._x, _defaultTranslate._y, _defaultTranslate._z);
+            _camera.Rotate(_defaultRotate._x, _defaultRotate._y);
+        }
+
         public void ResetCamera()
         {
             _camera.Reset();
             _camera.Translate(_defaultTranslate._x, _defaultTranslate._y, _defaultTranslate._z);
-
+            _camera.Rotate(_defaultRotate._x, _defaultRotate._y);
             Invalidate();
         }
 
@@ -236,8 +213,8 @@ namespace System.Windows.Forms
             ClearTargets();
             ClearReferences();
 
-            _context.Unbind();
-            _context._states["_Node_Refs"] = _resourceList;
+            _ctx.Unbind();
+            _ctx._states["_Node_Refs"] = _resourceList;
         }
 
         public void AddTarget(IRenderedObject target)
@@ -250,8 +227,7 @@ namespace System.Windows.Forms
             if (target is ResourceNode)
                 _resourceList.Add(target as ResourceNode);
 
-            _context.Capture();
-            target.Attach(_context);
+            target.Attach(_ctx);
 
             Invalidate();
         }
@@ -260,8 +236,7 @@ namespace System.Windows.Forms
             if (!_renderList.Contains(target))
                 return;
 
-            _context.Capture();
-            target.Detach(_context);
+            target.Detach();
 
             if (target is ResourceNode)
                 RemoveReference(target as ResourceNode);
@@ -271,7 +246,7 @@ namespace System.Windows.Forms
         public void ClearTargets()
         {
             foreach (IRenderedObject o in _renderList)
-                o.Detach(_context);
+                o.Detach();
             _renderList.Clear();
         }
 
@@ -298,9 +273,8 @@ namespace System.Windows.Forms
         }
         public void RefreshReferences()
         {
-            _context.Capture();
             foreach (IRenderedObject o in _renderList)
-                o.Refesh(_context);
+                o.Refesh();
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
@@ -345,7 +319,7 @@ namespace System.Windows.Forms
                 yDiff *= 16;
             }
 
-            lock(_context)
+            lock(_ctx)
             {
                 if (_grabbing)
                 {
@@ -462,40 +436,43 @@ namespace System.Windows.Forms
             this.Invalidate();
         }
 
-        public void RecalcLight()
+        public void RecalcLight(SCN0Node scn)
         {
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_CUTOFF, 360.0f);
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_EXPONENT, 100.0f);
+            GL.Light(LightName.Light0, LightParameter.SpotCutoff, 180.0f);
+            GL.Light(LightName.Light0, LightParameter.SpotExponent, 100.0f);
 
             float r = _position._x;
             float azimuth = _position._y * Maths._deg2radf;
             float elevation = _position._z * Maths._deg2radf;
+            
             Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
             Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.POSITION, (float*)&PositionLight);
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPOT_DIRECTION, (float*)&SpotDirectionLight);
+            
+            GL.Light(LightName.Light0, LightParameter.Position, (float*)&PositionLight);
+            GL.Light(LightName.Light0, LightParameter.SpotDirection, (float*)&SpotDirectionLight);
+
             fixed (Vector4* pos = &_ambient)
             {
-                _context.glLight(GLLightTarget.Light0, GLLightParameter.AMBIENT, (float*)pos);
-                //_context.glMaterial(GLFace.Back, GLMaterialParameter.AMBIENT, (float*)pos);
-                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.AMBIENT);
+                GL.Light(LightName.Light0, LightParameter.Ambient, (float*)pos);
+                //GL.Material(MaterialFace.Back, MaterialParameter.Ambient, (float*)pos);
+                GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Ambient);
             }
             fixed (Vector4* pos = &_diffuse)
             {
-                _context.glLight(GLLightTarget.Light0, GLLightParameter.DIFFUSE, (float*)pos);
-                //_context.glMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE, (float*)pos);
-                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.DIFFUSE);
+                GL.Light(LightName.Light0, LightParameter.Diffuse, (float*)pos);
+                //GL.Material(MaterialFace.Back, MaterialParameter.Diffuse, (float*)pos);
+                GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Diffuse);
             }
             fixed (Vector4* pos = &_specular)
             {
-                _context.glLight(GLLightTarget.Light0, GLLightParameter.SPECULAR, (float*)pos);
-                //_context.glMaterial(GLFace.Back, GLMaterialParameter.SPECULAR, (float*)pos);
-                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.SPECULAR);
-                _context.glColorMaterial(GLFace.Back, GLMaterialParameter.EMISSION);
+                GL.Light(LightName.Light0, LightParameter.Specular, (float*)pos);
+                //GL.Material(MaterialFace.Back, MaterialParameter.Specular, (float*)pos);
+                GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Specular);
+                GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Emission);
             }
         }
 
-        protected internal unsafe override void OnInit()
+        protected internal unsafe override void OnInit(TKContext ctx)
         {
             //_context.glEnable(GLEnableCap.Fog);
             //float* l = stackalloc float[4];
@@ -508,57 +485,61 @@ namespace System.Windows.Forms
 
             //_context.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
+            GL.Enable(EnableCap.Lighting);
+            GL.Enable(EnableCap.Light0);
+            GL.Enable(EnableCap.ColorMaterial);
+
             Vector3 v = (Vector3)BackColor;
-            _context.glClearColor(v._x, v._y, v._z, 0.0f);
-            _context.glClearDepth(1.0f);
+            GL.ClearColor(v._x, v._y, v._z, 0.0f);
+            GL.ClearDepth(1.0f);
 
-            _context.glEnable(GLEnableCap.DepthTest);
-            _context.glDepthFunc(GLFunction.LESS);
-            //_context.glDisable((uint)GLEnableCap.DepthTest);
-            _context.glShadeModel(GLShadingModel.SMOOTH);
+            GL.Enable(EnableCap.DepthTest);
+            GL.DepthFunc(DepthFunction.Less);
+            
+            GL.ShadeModel(ShadingModel.Smooth);
 
-            _context.glHint(GLHintTarget.PERSPECTIVE_CORRECTION_HINT, GLHintMode.NICEST);
+            GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
 
-            //_context.glDisable((uint)GLEnableCap.TEXTURE_GEN_S);
-            //_context.glDisable((uint)GLEnableCap.TEXTURE_GEN_T);
+            //GL.Enable(EnableCap.Blend);
+            //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-            _context.glEnable(GLEnableCap.Blend);
-            _context.glBlendFunc(GLBlendFactor.SRC_ALPHA, GLBlendFactor.ONE_MINUS_SRC_ALPHA);
+            //GL.Enable(EnableCap.AlphaTest);
+            //GL.AlphaFunc(AlphaFunction.Gequal, 0.1f);
 
-            _context.glEnable(GLEnableCap.AlphaTest);
-            _context.glAlphaFunc(GLAlphaFunc.GEqual, 0.1f);
+            RecalcLight(null);
 
-            _context.glEnable(GLEnableCap.Lighting);
-            _context.glEnable(GLEnableCap.Light0);
-            _context.glEnable(GLEnableCap.COLOR_MATERIAL);
-
-            RecalcLight();
-
-            //_context.glActiveTexture(GLMultiTextureTarget.TEXTURE0);
-            _context.glTexEnv(GLTexEnvTarget.TextureEnvironment, GLTexEnvParam.TEXTURE_ENV_MODE, GL.GL_MODULATE);
-
-            _context.CheckErrors();
+            GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Modulate);
 
             //Set client states
-            _context._states["_Node_Refs"] = _resourceList;
+            ctx._states["_Node_Refs"] = _resourceList;
         }
 
-        protected internal override void OnRender()
+        protected internal override void OnRender(TKContext ctx, SCN0Node scn)
         {
-            _context.glClear(GLClearMask.ColorBuffer | GLClearMask.DepthBuffer);
-
-            RecalcLight();
+            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            
+            RecalcLight(scn);
 
             if (PreRender != null)
-                PreRender(this, _context);
+                PreRender(this, ctx);
 
             foreach (IRenderedObject o in _renderList)
-                o.Render(_context, _mainWindow);
-#if DEBUG
-            _context.CheckErrors();
-#endif
+                o.Render(ctx, _mainWindow);
+
             if (PostRender != null)
-                PostRender(this, _context);
+                PostRender(this, ctx);
+        }
+
+        public Bitmap GrabScreenshot()
+        {
+            Bitmap bmp = new Bitmap(this.ClientSize.Width, this.ClientSize.Height);
+            System.Drawing.Imaging.BitmapData data =
+                bmp.LockBits(this.ClientRectangle, System.Drawing.Imaging.ImageLockMode.WriteOnly,
+                             System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            GL.ReadPixels(0, 0, this.ClientSize.Width, this.ClientSize.Height, PixelFormat.Bgr, PixelType.UnsignedByte, data.Scan0);
+            bmp.UnlockBits(data);
+            bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            return bmp;
         }
     }
 }

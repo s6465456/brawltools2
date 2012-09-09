@@ -6,6 +6,7 @@ using BrawlLib.OpenGL;
 using System.Collections.Generic;
 using System.Drawing;
 using BrawlLib.Modeling;
+using OpenTK.Graphics.OpenGL;
 
 namespace System.Windows.Forms
 {
@@ -1705,26 +1706,26 @@ namespace System.Windows.Forms
             UpdateHover(e.X, e.Y);
         }
 
-        private void _modelPanel_PreRender(object sender, GLContext context)
+        private void _modelPanel_PreRender(object sender, TKContext context)
         {
-            context.glPushMatrix();
+            GL.PushMatrix();
 
             //Rotate adjuster
-            context.glRotate(trackBar1.Value, 0.0f, 1.0f, 0.0f);
+            GL.Rotate(trackBar1.Value, 0.0f, 1.0f, 0.0f);
 
             //Apply snap matrix
             fixed (Matrix* m = &_snapMatrix)
-                context.glMultMatrix((float*)m);
+                GL.MultMatrix((float*)m);
         }
 
-        private unsafe void _modelPanel_PostRender(object sender, GLContext context)
+        private unsafe void _modelPanel_PostRender(object sender, TKContext context)
         {
             //Pop snap matrix
-            context.glPopMatrix();
+            GL.PopMatrix();
 
             //Clear depth buffer so we can hit-detect
-            context.glClear(GLClearMask.DepthBuffer);
-            context.glEnable(GLEnableCap.DepthTest);
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+            GL.Enable(EnableCap.DepthTest);
 
             //Render objects
             if (_targetNode != null)
@@ -1734,16 +1735,18 @@ namespace System.Windows.Forms
             if (!_selecting)
                 return;
 
-            context.glEnable(GLEnableCap.DepthTest);
+            GL.Enable(EnableCap.DepthTest);
 
             //Draw lines
-            context.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Line);
-            context.glColor(0.0f, 0.0f, 1.0f, 0.5f);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            GL.Color4(0.0f, 0.0f, 1.0f, 0.5f);
+
             context.DrawBox(_selectStart, _selectEnd);
 
             //Draw box
-            context.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
-            context.glColor(1.0f, 1.0f, 0.0f, 0.2f);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            GL.Color4(1.0f, 1.0f, 0.0f, 0.2f);
+
             context.DrawBox(_selectStart, _selectEnd);
         }
 

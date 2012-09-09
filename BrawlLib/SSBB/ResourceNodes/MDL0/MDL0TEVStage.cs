@@ -293,7 +293,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             //We DO NOT want to add the name to the string table!
         }
 
-        //Write this stage to the shader code
         internal string Write(MDL0MaterialNode mat)
         {
             MDL0ShaderNode shader = ((MDL0ShaderNode)Parent);
@@ -304,7 +303,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int texcoord = (int)TextureCoord;
 
             //Do we need to use the coordinates?
-	        bool bHasTexCoord = texcoord < mat.Children.Count;
+            bool bHasTexCoord = texcoord < mat.Children.Count;
 
             //Is there an indirect stage? (CMD is not 0)
             //Is active == 
@@ -320,80 +319,77 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        if (!bHasTexCoord)
 		        texcoord = 0;
 
-	        stage += String.Format("//TEV stage {0}\n", Index);
+            stage += String.Format("//TEV stage {0}\n\n", Index);
 
             //Add indirect support later
 
-            //if (bHasIndStage)
-            //{
-            //    stage += String.Format("// indirect op\n");
-            //    // perform the indirect op on the incoming regular coordinates using indtex%d as the offset coords
-            //    if (bpmem.tevind[n].bs != ITBA_OFF)
-            //    {
-            //        stage += String.Format("alphabump = indtex%d.%s %s;\n",
-            //                bpmem.tevind[n].bt,
-            //                tevIndAlphaSel[bpmem.tevind[n].bs],
-            //                tevIndAlphaScale[bpmem.tevind[n].fmt]);
-            //    }
-            //    // format
-            //    stage += String.Format("float3 indtevcrd%d = indtex%d * %s;\n", n, bpmem.tevind[n].bt, tevIndFmtScale[bpmem.tevind[n].fmt]);
+            if (bHasIndStage)
+            {
+                stage += String.Format("// indirect op\n");
 
-            //    // bias
-            //    if (bpmem.tevind[n].bias != ITB_NONE )
-            //        stage += String.Format("indtevcrd%d.%s += %s;\n", n, tevIndBiasField[bpmem.tevind[n].bias], tevIndBiasAdd[bpmem.tevind[n].fmt]);
+                //Perform the indirect op on the incoming regular coordinates using indtex as the offset coords
+                if (Alpha != IndTexAlphaSel.Off)
+                    stage += String.Format("alphabump = indtex{0}.{1} {2};\n",
+                            (int)TexStage,
+                            (int)Alpha,
+                            (int)TexFormat);
+                
+                //Format
+                stage += String.Format("vec3 indtevcrd{0} = indtex{1} * {2};\n", Index, (int)TexStage, (int)TexFormat);
 
-            //    // multiply by offset matrix and scale
-            //    if (bpmem.tevind[n].mid != 0)
-            //    {
-            //        if (bpmem.tevind[n].mid <= 3)
-            //        {
-            //            int mtxidx = 2*(bpmem.tevind[n].mid-1);
-            //            stage += String.Format("float2 indtevtrans%d = float2(dot("I_INDTEXMTX"[%d].xyz, indtevcrd%d), dot("I_INDTEXMTX"[%d].xyz, indtevcrd%d));\n",
-            //                n, mtxidx, n, mtxidx+1, n);
-            //        }
-            //        else if (bpmem.tevind[n].mid <= 7 && bHasTexCoord)
-            //        { // s matrix
-            //            if (bpmem.tevind[n].mid >= 5);
-            //            int mtxidx = 2*(bpmem.tevind[n].mid-5);
-            //            stage += String.Format("float2 indtevtrans%d = "I_INDTEXMTX"[%d].ww * uv%d.xy * indtevcrd%d.xx;\n", n, mtxidx, texcoord, n);
-            //        }
-            //        else if (bpmem.tevind[n].mid <= 11 && bHasTexCoord)
-            //        { // t matrix
-            //            if (bpmem.tevind[n].mid >= 9);
-            //            int mtxidx = 2*(bpmem.tevind[n].mid-9);
-            //            stage += String.Format("float2 indtevtrans%d = "I_INDTEXMTX"[%d].ww * uv%d.xy * indtevcrd%d.yy;\n", n, mtxidx, texcoord, n);
-            //        }
-            //        else
-            //            stage += String.Format("float2 indtevtrans%d = 0;\n", n);
-            //    }
-            //    else
-            //        stage += String.Format("float2 indtevtrans%d = 0;\n", n);
+                //Bias
+                if (Bias != IndTexBiasSel.None)
+                    stage += String.Format("indtevcrd{0}.{1} += {2};\n", Index, MDL0MaterialNode.tevIndBiasField[(int)Bias], MDL0MaterialNode.tevIndBiasAdd[(int)TexFormat]);
 
-            //    // ---------
-            //    // Wrapping
-            //    // ---------
+                //Multiply by offset matrix and scale
+                if (Matrix != 0)
+                {
+                    if ((int)Matrix <= 3)
+                    {
+                        int mtxidx = 2 * ((int)Matrix - 1);
+                        stage += String.Format("vec2 indtevtrans{0} = vec2(dot(" + MDL0MaterialNode.I_INDTEXMTX + "[{1}].xyz, indtevcrd{2}), dot(" + MDL0MaterialNode.I_INDTEXMTX + "[{3}].xyz, indtevcrd{4}));\n",
+                            Index, mtxidx, Index, mtxidx + 1, Index);
+                    }
+                    else if ((int)Matrix < 5 && (int)Matrix <= 7 && bHasTexCoord)
+                    {
+                        //S
+                        int mtxidx = 2 * ((int)Matrix - 5);
+                        stage += String.Format("vec2 indtevtrans{0} = " + MDL0MaterialNode.I_INDTEXMTX + "[{1}].ww * uv{2}.xy * indtevcrd{3}.xx;\n", Index, mtxidx, texcoord, Index);
+                    }
+                    else if ((int)Matrix < 9 && (int)Matrix <= 11 && bHasTexCoord)
+                    { 
+                        //T
+                        int mtxidx = 2 * ((int)Matrix - 9);
+                        stage += String.Format("vec2 indtevtrans{0} = " + MDL0MaterialNode.I_INDTEXMTX + "[{1}].ww * uv{2}.xy * indtevcrd{3}.yy;\n", Index, mtxidx, texcoord, Index);
+                    }
+                    else
+                        stage += String.Format("vec2 indtevtrans{0} = 0;\n", Index);
+                }
+                else
+                    stage += String.Format("vec2 indtevtrans{0} = 0;\n", Index);
 
-            //    // wrap S
-            //    if (bpmem.tevind[n].sw == ITW_OFF)
-            //        stage += String.Format("wrappedcoord.x = uv%d.x;\n", texcoord);
-            //    else if (bpmem.tevind[n].sw == ITW_0)
-            //        stage += String.Format("wrappedcoord.x = 0.0f;\n");
-            //    else
-            //        stage += String.Format("wrappedcoord.x = fmod( uv%d.x, %s );\n", texcoord, tevIndWrapStart[bpmem.tevind[n].sw]);
+                #region Wrapping
 
-            //    // wrap T
-            //    if (bpmem.tevind[n].tw == ITW_OFF)
-            //        stage += String.Format("wrappedcoord.y = uv%d.y;\n", texcoord);
-            //    else if (bpmem.tevind[n].tw == ITW_0)
-            //        stage += String.Format("wrappedcoord.y = 0.0f;\n");
-            //    else
-            //        stage += String.Format("wrappedcoord.y = fmod( uv%d.y, %s );\n", texcoord, tevIndWrapStart[bpmem.tevind[n].tw]);
+                // wrap S
+                if (S_Wrap == IndTexWrap.NoWrap)
+                    stage += String.Format("wrappedcoord.x = uv{0}.x;\n", texcoord);
+                else if (S_Wrap == IndTexWrap.Wrap0)
+                    stage += String.Format("wrappedcoord.x = 0.0f;\n");
+                else
+                    stage += String.Format("wrappedcoord.x = fmod( uv{0}.x, {1} );\n", texcoord, MDL0MaterialNode.tevIndWrapStart[(int)S_Wrap]);
+                
+                // wrap T
+                if (T_Wrap == IndTexWrap.NoWrap)
+                    stage += String.Format("wrappedcoord.y = uv{0}.y;\n", texcoord);
+                else if (T_Wrap == IndTexWrap.Wrap0)
+                    stage += String.Format("wrappedcoord.y = 0.0f;\n");
+                else
+                    stage += String.Format("wrappedcoord.y = fmod( uv{0}.y, {1} );\n", texcoord, MDL0MaterialNode.tevIndWrapStart[(int)T_Wrap]);
 
-            //    if (bpmem.tevind[n].fb_addprev) // add previous tevcoord
-            //        stage += String.Format("tevcoord.xy += wrappedcoord + indtevtrans%d;\n", n);
-            //    else
-            //        stage += String.Format("tevcoord.xy = wrappedcoord + indtevtrans%d;\n", n);
-            //}
+                stage += String.Format("tevcoord.xy {0}= wrappedcoord + indtevtrans{1};\n", UsePrevStage ? "+" : "", Index);
+
+                #endregion
+            }
 
             //Check if we need to use Alpha
             if (ColorSelectionA == ColorArg.RasterAlpha || ColorSelectionA == ColorArg.RasterColor
@@ -404,7 +400,7 @@ namespace BrawlLib.SSBB.ResourceNodes
              || AlphaSelectionC == AlphaArg.RasterAlpha || AlphaSelectionD == AlphaArg.RasterAlpha)
 	        {
 		        string rasswap = shader.swapModeTable[rswap];
-                stage += String.Format("rastemp = {0}.{1};\n", shader.tevRasTable[(int)ColorChannel], rasswap);
+                stage += String.Format("rastemp = {0}.{1};\n", MDL0MaterialNode.tevRasTable[(int)ColorChannel], rasswap);
 		        stage += String.Format("crastemp = frac(rastemp * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 	        }
 
@@ -414,15 +410,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 			        if(bHasTexCoord)
 				        stage += String.Format("tevcoord.xy = uv{0}.xy;\n", texcoord);
 			        else
-				        stage += String.Format("tevcoord.xy = float2(0.0f, 0.0f);\n");
+				        stage += String.Format("tevcoord.xy = vec2(0.0f, 0.0f);\n");
 
                 string texswap = shader.swapModeTable[tswap];
                 int texmap = (int)TextureMapID;
-		        //SampleTexture(p, "textemp", "tevcoord", texswap, texmap, ApiType);
-                stage += String.Format("{0} = tex2D(samp{1},{2}.xy * "+shader.I_TEXDIMS+"[{3}].xy).{4};\n", "textemp", texmap, "tevcoord", texmap, texswap);
+
+                stage += String.Format("{0} = tex2D(samp{1}, {2}.xy * " + MDL0MaterialNode.I_TEXDIMS + "[{3}].xy).{4};\n", "textemp", texmap, "tevcoord", texmap, texswap);
 	        }
 	        else
-		        stage += String.Format("textemp = float4(1.0f, 1.0f, 1.0f, 1.0f);\n");
+		        stage += String.Format("textemp = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n");
 
             //Check if we need to use Konstant Colors
             if (ColorSelectionA == ColorArg.KonstantColorSelection || 
@@ -436,8 +432,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        {
                 int kc = (int)KonstantColorSelection;
                 int ka = (int)KonstantAlphaSelection;
-                stage += String.Format("konsttemp = float4({0}, {1});\n", shader.tevKSelTableC[kc], shader.tevKSelTableA[ka]);
-		        if(kc > 7 || ka > 7)
+
+                stage += String.Format("konsttemp = vec4({0}, {1});\n", MDL0MaterialNode.tevKSelTableC[kc], MDL0MaterialNode.tevKSelTableA[ka]);
+		        
+                if(kc > 7 || ka > 7)
 			        stage += String.Format("ckonsttemp = frac(konsttemp * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 		        else
 			        stage += String.Format("ckonsttemp = konsttemp;\n");
@@ -467,123 +465,100 @@ namespace BrawlLib.SSBB.ResourceNodes
 	         || AlphaSelectionA == AlphaArg.Alpha2 || AlphaSelectionB == AlphaArg.Alpha2 || AlphaSelectionC == AlphaArg.Alpha2)
 			    stage += String.Format("cc2 = frac(c2 * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 
-	        stage += String.Format("// color combine\n");
-	        if (ColorClamp)
-                stage += String.Format("{0} = saturate(", shader.tevCOutputTable[(int)ColorRegister]);
-	        else
-		        stage += String.Format("{0} = ", shader.tevCOutputTable[(int)ColorRegister]);
+            #region Color Channel
 
-	        //Combine the color channel
+            stage += String.Format("// color combine\n{0} = ", MDL0MaterialNode.tevCOutputTable[(int)ColorRegister]);
 
-            //There is no compare enum...
-	        //if (ColorBias != TevBias_COMPARE) // if not compare
-	        //{
-		        //Normal color combiner goes here
-		        if (ColorScale > TevScale.MultiplyBy1)
-                    stage += String.Format("{0}*(", shader.tevScaleTable[(int)ColorScale]);
+            if (ColorClamp)
+                stage += "saturate(";
 
-                if (!(ColorSelectionD == ColorArg.Zero && ColorSubtract == false))
-                    stage += String.Format("{0}{1}", shader.tevCInputTable[(int)ColorSelectionD], shader.tevOpTable[ColorSubtract ? 1 : 0]);
+		    if (ColorScale > TevScale.MultiplyBy1)
+                stage += String.Format("{0} * (", MDL0MaterialNode.tevScaleTable[(int)ColorScale]);
 
-                if (ColorSelectionA == ColorSelectionB)
-                    stage += String.Format("{0}",
-                        shader.tevCInputTable[(int)ColorSelectionA + 16]);
-                else if (ColorSelectionC == ColorArg.Zero)
-                    stage += String.Format("{0}",
-                        shader.tevCInputTable[(int)ColorSelectionA + 16]);
-                else if (ColorSelectionC == ColorArg.One)
-                    stage += String.Format("{0}",
-                        shader.tevCInputTable[(int)ColorSelectionB + 16]);
-                else if (ColorSelectionA == ColorArg.Zero)
-                    stage += String.Format("{0}*{1}",
-                        shader.tevCInputTable[(int)ColorSelectionB + 16],
-                        shader.tevCInputTable[(int)ColorSelectionC + 16]);
-                else if (ColorSelectionB == ColorArg.Zero)
-                    stage += String.Format("{0}*(float3(1.0f, 1.0f, 1.0f)-{1})",
-                        shader.tevCInputTable[(int)ColorSelectionA + 16],
-                        shader.tevCInputTable[(int)ColorSelectionC + 16]);
-                else
-                    stage += String.Format("lerp({0}, {1}, {2})",
-                        shader.tevCInputTable[(int)ColorSelectionA + 16],
-                        shader.tevCInputTable[(int)ColorSelectionB + 16],
-                        shader.tevCInputTable[(int)ColorSelectionC + 16]);
+            if (!(ColorSelectionD == ColorArg.Zero && ColorSubtract == false))
+                stage += String.Format("{0} {1} ", MDL0MaterialNode.tevCInputTable[(int)ColorSelectionD], MDL0MaterialNode.tevOpTable[ColorSubtract ? 1 : 0]);
 
-                stage += shader.tevBiasTable[(int)ColorBias];
+            if (ColorSelectionA == ColorSelectionB)
+                stage += String.Format("{0}",
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionA + 16]);
+            else if (ColorSelectionC == ColorArg.Zero)
+                stage += String.Format("{0}",
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionA + 16]);
+            else if (ColorSelectionC == ColorArg.One)
+                stage += String.Format("{0}",
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionB + 16]);
+            else if (ColorSelectionA == ColorArg.Zero)
+                stage += String.Format("{0} * {1}",
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionB + 16],
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionC + 16]);
+            else if (ColorSelectionB == ColorArg.Zero)
+                stage += String.Format("{0} * (vec3(1.0f, 1.0f, 1.0f) - {1})",
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionA + 16],
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionC + 16]);
+            else
+                stage += String.Format("lerp({0}, {1}, {2})",
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionA + 16],
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionB + 16],
+                    MDL0MaterialNode.tevCInputTable[(int)ColorSelectionC + 16]);
 
-                if (ColorScale > TevScale.MultiplyBy1) stage += ")";
-	        //}
-	        //else
-	        //{
-		    //    int cmp = (cc.shift<<1)|cc.op|8; // comparemode stored here
-		    //    stage += String.Format(TEVCMPColorOPTable[cmp],//lookup the function from the op table
-			//	        tevCInputTable[ColorSelectionD],
-			//	        tevCInputTable[ColorSelectionA + 16],
-			//	        tevCInputTable[ColorSelectionB + 16],
-			//	        tevCInputTable[ColorSelectionC + 16]);
-	        //}
+            stage += MDL0MaterialNode.tevBiasTable[(int)ColorBias];
+
             if (ColorClamp) stage += ")";
+            if (ColorScale > TevScale.MultiplyBy1) stage += ")";
+            
+            #endregion
 
 	        stage += ";\n";
 
-	        stage += String.Format("// alpha combine\n");
-	        // combine the alpha channel
-	        if (AlphaClamp)
-                stage += String.Format("{0} = saturate(", shader.tevAOutputTable[(int)AlphaRegister]);
-	        else
-                stage += String.Format("{0} = ", shader.tevAOutputTable[(int)AlphaRegister]);
+            #region Alpha Channel
 
-	        //if (AlphaSelectionBias != TevBias_COMPARE) // if not compare
-	        //{
-		        //normal alpha combiner goes here
-		        if (AlphaScale > TevScale.MultiplyBy1)
-			        stage += String.Format("{0}*(", shader.tevScaleTable[(int)AlphaScale]);
+            stage += String.Format("// alpha combine\n{0} = ", MDL0MaterialNode.tevAOutputTable[(int)AlphaRegister]);
 
-		        if(!(AlphaSelectionD == AlphaArg.Zero && AlphaSubtract == false))
-			        stage += String.Format("{0}.a{1}", shader.tevAInputTable[(int)AlphaSelectionD], shader.tevOpTable[AlphaSubtract ? 1 : 0]);
+            if (AlphaClamp)
+                stage += "saturate(";
 
-		        if (AlphaSelectionA == AlphaSelectionB)
-                    stage += String.Format("{0}.a", 
-                        shader.tevAInputTable[(int)AlphaSelectionA + 8]);
-		        else if (AlphaSelectionC == AlphaArg.Zero)
-                    stage += String.Format("{0}.a", 
-                        shader.tevAInputTable[(int)AlphaSelectionA + 8]);
-                else if (AlphaSelectionA == AlphaArg.Zero)
-                    stage += String.Format("{0}.a*{1}.a", 
-                        shader.tevAInputTable[(int)AlphaSelectionB + 8], 
-                        shader.tevAInputTable[(int)AlphaSelectionC + 8]);
-                else if (AlphaSelectionB == AlphaArg.Zero)
-                    stage += String.Format("{0}.a*(1.0f-{1}.a)", 
-                        shader.tevAInputTable[(int)AlphaSelectionA + 8], 
-                        shader.tevAInputTable[(int)AlphaSelectionC + 8]);
-		        else
-                    stage += String.Format("lerp({0}.a, {1}.a, {2}.a)", 
-                        shader.tevAInputTable[(int)AlphaSelectionA + 8], 
-                        shader.tevAInputTable[(int)AlphaSelectionB + 8],
-                        shader.tevAInputTable[(int)AlphaSelectionC + 8]);
+		    if (AlphaScale > TevScale.MultiplyBy1)
+                stage += String.Format("{0} * (", MDL0MaterialNode.tevScaleTable[(int)AlphaScale]);
 
-                stage += shader.tevBiasTable[(int)AlphaBias];
+		    if(!(AlphaSelectionD == AlphaArg.Zero && AlphaSubtract == false))
+                stage += String.Format("{0}.a {1} ", MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionD], MDL0MaterialNode.tevOpTable[AlphaSubtract ? 1 : 0]);
 
-		        if (AlphaScale > 0)
-			        stage += ")";
+		    if (AlphaSelectionA == AlphaSelectionB)
+                stage += String.Format("{0}.a",
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionA + 8]);
+		    else if (AlphaSelectionC == AlphaArg.Zero)
+                stage += String.Format("{0}.a",
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionA + 8]);
+            else if (AlphaSelectionA == AlphaArg.Zero)
+                stage += String.Format("{0}.a * {1}.a",
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionB + 8],
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionC + 8]);
+            else if (AlphaSelectionB == AlphaArg.Zero)
+                stage += String.Format("{0}.a * (1.0f - {1}.a)",
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionA + 8],
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionC + 8]);
+		    else
+                stage += String.Format("lerp({0}.a, {1}.a, {2}.a)",
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionA + 8],
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionB + 8],
+                    MDL0MaterialNode.tevAInputTable[(int)AlphaSelectionC + 8]);
 
-	        //}
-	        //else
-            //{
-            //    //compare alpha combiner goes here
-            //    int cmp = (ac.shift<<1)|ac.op|8; // comparemode stored here
-            //    stage += String.Format(TEVCMPAlphaOPTable[cmp],
-            //            tevAInputTable[AlphaSelectionD],
-            //            tevAInputTable[AlphaSelectionA + 8],
-            //            tevAInputTable[AlphaSelectionB + 8],
-            //            tevAInputTable[AlphaSelectionC + 8]);
-            //}
-	        if (AlphaClamp)
-		        stage += ")";
+            stage += MDL0MaterialNode.tevBiasTable[(int)AlphaBias];
 
-	        stage += String.Format(";\n\n");
-	        stage += String.Format("//TEV stage done\n");
+            if (AlphaClamp) stage += ")";
+            if (AlphaScale > TevScale.MultiplyBy1) stage += ")";
+
+            #endregion
+
+            stage += ";\n\n//TEV stage " + Index + " done\n\n";
 
             return stage;
+        }
+
+        public void SignalPropertyChange()
+        {
+            ((MDL0ShaderNode)Parent)._renderUpdate = true;
+            base.SignalPropertyChange();
         }
     }
 }

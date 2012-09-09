@@ -41,8 +41,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal virtual void Bind(GLContext ctx) { }
-        internal virtual void Unbind(GLContext ctx) { }
+        internal virtual void Bind(TKContext ctx) { }
+        internal virtual void Unbind() { }
 
         protected internal virtual void PostProcess(VoidPtr mdlAddress, VoidPtr dataAddress, StringTable stringTable) { }
     }
@@ -123,7 +123,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     int count = linker.BoneCache.Length;
                     for (int i = 0; i < count; i++)
                         linker.NodeCache[(bone = linker.BoneCache[i] as MDL0BoneNode)._nodeIndex] = bone;
-                    
+
+                    int nullCount = 0;
+
                     //Now that bones and primary influences have been cached, we can create weighted influences.
                     foreach (ResourcePair p in *linker.Defs)
                         if (p.Name == "NodeTree")
@@ -167,10 +169,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     //Here, we are referring back to the NodeCache to grab the bone.
                                     //Note that the weights do not reference other influences, only bones. There is a good reason for this.
                                     for (int i = 0; i < count; i++, nEntry++)
-                                        if ((linker.NodeCache[nEntry->_id] as MDL0BoneNode) == null)
-                                            Console.WriteLine("Null bone entry!");
-                                        else
+                                        if ((linker.NodeCache[nEntry->_id] as MDL0BoneNode) != null)
                                             inf._weights[i] = new BoneWeight(linker.NodeCache[nEntry->_id] as MDL0BoneNode, nEntry->_value);
+                                        else
+                                            nullCount++;
 
                                     //Add influence to model object, while adding it to the cache.
                                     linker.NodeCache[index] = model._influences.AddOrCreate(inf);
@@ -185,6 +187,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     goto Top;
                             }
                         }
+
+                    if (nullCount > 0)
+                    {
+                        ((MDL0Node)Parent)._errors.Add("There were " + nullCount + " null weights in NodeMix.");
+                        SignalPropertyChange();
+                    }
+
                     int z = 0;
                     foreach (IMatrixNode m in linker.NodeCache)
                     { if (!m.IsPrimaryNode) { ((Influence)m)._permanentID = z; break; } z++; }
@@ -247,14 +256,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     dIndex = 0;
                                 }
                                 poly = _children[dIndex] as MDL0PolygonNode;
+                                poly._drawIndex = pData[6];
                                 //Get material from index
                                 mat = matList[*(bushort*)pData] as MDL0MaterialNode;
                                 //Get bone from index and assign
                                 int boneIndex = *(bushort*)(pData + 4);
                                 if (linker.BoneCache != null && boneIndex >= 0 && boneIndex < linker.BoneCache.Length)
                                     poly.BoneNode = linker.BoneCache[boneIndex] as MDL0BoneNode;
-                                //Assign material to polygon and add polygon to material reference list
-                                (poly._material = mat)._polygons.Add(poly);
+                                //Assign material to polygon
+                                poly.MaterialNode = mat;
                                 //Increment pointer
                                 pData += 7;
                             }
@@ -348,15 +358,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                 PostProcessBone(mdlAddress, n, group, ref index, stringTable);
         }
 
-        internal void Bind(GLContext ctx)
+        internal void Bind(TKContext ctx)
         {
             foreach (MDL0EntryNode e in Children)
                 e.Bind(ctx);
         }
-        internal void Unbind(GLContext ctx)
+        internal void Unbind()
         {
             foreach (MDL0EntryNode e in Children)
-                e.Unbind(ctx);
+                e.Unbind();
         }
     }
 }

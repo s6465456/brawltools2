@@ -5,7 +5,7 @@ namespace System
     public struct BBVS
     {
         public const uint Tag = 0x53564242;
-        public const uint Size = 0x40;
+        public const uint Size = 0x80;
 
         public uint _tag;
         public byte _version;
@@ -22,16 +22,17 @@ namespace System
         public bfloat tScale, rScale, zScale, _nearZ, _farz, yFov;
         public BVec4 amb, pos, diff, spec;
         public BVec3 defaultCam;
-        public int pad2;
+        public BVec2 defaultRot;
+        public BVec3 pad;
         
         public bool RetrieveCorrAnims { get { return (_options >> 0 & 1) != 0; } }
-        public bool WarnIfFCsDiffer { get { return (_options >> 1 & 1) != 0; } }
+        public bool Unused { get { return (_options >> 1 & 1) != 0; } }
         public bool SyncLoopToAnim { get { return (_options >> 2 & 1) != 0; } }
         public bool SyncTexToObj { get { return (_options >> 3 & 1) != 0; } }
         public bool SyncObjToVIS0 { get { return (_options >> 4 & 1) != 0; } }
         public bool DisableBonesOnPlay { get { return (_options >> 5 & 1) != 0; } }
         public bool Maximize { get { return (_options >> 6 & 1) != 0; } }
-        public bool SyncFCs { get { return (_options >> 7 & 1) != 0; } }
+        public bool CameraSet { get { return (_options >> 7 & 1) != 0; } }
 
         public void SetOptions(bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h)
         {

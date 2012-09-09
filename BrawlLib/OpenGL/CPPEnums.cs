@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BrawlLib.OpenGL
 {
-    public static partial class GL
+    public static partial class GLEnums
     {
         public const int GL_TEXTURE_BLUE_SIZE = ((int)0x805E);
         public const int GL_MATRIX_INDEX_ARRAY_ARB = ((int)0x8844);

@@ -13,6 +13,7 @@ using BrawlLib.Wii.Compression;
 using System.Windows;
 using BrawlLib.IO;
 using System.Windows.Forms;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -80,11 +81,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public BoneWeight[] Weights { get { return _weightRef == null ? _weightRef = new BoneWeight[] { new BoneWeight(this, 1.0f) } : _weightRef; } }
 
-        [Category("Bone"), Browsable(false)]
+        [Category("Bone"), Browsable(true)]
         public int HeaderLen { get { return _headerLen; } }
-        [Category("Bone"), Browsable(false)]
+        [Category("Bone"), Browsable(true)]
         public int MDL0Offset { get { return _mdl0Offset; } }
-        [Category("Bone"), Browsable(false)]
+        [Category("Bone"), Browsable(true)]
         public int StringOffset { get { return _stringOffset; } }
 
         [Category("Bone")]
@@ -192,7 +193,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 RecalcBindState();
                 Model.CalcBindMatrices();
-
+                
                 if (Parent is MDL0BoneNode)
                 {
                     if ((BindMatrix == ((MDL0BoneNode)Parent).BindMatrix) && (InverseBindMatrix == ((MDL0BoneNode)Parent).InverseBindMatrix))
@@ -386,9 +387,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 addr += 4;
                                 break;
                             case UserValueType.String:
-                                string s = new String((sbyte*)addr);
+                                string s = new String((sbyte*)(addr + 2));
                                 d._entries.Add(s);
-                                addr += s.Length + 1;
+                                addr += s.Length + 3;
                                 break;
                         }
                     }
@@ -427,12 +428,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 len += 0x18 + (_entries.Count * 0x2C);
                 foreach (UserDataClass c in _entries)
                     foreach (string s in c._entries)
-                        if (c.DataType == UserValueType.Float)
-                            len += 4;
-                        else if (c.DataType == UserValueType.Int)
+                        if (c.DataType == UserValueType.Float || c.DataType == UserValueType.Int)
                             len += 4;
                         else if (c.DataType == UserValueType.String)
-                            len += s.Length + 1;
+                            len += s.Length + 3;
             }
             return len;
         }
@@ -489,9 +488,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 s._entries[i] = "";
 
                             int len = s._entries[i].Length;
-                            int ceil = len + 1;
+                            int ceil = len + 3;
 
-                            sbyte* ptr = (sbyte*)pData;
+                            sbyte* ptr = (sbyte*)pData + 2;
 
                             for (int x = 0; x < len; )
                                 ptr[x] = (sbyte)s._entries[i][x++];
@@ -499,7 +498,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                             for (int x = len; x < ceil; )
                                 ptr[x++] = 0;
 
-                            pData += s._entries[i].Length + 1;
+                            *(bushort*)pData = (ushort)(len + 1);
+                            pData += s._entries[i].Length + 3;
                         }
                     p->_totalLen = (int)pData - (int)p;
                 }
@@ -571,7 +571,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             RecalcOffsets(header, address, length);
 
-            if (_refCount > 0)
+            if (_refCount > 0 || InfluencedObjects.Length > 0)
                 _flags1 |= BoneFlags.HasGeometry;
             else
                 _flags1 &= ~BoneFlags.HasGeometry;
@@ -722,45 +722,45 @@ namespace BrawlLib.SSBB.ResourceNodes
         public const float _nodeRadius = 0.20f;
 
         public bool _render = true;
-        internal unsafe void Render(GLContext ctx, ModelEditControl _mainWindow)
+        internal unsafe void Render(TKContext ctx, ModelEditControl _mainWindow)
         {
             if (!_render)
                 return;
 
             if (_boneColor != Color.Transparent)
-                ctx.glColor(_boneColor.R, _boneColor.G, _boneColor.B, _boneColor.A);
+                GL.Color4(_boneColor.R, _boneColor.G, _boneColor.B, _boneColor.A);
             else
-                ctx.glColor(DefaultBoneColor.R, DefaultBoneColor.G, DefaultBoneColor.B, DefaultBoneColor.A);
+                GL.Color4(DefaultBoneColor.R, DefaultBoneColor.G, DefaultBoneColor.B, DefaultBoneColor.A);
 
             Vector3 v = _frameState._translate;
 
-            ctx.glBegin(GLPrimitiveType.Lines);
+            GL.Begin(BeginMode.Lines);
 
-            ctx.glVertex(0.0f, 0.0f, 0.0f);
-            ctx.glVertex3v((float*)&v);
+            GL.Vertex3(0.0f, 0.0f, 0.0f);
+            GL.Vertex3((float*)&v);
 
-            ctx.glEnd();
+            GL.End();
 
-            ctx.glPushMatrix();
+            GL.PushMatrix();
 
-            ctx.glTranslate(v._x, v._y, v._z);
+            GL.Translate(v._x, v._y, v._z);
 
             //Render node
             GLDisplayList ndl = ctx.FindOrCreate<GLDisplayList>("BoneNodeOrb", CreateNodeOrb);
             if (_nodeColor != Color.Transparent)
-                ctx.glColor(_nodeColor.R, _nodeColor.G, _nodeColor.B, _nodeColor.A);
+                GL.Color4(_nodeColor.R, _nodeColor.G, _nodeColor.B, _nodeColor.A);
             else
-                ctx.glColor(DefaultNodeColor.R, DefaultNodeColor.G, DefaultNodeColor.B, DefaultNodeColor.A);
+                GL.Color4(DefaultNodeColor.R, DefaultNodeColor.G, DefaultNodeColor.B, DefaultNodeColor.A);
             
             ndl.Call();
             
-            DrawNodeOrients(ctx);
+            DrawNodeOrients();
 
-            ctx.glTranslate(-v._x, -v._y, -v._z);
+            GL.Translate(-v._x, -v._y, -v._z);
 
             //Transform Bones
             fixed (Matrix* m = &_frameState._transform)
-                ctx.glMultMatrix((float*)m);
+                GL.MultMatrix((float*)m);
 
             if (BillboardSetting != 0)
             {
@@ -775,8 +775,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     rot = center.LookatAngles(cam) * Maths._rad2degf;
 
                 m2 = Matrix.TransformMatrix(scale, rot, trans);
-                ctx.glPushMatrix();
-                ctx.glMultMatrix((float*)&m2);
+                GL.PushMatrix();
+                GL.MultMatrix((float*)&m2);
             }
 
             //Render children
@@ -784,9 +784,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 n.Render(ctx, _mainWindow);
 
             if (BillboardSetting != 0)
-                ctx.glPopMatrix();
+                GL.PopMatrix();
 
-            ctx.glPopMatrix();
+            GL.PopMatrix();
         }
 
         internal void ApplyCHR0(CHR0Node node, int index)
@@ -804,46 +804,46 @@ namespace BrawlLib.SSBB.ResourceNodes
                 b.ApplyCHR0(node, index);
         }
 
-        public static GLDisplayList CreateNodeOrb(GLContext ctx)
+        public static GLDisplayList CreateNodeOrb(TKContext ctx)
         {
             GLDisplayList circle = ctx.GetRingList();
-            GLDisplayList orb = new GLDisplayList(ctx);
+            GLDisplayList orb = new GLDisplayList();
 
             orb.Begin();
-            ctx.glPushMatrix();
+            GL.PushMatrix();
 
-            ctx.glScale(_nodeRadius, _nodeRadius, _nodeRadius);
+            GL.Scale(_nodeRadius, _nodeRadius, _nodeRadius);
             circle.Call();
-            ctx.glRotate(90.0f, 0.0f, 1.0f, 0.0f);
+            GL.Rotate(90.0f, 0.0f, 1.0f, 0.0f);
             circle.Call();
-            ctx.glRotate(90.0f, 1.0f, 0.0f, 0.0f);
+            GL.Rotate(90.0f, 1.0f, 0.0f, 0.0f);
             circle.Call();
 
-            ctx.glPopMatrix();
+            GL.PopMatrix();
             orb.End();
             return orb;
         }
 
-        public static void DrawNodeOrients(GLContext ctx)
+        public static void DrawNodeOrients()
         {
-            ctx.glBegin(GLPrimitiveType.Lines);
+            GL.Begin(BeginMode.Lines);
 
-            ctx.glColor(1.0f, 0.0f, 0.0f, 1.0f);
-            ctx.glVertex(0.0f, 0.0f, 0.0f);
-            ctx.glVertex(_nodeRadius * 2, 0.0f, 0.0f);
+            GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
+            GL.Vertex3(0.0f, 0.0f, 0.0f);
+            GL.Vertex3(_nodeRadius * 2, 0.0f, 0.0f);
 
-            ctx.glColor(0.0f, 1.0f, 0.0f, 1.0f);
-            ctx.glVertex(0.0f, 0.0f, 0.0f);
-            ctx.glVertex(0.0f, _nodeRadius * 2, 0.0f);
+            GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
+            GL.Vertex3(0.0f, 0.0f, 0.0f);
+            GL.Vertex3(0.0f, _nodeRadius * 2, 0.0f);
 
-            ctx.glColor(0.0f, 0.0f, 1.0f, 1.0f);
-            ctx.glVertex(0.0f, 0.0f, 0.0f);
-            ctx.glVertex(0.0f, 0.0f, _nodeRadius * 2);
+            GL.Color4(0.0f, 0.0f, 1.0f, 1.0f);
+            GL.Vertex3(0.0f, 0.0f, 0.0f);
+            GL.Vertex3(0.0f, 0.0f, _nodeRadius * 2);
 
-            ctx.glEnd();
+            GL.End();
         }
 
-        internal override void Bind(GLContext ctx)
+        internal override void Bind(TKContext ctx)
         {
             _render = true;
             _boneColor = Color.Transparent;

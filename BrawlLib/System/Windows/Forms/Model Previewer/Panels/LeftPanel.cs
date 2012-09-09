@@ -1063,7 +1063,11 @@ namespace System.Windows.Forms
         {
             if (_selectedTexture != null)
                 using (GLTextureWindow w = new GLTextureWindow())
+                {
+                    _mainWindow.modelPanel1._ctx.Release();
                     w.ShowDialog(this, _selectedTexture.Texture);
+                    _mainWindow.modelPanel1._ctx.Capture();
+                }
         }
 
         private void replaceTextureToolStripMenuItem_Click(object sender, EventArgs e)

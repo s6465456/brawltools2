@@ -6,10 +6,13 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 using BrawlLib.OpenGL.etc;
+using System.Drawing;
+using OpenTK.Platform;
+using OpenTK.Graphics;
 
 namespace BrawlLib.OpenGL
 {
-    internal unsafe class wGlContext : GLContext
+    internal unsafe partial class wGlContext : GLContext
     {
         VoidPtr _hwnd, _hdc, _hglrc;
 
@@ -63,10 +66,8 @@ namespace BrawlLib.OpenGL
         public override void Capture()
         {
             if ((_hdc) && (_hglrc))
-            {
                 if (!wGL.wglMakeCurrent(_hdc, _hglrc))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
         }
         public override void Swap()
         {

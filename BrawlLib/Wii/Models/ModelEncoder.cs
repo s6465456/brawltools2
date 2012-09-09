@@ -105,7 +105,8 @@ namespace BrawlLib.Wii.Models
                         {
                             mixLen += 4;
                             foreach (BoneWeight w in i._weights)
-                                mixLen += 6;
+                                if (i.NodeIndex < linker.NodeCache.Length)
+                                    mixLen += 6;
                         }
                         foreach (MDL0BoneNode b in linker.BoneCache)
                             if (b._weightCount > 0)
@@ -113,18 +114,17 @@ namespace BrawlLib.Wii.Models
 
                         //DrawOpa and DrawXlu
                         //Get assigned materials and categorize
-                        if (model._matList != null)
-                        for (int i = 0; i < model._matList.Count; i++)
-                        {
-                            //Entries are ordered by material, not by polygon.
-                            MDL0MaterialNode mat = model._matList[i] as MDL0MaterialNode;
-                            if (!mat.isMetal)
-                            for (int l = 0; l < mat._polygons.Count; l++)
-                                if (!mat.XLUMaterial)
+                        if (model._polyList != null)
+                            for (int i = 0; i < model._polyList.Count; i++)
+                            {
+                                //Entries are ordered by material, not by polygon.
+                                //Using the material's attached polygon list is untrustable if the definitions were corrupt on parse.
+                                MDL0PolygonNode poly = model._polyList[i] as MDL0PolygonNode;
+                                if (!poly.MaterialNode.XLUMaterial)
                                     opaLen += 8;
                                 else
                                     xluLen += 8;
-                        }
+                            }
 
                         //Add terminate byte and set model def flags
                         if (model._hasTree = (treeLen > 0))
@@ -356,7 +356,7 @@ namespace BrawlLib.Wii.Models
                         else if (c.DataType == UserValueType.Int)
                             part2len += 4;
                         else if (c.DataType == UserValueType.String)
-                            part2len += s.Length + 1;
+                            part2len += s.Length + 3;
             }
 
             return
@@ -451,9 +451,9 @@ namespace BrawlLib.Wii.Models
                                     s._entries[i] = "";
 
                                 int len = s._entries[i].Length;
-                                int ceil = len + 1;
+                                int ceil = len + 3;
 
-                                sbyte* ptr = (sbyte*)pData;
+                                sbyte* ptr = (sbyte*)pData + 2;
 
                                 for (int x = 0; x < len; )
                                     ptr[x] = (sbyte)s._entries[i][x++];
@@ -461,7 +461,8 @@ namespace BrawlLib.Wii.Models
                                 for (int x = len; x < ceil; )
                                     ptr[x++] = 0;
 
-                                pData += s._entries[i].Length + 1;
+                                *(bushort*)pData = (ushort)(len + 1);
+                                pData += s._entries[i].Length + 3;
                             }
                         p->_totalLen = (int)pData - (int)p;
                     }
@@ -512,13 +513,14 @@ namespace BrawlLib.Wii.Models
             if (!mdl._hasMix && !mdl._hasOpa && !mdl._hasTree && !mdl._hasXlu)
                 return;
 
-            IList polyList = mdl._polyList;
-            IList matList = mdl._matList;
+            ResourceNode[] polyList = null;
+            if (mdl._polyList != null)
+            {
+                polyList = new ResourceNode[mdl._polyList.Count];
+                Array.Copy(mdl._polyList.ToArray(), polyList, mdl._polyList.Count);
+                Array.Sort(polyList, MDL0PolygonNode.DrawCompare);
+            }
             MDL0PolygonNode poly;
-            MDL0MaterialNode mat;
-            int polyCount = 0;
-            if (mdl._polyList != null) 
-                polyCount = polyList.Count;
             int entryCount = 0;
             byte* floor = pData;
             int dataLen;
@@ -570,10 +572,16 @@ namespace BrawlLib.Wii.Models
                 {
                     *pData = 3; //Tag
                     *(bushort*)&pData[1] = (ushort)i._index;
-                    pData[3] = (byte)i._weights.Length;
+                    int g = 0;
+                    foreach (BoneWeight w in i._weights)
+                        if (w.Bone._nodeIndex < linker.NodeCache.Length) g++;
+                    pData[3] = (byte)g;
                     pData += 4; //Advance
                     foreach (BoneWeight w in i._weights)
                     {
+                        if (w.Bone._nodeIndex >= linker.NodeCache.Length)
+                            continue;
+
                         *(bushort*)pData = (ushort)w.Bone._nodeIndex;
                         *(bfloat*)(pData + 2) = w.Weight;
                         pData += 6; //Advance
@@ -584,52 +592,46 @@ namespace BrawlLib.Wii.Models
             }
 
             //DrawOpa
-            if (mdl._hasOpa)
+            if (mdl._hasOpa && polyList != null)
             {
                 //Write group entry
                 entry[entryCount++]._dataOffset = (int)(pData - pGroup);
 
-                for (int i = 0; i < matList.Count; i++)
+                for (int i = 0; i < polyList.Length; i++)
                 {
-                    //Entries are ordered by material, not by polygon.
-                    mat = matList[i] as MDL0MaterialNode;
-                    if (!mat.isMetal)
-                    for (int l = 0; l < mat._polygons.Count; l++)
-                        if (!mat.XLUMaterial)
-                        {
-                            *pData = 4; //Tag
-                            *(bushort*)(pData + 1) = (ushort)mat._entryIndex;
-                            *(bushort*)(pData + 3) = (poly = mat._polygons[l]) != null ? (ushort)poly._entryIndex : (ushort)0;
-                            *(bushort*)(pData + 5) = (ushort)(poly.BoneNode != null ? poly.BoneNode.BoneIndex : 0);
-                            pData[7] = 0;
-                            pData += 8; //Advance
-                        }
+                    poly = polyList[i] as MDL0PolygonNode;
+                    if (!poly.MaterialNode.XLUMaterial)
+                    {
+                        *pData = 4; //Tag
+                        *(bushort*)(pData + 1) = (ushort)poly.MaterialNode._entryIndex;
+                        *(bushort*)(pData + 3) = (ushort)poly._entryIndex;
+                        *(bushort*)(pData + 5) = (ushort)(poly.BoneNode != null ? poly.BoneNode.BoneIndex : 0);
+                        pData[7] = poly.DrawPriority;
+                        pData += 8; //Advance
+                    }
                 }
 
                 *pData++ = 1; //Terminate
             }
 
             //DrawXlu
-            if (mdl._hasXlu)
+            if (mdl._hasXlu && polyList != null)
             {
                 //Write group entry
                 entry[entryCount++]._dataOffset = (int)(pData - pGroup);
 
-                for (int i = 0; i < matList.Count; i++)
+                for (int i = 0; i < polyList.Length; i++)
                 {
-                    //Entries are ordered by material, not by polygon.
-                    mat = matList[i] as MDL0MaterialNode;
-                    if (!mat.isMetal)
-                    for (int l = 0; l < mat._polygons.Count; l++)
-                        if (mat.XLUMaterial)
-                        {
-                            *pData = 4; //Tag
-                            *(bushort*)(pData + 1) = (ushort)mat._entryIndex;
-                            *(bushort*)(pData + 3) = (poly = mat._polygons[l]) != null ? (ushort)poly._entryIndex : (ushort)0;
-                            *(bushort*)(pData + 5) = (ushort)(poly.BoneNode != null ? poly.BoneNode.BoneIndex : 0);
-                            pData[7] = 0;
-                            pData += 8; //Advance
-                        }
+                    poly = polyList[i] as MDL0PolygonNode;
+                    if (poly.MaterialNode.XLUMaterial)
+                    {
+                        *pData = 4; //Tag
+                        *(bushort*)(pData + 1) = (ushort)poly.MaterialNode._entryIndex;
+                        *(bushort*)(pData + 3) = (ushort)poly._entryIndex;
+                        *(bushort*)(pData + 5) = (ushort)(poly.BoneNode != null ? poly.BoneNode.BoneIndex : 0);
+                        pData[7] = poly.DrawPriority;
+                        pData += 8; //Advance
+                    }
                 }
 
                 *pData++ = 1; //Terminate
@@ -882,8 +884,10 @@ namespace BrawlLib.Wii.Models
             int offset;
 
             //Textures
+            List<ResourceNode> list = texGrp.Children;
+            list.Sort(); //Alphabetical order
             if (pTexGroup != null)
-                foreach (MDL0TextureNode t in texGrp._children)
+                foreach (MDL0TextureNode t in list)
                     if (t._references.Count > 0)
                     {
                         offset = (int)pData;
@@ -897,8 +901,10 @@ namespace BrawlLib.Wii.Models
                     }
 
             //Palettes
+            list = palGrp.Children;
+            list.Sort(); //Alphabetical order
             if (pDecGroup != null)
-                foreach (MDL0TextureNode t in palGrp._children)
+                foreach (MDL0TextureNode t in list)
                     if (t._references.Count > 0)
                     {
                         offset = (int)pData;

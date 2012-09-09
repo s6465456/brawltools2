@@ -30,7 +30,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("MDL0 Nodes")]
         public int DataLength { get { return _len; } }
         [Category("MDL0 Nodes")]
-        public List<object> Items { get { return _items; } set { _items = value; } }
+        public object[] Items { get { return _items.ToArray(); } set { _items = value.ToList<object>(); } }
 
         protected override bool OnInitialize()
         {

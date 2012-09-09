@@ -77,6 +77,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public MoveDefDataCommonNode(uint dataLen, string name) { DataLen = dataLen; _name = name; }
 
+        public MoveDefActionsSkipNode _flashOverlay, _screenTint;
+
         protected override bool OnInitialize()
         {
             base.OnInitialize();
@@ -112,23 +114,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 //unk18 == ColorF4
 
-                /*
-                 * 4 -
-                 * 5 -
-                 * 6 -
-                 * 7 -
-                 * 11 -
-                 * 17 -
-                 * 19 -
-                 * 20 -
-                 * 21 -
-                 * 22 -
-                */
-
                 int r = 0;
                 foreach (SpecialOffset s in specialOffsets)
                 {
-                    if (r != 4 && r != 5 && r != 6 && r != 7 && r != 11 && r != 17 && r != 19 && r != 20 && r != 21 && r != 22)
+                    if (r != 4 && r != 5 && r != 6 && r != 7 && r != 11 && r != 17 && r != 19 && r != 20 && r != 21 && r != 22 && r != 23)
                     {
                         string name = "Params" + r;
                         if (r < 4) name = (r == 0 || r == 2 ? "" : "SSE ") + (r < 2 ? "Global " : "") + "IC-Basics";
@@ -144,20 +133,23 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (specialOffsets[7].Size != 0)
                     new MoveDefCommonUnk7ListNode() { _name = "Unknown7", offsetID = 7 }.Initialize(this, BaseAddress + specialOffsets[7].Offset, 0);
 
-                //if (specialOffsets[11].Size != 0)
-                //    new MoveDefCommonUnk11Node() { _name = "Unknown11", offsetID = 11 }.Initialize(this, BaseAddress + specialOffsets[11].Offset, 0);
+                if (specialOffsets[11].Size != 0)
+                    new MoveDefUnk11Node() { _name = "Unknown11", offsetID = 11 }.Initialize(this, BaseAddress + specialOffsets[11].Offset, 0);
 
-                //if (specialOffsets[19].Size != 0)
-                //    new MoveDefActionsSkipNode("Flash Overlay Actions") { offsetID = 19 }.Initialize(this, BaseAddress + specialOffsets[19].Offset, 0);
+                if (specialOffsets[19].Size != 0)
+                    (_flashOverlay = new MoveDefActionsSkipNode("Flash Overlay Actions") { offsetID = 19 }).Initialize(this, BaseAddress + specialOffsets[19].Offset, 0);
 
-                //if (specialOffsets[20].Size != 0)
-                //    new MoveDefActionsSkipNode("Screen Tint Actions") { offsetID = 20 }.Initialize(this, BaseAddress + specialOffsets[20].Offset, 0);
+                if (specialOffsets[20].Size != 0)
+                    (_screenTint = new MoveDefActionsSkipNode("Screen Tint Actions") { offsetID = 20 }).Initialize(this, BaseAddress + specialOffsets[20].Offset, 0);
 
                 if (specialOffsets[21].Size != 0)
                     new MoveDefCommonUnk21Node() { offsetID = 21 }.Initialize(this, BaseAddress + specialOffsets[21].Offset, 0);
 
                 if (specialOffsets[22].Size != 0)
                     new MoveDefParamListNode() { _name = "Unknown22", offsetID = 22 }.Initialize(this, BaseAddress + specialOffsets[22].Offset, 0);
+
+                if (specialOffsets[23].Size != 0)
+                    new MoveDefParamsOffsetNode() { _name = "Unknown23", offsetID = 23 }.Initialize(this, BaseAddress + specialOffsets[23].Offset, 0);
 
                 if (specialOffsets[17].Size != 0)
                     new MoveDefPatternPowerMulNode() { _name = "Unknown17", offsetID = 17 }.Initialize(this, BaseAddress + specialOffsets[17].Offset, 0);
@@ -351,26 +343,32 @@ namespace BrawlLib.SSBB.ResourceNodes
         public short unk3, unk4;
 
         [Category("Unknown 7 Entry")]
-        public int Unknown1 { get { return unk1; } set { unk1 = value; SignalPropertyChange(); } }
+        public int DataOffset { get { return unk1; } }
         [Category("Unknown 7 Entry")]
-        public int Unknown2 { get { return unk2; } set { unk2 = value; SignalPropertyChange(); } }
+        public int Count { get { return unk2; } }
         [Category("Unknown 7 Entry")]
-        public short Unknown3 { get { return unk3; } set { unk3 = value; SignalPropertyChange(); } }
+        public short Unknown1 { get { return unk3; } set { unk3 = value; SignalPropertyChange(); } }
         [Category("Unknown 7 Entry")]
-        public short Unknown4 { get { return unk4; } set { unk4 = value; SignalPropertyChange(); } }
-
+        public short Unknown2 { get { return unk4; } set { unk4 = value; SignalPropertyChange(); } }
+        
         protected override bool OnInitialize()
         {
             base.OnInitialize();
 
             if (_name == null)
-                _name = "Entry" + Index;
+                _name = "Data" + Index;
 
-            unk1 = Header->_unk1;
-            unk2 = Header->_unk2;
+            unk1 = Header->_list._startOffset;
+            unk2 = Header->_list._listCount;
             unk3 = Header->_unk3;
             unk4 = Header->_unk4;
-            return false;
+            return DataOffset > 0 && Count > 0;
+        }
+
+        protected override void OnPopulate()
+        {
+            for (int i = 0; i < Count; i++)
+                new MoveDefCommonUnk7EntryListEntryNode() { _name = "Entry" + i }.Initialize(this, BaseAddress + DataOffset + i * 8, 8);
         }
 
         protected override int OnCalculateSize(bool force)
@@ -383,10 +381,200 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             _entryOffset = address;
             FDefCommonUnk7Entry* data = (FDefCommonUnk7Entry*)address;
-            data->_unk1 = unk1;
-            data->_unk2 = unk2;
+            data->_list._startOffset = unk1;
+            data->_list._listCount = Children.Count;
             data->_unk3 = unk3;
             data->_unk4 = unk4;
+        }
+    }
+
+    public unsafe class MoveDefCommonUnk7EntryListEntryNode : MoveDefEntryNode
+    {
+        internal FDefCommonUnk7EntryListEntry* Header { get { return (FDefCommonUnk7EntryListEntry*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+
+        public float unk1, unk2;
+
+        [Category("Unknown 7 Entry")]
+        public float Unknown1 { get { return unk1; } set { unk1 = value; SignalPropertyChange(); } }
+        [Category("Unknown 7 Entry")]
+        public float Unknown2 { get { return unk2; } set { unk2 = value; SignalPropertyChange(); } }
+        
+        protected override bool OnInitialize()
+        {
+            base.OnInitialize();
+
+            if (_name == null)
+                _name = "Entry" + Index;
+
+            unk1 = Header->_unk1;
+            unk2 = Header->_unk2;
+            return false;
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            _lookupCount = 0;
+            return 12;
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            _entryOffset = address;
+            FDefCommonUnk7EntryListEntry* data = (FDefCommonUnk7EntryListEntry*)address;
+            data->_unk1 = unk1;
+            data->_unk2 = unk2;
+        }
+    }
+
+    public unsafe class MoveDefUnk11Node : MoveDefEntryNode
+    {
+        internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
+        internal int i = 0;
+
+        [Category("List Offset")]
+        public int DataOffset { get { return Header->_startOffset; } }
+        [Category("List Offset")]
+        public int Count { get { return Header->_listCount; } }
+
+        protected override bool OnInitialize()
+        {
+            base.OnInitialize();
+            return Count > 0;
+        }
+
+        protected override void OnPopulate()
+        {
+            for (int i = 0; i < Count; i++)
+                new MoveDefUnk11EntryNode() { _name = "Entry" + i }.Initialize(this, BaseAddress + DataOffset + i * 12, 12);
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            _lookupCount = (Children.Count > 0 ? 1 : 0);
+            _entryLength = 8;
+            _childLength = 0;
+            foreach (MoveDefSectionParamNode p in Children)
+                _childLength += p.CalculateSize(true);
+            return _entryLength + _childLength;
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            VoidPtr addr = address;
+            foreach (MoveDefSectionParamNode p in Children)
+            {
+                p.Rebuild(addr, p._calcSize, true);
+                addr += p._calcSize;
+            }
+            _entryOffset = addr;
+            FDefListOffset* header = (FDefListOffset*)addr;
+            if (Children.Count > 0)
+            {
+                header->_startOffset = (int)address - (int)_rebuildBase;
+                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+            }
+            header->_listCount = Children.Count;
+        }
+    }
+
+    public unsafe class MoveDefUnk11EntryNode : MoveDefEntryNode
+    {
+        internal FDefCommonUnk11Entry* Header { get { return (FDefCommonUnk11Entry*)WorkingUncompressed.Address; } }
+        internal int unk;
+
+        [Category("List Offset")]
+        public int Unknown { get { return unk; } set { unk = value; SignalPropertyChange(); } }
+        [Category("List Offset")]
+        public int DataOffset { get { return Header->_list._startOffset; } }
+        [Category("List Offset")]
+        public int Count { get { return Header->_list._listCount; } }
+
+        protected override bool OnInitialize()
+        {
+            base.OnInitialize();
+            unk = Header->_unk1;
+            return Count > 0;
+        }
+
+        protected override void OnPopulate()
+        {
+            for (int i = 0; i < Count; i++)
+                new MoveDefIndexNode() { _name = "Index" + i }.Initialize(this, BaseAddress + DataOffset + i * 4, 4);
+        }
+    }
+
+    public unsafe class MoveDefActionsSkipNode : MoveDefEntryNode
+    {
+        internal buint* Header { get { return (buint*)WorkingUncompressed.Address; } }
+
+        internal List<uint> ActionOffsets = new List<uint>();
+        internal List<uint> Flags = new List<uint>();
+
+        public MoveDefActionsSkipNode(string name) { _name = name; }
+
+        protected override bool OnInitialize()
+        {
+            base.OnInitialize();
+            for (int i = 0; i < WorkingUncompressed.Length / 8; i++)
+            {
+                ActionOffsets.Add(Header[i * 2]);
+                Flags.Add(Header[i * 2 + 1]);
+            }
+            return true;
+        }
+
+        protected override void OnPopulate()
+        {
+            int i = 0;
+            foreach (int offset in ActionOffsets)
+            {
+                if (offset > 0)
+                    new MoveDefCommonActionNode("Action" + i, false, this, Flags[i]).Initialize(this, new DataSource(BaseAddress + offset, 0));
+                else
+                    Children.Add(new MoveDefCommonActionNode("Action" + i, true, this, Flags[i]));
+
+                i++;
+            }
+        }
+    }
+
+    public unsafe class MoveDefParamsOffsetNode : MoveDefCharSpecificNode
+    {
+        internal bint* Header { get { return (bint*)WorkingUncompressed.Address; } }
+        internal int i = 0;
+
+        [Category("List Offset")]
+        public int DataOffset { get { return Header[0]; } }
+
+        protected override bool OnInitialize()
+        {
+            base.OnInitialize();
+            return true;
+        }
+
+        protected override void OnPopulate()
+        {
+            new MoveDefSectionParamNode() { _name = "Data" }.Initialize(this, BaseAddress + DataOffset, 168);
+        }
+    }
+
+    public unsafe class MoveDefCommonActionNode : MoveDefActionNode
+    {
+        public byte Unk1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
+        [TypeConverter(typeof(Bin8StringConverter))]
+        public Bin8 Flags { get { return new Bin8(_unk2); } set { _unk2 = (byte)value.data; SignalPropertyChange(); } }
+        public byte Unk3 { get { return _unk3; } set { _unk3 = value; SignalPropertyChange(); } }
+        public byte Unk4 { get { return _unk4; } set { _unk4 = value; SignalPropertyChange(); } }
+        
+        public byte _unk1, _unk2, _unk3, _unk4;
+
+        public MoveDefCommonActionNode(string name, bool blank, ResourceNode parent, uint flags) : base(name, blank, parent) 
+        {
+            _unk1 = (byte)((flags >> 24) & 0xFF);
+            _unk2 = (byte)((flags >> 16) & 0xFF);
+            _unk3 = (byte)((flags >> 8) & 0xFF);
+            _unk4 = (byte)((flags >> 0) & 0xFF);
         }
     }
 }

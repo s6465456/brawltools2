@@ -207,10 +207,18 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct FDefCommonUnk7Entry
     {
-        public bint _unk1;
-        public bint _unk2;
+        public FDefListOffset _list;
         public bshort _unk3;
         public bshort _unk4;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct FDefCommonUnk7EntryListEntry
+    {
+        public bfloat _unk1;
+        public bfloat _unk2;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }

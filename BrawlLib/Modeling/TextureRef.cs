@@ -74,7 +74,7 @@ namespace BrawlLib.Modeling
 
             if (Texture != null)
                 Texture.Delete();
-            Texture = new GLTexture(_context, 0, 0);
+            Texture = new GLTexture(0, 0);
             Texture.Bind();
 
             //ctx._states[String.Format("{0}_TexRef", Name)] = Texture;

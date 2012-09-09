@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using BrawlLib.Imaging;
 using BrawlLib.Wii.Models;
 using System.Windows.Forms;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.Modeling
 {
@@ -485,17 +486,17 @@ namespace BrawlLib.Modeling
 
             switch (prim._type)
             {
-                case GLPrimitiveType.Triangles:
+                case BeginMode.Triangles:
                     writer.WriteStartElement("triangles");
                     stride = 3;
                     break;
 
-                case GLPrimitiveType.Lines:
+                case BeginMode.Lines:
                     writer.WriteStartElement("lines");
                     stride = 2;
                     break;
 
-                case GLPrimitiveType.Points:
+                case BeginMode.Points:
                     writer.WriteStartElement("points");
                     stride = 1;
                     break;

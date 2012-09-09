@@ -96,6 +96,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
+    <Reference Include="OpenTK.Compatibility, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -110,6 +112,10 @@
     <None Include="System\ComponentModel\CustomPropertyDescriptor.cs" />
     <None Include="System\ComponentModel\DelegatePropertyDescriptor.cs" />
     <None Include="Modeling\Model\Bone.cs" />
+    <Compile Include="Imaging\GIF\AnimatedGifEncoder.cs" />
+    <Compile Include="Imaging\GIF\GifDecoder.cs" />
+    <Compile Include="Imaging\GIF\LZWEncoder.cs" />
+    <Compile Include="Imaging\GIF\NeuQuant.cs" />
     <Compile Include="Modeling\Triangle Converter\TCParamDebug.cs" />
     <Compile Include="Modeling\Triangle Converter\TCMain.cs" />
     <Compile Include="Modeling\Triangle Converter\TCTableVariables.cs" />
@@ -140,9 +146,9 @@
     <None Include="Modeling\Model\Model.cs" />
     <None Include="Modeling\Model\Polygon.cs" />
     <None Include="Modeling\Model\Primitive.cs" />
-    <Compile Include="Modeling\TextureRef.cs" />
+    <None Include="Modeling\TextureRef.cs" />
     <Compile Include="Modeling\PrimitiveManager.cs" />
-    <Compile Include="Modeling\TextureManager.cs" />
+    <None Include="Modeling\TextureManager.cs" />
     <Compile Include="Modeling\Vertex.cs" />
     <Compile Include="Modeling\Wavefront.cs" />
     <None Include="OpenGL\GLPrimitive.cs" />
@@ -150,14 +156,16 @@
     <None Include="OpenGL\GLMaterial.cs" />
     <None Include="OpenGL\GLPolygon.cs" />
     <None Include="OpenGL\GLBone.cs" />
+    <Compile Include="OpenGL\TKContext.cs" />
+    <None Include="OpenGL\wGlContextTK.cs" />
     <Compile Include="OpenGL\CPPEnums.cs" />
     <Compile Include="OpenGL\Enums.cs" />
     <Compile Include="OpenGL\GLCamera.cs" />
-    <Compile Include="OpenGL\GLContext.cs" />
+    <None Include="OpenGL\GLContext.cs" />
     <None Include="OpenGL\GLDelegates.cs" />
     <Compile Include="OpenGL\GLDisplayList.cs" />
     <None Include="OpenGL\GLModel.cs" />
-    <Compile Include="OpenGL\GLEnums.cs" />
+    <None Include="OpenGL\GLEnums.cs" />
     <Compile Include="OpenGL\GLPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -331,7 +339,7 @@
     <Compile Include="System\Vector2.cs" />
     <Compile Include="System\Vector3.cs" />
     <Compile Include="OpenGL\wGL.cs" />
-    <Compile Include="OpenGL\wGlContext.cs" />
+    <None Include="OpenGL\wGlContext.cs" />
     <Compile Include="OpenGL\wPixelFormatDescriptor.cs" />
     <Compile Include="Platform\Linux.cs" />
     <Compile Include="Platform\Win32.cs" />
@@ -355,6 +363,9 @@
     <None Include="System\Windows\Forms\GradientDialog2.cs">
       <SubType>Form</SubType>
     </None>
+    <Compile Include="System\Windows\Forms\SCN0LightEditControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="System\Windows\Forms\ModuleSectionEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -648,6 +659,9 @@
     <EmbeddedResource Include="System\PowerPCAssembly\RelPowerPcDisassembler.resx">
       <DependentUpon>RelPowerPcDisassembler.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\SCN0LightEditControl.resx">
+      <DependentUpon>SCN0LightEditControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ModuleSectionEditor.resx">
       <DependentUpon>ModuleSectionEditor.cs</DependentUpon>
     </EmbeddedResource>
@@ -828,7 +842,6 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

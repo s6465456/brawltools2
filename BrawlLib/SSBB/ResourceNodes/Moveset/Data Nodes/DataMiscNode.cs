@@ -10,6 +10,7 @@ using BrawlLib.Wii.Animations;
 using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.OpenGL;
 using System.Runtime.InteropServices;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -805,7 +806,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         #region Rendering
-        public unsafe void Render(GLContext ctx, bool selected, int type) 
+        public unsafe void Render(bool selected, int type) 
         {
             if (BoneNode == null)
                 return;
@@ -814,12 +815,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Modified for release v0.67
 
             //Disable all things that could be enabled
-            ctx.glDisable((uint)GLEnableCap.TEXTURE_GEN_S);
-            ctx.glDisable((uint)GLEnableCap.TEXTURE_GEN_T);
-            ctx.glDisable((uint)GLEnableCap.CullFace);
-            ctx.glDisable((uint)GLEnableCap.Lighting);
-            ctx.glDisable((uint)GLEnableCap.DepthTest);
-            ctx.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
+            GL.Disable(EnableCap.CullFace);
+            GL.Disable(EnableCap.Lighting);
+            GL.Disable(EnableCap.DepthTest);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
             switch (type)
             {
@@ -827,13 +826,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     switch ((int)Zone)
                     {
                         case 0:
-                            ctx.glColor(selected ? 0.0f : 0.5f, 0.5f, 0.0f, 0.5f);
+                            GL.Color4(selected ? 0.0f : 0.5f, 0.5f, 0.0f, 0.5f);
                             break;
                         default:
-                            ctx.glColor(selected ? 0.0f : 1.0f, 1.0f, 0.0f, 0.5f);
+                            GL.Color4(selected ? 0.0f : 1.0f, 1.0f, 0.0f, 0.5f);
                             break;
                         case 2:
-                            ctx.glColor(selected ? 0.0f : 1.0f, 1.0f, 0.25f, 0.5f);
+                            GL.Color4(selected ? 0.0f : 1.0f, 1.0f, 0.25f, 0.5f);
                             break;
                     }
                     break;
@@ -841,13 +840,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     switch ((int)Zone)
                     {
                         case 0:
-                            ctx.glColor(selected ? 0.0f : 0.0f, 0.5f, 0.0f, 0.5f);
+                            GL.Color4(selected ? 0.0f : 0.0f, 0.5f, 0.0f, 0.5f);
                             break;
                         default:
-                            ctx.glColor(selected ? 0.0f : 0.0f, 1.0f, 0.0f, 0.5f);
+                            GL.Color4(selected ? 0.0f : 0.0f, 1.0f, 0.0f, 0.5f);
                             break;
                         case 2:
-                            ctx.glColor(selected ? 0.0f : 0.0f, 1.0f, 0.25f, 0.5f);
+                            GL.Color4(selected ? 0.0f : 0.0f, 1.0f, 0.25f, 0.5f);
                             break;
                     }
                     break;
@@ -855,13 +854,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     switch ((int)Zone)
                     {
                         case 0:
-                            ctx.glColor(0.0f, selected ? 0.5f : 0.0f, selected ? 0.0f : 0.5f, 0.5f);
+                            GL.Color4(0.0f, selected ? 0.5f : 0.0f, selected ? 0.0f : 0.5f, 0.5f);
                             break;
                         default:
-                            ctx.glColor(0.0f, selected ? 1.0f : 0.0f, selected ? 0.0f : 1.0f, 0.5f);
+                            GL.Color4(0.0f, selected ? 1.0f : 0.0f, selected ? 0.0f : 1.0f, 0.5f);
                             break;
                         case 2:
-                            ctx.glColor(0.0f, selected ? 1.0f : 0.25f, selected ? 0.25f : 1.0f, 0.5f);
+                            GL.Color4(0.0f, selected ? 1.0f : 0.25f, selected ? 0.25f : 1.0f, 0.5f);
                             break;
                     }
                     break;
@@ -874,11 +873,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             bonescl *= _radius;
             Matrix m = Matrix.TransformMatrix(bonescl, bonerot, bonepos);
 
-            ctx.glPushMatrix();
-            ctx.glMultMatrix((float*)&m);
+            GL.PushMatrix();
+            GL.MultMatrix((float*)&m);
 
             Vector3 stretchfac = new Vector3(_stretch._x / bonescl._x, _stretch._y / bonescl._y, _stretch._z / bonescl._z);
-            ctx.glTranslate(_offst._x / bonescl._x, _offst._y / bonescl._y, _offst._z / bonescl._z);
+            GL.Translate(_offst._x / bonescl._x, _offst._y / bonescl._y, _offst._z / bonescl._z);
 
             int res = 16;
             double angle = 360.0 / res;
@@ -934,14 +933,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                         }
                         if (quadrant == q)
                         {
-                            ctx.glTranslate(stretch._x,stretch._y,stretch._z);
-                            ctx.glBegin(GLPrimitiveType.Quads);
-                            ctx.glVertex(Math.Cos(ang1) * Math.Sin(ringang2), Math.Sin(ang1) * Math.Sin(ringang2), Math.Cos(ringang2));
-                            ctx.glVertex(Math.Cos(ang2) * Math.Sin(ringang2), Math.Sin(ang2) * Math.Sin(ringang2), Math.Cos(ringang2));
-                            ctx.glVertex(Math.Cos(ang2) * Math.Sin(ringang1), Math.Sin(ang2) * Math.Sin(ringang1), Math.Cos(ringang1));
-                            ctx.glVertex(Math.Cos(ang1) * Math.Sin(ringang1), Math.Sin(ang1) * Math.Sin(ringang1), Math.Cos(ringang1));
-                            ctx.glEnd();
-                            ctx.glTranslate(-stretch._x,-stretch._y,-stretch._z);
+                            GL.Translate(stretch._x,stretch._y,stretch._z);
+                            GL.Begin(BeginMode.Quads);
+                            GL.Vertex3(Math.Cos(ang1) * Math.Sin(ringang2), Math.Sin(ang1) * Math.Sin(ringang2), Math.Cos(ringang2));
+                            GL.Vertex3(Math.Cos(ang2) * Math.Sin(ringang2), Math.Sin(ang2) * Math.Sin(ringang2), Math.Cos(ringang2));
+                            GL.Vertex3(Math.Cos(ang2) * Math.Sin(ringang1), Math.Sin(ang2) * Math.Sin(ringang1), Math.Cos(ringang1));
+                            GL.Vertex3(Math.Cos(ang1) * Math.Sin(ringang1), Math.Sin(ang1) * Math.Sin(ringang1), Math.Cos(ringang1));
+                            GL.End();
+                            GL.Translate(-stretch._x, -stretch._y, -stretch._z);
                         }
                     }
                 }
@@ -985,12 +984,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     z2 += stretchfac._z;
                 }
 
-                ctx.glBegin(GLPrimitiveType.Quads);
-                ctx.glVertex(x1, y1, z1);
-                ctx.glVertex(x2, y1, z1);
-                ctx.glVertex(x2, y2, z2);
-                ctx.glVertex(x1, y2, z2);
-                ctx.glEnd();
+                GL.Begin(BeginMode.Quads);
+                GL.Vertex3(x1, y1, z1);
+                GL.Vertex3(x2, y1, z1);
+                GL.Vertex3(x2, y2, z2);
+                GL.Vertex3(x1, y2, z2);
+                GL.End();
             }
 
             // y-axis edges
@@ -1028,12 +1027,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     z2 += stretchfac._z;
                 }
 
-                ctx.glBegin(GLPrimitiveType.Quads);
-                ctx.glVertex(x1, y1, z1);
-                ctx.glVertex(x1, y2, z1);
-                ctx.glVertex(x2, y2, z2);
-                ctx.glVertex(x2, y1, z2);
-                ctx.glEnd();
+                GL.Begin(BeginMode.Quads);
+                GL.Vertex3(x1, y1, z1);
+                GL.Vertex3(x1, y2, z1);
+                GL.Vertex3(x2, y2, z2);
+                GL.Vertex3(x2, y1, z2);
+                GL.End();
             }
 
             // z-axis edges
@@ -1071,18 +1070,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                     y2 += stretchfac._y;
                 }
 
-                ctx.glBegin(GLPrimitiveType.Quads);
-                ctx.glVertex(x2, y2, z1);
-                ctx.glVertex(x2, y2, z2);
-                ctx.glVertex(x1, y1, z2);
-                ctx.glVertex(x1, y1, z1);
-                ctx.glEnd();
+                GL.Begin(BeginMode.Quads);
+                GL.Vertex3(x2, y2, z1);
+                GL.Vertex3(x2, y2, z2);
+                GL.Vertex3(x1, y1, z2);
+                GL.Vertex3(x1, y1, z1);
+                GL.End();
             }
 
             Vector3 scale = BoneNode.RecursiveScale();
 
             // six faces
-            ctx.glBegin(GLPrimitiveType.Quads);
+            GL.Begin(BeginMode.Quads);
             float outpos;
 
             // left face
@@ -1090,63 +1089,63 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_stretch._x > 0)
                 outpos = (_stretch._x + _radius) / bonescl._x;
             
-            ctx.glVertex(outpos, 0, 0);
-            ctx.glVertex(outpos, stretchfac._y, 0);
-            ctx.glVertex(outpos, stretchfac._y, stretchfac._z);
-            ctx.glVertex(outpos, 0, stretchfac._z);
+            GL.Vertex3(outpos, 0, 0);
+            GL.Vertex3(outpos, stretchfac._y, 0);
+            GL.Vertex3(outpos, stretchfac._y, stretchfac._z);
+            GL.Vertex3(outpos, 0, stretchfac._z);
 
             // right face
             outpos = -_radius / bonescl._x * scale._x;
             if (_stretch._x < 0)
                 outpos = (_stretch._x - _radius) / bonescl._x;
             
-            ctx.glVertex(outpos, 0, 0);
-            ctx.glVertex(outpos, 0, stretchfac._z);
-            ctx.glVertex(outpos, stretchfac._y, stretchfac._z);
-            ctx.glVertex(outpos, stretchfac._y, 0);
+            GL.Vertex3(outpos, 0, 0);
+            GL.Vertex3(outpos, 0, stretchfac._z);
+            GL.Vertex3(outpos, stretchfac._y, stretchfac._z);
+            GL.Vertex3(outpos, stretchfac._y, 0);
 
             // top face
             outpos = _radius / bonescl._y * scale._y;
             if (_stretch._y > 0)
                 outpos = (_stretch._y + _radius) / bonescl._y;
             
-            ctx.glVertex(0, outpos, 0);
-            ctx.glVertex(0, outpos, stretchfac._z);
-            ctx.glVertex(stretchfac._x, outpos, stretchfac._z);
-            ctx.glVertex(stretchfac._x, outpos, 0);
+            GL.Vertex3(0, outpos, 0);
+            GL.Vertex3(0, outpos, stretchfac._z);
+            GL.Vertex3(stretchfac._x, outpos, stretchfac._z);
+            GL.Vertex3(stretchfac._x, outpos, 0);
 
             // bottom face
             outpos = -_radius / bonescl._y * scale._y;
             if (_stretch._y < 0)
                 outpos = (_stretch._y - _radius) / bonescl._y;
             
-            ctx.glVertex(0, outpos, 0);
-            ctx.glVertex(stretchfac._x, outpos, 0);
-            ctx.glVertex(stretchfac._x, outpos, stretchfac._z);
-            ctx.glVertex(0, outpos, stretchfac._z);
+            GL.Vertex3(0, outpos, 0);
+            GL.Vertex3(stretchfac._x, outpos, 0);
+            GL.Vertex3(stretchfac._x, outpos, stretchfac._z);
+            GL.Vertex3(0, outpos, stretchfac._z);
 
             // front face
             outpos = _radius / bonescl._z * scale._z;
             if (_stretch._z > 0)
                 outpos = (_stretch._z + _radius) / bonescl._z;
             
-            ctx.glVertex(0, 0, outpos);
-            ctx.glVertex(stretchfac._x, 0, outpos);
-            ctx.glVertex(stretchfac._x, stretchfac._y, outpos);
-            ctx.glVertex(0, stretchfac._y, outpos);
+            GL.Vertex3(0, 0, outpos);
+            GL.Vertex3(stretchfac._x, 0, outpos);
+            GL.Vertex3(stretchfac._x, stretchfac._y, outpos);
+            GL.Vertex3(0, stretchfac._y, outpos);
 
             // right face
             outpos = -_radius / bonescl._z * scale._z;
             if (_stretch._z < 0)
                 outpos = (_stretch._z - _radius) / bonescl._z;
             
-            ctx.glVertex(0, 0, outpos);
-            ctx.glVertex(0, stretchfac._y, outpos);
-            ctx.glVertex(stretchfac._x, stretchfac._y, outpos);
-            ctx.glVertex(stretchfac._x, 0, outpos);
-            ctx.glEnd();
+            GL.Vertex3(0, 0, outpos);
+            GL.Vertex3(0, stretchfac._y, outpos);
+            GL.Vertex3(stretchfac._x, stretchfac._y, outpos);
+            GL.Vertex3(stretchfac._x, 0, outpos);
+            GL.End();
 
-            ctx.glPopMatrix();
+            GL.PopMatrix();
         }
         #endregion
     }

@@ -64,14 +64,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<SCN0Keyframe> YStartPoints { get { return yStarts; } set { yStarts = value; SignalPropertyChange(); } }
         [Category("Light Start Points")]
         public List<SCN0Keyframe> ZStartPoints { get { return zStarts; } set { zStarts = value; SignalPropertyChange(); } }
-
+        
         [Category("Light End Points")]
         public List<SCN0Keyframe> XEndPoints { get { return xEnds; } set { xEnds = value; SignalPropertyChange(); } }
         [Category("Light End Points")]
         public List<SCN0Keyframe> YEndPoints { get { return yEnds; } set { yEnds = value; SignalPropertyChange(); } }
         [Category("Light End Points")]
         public List<SCN0Keyframe> ZEndPoints { get { return zEnds; } set { zEnds = value; SignalPropertyChange(); } }
-
+        
         [Category("SourceLight")]
         public DistAttnFn DistanceFunction { get { return (DistAttnFn)_distFunc; } set { _distFunc = (int)value; SignalPropertyChange(); } }
         [Category("SourceLight")]

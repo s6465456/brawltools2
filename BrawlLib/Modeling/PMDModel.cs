@@ -6,6 +6,7 @@ using System.IO;
 using BrawlLib.SSBB.ResourceNodes;
 using System.Windows.Forms;
 using BrawlLib.Wii.Models;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.Modeling
 {
@@ -563,7 +564,7 @@ namespace BrawlLib.Modeling
             Vector3* Normals = (Vector3*)p._manager._faceData[1].Address;
             Vector2* UVs = (Vector2*)p._manager._faceData[4].Address;
 
-            manager._triangles = new NewPrimitive(FaceVertexes.Length, OpenGL.GLPrimitiveType.Triangles);
+            manager._triangles = new NewPrimitive(FaceVertexes.Length, BeginMode.Triangles);
             manager._triangles._indices = new UnsafeBuffer(FaceVertexes.Length * 2);
             ushort* pTri = (ushort*)manager._triangles._indices.Address;
 
