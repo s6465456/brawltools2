@@ -3,6 +3,7 @@ using BrawlLib.SSBBTypes;
 using System.Collections.Generic;
 using BrawlLib.OpenGL;
 using System.Windows.Forms;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -127,20 +128,19 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region IRenderedObject Members
 
-        public void Attach(GLContext context) { }
-        public void Detach(GLContext context) { }
-        public void Refesh(GLContext context) { }
-        public void Render(GLContext context, ModelEditControl mainWindow)
+        public void Attach(TKContext ctx) { }
+        public void Detach() { }
+        public void Refesh() { }
+        public void Render(TKContext ctx, ModelEditControl mainWindow)
         {
-            context.glDisable((uint)GLEnableCap.Lighting);
-            context.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
+            GL.Disable(EnableCap.Lighting);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
             //context.glDisable((uint)GLEnableCap.DepthTest);
 
             foreach (CollisionObject obj in _objects)
-                obj.Render(context);
+                obj.Render();
         }
         #endregion
-
 
         internal static ResourceNode TryParse(DataSource source)
         {
@@ -246,7 +246,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         }
 
-        internal unsafe void Render(GLContext context)
+        internal unsafe void Render()
         {
             if (!_render)
                 return;
@@ -257,9 +257,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             //    context.glMultMatrix((float*)m);
 
             foreach (CollisionPlane p in _planes)
-                p.DrawPlanes(context);
+                p.DrawPlanes();
             foreach (CollisionLink l in _points)
-                l.Render(context);
+                l.Render();
 
             //context.glPopMatrix();
         }
@@ -415,20 +415,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _parent._points.Remove(this);
         }
 
-        internal void Render(GLContext ctx)
+        internal void Render()
         {
             if (_highlight)
-                ctx.glColor(1.0f, 1.0f, 0.0f, 1.0f);
+                GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
             else
-                ctx.glColor(1.0f, 1.0f, 1.0f, 1.0f);
+                GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
-            ctx.DrawBox(
-                new Vector3(_value._x - BoxRadius, _value._y - BoxRadius, LineWidth),
-                new Vector3(_value._x + BoxRadius, _value._y + BoxRadius, -LineWidth));
+            Console.WriteLine();
+            //ctx.DrawBox(
+            //    new Vector3(_value._x - BoxRadius, _value._y - BoxRadius, LineWidth),
+            //    new Vector3(_value._x + BoxRadius, _value._y + BoxRadius, -LineWidth));
         }
-
-
-
     }
 
     public unsafe class CollisionPlane
@@ -587,7 +585,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _parent._planes.Remove(this);
         }
 
-        internal unsafe void DrawPlanes(GLContext context)
+        internal unsafe void DrawPlanes()
         {
             if (!_render)
                 return;
@@ -599,36 +597,36 @@ namespace BrawlLib.SSBB.ResourceNodes
                 lev++;
 
             if (lev == 0)
-                context.glColor(0.0f, 0.9f, 0.9f, 0.8f);
+                GL.Color4(0.0f, 0.9f, 0.9f, 0.8f);
             else if (lev == 1)
-                context.glColor(1.0f, 0.5f, 0.5f, 0.8f);
+                GL.Color4(1.0f, 0.5f, 0.5f, 0.8f);
             else
-                context.glColor(0.9f, 0.0f, 0.9f, 0.8f);
+                GL.Color4(0.9f, 0.0f, 0.9f, 0.8f);
 
-            context.glBegin(GLPrimitiveType.Quads);
+            GL.Begin(BeginMode.Quads);
 
-            context.glVertex(_linkLeft._value._x, _linkLeft._value._y, 10.0f);
-            context.glVertex(_linkLeft._value._x, _linkLeft._value._y, -10.0f);
-            context.glVertex(_linkRight._value._x, _linkRight._value._y, -10.0f);
-            context.glVertex(_linkRight._value._x, _linkRight._value._y, 10.0f);
+            GL.Vertex3(_linkLeft._value._x, _linkLeft._value._y, 10.0f);
+            GL.Vertex3(_linkLeft._value._x, _linkLeft._value._y, -10.0f);
+            GL.Vertex3(_linkRight._value._x, _linkRight._value._y, -10.0f);
+            GL.Vertex3(_linkRight._value._x, _linkRight._value._y, 10.0f);
 
-            context.glEnd();
+            GL.End();
 
             if (lev == 0)
-                context.glColor(0.0f, 0.6f, 0.6f, 0.8f);
+                GL.Color4(0.0f, 0.6f, 0.6f, 0.8f);
             else if (lev == 1)
-                context.glColor(0.7f, 0.2f, 0.2f, 0.8f);
+                GL.Color4(0.7f, 0.2f, 0.2f, 0.8f);
             else
-                context.glColor(0.6f, 0.0f, 0.6f, 0.8f);
+                GL.Color4(0.6f, 0.0f, 0.6f, 0.8f);
 
-            context.glBegin(GLPrimitiveType.Lines);
+            GL.Begin(BeginMode.Lines);
 
-            context.glVertex(_linkLeft._value._x, _linkLeft._value._y, 10.0f);
-            context.glVertex(_linkRight._value._x, _linkRight._value._y, 10.0f);
-            context.glVertex(_linkLeft._value._x, _linkLeft._value._y, -10.0f);
-            context.glVertex(_linkRight._value._x, _linkRight._value._y, -10.0f);
+            GL.Vertex3(_linkLeft._value._x, _linkLeft._value._y, 10.0f);
+            GL.Vertex3(_linkRight._value._x, _linkRight._value._y, 10.0f);
+            GL.Vertex3(_linkLeft._value._x, _linkLeft._value._y, -10.0f);
+            GL.Vertex3(_linkRight._value._x, _linkRight._value._y, -10.0f);
 
-            context.glEnd();
+            GL.End();
         }
     }
 }

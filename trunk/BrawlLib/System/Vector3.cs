@@ -6,13 +6,9 @@ using System.Globalization;
 namespace System
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct Vector3
+    public unsafe struct Vector3 : IComparable
     {
         public float _x, _y, _z;
-
-        public float X { get { return _x; } set { _x = value; } }
-        public float Y { get { return _y; } set { _y = value; } }
-        public float Z { get { return _z; } set { _z = value; } }
 
         public Vector3(string s)
         {
@@ -256,6 +252,28 @@ namespace System
                 this._y = (float)yRadian;
                 this._z = 0.0f;
             }
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is Vector3)
+            {
+                Vector3 o = (Vector3)obj;
+                if (_x > o._x)
+                    return 1;
+                else if (_x < o._x)
+                    return -1;
+                else if (_y > o._y)
+                    return 1;
+                else if (_y < o._y)
+                    return -1;
+                else if (_z > o._z)
+                    return 1;
+                else if (_z < o._z)
+                    return -1;
+                return 0;
+            }
+            return 1;
         }
     }
 }

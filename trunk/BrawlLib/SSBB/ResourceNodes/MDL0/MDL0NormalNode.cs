@@ -42,6 +42,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Normal Data")]
         public int NumEntries { get { return Header->_numVertices; } }
 
+        public bool ForceRebuild { get { return _forceRebuild; } set { if (_forceRebuild != value) { _forceRebuild = value; SignalPropertyChange(); } } }
+        public bool ForceFloat { get { return _forceFloat; } set { if (_forceFloat != value) { _forceFloat = value; } } }
+
         private Vector3[] _normals;
         public Vector3[] Normals
         {
@@ -66,7 +69,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             if (Model._isImport || _forceRebuild)
             {
-                _enc = new VertexCodec(Normals, false, _forceRebuild);
+                _enc = new VertexCodec(Normals, false, _forceFloat);
                 return _enc._dataLen.Align(0x20) + 0x20;
             }
             else return base.OnCalculateSize(force);

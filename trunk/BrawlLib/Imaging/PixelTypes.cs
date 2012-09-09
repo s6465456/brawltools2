@@ -170,14 +170,16 @@ namespace BrawlLib.Imaging
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct RGBAPixel
+    public unsafe struct RGBAPixel : IComparable
     {
         public const float ColorFactor = 1.0f / 255.0f;
-
+        
         public byte R, G, B, A;
 
         public static explicit operator RGBAPixel(ARGBPixel p) { return new RGBAPixel() { A = p.A, B = p.B, G = p.G, R = p.R }; }
         public static explicit operator ARGBPixel(RGBAPixel p) { return new ARGBPixel() { A = p.A, B = p.B, G = p.G, R = p.R }; }
+
+        public RGBAPixel(byte r, byte g, byte b, byte a) { R = r; G = g; B = b; A = a; }
 
         [Category("RGBA Pixel")]
         public byte Red { get { return R; } set { R = value; } }
@@ -207,6 +209,33 @@ namespace BrawlLib.Imaging
                 return this == (RGBAPixel)obj;
             return false;
         }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is RGBAPixel)
+            {
+                RGBAPixel o = (RGBAPixel)obj;
+                if (A > o.A)
+                    return 1;
+                else if (A < o.A)
+                    return -1;
+                else if (R > o.R)
+                    return 1;
+                else if (R < o.R)
+                    return -1;
+                else if (G > o.G)
+                    return 1;
+                else if (G < o.G)
+                    return -1;
+                else if (B > o.B)
+                    return 1;
+                else if (B < o.B)
+                    return -1;
+                return 0;
+            }
+            return 1;
+        }
+
         public static bool operator ==(RGBAPixel p1, RGBAPixel p2) { return *(int*)&p1 == *(int*)&p2; }
         public static bool operator !=(RGBAPixel p1, RGBAPixel p2) { return *(int*)&p1 != *(int*)&p2; }
         public static int Compare(RGBAPixel p1, RGBAPixel p2)
@@ -344,7 +373,7 @@ namespace BrawlLib.Imaging
     public unsafe struct GXColorS10
     {
         //Color factor stays the same. Final value can be greater than 1.0
-        private const float ColorFactor = 1.0f / 255.0f;
+        public const float ColorFactor = 1.0f / 255.0f;
 
         public short R, G, B, A;
 

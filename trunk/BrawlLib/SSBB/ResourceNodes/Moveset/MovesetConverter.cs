@@ -103,11 +103,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             #region Part 1
 
             part1Len += GetSize(node.attributes, ref lookupCount);
-
             part1Len += GetSize(node.sseAttributes, ref lookupCount);
-
             part1Len += GetSize(node.commonActionFlags, ref lookupCount);
-
             part1Len += GetSize(node.unk7, ref lookupCount);
 
             foreach (MoveDefSubActionGroupNode g in RootNode._subActions.Children)
@@ -140,12 +137,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             foreach (MoveDefActionGroupNode a in RootNode._actions.Children)
             {
-                if (a.Children[0].Children.Count > 0 || (a.Children[0] as MoveDefActionNode)._actionRefs.Count > 0) //Entry
+                if (a.Children[0].Children.Count > 0 || (a.Children[0] as MoveDefActionNode)._actionRefs.Count > 0 || (a.Children[0] as MoveDefActionNode)._build) //Entry
                 {
                     part1Len += GetSize(a.Children[0] as MoveDefActionNode, ref lookupCount);
                     lookupCount++;
                 }
-                if (a.Children[1].Children.Count > 0 || (a.Children[1] as MoveDefActionNode)._actionRefs.Count > 0) //Exit
+                if (a.Children[1].Children.Count > 0 || (a.Children[1] as MoveDefActionNode)._actionRefs.Count > 0 || (a.Children[1] as MoveDefActionNode)._build) //Exit
                 {
                     part1Len += GetSize(a.Children[1] as MoveDefActionNode, ref lookupCount);
                     lookupCount++;
@@ -469,12 +466,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             foreach (MoveDefActionGroupNode grp in RootNode._actions.Children)
             {
-                if (grp.Children[0].Children.Count > 0 || (grp.Children[0] as MoveDefActionNode)._actionRefs.Count > 0) //Entry
+                if (grp.Children[0].Children.Count > 0 || (grp.Children[0] as MoveDefActionNode)._actionRefs.Count > 0 || (grp.Children[0] as MoveDefActionNode)._build) //Entry
                 {
                     action1Offsets[grp.Index] = Rebuild(RootNode, grp.Children[0] as MoveDefActionNode, ref dataAddress, baseAddress);
                     RootNode._lookupOffsets.Add((int)&action1Offsets[grp.Index] - (int)baseAddress);
                 }
-                if (grp.Children[1].Children.Count > 0 || (grp.Children[1] as MoveDefActionNode)._actionRefs.Count > 0) //Exit
+                if (grp.Children[1].Children.Count > 0 || (grp.Children[1] as MoveDefActionNode)._actionRefs.Count > 0 || (grp.Children[1] as MoveDefActionNode)._build) //Exit
                 {
                     action2Offsets[grp.Index] = Rebuild(RootNode, grp.Children[1] as MoveDefActionNode, ref dataAddress, baseAddress);
                     RootNode._lookupOffsets.Add((int)&action2Offsets[grp.Index] - (int)baseAddress);
@@ -986,6 +983,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public static int CalcDataCommonSize(MoveDefDataCommonNode node)
         {
+
             return 0;
         }
 

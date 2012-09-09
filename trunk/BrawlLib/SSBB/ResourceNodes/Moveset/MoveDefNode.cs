@@ -31,7 +31,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public VoidPtr Data { get { return (VoidPtr)WorkingUncompressed.Address; } }
         [Browsable(false)]
-        public VoidPtr BaseAddress { get { return Root.BaseAddress; } }
+        public VoidPtr BaseAddress { get { 
+            if (Root == null) 
+                return 0; 
+            return Root.BaseAddress; } }
         [Browsable(false)]
         public MDL0Node Model { get { return Root.Model; } }
         [Browsable(false)]
@@ -97,6 +100,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
+            if (Root == null)
+                return base.OnInitialize();
             if (_extNode == null)
             {
                 _extNode = Root.IsExternal(_offset);
@@ -621,11 +626,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new string[] { "The file from which to call from/The graphical effect to call. Value1 = File#, Value2 = Graphic ID", "The bone to attach the graphical effect to.", "Transition from the attached bone along the Z axis.", "Transition from the attached bone along the Y axis.", "Transition from the attached bone along the X axis.", "Rotation along the Z axis.", "Rotation along the Y axis.", "Rotation along the X axis.", "The size of the graphic.", "Sets whether or not this graphic effect terminates when the animation ends." },
                 "\\name(): File=\\unhex(\\half1(\\value(0))), Graphic ID=\\unhex(\\half2(\\value(0))), Bone=\\bone(\\value(1)), Translation=(\\value(4), \\value(3), \\value(2)), Rotation=(\\value(7), \\value(6), \\value(5)), Scale=\\value(8), Anchored=\\value(9)",
                 new long[] { 0, 0, 1, 1, 1, 1, 1, 1, 1, 3 }));
-            EventDictionary.Add(0x11170700, new ActionEventInfo(0x11170700, "Screen Tint",
+            EventDictionary.Add(0x11170700, new ActionEventInfo(0x11170700, "Limited Screen Tint",
                 "Tint the screen to the specified color.",
-                new string[] { "Transition Time", "Red", "Green", "Blue", "Alpha", "Undefined", "Undefined" },
-                new string[] { "The time taken to transition from its current color to the specified color.", "The red value.", "The green value.", "The blue value.", "The transperency.", "Undefined.", "Undefined" },
-                "\\name(): undefined=\\value(0), TransitionTime=\\value(1), Red=\\value(2), Green=\\value(3), Blue=\\value(4), Alpha=\\value(5)",
+                new string[] { "Transition In Time", "Red", "Green", "Blue", "Alpha", "Frame Count", "Transition Out Time" },
+                new string[] { "The time taken to transition from the current color to the specified color.", "The red value.", "The green value.", "The blue value.", "The transparency.", "The amount of frames that the color lasts.", "The amount of time it takes the color to fade out." },
+                "\\name(): TransInTime=\\value(0), RGBA=(\\value(1), \\value(2), \\value(3), \\value(4)), FrameCount=\\value(5), TransOutTime=\\value(6)",
                 new long[] { 0, 0, 0, 0, 0, 0, 0 }));
             EventDictionary.Add(0x111A1000, new ActionEventInfo(0x111A1000, "Graphic Effect",
                 "Generate a generic graphical effect with the specified parameters.",
@@ -805,25 +810,25 @@ namespace BrawlLib.SSBB.ResourceNodes
                 "Generate a flash overlay effect over the character with the specified colors and opacity. Replaces any currently active flash effects.",
                 new string[] { "R", "G", "B", "A" },
                 new string[] { "The red value from 0-255.", "The green value from 0-255.", "The blue value from 0-255.", "The alpha value from 0-255 (0 = fully transparent, 255 = fully opaque)." },
-                "\\name(): Red=\\value(0), Green=\\value(1), Blue=\\value(2), Alpha=\\value(3)",
+                "\\name(): RGBA=(\\value(0), \\value(1), \\value(2), \\value(3))",
                 new long[] { 0, 0, 0, 0 }));
             EventDictionary.Add(0x21020500, new ActionEventInfo(0x21020500, "Change Flash Overlay Color",
                 "Changes the color of the current flash overlay effect.",
                 new string[] { "Transition Time", "R", "G", "B", "A" },
                 new string[] { "The number of frames the colour change takes.", "The red value (0-255) of the target colour.", "The green value (0-255) of the target colour.", "The blue value (0-255) of the target colour.", "The alpha value (0-255) of the target colour." },
-                "\\name(): Transition Time=\\value(0), Red=\\value(1), Green=\\value(2), Blue=\\value(3), Alpha=\\value(4)",
+                "\\name(): Transition Time=\\value(0), RGBA=(\\value(1), \\value(2), \\value(3), \\value(4))",
                 new long[] { 0, 0, 0, 0, 0 }));
             EventDictionary.Add(0x21050600, new ActionEventInfo(0x21050600, "Flash Light Effect",
                 "Generate a flash lighting effect over the character with the specified colors, opacity and angle.  Replaces any currently active flash effects.",
                 new string[] { "R", "G", "B", "A", "Angle", "Unknown" },
                 new string[] { "The red value from 0-255.", "The green value from 0-255.", "The blue value from 0-255.", "The alpha value from 0-255 (0 = fully transparent, 255 = fully opaque).", "The angle in degrees of the virtual light source.", "Possibly the distance of the virtual light source?" },
-                "\\name(): Red=\\value(0), Green=\\value(1), Blue=\\value(2), Alpha=\\value(3), Light Source X=\\value(4), Light Source Y=\\value(5)",
+                "\\name(): RGBA=(\\value(0), \\value(1), \\value(2), \\value(3)), Light Source X=\\value(4), Light Source Y=\\value(5)",
                 new long[] { 0, 0, 0, 0, 1, 1 }));
             EventDictionary.Add(0x21070500, new ActionEventInfo(0x21070500, "Change Flash Light Color",
                 "Changes the color of the current flash light effect.",
                 new string[] { "Transition Time", "R", "G", "B", "A" },
                 new string[] { "The number of frames the color change takes.", "The red value (0-255) of the target color.", "The green value (0-255) of the target color.", "The blue value (0-255) of the target color.", "The alpha value (0-255) of the target color." },
-                "\\name(): Transition Time=\\value(0), Red=\\value(1), Green=\\value(2), Blue=\\value(3), Alpha=\\value(4)",
+                "\\name(): Transition Time=\\value(0), RGBA=(\\value(1), \\value(2), \\value(3), \\value(4))",
                 new long[] { 0, 0, 0, 0, 0 }));
             EventDictionary.Add(0x64000000, new ActionEventInfo(0x64000000, "Allow Interrupt",
                 "Allow the current action to be interrupted by another action.",
@@ -1455,11 +1460,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new string[] { "Undefined.", "Undefined" },
                 "",
                 new long[] { 0, 0 }));
-            EventDictionary.Add(0x11180200, new ActionEventInfo(0x11180200, "End Screen Tint?",
-                "",
-                new string[] { "Undefined", "Undefined" },
-                new string[] { "Undefined.", "Undefined" },
-                "",
+            EventDictionary.Add(0x11180200, new ActionEventInfo(0x11180200, "End Unlimited Screen Tint",
+                "Terminates an unlimited screen tint with the specified ID.",
+                new string[] { "ID", "Frames" },
+                new string[] { "The ID of the screen tint to end.", "The amount of frames that the color will take to fade out." },
+                "\\name(): ID=\\value(0), TransOutTime=\\value(1)",
                 new long[] { 0, 0 }));
             EventDictionary.Add(0x12030100, new ActionEventInfo(0x12030100, "Basic Variable Increment",
                 "Variable++",
@@ -1773,11 +1778,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new string[] { "Undefined" },
                 "",
                 new long[] { 0 }));
-            EventDictionary.Add(0x11170600, new ActionEventInfo(0x11170600, "Screen Tint",
-                "Tint the screen to the specified color.",
-                new string[] { "Undefined", "Transition Time", "Red", "Green", "Blue", "Alpha" },
-                new string[] { "Undefined.", "The time taken to transition from its current color to the specified color.", "The red value.", "The green value.", "The blue value.", "The transperency." },
-                "",
+            EventDictionary.Add(0x11170600, new ActionEventInfo(0x11170600, "Unlimited Screen Tint",
+                "Tint the screen to the specified color until terminated by 11180200 (End Screen Tint).",
+                new string[] { "ID", "Transition Time", "Red", "Green", "Blue", "Alpha" },
+                new string[] { "The ID of the screen tint.", "The time taken to transition from its current color to the specified color.", "The red value.", "The green value.", "The blue value.", "The transperency." },
+                "\\name(): ID=\\value(0), TransitionTime=\\value(1), RGBA=(\\value(2), \\value(3), \\value(4), \\value(5))",
                 new long[] { 0, 0, 0, 0, 0, 0 }));
             EventDictionary.Add(0x12100200, new ActionEventInfo(0x12100200, "Float Variable Divide",
                 "Divide a specified value with a float variable.",
@@ -2252,8 +2257,17 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public MoveDefActionNode GetAction(int list, int type, int index)
         {
-            if (list >= 3 || index == -1)
+            if ((list >= 3 && dataCommon == null) || list == 4 || index == -1)
                 return null;
+
+            if (list > 4 && dataCommon != null)
+            {
+                if (list == 5 && type >= 0 && index < dataCommon._flashOverlay.Children.Count)
+                    return (MoveDefActionNode)dataCommon._flashOverlay.Children[index];//.Children[0];
+
+                if (list == 6 && type >= 0 && index < dataCommon._screenTint.Children.Count)
+                    return (MoveDefActionNode)dataCommon._screenTint.Children[index];//.Children[0];
+            }
 
             if (list == 0 && type >= 0 && index < _actions.Children.Count)
                 return (MoveDefActionNode)_actions.Children[index].Children[type];
@@ -2299,7 +2313,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             bool done = false;
 
-            if ((dataCommon != null && data == null) || offset <= 0)
+            if ((dataCommon == null && data == null) || offset <= 0)
             {
                 list = 4; //Null
                 done = true;
@@ -2312,9 +2326,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                         done = true;
                         break;
                     }
-            if (!done && _subActions != null) //Search sub actions
+            if (!done) //Search sub actions
             {
                 list++;
+                if (_subActions != null)
                 for (type = 0; type < _subActions.ActionOffsets.Count; type++)
                     if ((index = _subActions.ActionOffsets[type].IndexOf(offset)) != -1)
                         {
@@ -2349,6 +2364,23 @@ namespace BrawlLib.SSBB.ResourceNodes
                 type = -1;
                 index = -1;
             }
+            if (dataCommon != null && data == null && offset > 0)
+            {
+                if (dataCommon._screenTint != null && !done)
+                {
+                    list++;
+                    if ((index = dataCommon._screenTint.ActionOffsets.IndexOf((uint)offset)) != -1)
+                        return;
+                }
+                if (dataCommon._flashOverlay != null && !done)
+                {
+                    list++;
+                    if ((index = dataCommon._flashOverlay.ActionOffsets.IndexOf((uint)offset)) != -1)
+                        return;
+                }
+            }
+            if (!done)
+                list = 4;
         }
 
         #endregion
@@ -2683,7 +2715,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
             {
                 iGFXFiles = new string[259];
-                iGFXFiles[0] = "Common?";
+                iGFXFiles[0] = "Common";
                 iGFXFiles[1] = "Mario";
                 iGFXFiles[2] = "Donkey Kong";
                 iGFXFiles[3] = "Link  ";

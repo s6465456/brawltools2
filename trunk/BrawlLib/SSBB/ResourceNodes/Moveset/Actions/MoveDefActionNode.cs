@@ -86,8 +86,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override bool OnInitialize()
         {
             _offsets.Add(_offset);
-            base.OnInitialize();
-            //_build = true;
+            _build = true;
             if (_offset > Root.dataSize)
                 return false;
             if (_name == null)
@@ -114,7 +113,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _name = "Action" + Index;
             }
 
-            Root._paths[_offset] = TreePath;
+            base.OnInitialize();
+
+            //Root._paths[_offset] = TreePath;
 
             return (Header->_nameSpace != 0 || Header->_id != 0);
         }

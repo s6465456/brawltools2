@@ -7,16 +7,17 @@ using BrawlLib.Wii.Graphics;
 using BrawlLib.OpenGL;
 using System.Drawing;
 using BrawlLib.SSBB.ResourceNodes;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.Modeling
 {
     public unsafe class NewPrimitive : IDisposable
     {
-        internal GLPrimitiveType _type;
+        internal BeginMode _type;
         internal int _elementCount;
         internal UnsafeBuffer _indices;
 
-        public NewPrimitive(int elements, GLPrimitiveType type)
+        public NewPrimitive(int elements, BeginMode type)
         {
             _elementCount = elements;
             _type = type;
@@ -33,9 +34,10 @@ namespace BrawlLib.Modeling
             }
         }
 
-        internal unsafe void Render(GLContext ctx)
+        internal unsafe void Render()
         {
-            ctx.glDrawElements(_type, _elementCount, GLElementType.UNSIGNED_SHORT, _indices.Address);
+            //GL.DrawElements(_type, _elementCount, GLElementType.UNSIGNED_SHORT, _indices.Address);
+            GL.DrawElements(_type, _elementCount, DrawElementsType.UnsignedShort, (IntPtr)_indices.Address);
         }
     }
 
@@ -581,17 +583,17 @@ namespace BrawlLib.Modeling
             //{ _trifans = null; p4 = null; }
 
             if (d3 > 0)
-            { _triangles = new NewPrimitive(d3, GLPrimitiveType.Triangles); p3 = (ushort*)_triangles._indices.Address; }
+            { _triangles = new NewPrimitive(d3, BeginMode.Triangles); p3 = (ushort*)_triangles._indices.Address; }
             else
             { _triangles = null; p3 = null; }
 
             if (d2 > 0)
-            { _lines = new NewPrimitive(d2, GLPrimitiveType.Lines); p2 = (ushort*)_lines._indices.Address; }
+            { _lines = new NewPrimitive(d2, BeginMode.Lines); p2 = (ushort*)_lines._indices.Address; }
             else
             { _lines = null; p2 = null; }
 
             if (d1 > 0)
-            { _points = new NewPrimitive(d1, GLPrimitiveType.Points); p1 = (ushort*)_points._indices.Address; }
+            { _points = new NewPrimitive(d1, BeginMode.Points); p1 = (ushort*)_points._indices.Address; }
             else
             { _points = null; p1 = null; }
 
@@ -841,7 +843,8 @@ namespace BrawlLib.Modeling
             }
         }
 
-        internal unsafe void PrepareStream(GLContext ctx)
+        public int _bufferHandle;
+        internal unsafe void PrepareStream()
         {
             CalcStride();
             int bufferSize = _stride * _pointCount;
@@ -861,61 +864,52 @@ namespace BrawlLib.Modeling
                     _dirty[i] = true;
             }
 
-            byte* pData = (byte*)_graphicsBuffer.Address;
+            //Update streams before binding
             for (int i = 0; i < 12; i++)
-            {
-                //Write stream if dirty
-                if (_dirty[i]) UpdateStream(i);
+                if (_dirty[i]) 
+                    UpdateStream(i);
 
-                if (_faceData[i] == null)
-                    continue;
+            GL.GenBuffers(1, out _bufferHandle);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _bufferHandle);
+            GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(bufferSize), _graphicsBuffer.Address, BufferUsageHint.DynamicDraw);
 
-                switch (i)
-                {
-                    case 0:
-                        ctx.glEnableClientState(GLArrayType.VERTEX_ARRAY);
-                        ctx.glVertexPointer(3, GLDataType.Float, _stride, pData);
-                        pData += 12;
-                        break;
+            int x = 0;
+            for (int i = 0; i < 12; i++)
+                if (_faceData[i] != null)
+                    switch (i)
+                    {
+                        case 0:
+                        case 1:
+                            GL.EnableVertexAttribArray(i);
+                            GL.VertexAttribPointer(i, 3, VertexAttribPointerType.Float, true, _stride, x);
+                            GL.BindAttribLocation(_polygon.shaderProgramHandle, i, (i == 0 ? "poscoords" : "normcoords"));
+                            x += 12;
+                            break;
 
-                    case 1:
-                        ctx.glEnableClientState(GLArrayType.NORMAL_ARRAY);
-                        ctx.glNormalPointer(GLDataType.Float, _stride, pData);
-                        pData += 12;
-                        break;
+                        case 2:
+                        case 3:
+                            GL.EnableVertexAttribArray(i);
+                            GL.VertexAttribPointer(i, 4, VertexAttribPointerType.Byte, true, _stride, x);
+                            GL.BindAttribLocation(_polygon.shaderProgramHandle, i, "rascolor" + i);
+                            x += 4;
+                            break;
 
-                    case 2:
-                        ctx.glEnableClientState(GLArrayType.COLOR_ARRAY);
-                        ctx.glColorPointer(4, GLDataType.Byte, _stride, pData);
-                        pData += 4;
-                        break;
-
-                    case 3:
-                        //ctx.glEnableClientState(GLArrayType.COLOR_ARRAY);
-                        //ctx.glColorPointer(4, GLDataType.Byte, _stride, pData);
-                        pData += 4;
-                        break;
-
-                    default:
-                        //ctx.glEnable(GLEnableCap.Texture2D);
-                        //ctx.glEnableClientState(GLArrayType.TEXTURE_COORD_ARRAY);
-                        //ctx.glTexCoordPointer(2, GLDataType.Float, _stride, pData);
-                        pData += 8;
-                        break;
-                }
-            }
+                        default:
+                            x += 8;
+                            break;
+                    }
         }
 
-        internal unsafe void DetachStreams(GLContext ctx)
+        internal unsafe void DetachStreams()
         {
-            ctx.glDisableClientState(GLArrayType.COLOR_ARRAY);
-            ctx.glDisableClientState(GLArrayType.NORMAL_ARRAY);
-            ctx.glDisableClientState(GLArrayType.VERTEX_ARRAY);
-            ctx.glDisableClientState(GLArrayType.TEXTURE_COORD_ARRAY);
-            ctx.glDisable((uint)GLEnableCap.Texture2D);
+            for (int i = 0; i < 12; i++)
+                if (_faceData[i] != null)
+                    GL.DisableVertexAttribArray(i);
+
+            GL.Disable(EnableCap.Texture2D);
         }
 
-        internal void RenderTexture(GLContext ctx, MDL0MaterialRefNode texgen)
+        internal void RenderTexture(MDL0MaterialRefNode texgen)
         {
             if (texgen != null)
             {
@@ -923,25 +917,23 @@ namespace BrawlLib.Modeling
                 //texId = texId < 0 ? 0 : texId;
                 if ((texId >= 0) && (_faceData[texId += 4] != null))
                 {
-                    byte* pData = (byte*)_graphicsBuffer.Address;
+                    //byte* pData = (byte*)_graphicsBuffer.Address;
+                    int pData = 0;
                     for (int i = 0; i < texId; i++)
                         if (_faceData[i] != null)
-                        {
                             if (i < 2)
                                 pData += 12;
                             else if (i < 4)
                                 pData += 4;
                             else
                                 pData += 8;
-                        }
 
-                    ctx.glDisable((uint)GLEnableCap.TEXTURE_GEN_S);
-                    ctx.glDisable((uint)GLEnableCap.TEXTURE_GEN_T);
-                    ctx.glDisable((uint)GLEnableCap.TEXTURE_GEN_Q);
-                    ctx.glEnable(GLEnableCap.Texture2D);
-                    ctx.glEnableClientState(GLArrayType.TEXTURE_COORD_ARRAY);
-                    //ctx.glBindBuffer(BrawlLib.OpenGL.etc.BufferTarget.ArrayBuffer, vertex_buffer_object);
-                    ctx.glTexCoordPointer(2, GLDataType.Float, _stride, pData);
+                    GL.Enable(EnableCap.Texture2D);
+                    //GL.EnableClientState(ArrayCap.TextureCoordArray);
+                    //GL.TexCoordPointer(2, TexCoordPointerType.Float, _stride, (IntPtr)pData);
+                    GL.EnableVertexAttribArray(texId);
+                    GL.VertexAttribPointer(texId, 2, VertexAttribPointerType.Float, true, _stride, pData);
+                    GL.BindAttribLocation(_polygon.shaderProgramHandle, texId, "texcoord" + texId);
                 }
                 else
                 {
@@ -953,12 +945,12 @@ namespace BrawlLib.Modeling
                                 
                                 break;
                             case -2: //Normal coords
-                                ctx.glEnable(GLEnableCap.TEXTURE_GEN_S);
-                                ctx.glTexGen(TextureCoordName.S, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
-                                ctx.glEnable(GLEnableCap.TEXTURE_GEN_T);
-                                ctx.glTexGen(TextureCoordName.T, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
-                                ctx.glEnable(GLEnableCap.TEXTURE_GEN_Q);
-                                ctx.glTexGen(TextureCoordName.Q, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
+                                //GL.Enable(GLEnableCap.TEXTURE_GEN_S);
+                                //GL.TexGen(TextureCoordName.S, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
+                                //GL.Enable(GLEnableCap.TEXTURE_GEN_T);
+                                //GL.TexGen(TextureCoordName.T, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
+                                //GL.Enable(GLEnableCap.TEXTURE_GEN_Q);
+                                //GL.TexGen(TextureCoordName.Q, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
                                 break;
                             case -3: //Color coords
 
@@ -970,34 +962,34 @@ namespace BrawlLib.Modeling
 
                                 break;
                             default:
-                                ctx.glDisable((uint)GLEnableCap.Texture2D);
-                                ctx.glDisableClientState(GLArrayType.TEXTURE_COORD_ARRAY);
+                                //GL.DisableClientState(ArrayCap.TextureCoordArray);
+                                GL.Disable(EnableCap.Texture2D);
                                 break;
                         }
                     }
                     else
                     {
-                        ctx.glDisable((uint)GLEnableCap.Texture2D);
-                        ctx.glDisableClientState(GLArrayType.TEXTURE_COORD_ARRAY);
+                        //GL.DisableClientState(ArrayCap.TextureCoordArray);
+                        GL.Disable(EnableCap.Texture2D);
                     }
                 }
             }
             else
             {
-                ctx.glDisable((uint)GLEnableCap.Texture2D);
-                ctx.glDisableClientState(GLArrayType.TEXTURE_COORD_ARRAY);
+                //GL.DisableClientState(ArrayCap.TextureCoordArray);
+                GL.Disable(EnableCap.Texture2D);
             }
 
             if (_tristrips != null)
-                _tristrips.Render(ctx);
+                _tristrips.Render();
             if (_trifans != null)
-                _trifans.Render(ctx);
+                _trifans.Render();
             if (_triangles != null)
-                _triangles.Render(ctx);
+                _triangles.Render();
             if (_lines != null)
-                _lines.Render(ctx);
+                _lines.Render();
             if (_points != null)
-                _points.Render(ctx);
+                _points.Render();
         }
 
         internal void Weight()
@@ -1509,74 +1501,74 @@ namespace BrawlLib.Modeling
         const float _nodeAdj = 0.01f;
 
         public bool _render = true;
-        internal unsafe void RenderVerts(GLContext ctx, IMatrixNode _singleBind)
-        {
-            if (!_render)
-                return;
+        //internal unsafe void RenderVerts(GLContext ctx, IMatrixNode _singleBind)
+        //{
+        //    if (!_render)
+        //        return;
 
-            //GLDisplayList vertex = new GLDisplayList(ctx);
-            //ctx.glEnable(GLEnableCap.POINT_SMOOTH);
-            //vertex.Begin();
-            //ctx.glColor(0.0f, 1.0f, 0.0f);
-            //ctx.glPointSize(10);
-            //vertex.End();
+        //    //GLDisplayList vertex = new GLDisplayList(ctx);
+        //    //GL.Enable(GLEnableCap.POINT_SMOOTH);
+        //    //vertex.Begin();
+        //    //GL.Color4(0.0f, 1.0f, 0.0f);
+        //    //GL.PointSize(10);
+        //    //vertex.End();
 
-            foreach (Vertex3 v in _vertices)
-            {
-                if (_vertColor != Color.Transparent)
-                    ctx.glColor(_vertColor.R, _vertColor.G, _vertColor.B, _vertColor.A);
-                else
-                    ctx.glColor(DefaultVertColor.R, DefaultVertColor.G, DefaultVertColor.B, DefaultVertColor.A);
+        //    foreach (Vertex3 v in _vertices)
+        //    {
+        //        if (_vertColor != Color.Transparent)
+        //            GL.Color4(_vertColor.R, _vertColor.G, _vertColor.B, _vertColor.A);
+        //        else
+        //            GL.Color4(DefaultVertColor.R, DefaultVertColor.G, DefaultVertColor.B, DefaultVertColor.A);
 
-                if (_singleBind != null)
-                {
-                    ctx.glPushMatrix();
+        //        if (_singleBind != null)
+        //        {
+        //            GL.PushMatrix();
 
-                    Matrix m = _singleBind.Matrix;
-                    ctx.glMultMatrix((float*)&m);
+        //            Matrix m = _singleBind.Matrix;
+        //            GL.MultMatrix((float*)&m);
 
-                    ctx.glTranslate(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
-                }
-                else
-                {
-                    //ctx.glBegin(GLPrimitiveType.Points);
-                    //ctx.glVertex(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
-                    //ctx.glEnd();
+        //            GL.Translate(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
+        //        }
+        //        else
+        //        {
+        //            //GL.Begin(GLPrimitiveType.Points);
+        //            //GL.Vertex3(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
+        //            //GL.End();
 
-                    ctx.glPushMatrix();
+        //            GL.PushMatrix();
 
-                    ctx.glTranslate(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
-                }
+        //            GL.Translate(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
+        //        }
 
-                if (_nodeColor != Color.Transparent)
-                    ctx.glColor(_nodeColor.R, _nodeColor.G, _nodeColor.B, _nodeColor.A);
-                else
-                    ctx.glColor(DefaultNodeColor.R, DefaultNodeColor.G, DefaultNodeColor.B, DefaultNodeColor.A);
+        //        if (_nodeColor != Color.Transparent)
+        //            GL.Color4(_nodeColor.R, _nodeColor.G, _nodeColor.B, _nodeColor.A);
+        //        else
+        //            GL.Color4(DefaultNodeColor.R, DefaultNodeColor.G, DefaultNodeColor.B, DefaultNodeColor.A);
 
-                DrawNodeOrients(ctx);
+        //        DrawNodeOrients(ctx);
 
-                ctx.glPopMatrix();
-            }
-        }
+        //        GL.PopMatrix();
+        //    }
+        //}
 
-        private static void DrawNodeOrients(GLContext ctx)
-        {
-            ctx.glBegin(GLPrimitiveType.Lines);
+        //private static void DrawNodeOrients(GLContext ctx)
+        //{
+        //    GL.Begin(BeginMode.Lines);
 
-            ctx.glColor(1.0f, 0.0f, 0.0f, 1.0f);
-            ctx.glVertex(0.0f, 0.0f, 0.0f);
-            ctx.glVertex(_nodeRadius * 2, 0.0f, 0.0f);
+        //    GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
+        //    GL.Vertex3(0.0f, 0.0f, 0.0f);
+        //    GL.Vertex3(_nodeRadius * 2, 0.0f, 0.0f);
 
-            ctx.glColor(0.0f, 1.0f, 0.0f, 1.0f);
-            ctx.glVertex(0.0f, 0.0f, 0.0f);
-            ctx.glVertex(0.0f, _nodeRadius * 2, 0.0f);
+        //    GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
+        //    GL.Vertex3(0.0f, 0.0f, 0.0f);
+        //    GL.Vertex3(0.0f, _nodeRadius * 2, 0.0f);
 
-            ctx.glColor(0.0f, 0.0f, 1.0f, 1.0f);
-            ctx.glVertex(0.0f, 0.0f, 0.0f);
-            ctx.glVertex(0.0f, 0.0f, _nodeRadius * 2);
+        //    GL.Color4(0.0f, 0.0f, 1.0f, 1.0f);
+        //    GL.Vertex3(0.0f, 0.0f, 0.0f);
+        //    GL.Vertex3(0.0f, 0.0f, _nodeRadius * 2);
 
-            ctx.glEnd();
-        }
+        //    GL.End();
+        //}
         #endregion
 
         internal unsafe PrimitiveManager Clone()

@@ -1007,25 +1007,25 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public int currentSubAction = 0;
         public MDL0Node Model = null;
-        public void Attach(GLContext context)
+        public void Attach(TKContext ctx)
         {
             if (Model != null)
-                Model.Attach(context);
+                Model.Attach(ctx);
         }
 
-        public void Detach(GLContext context)
+        public void Detach()
         {
             if (Model != null)
-                Model.Detach(context);
+                Model.Detach();
         }
 
-        public void Refesh(GLContext context)
+        public void Refesh()
         {
             if (Model != null)
-                Model.Refesh(context);
+                Model.Refesh();
         }
 
-        public void Render(GLContext ctx, ModelEditControl mainWindow)
+        public void Render(TKContext ctx, ModelEditControl mainWindow)
         {
             if (Model != null)
             {

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using BrawlLib.OpenGL;
 using BrawlLib.Imaging;
+using BrawlLib.SSBB.ResourceNodes;
+using OpenTK.Graphics.OpenGL;
 
 namespace System.Windows.Forms
 {
@@ -18,46 +20,48 @@ namespace System.Windows.Forms
                 if (_currentTexture == value)
                     return;
 
-                if (((_currentTexture = value) != null) && (_context != null))
-                    _currentTexture._context.Share(_context);
+                //if (((
+                _currentTexture = value;
+                //) != null))
+                //    _currentTexture._context.Share(_context);
             }
         }
 
-        protected unsafe internal override void OnInit()
+        protected unsafe internal override void OnInit(TKContext ctx)
         {
             //Share lists with original context
-            if (_currentTexture != null)
-                _currentTexture._context.Share(_context);
+            //if (_currentTexture != null)
+            //    _currentTexture._context.Share(_context);
 
             //Set caps
-            _context.glEnable(GLEnableCap.Blend);
-            _context.glEnable(GLEnableCap.Texture2D);
-            _context.glDisable((int)GLEnableCap.DepthTest);
-            _context.glBlendFunc(GLBlendFactor.SRC_ALPHA, GLBlendFactor.ONE_MINUS_SRC_ALPHA);
+            GL.Enable(EnableCap.Blend);
+            GL.Enable(EnableCap.Texture2D);
+            GL.Disable(EnableCap.DepthTest);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             OnResized();
         }
 
-        protected internal unsafe override void OnRender()
+        protected internal unsafe override void OnRender(TKContext ctx, SCN0Node scn)
         {
-            GLTexture _bgTex = _context.FindOrCreate<GLTexture>("TexBG", CreateBG);
+            GLTexture _bgTex = ctx.FindOrCreate<GLTexture>("TexBG", CreateBG);
             _bgTex.Bind();
 
             //Draw BG
             float s = (float)Width / _bgTex.Width, t = (float)Height / _bgTex.Height;
 
-            _context.glBegin(GLPrimitiveType.Quads);
+            GL.Begin(BeginMode.Quads);
 
-            _context.glTexCoord(0.0f, 0.0f);
-            _context.glVertex(0.0f, 0.0f);
-            _context.glTexCoord(s, 0.0f);
-            _context.glVertex(1.0, 0.0f);
-            _context.glTexCoord(s, t);
-            _context.glVertex(1.0, 1.0);
-            _context.glTexCoord(0, t);
-            _context.glVertex(0.0f, 1.0);
+            GL.TexCoord2(0.0f, 0.0f);
+            GL.Vertex2(0.0f, 0.0f);
+            GL.TexCoord2(s, 0.0f);
+            GL.Vertex2(1.0, 0.0f);
+            GL.TexCoord2(s, t);
+            GL.Vertex2(1.0, 1.0);
+            GL.TexCoord2(0, t);
+            GL.Vertex2(0.0f, 1.0);
 
-            _context.glEnd();
+            GL.End();
 
             //Draw texture
             if ((_currentTexture != null) && (_currentTexture._id != 0))
@@ -83,19 +87,20 @@ namespace System.Windows.Forms
                     points[2] = points[4] = 1.0f - points[0];
                 }
 
-                _context.glBindTexture(GLTextureTarget.Texture2D, _currentTexture._id);
-                _context.glBegin(GLPrimitiveType.Quads);
+                GL.BindTexture(TextureTarget.Texture2D, _currentTexture._id);
 
-                _context.glTexCoord(0.0f, 0.0f);
-                _context.glVertex2v(&points[0]);
-                _context.glTexCoord(1.0f, 0.0f);
-                _context.glVertex2v(&points[2]);
-                _context.glTexCoord(1.0f, 1.0f);
-                _context.glVertex2v(&points[4]);
-                _context.glTexCoord(0.0f, 1.0f);
-                _context.glVertex2v(&points[6]);
+                GL.Begin(BeginMode.Quads);
 
-                _context.glEnd();
+                GL.TexCoord2(0.0f, 0.0f);
+                GL.Vertex2(&points[0]);
+                GL.TexCoord2(1.0f, 0.0f);
+                GL.Vertex2(&points[2]);
+                GL.TexCoord2(1.0f, 1.0f);
+                GL.Vertex2(&points[4]);
+                GL.TexCoord2(0.0f, 1.0f);
+                GL.Vertex2(&points[6]);
+
+                GL.End();
             }
         }
 
@@ -103,16 +108,15 @@ namespace System.Windows.Forms
         {
             //Set up orthographic projection
 
-            _context.glViewport(0, 0, Width, Height);
-
-            _context.glMatrixMode(GLMatrixMode.Projection);
-            _context.glLoadIdentity();
-            _context.glOrtho(0.0, 1.0, 1.0, 0.0, -0.1, 1.0);
+            GL.Viewport(0, 0, Width, Height);
+            GL.MatrixMode(MatrixMode.Projection);
+            GL.LoadIdentity();
+            GL.Ortho(0.0f, 1.0f, 1.0f, 0.0f, -0.1f, 1.0f);
         }
 
-        internal static unsafe GLTexture CreateBG(GLContext ctx)
+        internal static unsafe GLTexture CreateBG(TKContext ctx)
         {
-            GLTexture tex = new GLTexture(ctx, 16, 16);
+            GLTexture tex = new GLTexture(16, 16);
             tex.Bind();
 
             //Create BG texture
@@ -126,13 +130,11 @@ namespace System.Windows.Forms
                 for (int x = 0; x < 16; x++)
                     *p++ = ((x & 8) == (y & 8)) ? left : right;
 
-            //ctx.glEnable(GLEnableCap.Texture2D);
-            //ctx.glBindTexture(GLTextureTarget.Texture2D, _backTex._id);
-            ctx.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.WrapS, (int)GLTextureWrapMode.REPEAT);
-            ctx.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.WrapT, (int)GLTextureWrapMode.REPEAT);
-            ctx.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.MinFilter, (int)GLTextureFilter.NEAREST);
-            ctx.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.MagFilter, (int)GLTextureFilter.NEAREST);
-            ctx.glTexImage2D(GLTexImageTarget.Texture2D, 0, GLInternalPixelFormat._4, 16, 16, 0, GLPixelDataFormat.RGBA, GLPixelDataType.UNSIGNED_BYTE, pixelData);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Four, 16, 16, 0, PixelFormat.Rgba, PixelType.UnsignedByte, (VoidPtr)pixelData);
 
             return tex;
         }

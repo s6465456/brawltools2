@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Threading;
+using System.Drawing;
+using OpenTK.Platform;
+using OpenTK.Graphics.OpenGL;
+using BrawlLib.SSBB.ResourceNodes;
 
 namespace BrawlLib.OpenGL
 {
     public abstract unsafe class GLPanel : UserControl
     {
-        internal protected GLContext _context;
-
+        //internal protected GLContext _context;
+        internal protected TKContext _ctx;
+        
         public bool _projectionChanged = true;
         private int _updateCounter;
         internal GLCamera _camera;
-
+        
         public GLPanel()
         {
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.Opaque, true);
@@ -24,11 +29,16 @@ namespace BrawlLib.OpenGL
         }
         private void DisposeContext()
         {
-            if (_context != null)
+            //if (_context != null)
+            //{
+            //    _context.Unbind();
+            //    _context.Dispose();
+            //    _context = null;
+            //}
+            if (_ctx != null)
             {
-                _context.Unbind();
-                _context.Dispose();
-                _context = null;
+                _ctx.Dispose();
+                _ctx = null;
             }
         }
 
@@ -37,11 +47,14 @@ namespace BrawlLib.OpenGL
 
         protected override void OnLoad(EventArgs e)
         {
-            _context = GLContext.Attach(this);
+            //_context = GLContext.Attach(this);
 
-            _context.Capture();
-            OnInit();
-            _context.Release();
+            _ctx = new TKContext(this);
+
+            GL.ClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+            GL.ClearDepth(1.0f);
+
+            OnInit(_ctx);
 
             base.OnLoad(e);
         }
@@ -62,24 +75,24 @@ namespace BrawlLib.OpenGL
 
         public virtual float GetDepth(int x, int y)
         {
-            float val;
-            _context.Capture();
-            _context.glReadPixels(x, Height - y, 1, 1, GLPixelDataFormat.DEPTH_COMPONENT, GLPixelDataType.FLOAT, &val);
+            float val = 0;
+            GL.ReadPixels(x, Height - y, 1, 1, OpenTK.Graphics.OpenGL.PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL.PixelType.Float, ref val);
             return val;
         }
 
+        public SCN0Node _scn0 = null;
         protected override void OnPaint(PaintEventArgs e)
         {
             if (_updateCounter > 0)
                 return;
 
-            if (_context == null)
+            if (_ctx == null)
                 base.OnPaint(e);
-            else if (Monitor.TryEnter(_context))
+            else if (Monitor.TryEnter(_ctx))
             {
                 try
                 {
-                    _context.Capture();
+                    _ctx.Capture();
 
                     //Set projection
                     if (_projectionChanged)
@@ -92,17 +105,16 @@ namespace BrawlLib.OpenGL
                     {
                         fixed (Matrix* p = &_camera._matrix)
                         {
-                            _context.glMatrixMode(GLMatrixMode.ModelView);
-                            _context.glLoadMatrix((float*)p);
+                            GL.MatrixMode(OpenTK.Graphics.OpenGL.MatrixMode.Modelview);
+                            GL.LoadMatrix((float*)p);
                         }
                     }
 
-                    OnRender();
-                    _context.glFinish();
-                    _context.Swap();
-                    _context.Release();
+                    OnRender(_ctx, _scn0);
+                    GL.Finish();
+                    _ctx.Swap();
                 }
-                finally { Monitor.Exit(_context); }
+                finally { Monitor.Exit(_ctx); }
             }
         }
 
@@ -118,10 +130,10 @@ namespace BrawlLib.OpenGL
         //    base.OnHandleDestroyed(e);
         //}
 
-        internal protected virtual void OnInit()
+        internal protected virtual void OnInit(TKContext ctx)
         {
-            _context.glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-            _context.glClearDepth(1.0f);
+            GL.ClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+            GL.ClearDepth(1.0f);
         }
 
         public float _fovY = 45.0f, _nearZ = 1.0f, _farZ = 20000.0f, _aspect;
@@ -201,7 +213,6 @@ namespace BrawlLib.OpenGL
             return point;
         }
 
-
         protected void CalculateProjection()
         {
             _projectionMatrix = Matrix.ProjectionMatrix(_fovY, _aspect, _nearZ, _farZ);
@@ -210,18 +221,21 @@ namespace BrawlLib.OpenGL
 
         internal protected virtual void OnResized()
         {
+            _ctx.Update();
+
             _aspect = (float)Width / Height;
             CalculateProjection();
 
-            _context.glViewport(0, 0, Width, Height);
-            _context.glMatrixMode(GLMatrixMode.Projection);
+            GL.Viewport(0, 0, Width, Height);
+            GL.MatrixMode(MatrixMode.Projection);
+
             fixed (Matrix* p = &_projectionMatrix)
-                _context.glLoadMatrix((float*)p);
+                GL.LoadMatrix((float*)p);
         }
 
-        internal protected virtual void OnRender()
+        internal protected virtual void OnRender(TKContext ctx, SCN0Node scn)
         {
-            _context.glClear(GLClearMask.ColorBuffer | GLClearMask.DepthBuffer);
+            GL.Clear(OpenTK.Graphics.OpenGL.ClearBufferMask.ColorBufferBit | OpenTK.Graphics.OpenGL.ClearBufferMask.DepthBufferBit);
         }
     }
 }

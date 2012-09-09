@@ -8,12 +8,31 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Collections.Generic;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MDL0TextureNode : MDL0EntryNode
+    public unsafe class MDL0TextureNode : MDL0EntryNode, IComparable
     {
+        public int CompareTo(object obj)
+        {
+            if (obj is MDL0TextureNode)
+                return this.Name.CompareTo(((MDL0TextureNode)obj).Name);
+            else return 1;
+        }
+
         //internal MDL0Texture* Header { get { return (MDL0Texture*)WorkingUncompressed.Address; } }
+
+        //[Category("Texture Data")]
+        //public int MDL0Offset
+        //{
+        //    get
+        //    {
+        //        if (Header != null) return Header->Address - (VoidPtr)Model.Header;
+        //        else
+        //            return 0;
+        //    }
+        //}
 
         [Category("Texture Data")]
         public int NumEntries
@@ -37,17 +56,36 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         //[Category("Texture Data")]
-        //public MDL0TextureEntry[] Entries { get { return _entries; } }
-        //internal MDL0TextureEntry[] _entries;
+        //public string[] Entries { get { return _entries; } }
+        //internal string[] _entries;
 
         protected override bool OnInitialize()
         {
-            //_entries = new MDL0TextureEntry[NumEntries];
-            //for (int i = 0; i < NumEntries; i++)
-            //    _entries[i] = Header->Entries[i];
+            //_entries = new string[NumEntries];
 
             return false;
         }
+
+        //public void DoStuff()
+        //{
+        //    for (int i = 0; i < NumEntries; i++)
+        //    {
+        //        MDL0TextureEntry e = Header->Entries[i];
+        //        int mat = MDL0Offset + e._mat;
+        //        bool done = false;
+        //        foreach (MDL0MaterialNode m in Model._matList)
+        //        {
+        //            if ((-mat) == m._mdl0Offset)
+        //            {
+        //                _entries[i] = m.Name;
+        //                done = true;
+        //                break;
+        //            }
+        //        }
+        //        if (!done)
+        //            _entries[i] = mat.ToString();
+        //    }
+        //}
 
         public GLTexture Texture;
         public bool Reset;
@@ -57,7 +95,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public object Source;
         public bool Rendered = false;
 
-        public GLContext _context;
+        public TKContext _context;
 
         internal List<MDL0MaterialRefNode> _references = new List<MDL0MaterialRefNode>();
 
@@ -70,10 +108,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public PLT0Node palette = null;
-        internal unsafe void Prepare(GLContext ctx, MDL0MaterialRefNode mRef)
+        internal unsafe void Prepare(MDL0MaterialRefNode mRef, int shaderProgramHandle, TKContext ctx)
         {
-            if (_context == null)
-                _context = ctx;
+            //if (_context == null)
+            //    _context = ctx;
 
             if (mRef.PaletteNode != null)
                 palette = mRef.RootNode.FindChild("Palettes(NW4R)/" + mRef.Palette, true) as PLT0Node;
@@ -82,9 +120,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             try
             {
                 if (Texture != null)
-                    Texture.Bind(mRef.Index, (int)((MDL0MaterialNode)mRef.Parent).ShaderNode.programHandle);
+                    Texture.Bind(mRef.Index, shaderProgramHandle, ctx);
                 else
-                    Load(mRef.Index, (int)((MDL0MaterialNode)mRef.Parent).ShaderNode.programHandle, palette);
+                    Load(mRef.Index, shaderProgramHandle, palette, ctx);
             }
             catch { }
 
@@ -92,38 +130,36 @@ namespace BrawlLib.SSBB.ResourceNodes
             switch (mRef.MagFilter)
             {
                 case MDL0MaterialRefNode.TextureMagFilter.Nearest:
-                    filter = (int)GLTextureFilter.NEAREST; break;
+                    filter = (int)TextureMagFilter.Nearest; break;
                 case MDL0MaterialRefNode.TextureMagFilter.Linear:
-                    filter = (int)GLTextureFilter.LINEAR; break;
+                    filter = (int)TextureMagFilter.Linear; break;
             }
-            _context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.MagFilter, filter);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, filter);
             switch (mRef.MinFilter)
             {
                 case MDL0MaterialRefNode.TextureMinFilter.Nearest:
-                    filter = (int)GLTextureFilter.NEAREST; break;
+                    filter = (int)TextureMinFilter.Nearest; break;
                 case MDL0MaterialRefNode.TextureMinFilter.Linear:
-                    filter = (int)GLTextureFilter.LINEAR; break;
+                    filter = (int)TextureMinFilter.Linear; break;
                 case MDL0MaterialRefNode.TextureMinFilter.Nearest_Mipmap_Nearest:
-                    filter = (int)GLTextureFilter.NEAREST_MIPMAP_NEAREST; break;
+                    filter = (int)TextureMinFilter.NearestMipmapNearest; break;
                 case MDL0MaterialRefNode.TextureMinFilter.Nearest_Mipmap_Linear:
-                    filter = (int)GLTextureFilter.NEAREST_MIPMAP_LINEAR; break;
+                    filter = (int)TextureMinFilter.NearestMipmapLinear; break;
                 case MDL0MaterialRefNode.TextureMinFilter.Linear_Mipmap_Nearest:
-                    filter = (int)GLTextureFilter.LINEAR_MIPMAP_NEAREST; break;
+                    filter = (int)TextureMinFilter.LinearMipmapNearest; break;
                 case MDL0MaterialRefNode.TextureMinFilter.Linear_Mipmap_Linear:
-                    filter = (int)GLTextureFilter.LINEAR_MIPMAP_LINEAR; break;
+                    filter = (int)TextureMinFilter.LinearMipmapLinear; break;
             }
-            _context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.MinFilter, filter);
-            _context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.LODBias, mRef.LODBias);
-            
-            //_context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.BaseLevel, 0);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, filter);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureLodBias, mRef.LODBias);
 
             float* p = stackalloc float[4];
             p[0] = p[1] = p[2] = p[3] = 1.0f;
             if (Selected && !ObjOnly)
                 p[0] = -1.0f;
 
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.SPECULAR, p);
-            _context.glLight(GLLightTarget.Light0, GLLightParameter.DIFFUSE, p);
+            GL.Light(LightName.Light0, LightParameter.Specular, p);
+            GL.Light(LightName.Light0, LightParameter.Diffuse, p);
         }
 
         public void GetSource()
@@ -177,12 +213,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_context == null)
                 return;
 
-            _context.Capture();
+            //_context.Capture();
             Load();
         }
 
-        private unsafe void Load() { Load(-1, -1, null); }
-        private unsafe void Load(int index, int program, PLT0Node palette)
+        private unsafe void Load() { Load(-1, -1, null, null); }
+        private unsafe void Load(int index, int program, PLT0Node palette, TKContext ctx)
         {
             if (_context == null)
                 return;
@@ -191,8 +227,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (Texture != null)
                 Texture.Delete();
-            Texture = new GLTexture(_context, 0, 0);
-            Texture.Bind(index, program);
+            Texture = new GLTexture(0, 0);
+            Texture.Bind(index, program, ctx);
 
             //ctx._states[String.Format("{0}_TexRef", Name)] = Texture;
 
@@ -228,21 +264,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                         {
                             DirectoryInfo dir = new DirectoryInfo(Path.GetDirectoryName(path));
                             if (dir.Exists)
-                            foreach (FileInfo file in dir.GetFiles(Name + ".*"))
-                            {
-                                if (file.Name.EndsWith(".tga"))
+                                foreach (FileInfo file in dir.GetFiles(Name + ".*"))
                                 {
-                                    Source = file.FullName;
-                                    bmp = TGA.FromFile(file.FullName);
-                                    break;
+                                    if (file.Name.EndsWith(".tga"))
+                                    {
+                                        Source = file.FullName;
+                                        bmp = TGA.FromFile(file.FullName);
+                                        break;
+                                    }
+                                    else if (file.Name.EndsWith(".png") || file.Name.EndsWith(".tiff") || file.Name.EndsWith(".tif"))
+                                    {
+                                        Source = file.FullName;
+                                        bmp = (Bitmap)Bitmap.FromFile(file.FullName);
+                                        break;
+                                    }
                                 }
-                                else if (file.Name.EndsWith(".png") || file.Name.EndsWith(".tiff") || file.Name.EndsWith(".tif"))
-                                {
-                                    Source = file.FullName;
-                                    bmp = (Bitmap)Bitmap.FromFile(file.FullName);
-                                    break;
-                                }
-                            }
                         }
                     }
                     if (bmp != null)
@@ -256,18 +292,19 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     Texture._width = w;
                     Texture._height = h;
-                    //_context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.MagFilter, (int)GLTextureFilter.LINEAR);
-                    //_context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.MinFilter, (int)GLTextureFilter.NEAREST_MIPMAP_LINEAR);
-                    //_context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.BaseLevel, 0);
+                    //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+                    //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.NearestMipmapLinear);
+                    //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
 
                     //if (tNode != null)
-                    //    _context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.MaxLevel, tNode.LevelOfDetail);
+                    //    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, tNode.LevelOfDetail);
                     //else
-                    //    _context.glTexParameter(GLTextureTarget.Texture2D, GLTextureParameter.MaxLevel, 0);
+                    //    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, 0);
 
-                    BitmapData data = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                    BitmapData data = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                     try
                     {
+                        //GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
                         using (UnsafeBuffer buffer = new UnsafeBuffer(size << 2))
                         {
                             ARGBPixel* sPtr = (ARGBPixel*)data.Scan0;
@@ -276,10 +313,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             for (int i = 0; i < size; i++)
                                 *dPtr++ = (ABGRPixel)(*sPtr++);
 
-                            int res = _context.gluBuild2DMipmaps(GLTextureTarget.Texture2D, GLInternalPixelFormat._4, w, h, GLPixelDataFormat.RGBA, GLPixelDataType.UNSIGNED_BYTE, buffer.Address);
-                            if (res != 0)
-                            {
-                            }
+                            OpenTK.Graphics.Glu.Build2DMipmap(OpenTK.Graphics.TextureTarget.Texture2D, 4, w, h, OpenTK.Graphics.PixelFormat.Rgba, OpenTK.Graphics.PixelType.UnsignedByte, (IntPtr)buffer.Address);
                         }
                     }
                     finally
@@ -296,7 +330,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return String.Compare(t1.Name, t2.Name, false);
         }
 
-        internal override void Bind(GLContext ctx)
+        internal override void Bind(TKContext ctx)
         {
             //Unbind(ctx);
 
@@ -308,9 +342,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             Selected = false;
             //Enabled = true;
         }
-        internal void Unbind()
+        internal override void Unbind()
         {
-            if (Texture != null) { Texture.Delete(); Texture = null; }
+            if (Texture != null) 
+            { 
+                Texture.Delete();
+                Texture = null;
+            }
             _context = null;
             Rendered = false;
         }

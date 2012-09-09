@@ -176,6 +176,25 @@ namespace BrawlLib.SSBB.ResourceNodes
             return -1;
         }
 
+        //Find the last occuring instance of the passed character.
+        public static int FindLast(string str, int begin, char chr)
+        {
+            for (int i = str.Length - 1; i >= begin; i--)
+                if (str[i] == chr) return i;
+
+            return -1;
+        }
+
+        //Find the number of instances of the passed character.
+        public static int FindCount(string str, int begin, char chr)
+        {
+            int x = 0;
+            for (int i = begin; i < str.Length; i++)
+                if (str[i] == chr) x++;
+
+            return x;
+        }
+
         //Find the first occuring instance of any of the passed characters.
         public static int FindFirstOf(string str, int begin, char[] chr, ref char chrFound)
         {
@@ -238,6 +257,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             for (int i = begin; i < str.Length; i++)
                 if (str[i] != chr) return i;
+
+            return -1;
+        }
+
+        //Find the first instance that is not the character passed.
+        public static int FindFirstNotDual(string str, int begin, char chr1, char chr2)
+        {
+            for (int i = begin; i < str.Length; i++)
+                if (str[i] != chr1 && str[i] != chr2) return i;
 
             return -1;
         }

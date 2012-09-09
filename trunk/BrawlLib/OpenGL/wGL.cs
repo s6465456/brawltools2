@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.OpenGL
 {
@@ -927,7 +928,7 @@ namespace BrawlLib.OpenGL
         public static extern void gluUnProject(double winX, double winY, double winZ, double* model, double* proj, int* view, double* objX, double* objY, double* objZ);
 
         [DllImport("opengl32.dll")]
-        public static extern void glBindBuffer(etc.BufferTarget target, int buffer);
+        public static extern void glBindBuffer(BufferTarget target, int buffer);
 
         [System.Security.SuppressUnmanagedCodeSecurity()]
         [DllImport("opengl32.dll", EntryPoint = "glNewList", ExactSpelling = true)]

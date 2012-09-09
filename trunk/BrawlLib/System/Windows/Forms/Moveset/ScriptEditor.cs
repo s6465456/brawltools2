@@ -399,8 +399,9 @@ namespace System.Windows.Forms
             switch (keyword)
             {
                 case "\\value":
-                    try { return ResolveParamTypes(Event)[int.Parse(Params[0])]; }
-                    catch { return "Value-" + Params[0]; }
+                    //try { 
+                        return ResolveParamTypes(Event)[int.Parse(Params[0])]; //}
+                    //catch { return "Value-" + Params[0]; }
                 case "\\type":
                     try { return eventData.parameters[int.Parse(Params[0])]._type.ToString(); }
                     catch { return "Type-" + Params[0]; }
@@ -543,6 +544,14 @@ namespace System.Windows.Forms
                         break;
                     case 3:
                         return "External: " + _targetNode.Root.references.Children[node.index].Name;
+                    case 5:
+                        grp = "Screen Tints";
+                        name = _targetNode.Root.dataCommon._screenTint.Children[node.index].Name;
+                        break;
+                    case 6:
+                        grp = "Flash Overlays";
+                        name = _targetNode.Root.dataCommon._flashOverlay.Children[node.index].Name;
+                        break;
                 }
 
                 return name + (node.list >= 2 ? "" : " - " + t) + " in the " + grp + " list";
@@ -581,7 +590,7 @@ namespace System.Windows.Forms
                             if (sa != null)
                                 return sa.Children[(int)value].Name;
                         }
-                        else if (value < TargetNode.Root._subActions.Children.Count && value >= 0)
+                        else if (TargetNode.Root._subActions != null && value < TargetNode.Root._subActions.Children.Count && value >= 0)
                             return TargetNode.Root._subActions.Children[(int)value].Name;
                         else return ((int)value).ToString();
                     break;

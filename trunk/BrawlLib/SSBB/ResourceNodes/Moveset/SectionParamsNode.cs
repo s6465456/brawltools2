@@ -42,12 +42,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             offsets = new Dictionary<int, FDefListOffset>();
 
+            OldName = _name;
+
             base.OnInitialize();
 
             if (Size == 0)
                 SetSizeInternal(4);
 
-            OldName = _name;
             SectionParamInfo data = null;
             if (Parent is MoveDefArticleNode)
             {
@@ -71,7 +72,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 else _info = new List<AttributeInfo>();
             }
-            else if (Root.Params.ContainsKey(Name))
+            else if (Root != null && Root.Params.ContainsKey(Name))
             {
                 data = Root.Params[Name];
                 _info = data.Attributes;
@@ -99,12 +100,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         if (((((uint)*((buint*)pIn)) >> 24) & 0xFF) != 0 && *((bint*)pIn) != -1 && !float.IsNaN(((float)*((bfloat*)pIn))))
                             info._type = 0;
                         else
-                        {
-                            if (*((bint*)pIn) > 1480 && *((bint*)pIn) < Root.dataSize)
-                                info._type = 3;
-                            else
-                                info._type = 1;
-                        }
+                            info._type = 1;
 
                         info._name = (info._type == 1 ? "*" : "" + (info._type > 3 ? "+" : "")) + "0x" + i.ToString("X");
                         info._description = "No Description Available.";
@@ -206,7 +202,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        public override string TreePathAbsolute { get { return _parent == null || !(_parent is MoveDefSectionParamNode || _parent is MoveDefRawDataNode) ? OldName : _parent.TreePathAbsolute + "/" + OldName; } }
+        public override string TreePathAbsolute 
+        {
+            get 
+            {
+                return _parent == null || !(_parent is MoveDefSectionParamNode || _parent is MoveDefRawDataNode) ? OldName : _parent.TreePathAbsolute + "/" + OldName; 
+            }
+        }
 
         //public static void ChildLevels(MoveDefEntryNode e, ref int levels)
         //{

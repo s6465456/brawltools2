@@ -13,6 +13,7 @@ using BrawlLib.Wii.Models;
 using BrawlLib.Wii.Animations;
 using System.Windows.Forms;
 using BrawlLib.Wii.Graphics;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -144,7 +145,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public List<string> _errors = new List<string>();
 
-        public TextureManager _textures = new TextureManager();
+        //public TextureManager _textures = new TextureManager();
 
         public List<ResourceNode> GetUsedShaders()
         {
@@ -162,6 +163,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if (MessageBox.Show(null, "Are you sure you want to turn this on?\nAny existing metal materials will be modified.", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
+                    if (_children == null) Populate();
                     for (int x = 0; x < _matList.Count; x++)
                     {
                         MDL0MaterialNode n = (MDL0MaterialNode)_matList[x];
@@ -182,7 +184,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     node.AddChild(mr);
                                     mr.Texture = "metal00";
                                     mr._index1 = mr._index2 = i;
-                                    if (i == n.Children.Count)
+                                    mr.SignalPropertyChange();
+                                    if (i == n.Children.Count || ((MDL0MaterialRefNode)n.Children[i]).HasTextureMatrix)
                                     {
                                         mr._minFltr = 5;
                                         mr._magFltr = 1;
@@ -202,18 +205,28 @@ namespace BrawlLib.SSBB.ResourceNodes
                                         mr.MapMode = (MDL0MaterialRefNode.MappingMethod)1;
 
                                         mr.getTexMtxVal();
+
+                                        break;
                                     }
-                                    mr.SignalPropertyChange();
                                 }
 
-                                node.flags0 = 63;
-                                node.c00.R = node.c00.G = node.c00.B = 128; node.c00.A = 255;
-                                node.c01.R = node.c01.G = node.c01.B = node.c01.A = 255;
-                                node.e01 = node.e03 = 2;
-                                node.e00 = node.e02 = 7;
-                                node.flags1 = 63;
-                                node.c10.R = node.c10.G = node.c10.B = node.c10.A = 255;
-                                node.e10 = node.e11 = node.e12 = 2;
+                                node._chan1._flags = 63;
+                                node.C1MaterialColor = new RGBAPixel(128, 128, 128, 255);
+                                node.C1AmbientColor = new RGBAPixel(255, 255, 255, 255);
+                                node.C1ColorEnabled = true;
+                                node.C1ColorDiffuseFunction = GXDiffuseFn.Clamped;
+                                node.C1ColorAttenuation = GXAttnFn.Spotlight;
+                                node.C1AlphaEnabled = true;
+                                node.C1AlphaDiffuseFunction = GXDiffuseFn.Clamped;
+                                node.C1AlphaAttenuation = GXAttnFn.Spotlight;
+
+                                node._chan2._flags = 63;
+                                node.C2MaterialColor = new RGBAPixel(255, 255, 255, 255);
+                                node.C2ColorEnabled = true;
+                                node.C2ColorDiffuseFunction = GXDiffuseFn.Disabled;
+                                node.C2ColorAttenuation = GXAttnFn.Specular;
+                                node.C2AlphaDiffuseFunction = GXDiffuseFn.Disabled;
+                                node.C2AlphaAttenuation = GXAttnFn.Specular;
 
                                 node._lSet = n._lSet;
                                 node._fSet = n._fSet;
@@ -556,7 +569,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _enableExtents = props->_enableExtents;
             _envMtxMode = props->_envMtxMode;
 
-            if (props->_origPathOffset > 0)
+            if (props->_origPathOffset > 0 && props->_origPathOffset < WorkingUncompressed.Length)
                 _originPath = new String((sbyte*)props + props->_origPathOffset);
 
             UserData* part2 = header->Part2;
@@ -584,9 +597,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 addr += 4;
                                 break;
                             case UserValueType.String:
-                                string s = new String((sbyte*)addr);
+                                string s = new String((sbyte*)(addr + 2));
                                 d._entries.Add(s);
-                                addr += s.Length + 1;
+                                addr += s.Length + 3;
                                 break;
                         }
                     }
@@ -626,6 +639,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _uvGroup.Parse(this);
                 _colorGroup.Parse(this);
                 _polyGroup.Parse(this); //Parse objects last!
+
+                _texList.Sort();
+                _pltList.Sort();
+
+                //foreach (MDL0TextureNode t in _texList)
+                //    t.DoStuff();
+                //foreach (MDL0TextureNode t in _pltList)
+                //    t.DoStuff();
             }
             finally //Clean up!
             {
@@ -858,14 +879,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             _canUndo = _canRedo = false;
         }
 
-        public void Attach(GLContext context)
+        public void Attach(TKContext ctx)
         {
             _visible = true;
             ApplyCHR(null, 0);
             ApplySRT(null, 0);
 
             foreach (MDL0GroupNode g in Children)
-                g.Bind(context);
+                g.Bind(ctx);
 
             VIS0Indices = new Dictionary<string, List<int>>(); int i = 0;
             if (_polyList != null)
@@ -881,15 +902,15 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        public void Detach(GLContext context)
+        public void Detach()
         {
             _visible = false;
             //Unweight();
             foreach (MDL0GroupNode g in Children)
-                g.Unbind(context);
+                g.Unbind();
         }
 
-        public void Refesh(GLContext context)
+        public void Refesh()
         {
             if (_texList != null)
                 foreach (MDL0TextureNode t in _texList)
@@ -898,57 +919,65 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public Matrix floorShadow;
         public ModelEditControl _mainWindow = null;
-        public void Render(GLContext ctx, ModelEditControl mainWindow)
+        public void Render(TKContext ctx, ModelEditControl mainWindow)
         {
             if (!_visible)
                 return;
+
+            //GL.Enable(EnableCap.Blend);
+            //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+            //GL.Enable(EnableCap.AlphaTest);
+            //GL.AlphaFunc(AlphaFunction.Gequal, 0.1f);
 
             //if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
                 _mainWindow = mainWindow;
 
             if (_renderPolygons)
             {
-                //float e = 30.0f;
-                //floorShadow = shadowMatrix(findPlane(new Vector3(-e, 0.0f, -e), new Vector3(e, 0.0f, -e), new Vector3(e, 0.0f, e)), Light);
+                GL.Enable(EnableCap.Lighting);
+                GL.Enable(EnableCap.DepthTest);
 
-                ctx.glEnable(GLEnableCap.Lighting);
-                ctx.glEnable(GLEnableCap.DepthTest);
                 if (_renderPolygonsWireframe)
-                    ctx.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Line);
+                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
                 else
-                    ctx.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
+                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
-                if (_polyList != null)
-                    foreach (MDL0PolygonNode poly in _polyList)
-                        poly.Render(ctx);
+                //Draw objects in the prioritized order of materials
+                if (_matList != null)
+                    foreach (MDL0MaterialNode m in _matList)
+                        m.Render(ctx);
             }
 
+            //Turn off the last bound shader program.
+            if (ctx._canUseShaders) GL.UseProgram(0);
+            
             if (_renderBones)
             {
-                ctx.glDisable((uint)GLEnableCap.Lighting);
-                ctx.glDisable((uint)GLEnableCap.DepthTest);
-                ctx.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
+                GL.Disable(EnableCap.Lighting);
+                GL.Disable(EnableCap.DepthTest);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
                 if (_boneList != null)
                     foreach (MDL0BoneNode bone in _boneList)
                         bone.Render(ctx, mainWindow);
             }
 
-            if (_renderVertices)
-            {
-                ctx.glDisable((uint)GLEnableCap.Lighting);
-                if (polyIndex != -1)
-                {
-                    ctx.glDisable((uint)GLEnableCap.DepthTest);
-                    ((MDL0PolygonNode)_polyList[polyIndex])._manager.RenderVerts(ctx, ((MDL0PolygonNode)_polyList[polyIndex])._singleBind);
-                }
-                else
-                {
-                    ctx.glEnable(GLEnableCap.DepthTest);
-                    foreach (MDL0PolygonNode p in _polyList)
-                        p._manager.RenderVerts(ctx, p._singleBind);
-                }
-            }
+            //if (_renderVertices)
+            //{
+            //    ctx.glDisable((uint)GLEnableCap.Lighting);
+            //    if (polyIndex != -1)
+            //    {
+            //        ctx.glDisable((uint)GLEnableCap.DepthTest);
+            //        ((MDL0PolygonNode)_polyList[polyIndex])._manager.RenderVerts(ctx, ((MDL0PolygonNode)_polyList[polyIndex])._singleBind);
+            //    }
+            //    else
+            //    {
+            //        ctx.glEnable(GLEnableCap.DepthTest);
+            //        foreach (MDL0PolygonNode p in _polyList)
+            //            p._manager.RenderVerts(ctx, p._singleBind);
+            //    }
+            //}
 
             if (_billboardBones.Count > 0)
             {

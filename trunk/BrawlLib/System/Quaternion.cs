@@ -91,9 +91,9 @@
 
             angle *= 0.5f;
             axis.Normalize();
-            result._x = axis.X * (float)System.Math.Sin(angle);
-            result._y = axis.Y * (float)System.Math.Sin(angle);
-            result._z = axis.Z * (float)System.Math.Sin(angle);
+            result._x = axis._x * (float)System.Math.Sin(angle);
+            result._y = axis._y * (float)System.Math.Sin(angle);
+            result._z = axis._z * (float)System.Math.Sin(angle);
             result._w = (float)System.Math.Cos(angle);
 
             return result.Normalize();

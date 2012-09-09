@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace System
 {
     [StructLayout(LayoutKind.Sequential, Pack=1)]
-    public unsafe struct Vector2
+    public unsafe struct Vector2 : IComparable
     {
         public float _x;
         public float _y;
@@ -107,6 +107,24 @@ namespace System
             if (obj is Vector2)
                 return this == (Vector2)obj;
             return false;
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is Vector2)
+            {
+                Vector2 o = (Vector2)obj;
+                if (_x > o._x)
+                    return 1;
+                else if (_x < o._x)
+                    return -1;
+                else if (_y > o._y)
+                    return 1;
+                else if (_y < o._y)
+                    return -1;
+                return 0;
+            }
+            return 1;
         }
     }
 }

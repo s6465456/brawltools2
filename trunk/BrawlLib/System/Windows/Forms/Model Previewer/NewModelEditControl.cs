@@ -9,6 +9,10 @@ using BrawlLib.Wii.Animations;
 using System.Collections.Generic;
 using BrawlLib.SSBBTypes;
 using BrawlLib.IO;
+using BrawlLib;
+using System.Drawing.Imaging;
+using Gif.Components;
+using OpenTK.Graphics.OpenGL;
 
 namespace System.Windows.Forms
 {
@@ -128,11 +132,16 @@ namespace System.Windows.Forms
         private ToolStripMenuItem btnLoadCmnEffects;
         private ToolStripMenuItem specificEffectsToolStripMenuItem;
         private ToolStripMenuItem btnLoadEffects;
+        private ToolStripMenuItem exportToImageToolStripMenuItem;
+        private ToolStripMenuItem exportToAnimatedGIFToolStripMenuItem;
+        private ToolStripButton chkShaders;
+        public ToolStripButton btnSaveCam;
         private Splitter spltMoveset;
 
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelEditControl));
             this.dlgColor = new System.Windows.Forms.ColorDialog();
             this.btnAssetToggle = new System.Windows.Forms.Button();
             this.btnAnimToggle = new System.Windows.Forms.Button();
@@ -175,6 +184,8 @@ namespace System.Windows.Forms
             this.loadImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toggleFloor = new System.Windows.Forms.ToolStripMenuItem();
             this.resetCameraToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportToImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportToAnimatedGIFToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.modelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toggleBones = new System.Windows.Forms.ToolStripMenuItem();
             this.togglePolygons = new System.Windows.Forms.ToolStripMenuItem();
@@ -226,6 +237,7 @@ namespace System.Windows.Forms
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.chkFloor = new System.Windows.Forms.ToolStripButton();
             this.button1 = new System.Windows.Forms.ToolStripButton();
+            this.chkShaders = new System.Windows.Forms.ToolStripButton();
             this.panel2 = new System.Windows.Forms.Panel();
             this.spltAnims = new System.Windows.Forms.Splitter();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -244,6 +256,7 @@ namespace System.Windows.Forms
             this.pnlMoveset = new System.Windows.Forms.ModelMovesetPanel();
             this.pnlAnim = new System.Windows.Forms.ModelAnimPanel();
             this.pnlAssets = new System.Windows.Forms.ModelAssetPanel();
+            this.btnSaveCam = new System.Windows.Forms.ToolStripButton();
             this.menuStrip1.SuspendLayout();
             this.controlPanel.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -275,7 +288,7 @@ namespace System.Windows.Forms
             // btnAnimToggle
             // 
             this.btnAnimToggle.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnAnimToggle.Location = new System.Drawing.Point(499, 24);
+            this.btnAnimToggle.Location = new System.Drawing.Point(832, 24);
             this.btnAnimToggle.Name = "btnAnimToggle";
             this.btnAnimToggle.Size = new System.Drawing.Size(15, 376);
             this.btnAnimToggle.TabIndex = 6;
@@ -289,7 +302,7 @@ namespace System.Windows.Forms
             this.btnPlaybackToggle.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.btnPlaybackToggle.Location = new System.Drawing.Point(264, 385);
             this.btnPlaybackToggle.Name = "btnPlaybackToggle";
-            this.btnPlaybackToggle.Size = new System.Drawing.Size(235, 15);
+            this.btnPlaybackToggle.Size = new System.Drawing.Size(568, 15);
             this.btnPlaybackToggle.TabIndex = 8;
             this.btnPlaybackToggle.TabStop = false;
             this.btnPlaybackToggle.UseVisualStyleBackColor = false;
@@ -314,7 +327,7 @@ namespace System.Windows.Forms
             this.btnOptionToggle.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnOptionToggle.Location = new System.Drawing.Point(264, 24);
             this.btnOptionToggle.Name = "btnOptionToggle";
-            this.btnOptionToggle.Size = new System.Drawing.Size(235, 15);
+            this.btnOptionToggle.Size = new System.Drawing.Size(568, 15);
             this.btnOptionToggle.TabIndex = 11;
             this.btnOptionToggle.TabStop = false;
             this.btnOptionToggle.UseVisualStyleBackColor = false;
@@ -606,7 +619,9 @@ namespace System.Windows.Forms
             this.setColorToolStripMenuItem,
             this.loadImageToolStripMenuItem,
             this.toggleFloor,
-            this.resetCameraToolStripMenuItem});
+            this.resetCameraToolStripMenuItem,
+            this.exportToImageToolStripMenuItem,
+            this.exportToAnimatedGIFToolStripMenuItem});
             this.backColorToolStripMenuItem.Name = "backColorToolStripMenuItem";
             this.backColorToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.backColorToolStripMenuItem.Text = "Viewer";
@@ -614,21 +629,21 @@ namespace System.Windows.Forms
             // setColorToolStripMenuItem
             // 
             this.setColorToolStripMenuItem.Name = "setColorToolStripMenuItem";
-            this.setColorToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.setColorToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.setColorToolStripMenuItem.Text = "Set Color";
             this.setColorToolStripMenuItem.Click += new System.EventHandler(this.setColorToolStripMenuItem_Click);
             // 
             // loadImageToolStripMenuItem
             // 
             this.loadImageToolStripMenuItem.Name = "loadImageToolStripMenuItem";
-            this.loadImageToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.loadImageToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.loadImageToolStripMenuItem.Text = "Load Image";
             this.loadImageToolStripMenuItem.Click += new System.EventHandler(this.loadImageToolStripMenuItem_Click);
             // 
             // toggleFloor
             // 
             this.toggleFloor.Name = "toggleFloor";
-            this.toggleFloor.Size = new System.Drawing.Size(187, 22);
+            this.toggleFloor.Size = new System.Drawing.Size(229, 22);
             this.toggleFloor.Text = "Floor";
             this.toggleFloor.Click += new System.EventHandler(this.toggleFloor_Click);
             // 
@@ -636,9 +651,25 @@ namespace System.Windows.Forms
             // 
             this.resetCameraToolStripMenuItem.Name = "resetCameraToolStripMenuItem";
             this.resetCameraToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
-            this.resetCameraToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.resetCameraToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.resetCameraToolStripMenuItem.Text = "Reset Camera";
             this.resetCameraToolStripMenuItem.Click += new System.EventHandler(this.resetCameraToolStripMenuItem_Click_1);
+            // 
+            // exportToImageToolStripMenuItem
+            // 
+            this.exportToImageToolStripMenuItem.Name = "exportToImageToolStripMenuItem";
+            this.exportToImageToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift)
+                        | System.Windows.Forms.Keys.E)));
+            this.exportToImageToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.exportToImageToolStripMenuItem.Text = "Export to Image";
+            this.exportToImageToolStripMenuItem.Click += new System.EventHandler(this.exportToImageToolStripMenuItem_Click);
+            // 
+            // exportToAnimatedGIFToolStripMenuItem
+            // 
+            this.exportToAnimatedGIFToolStripMenuItem.Name = "exportToAnimatedGIFToolStripMenuItem";
+            this.exportToAnimatedGIFToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.exportToAnimatedGIFToolStripMenuItem.Text = "Export to animated GIF";
+            this.exportToAnimatedGIFToolStripMenuItem.Click += new System.EventHandler(this.exportToAnimatedGIFToolStripMenuItem_Click);
             // 
             // modelToolStripMenuItem
             // 
@@ -676,6 +707,7 @@ namespace System.Windows.Forms
             this.toggleVertices.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
             this.toggleVertices.Size = new System.Drawing.Size(164, 22);
             this.toggleVertices.Text = "Vertices";
+            this.toggleVertices.Visible = false;
             this.toggleVertices.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // movesetToolStripMenuItem1
@@ -993,7 +1025,7 @@ namespace System.Windows.Forms
             this.controlPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.controlPanel.Location = new System.Drawing.Point(0, 0);
             this.controlPanel.Name = "controlPanel";
-            this.controlPanel.Size = new System.Drawing.Size(732, 24);
+            this.controlPanel.Size = new System.Drawing.Size(1065, 24);
             this.controlPanel.TabIndex = 22;
             this.controlPanel.Visible = false;
             // 
@@ -1015,14 +1047,16 @@ namespace System.Windows.Forms
             this.toolStripSeparator2,
             this.chkBones,
             this.chkPolygons,
+            this.chkShaders,
             this.chkVertices,
             this.toolStripSeparator1,
             this.chkFloor,
-            this.button1});
+            this.button1,
+            this.btnSaveCam});
             this.toolStrip1.Location = new System.Drawing.Point(448, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
-            this.toolStrip1.Size = new System.Drawing.Size(284, 24);
+            this.toolStrip1.Size = new System.Drawing.Size(617, 24);
             this.toolStrip1.TabIndex = 30;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -1087,6 +1121,7 @@ namespace System.Windows.Forms
             this.chkVertices.Name = "chkVertices";
             this.chkVertices.Size = new System.Drawing.Size(52, 21);
             this.chkVertices.Text = "Vertices";
+            this.chkVertices.Visible = false;
             this.chkVertices.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
             this.chkVertices.Click += new System.EventHandler(this.chkVertices_Click);
             // 
@@ -1110,9 +1145,22 @@ namespace System.Windows.Forms
             this.button1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.button1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(83, 19);
+            this.button1.Size = new System.Drawing.Size(83, 21);
             this.button1.Text = "Reset Camera";
             this.button1.Click += new System.EventHandler(this.resetCameraToolStripMenuItem_Click_1);
+            // 
+            // chkShaders
+            // 
+            this.chkShaders.Checked = true;
+            this.chkShaders.CheckOnClick = true;
+            this.chkShaders.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkShaders.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.chkShaders.Image = ((System.Drawing.Image)(resources.GetObject("chkShaders.Image")));
+            this.chkShaders.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.chkShaders.Name = "chkShaders";
+            this.chkShaders.Size = new System.Drawing.Size(52, 21);
+            this.chkShaders.Text = "Shaders";
+            this.chkShaders.CheckedChanged += new System.EventHandler(this.chkShaders_CheckedChanged);
             // 
             // panel2
             // 
@@ -1127,7 +1175,7 @@ namespace System.Windows.Forms
             // spltAnims
             // 
             this.spltAnims.Dock = System.Windows.Forms.DockStyle.Right;
-            this.spltAnims.Location = new System.Drawing.Point(514, 24);
+            this.spltAnims.Location = new System.Drawing.Point(847, 24);
             this.spltAnims.Name = "spltAnims";
             this.spltAnims.Size = new System.Drawing.Size(4, 376);
             this.spltAnims.TabIndex = 23;
@@ -1141,7 +1189,7 @@ namespace System.Windows.Forms
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(264, 39);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(235, 346);
+            this.panel1.Size = new System.Drawing.Size(568, 346);
             this.panel1.TabIndex = 25;
             // 
             // KinectPanel
@@ -1150,7 +1198,7 @@ namespace System.Windows.Forms
             this.KinectPanel.BackColor = System.Drawing.Color.Transparent;
             this.KinectPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.KinectPanel.Controls.Add(this.label1);
-            this.KinectPanel.Location = new System.Drawing.Point(65, 0);
+            this.KinectPanel.Location = new System.Drawing.Point(398, 0);
             this.KinectPanel.Name = "KinectPanel";
             this.KinectPanel.Size = new System.Drawing.Size(170, 170);
             this.KinectPanel.TabIndex = 14;
@@ -1173,7 +1221,7 @@ namespace System.Windows.Forms
             this.modelPanel1.Location = new System.Drawing.Point(0, 0);
             this.modelPanel1.Name = "modelPanel1";
             this.modelPanel1.RotationScale = 0.4F;
-            this.modelPanel1.Size = new System.Drawing.Size(235, 346);
+            this.modelPanel1.Size = new System.Drawing.Size(568, 346);
             this.modelPanel1.TabIndex = 0;
             this.modelPanel1.TranslationScale = 0.05F;
             this.modelPanel1.ZoomScale = 2.5F;
@@ -1191,7 +1239,7 @@ namespace System.Windows.Forms
             this.animEditors.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.animEditors.Location = new System.Drawing.Point(0, 400);
             this.animEditors.Name = "animEditors";
-            this.animEditors.Size = new System.Drawing.Size(732, 60);
+            this.animEditors.Size = new System.Drawing.Size(1065, 60);
             this.animEditors.TabIndex = 29;
             this.animEditors.Visible = false;
             // 
@@ -1202,7 +1250,7 @@ namespace System.Windows.Forms
             this.pnlPlayback.Location = new System.Drawing.Point(264, 0);
             this.pnlPlayback.MinimumSize = new System.Drawing.Size(290, 54);
             this.pnlPlayback.Name = "pnlPlayback";
-            this.pnlPlayback.Size = new System.Drawing.Size(468, 60);
+            this.pnlPlayback.Size = new System.Drawing.Size(801, 60);
             this.pnlPlayback.TabIndex = 15;
             this.pnlPlayback.Resize += new System.EventHandler(this.pnlPlayback_Resize);
             // 
@@ -1276,7 +1324,7 @@ namespace System.Windows.Forms
             // 
             this.pnlMoveset.BackColor = System.Drawing.Color.WhiteSmoke;
             this.pnlMoveset.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlMoveset.Location = new System.Drawing.Point(518, 24);
+            this.pnlMoveset.Location = new System.Drawing.Point(851, 24);
             this.pnlMoveset.Name = "pnlMoveset";
             this.pnlMoveset.Size = new System.Drawing.Size(214, 376);
             this.pnlMoveset.TabIndex = 17;
@@ -1303,6 +1351,16 @@ namespace System.Windows.Forms
             this.pnlAssets.Key += new System.EventHandler(this.Key);
             this.pnlAssets.Unkey += new System.EventHandler(this.Unkey);
             // 
+            // btnSaveCam
+            // 
+            this.btnSaveCam.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnSaveCam.Image = ((System.Drawing.Image)(resources.GetObject("btnSaveCam.Image")));
+            this.btnSaveCam.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSaveCam.Name = "btnSaveCam";
+            this.btnSaveCam.Size = new System.Drawing.Size(79, 21);
+            this.btnSaveCam.Text = "Save Camera";
+            this.btnSaveCam.Click += new System.EventHandler(this.btnSaveCam_Click);
+            // 
             // ModelEditControl
             // 
             this.AllowDrop = true;
@@ -1320,7 +1378,7 @@ namespace System.Windows.Forms
             this.Controls.Add(this.controlPanel);
             this.Controls.Add(this.animEditors);
             this.Name = "ModelEditControl";
-            this.Size = new System.Drawing.Size(732, 460);
+            this.Size = new System.Drawing.Size(1065, 460);
             this.SizeChanged += new System.EventHandler(this.ModelEditControl_SizeChanged);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.ModelEditControl_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.ModelEditControl_DragEnter);
@@ -1543,7 +1601,7 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color ClearColor { get { return _clearColor; } set { _clearColor = value; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Image BGImage { get { return _bgImage; } set { _bgImage = value; } }
+        public Image BGImage { get { return _bgImage; } set { modelPanel1.BackgroundImage = _bgImage = value; } }
         
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0BoneNode TargetBone { get { return _targetBone; } set { _targetBone = value; UpdatePropDisplay(); } }
@@ -1554,11 +1612,11 @@ namespace System.Windows.Forms
         public int CurrentFrame { get { return _animFrame; } set { _animFrame = value; UpdateModel(); } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
-        { 
-            get 
-            { 
+        {
+            get
+            {
                 return _enableTransform; 
-            } 
+            }
             set 
             {
                 if (_enableTransform == value)
@@ -1570,21 +1628,21 @@ namespace System.Windows.Forms
                 shp0Editor.EnableTransformEdit =
                 vis0Editor.EnableTransformEdit =
                 pat0Editor.EnableTransformEdit = value; 
-            } 
+            }
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool RenderFloor 
-        { 
+        {
             get { return _renderFloor; } 
-            set 
-            { 
+            set
+            {
                 _renderFloor = value;
                 _updating = true;
                 chkFloor.Checked = toggleFloor.Checked = _renderFloor;
                 _updating = false;
                 modelPanel1.Invalidate();
-            } 
+            }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool RenderBones
@@ -2170,6 +2228,13 @@ namespace System.Windows.Forms
             pnlPlayback.btnPlay.Text = "Play";
             EnableTransformEdit = true;
             UpdatePropDisplay();
+
+            if (_capture)
+            {
+                RenderToGIF(images.ToArray());
+                images.Clear();
+                _capture = false;
+            }
         }
         private void animTimer_Tick(object sender, EventArgs e)
         {
@@ -2183,6 +2248,9 @@ namespace System.Windows.Forms
                     SetFrame(1);
             else
                 SetFrame(_animFrame + 1);
+
+            if (_capture)
+                images.Add(modelPanel1.GrabScreenshot());
         }
         #endregion
 
@@ -2199,8 +2267,9 @@ namespace System.Windows.Forms
                 {
                     BBVS* settings = (BBVS*)map.Address;
                     settings->_tag = BBVS.Tag;
-                    settings->_version = 1;
+                    settings->_version = 2;
                     settings->defaultCam = modelPanel1._defaultTranslate;
+                    settings->defaultRot = modelPanel1._defaultRotate;
                     settings->amb = modelPanel1._ambient;
                     settings->pos = modelPanel1._position;
                     settings->diff = modelPanel1._diffuse;
@@ -2212,11 +2281,11 @@ namespace System.Windows.Forms
                     settings->rScale = modelPanel1.RotationScale;
                     settings->zScale = modelPanel1.ZoomScale;
                     settings->SetOptions(syncAnimationsTogetherToolStripMenuItem.Checked,
-                        false,//displayFrameCountDifferencesToolStripMenuItem.Checked,
+                        false,
                         syncLoopToAnimationToolStripMenuItem.Checked,
                         syncTexObjToolStripMenuItem.Checked,
                         syncObjectsListToVIS0ToolStripMenuItem.Checked,
-                        disableBonesWhenPlayingToolStripMenuItem.Checked, maximize, false//alwaysSyncFrameCountsToolStripMenuItem.Checked
+                        disableBonesWhenPlayingToolStripMenuItem.Checked, maximize, btnSaveCam.Text == "Clear Camera"
                         );
                 }
             }
@@ -2309,20 +2378,27 @@ namespace System.Windows.Forms
         private void pnlOptions_CamResetClicked(object sender, EventArgs e) { modelPanel1.ResetCamera(); }
         private void loadImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog d = new OpenFileDialog();
-            d.Filter = "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif|" +
-            "Portable Network Graphics (*.png)|*.png|" +
-            "Truevision TARGA (*.tga)|*.tga|" +
-            "Tagged Image File Format (*.tif, *.tiff)|*.tif;*.tiff|" +
-            "Bitmap (*.bmp)|*.bmp|" +
-            "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
-            "Gif (*.gif)|*.gif";
-            d.Title = "Select an image to load";
-
-            if (d.ShowDialog() == DialogResult.OK)
+            if (loadImageToolStripMenuItem.Text == "Load Image")
             {
-                panel1.BackgroundImage = BGImage = Image.FromFile(d.FileName);
-                panel1.BackgroundImageLayout = ImageLayout.Stretch;
+                OpenFileDialog d = new OpenFileDialog();
+                d.Filter = "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif|" +
+                "Portable Network Graphics (*.png)|*.png|" +
+                "Truevision TARGA (*.tga)|*.tga|" +
+                "Tagged Image File Format (*.tif, *.tiff)|*.tif;*.tiff|" +
+                "Bitmap (*.bmp)|*.bmp|" +
+                "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
+                "Gif (*.gif)|*.gif";
+                d.Title = "Select an image to load";
+
+                if (d.ShowDialog() == DialogResult.OK)
+                    BGImage = Image.FromFile(d.FileName);
+
+                loadImageToolStripMenuItem.Text = "Clear Image";
+            }
+            else
+            {
+                BGImage = null;
+                loadImageToolStripMenuItem.Text = "Load Image";
             }
         }
         private void btnAssetToggle_Click(object sender, EventArgs e)
@@ -2864,7 +2940,7 @@ namespace System.Windows.Forms
                     if (_animFrame == 0)
                         SetFrame(_maxFrame);
                     else
-                        SetFrame(_animFrame - 1);
+                        SetFrame(_animFrame += (val - _animFrame));
                 }
             }
         }
@@ -3349,68 +3425,117 @@ namespace System.Windows.Forms
         #endregion
 
         #region Rendering
-        private unsafe void modelPanel1_PreRender(object sender, GLContext context)
+        private unsafe void modelPanel1_PreRender(object sender, TKContext ctx)
         {
+            //if (BGImage != null)
+            //{
+            //    GLTexture tex = new GLTexture(BGImage.Width, BGImage.Height);
+
+            //    GL.MatrixMode(MatrixMode.Projection);
+            //    GL.LoadIdentity();
+            //    GL.Ortho(0, 1, 0, 1, -1, 1);
+            //    GL.Disable(EnableCap.Lighting);
+            //    GL.Enable(EnableCap.DepthTest);
+            //    GL.MatrixMode(MatrixMode.Modelview);
+            //    GL.LoadIdentity();
+
+            //    GL.Enable(EnableCap.Texture2D);
+
+            //    tex.Bind();
+
+            //    BitmapData data = ((Bitmap)BGImage).LockBits(new Rectangle(0, 0, BGImage.Width, BGImage.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            //    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            //    ((Bitmap)BGImage).UnlockBits(data);
+
+            //    GL.Begin(BeginMode.Quads);
+            //    GL.TexCoord2(0, 0);
+            //    GL.Vertex2(0, 0);
+
+            //    GL.TexCoord2(1, 0);
+            //    GL.Vertex2(1, 0);
+
+            //    GL.TexCoord2(1, 1);
+            //    GL.Vertex2(1, 1);
+
+            //    GL.TexCoord2(0, 1);
+            //    GL.Vertex2(0, 1);
+            //    GL.End();
+
+            //    GL.Disable(EnableCap.Texture2D);
+
+            //    GL.Enable(EnableCap.Lighting);
+            //    GL.Enable(EnableCap.DepthTest);
+            //    GL.Clear(ClearBufferMask.DepthBufferBit);
+
+            //    GL.MatrixMode(MatrixMode.Projection);
+
+            //    Matrix m = modelPanel1._projectionMatrix;
+            //    GL.LoadMatrix((float*)&m);
+
+            //    GL.MatrixMode(MatrixMode.Modelview);
+            //    if (modelPanel1._camera != null)
+            //    {
+            //        fixed (Matrix* p = &modelPanel1._camera._matrix)
+            //        {
+            //            GL.MatrixMode(OpenTK.Graphics.OpenGL.MatrixMode.Modelview);
+            //            GL.LoadMatrix((float*)p);
+            //        }
+            //    }
+            //}
+
             if (RenderFloor)
             {
-                GLTexture _bgTex = context.FindOrCreate<GLTexture>("TexBG", GLTexturePanel.CreateBG);
+                GLTexture _bgTex = ctx.FindOrCreate<GLTexture>("TexBG", GLTexturePanel.CreateBG);
 
                 float s = 10.0f, t = 10.0f;
                 float e = 30.0f;
 
-                context.glDisable((int)GLEnableCap.TEXTURE_GEN_S);
-                context.glDisable((int)GLEnableCap.TEXTURE_GEN_T);
-                context.glDisable((int)GLEnableCap.TEXTURE_GEN_R);
-                context.glDisable((int)GLEnableCap.TEXTURE_GEN_Q);
-                context.glDisable((uint)GLEnableCap.CullFace);
-                context.glDisable((uint)GLEnableCap.Lighting);
-                context.glEnable(GLEnableCap.DepthTest);
-                context.glPolygonMode(GLFace.Front, GLPolygonMode.Line);
-                context.glPolygonMode(GLFace.Back, GLPolygonMode.Fill);
+                GL.Disable(EnableCap.CullFace);
+                GL.Disable(EnableCap.Blend);
+                GL.Disable(EnableCap.AlphaTest);
+                GL.Disable(EnableCap.Lighting);
+                GL.Enable(EnableCap.DepthTest);
+                GL.PolygonMode(MaterialFace.Front, PolygonMode.Line);
+                GL.PolygonMode(MaterialFace.Back, PolygonMode.Fill);
 
-                context.glEnable(GLEnableCap.Texture2D);
+                GL.Enable(EnableCap.Texture2D);
+
                 _bgTex.Bind();
 
-                context.glColor(0.5f, 0.5f, 0.75f, 1.0f);
-                context.glBegin(GLPrimitiveType.Quads);
+                GL.Color4(0.5f, 0.5f, 0.75f, 1.0f);
+                GL.Begin(BeginMode.Quads);
 
-                context.glTexCoord(0.0f, 0.0f);
-                context.glVertex(-e, 0.0f, -e);
-                context.glTexCoord(s, 0.0f);
-                context.glVertex(e, 0.0f, -e);
-                context.glTexCoord(s, t);
-                context.glVertex(e, 0.0f, e);
-                context.glTexCoord(0, t);
-                context.glVertex(-e, 0.0f, e);
+                GL.TexCoord2(0.0f, 0.0f);
+                GL.Vertex3(-e, 0.0f, -e);
+                GL.TexCoord2(s, 0.0f);
+                GL.Vertex3(e, 0.0f, -e);
+                GL.TexCoord2(s, t);
+                GL.Vertex3(e, 0.0f, e);
+                GL.TexCoord2(0, t);
+                GL.Vertex3(-e, 0.0f, e);
 
-                context.glEnd();
+                GL.End();
 
-                context.glDisable((uint)GLEnableCap.Texture2D);
-
-                //context.glMatrixMode(GLMatrixMode.Texture);
-                //context.glTranslate(_xTranslate, _yTranslate, 0);
-                //_xTranslate = 0;
-                //_yTranslate = 0;
-                //context.glMatrixMode(GLMatrixMode.ModelView);
+                GL.Disable(EnableCap.Texture2D);
             }
         }
         public int hurtBoxType = 0;
         public int editType = 1; //0 Rot, 1 Trans, 2 Scale
         public List<MDL0BoneNode> boneCollisions = new List<MDL0BoneNode>();
-        private unsafe void modelPanel1_PostRender(object sender, GLContext context)
+        private unsafe void modelPanel1_PostRender(object sender, TKContext context)
         {
             //Render hurtboxes
             if (chkHurtboxes.Checked)
                 for (int i = 0; i < pnlMoveset.lstHurtboxes.Items.Count; i++)
                     if (pnlMoveset.lstHurtboxes.GetItemChecked(i))
-                        ((MoveDefHurtBoxNode)pnlMoveset.lstHurtboxes.Items[i]).Render(context, pnlMoveset._selectedHurtboxIndex == i, hurtBoxType);
+                        ((MoveDefHurtBoxNode)pnlMoveset.lstHurtboxes.Items[i]).Render(pnlMoveset._selectedHurtboxIndex == i, hurtBoxType);
 
             //Render hitboxes
-            if (chkHitboxes.Checked)
+            if (chkHitboxes.Checked && pnlMoveset._mainMoveset != null)
             {
-                context.glDisable((uint)GLEnableCap.Lighting);
-                context.glDisable((uint)GLEnableCap.DepthTest);
-                context.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
+                GL.Disable(EnableCap.Lighting);
+                GL.Disable(EnableCap.DepthTest);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
                 GLDisplayList c = context.GetRingList();
                 GLDisplayList s = context.GetSphereList();
 
@@ -3445,12 +3570,19 @@ namespace System.Windows.Forms
                 }
             }
 
-            context.glClear(GLClearMask.DepthBuffer);
-            context.glEnable(GLEnableCap.DepthTest);
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+            GL.Enable(EnableCap.DepthTest);
 
             if (pnlAnim.SelectedBone != null && !_playing) //Render drag and drop control
             {
-                context.glDisable((uint)GLEnableCap.Lighting);
+                GL.Disable(EnableCap.Lighting);
+
+                GL.Enable(EnableCap.Blend);
+                GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+                GL.Enable(EnableCap.AlphaTest);
+                GL.AlphaFunc(AlphaFunction.Gequal, 0.1f);
+
                 MDL0BoneNode bone = pnlAnim.SelectedBone;
                 GLDisplayList sphere = context.GetCircleList();
                 Matrix m;
@@ -3461,8 +3593,8 @@ namespace System.Windows.Forms
                 float radius = center.TrueDistance(cam) / _orbRadius * 0.1f;
 
                 m = Matrix.TransformMatrix(new Vector3(radius), center.LookatAngles(cam) * Maths._rad2degf, center);
-                context.glPushMatrix();
-                context.glMultMatrix((float*)&m);
+                GL.PushMatrix();
+                GL.MultMatrix((float*)&m);
 
                 editType = 0;
 
@@ -3471,196 +3603,196 @@ namespace System.Windows.Forms
                     GLDisplayList circle = context.GetRingList();
 
                     //Orb
-                    context.glColor(0.7f, 0.7f, 0.7f, 0.15f);
+                    GL.Color4(0.7f, 0.7f, 0.7f, 0.15f);
                     sphere.Call();
 
-                    context.glDisable((uint)GLEnableCap.DepthTest);
+                    GL.Disable(EnableCap.DepthTest);
 
                     //Container
-                    context.glColor(0.4f, 0.4f, 0.4f, 1.0f);
+                    GL.Color4(0.4f, 0.4f, 0.4f, 1.0f);
                     circle.Call();
 
                     //Circ
                     if (_snapCirc)
-                        context.glColor(1.0f, 1.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
                     else
-                        context.glColor(1.0f, 0.8f, 0.5f, 1.0f);
-                    context.glScale(_circOrbScale, _circOrbScale, _circOrbScale);
+                        GL.Color4(1.0f, 0.8f, 0.5f, 1.0f);
+                    GL.Scale(_circOrbScale, _circOrbScale, _circOrbScale);
                     circle.Call();
 
                     //Pop
-                    context.glPopMatrix();
+                    GL.PopMatrix();
 
-                    context.glEnable(GLEnableCap.DepthTest);
+                    GL.Enable(EnableCap.DepthTest);
 
                     //Enter local space
                     m = Matrix.TransformMatrix(new Vector3(radius), bone._frameMatrix.GetAngles(), center);
-                    context.glPushMatrix();
-                    context.glMultMatrix((float*)&m);
+                    GL.PushMatrix();
+                    GL.MultMatrix((float*)&m);
 
                     //Z
                     if (_snapZ)
-                        context.glColor(1.0f, 1.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
                     else
-                        context.glColor(0.0f, 0.0f, 1.0f, 1.0f);
+                        GL.Color4(0.0f, 0.0f, 1.0f, 1.0f);
 
                     circle.Call();
-                    context.glRotate(90.0f, 0.0f, 1.0f, 0.0f);
+                    GL.Rotate(90.0f, 0.0f, 1.0f, 0.0f);
 
                     //X
                     if (_snapX)
-                        context.glColor(1.0f, 1.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
                     else
-                        context.glColor(1.0f, 0.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
 
                     circle.Call();
-                    context.glRotate(90.0f, 1.0f, 0.0f, 0.0f);
+                    GL.Rotate(90.0f, 1.0f, 0.0f, 0.0f);
 
                     //Y
                     if (_snapY)
-                        context.glColor(1.0f, 1.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
                     else
-                        context.glColor(0.0f, 1.0f, 0.0f, 1.0f);
+                        GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
 
                     circle.Call();
                 }
                 else if (editType == 1)
                 {
                     //Create the axes.
-                    GLDisplayList axis = new GLDisplayList(context);
+                    GLDisplayList axis = new GLDisplayList();
                     axis.Begin();
 
                     //Disable culling so square bases for the arrows aren't necessary to draw
-                    context.glDisable((uint)GLEnableCap.CullFace);
-                    context.glPolygonMode(GLFace.FrontAndBack, GLPolygonMode.Fill);
+                    GL.Disable(EnableCap.CullFace);
+                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
                     float apthm = 0.075f;
                     float dst = 1.5f;
 
-                    context.glBegin(GLPrimitiveType.Lines);
+                    GL.Begin(BeginMode.Lines);
 
                     //X
                     if (!_snapXY && !_snapXZ)
-                        context.glColor(1.0f, 0.0f, 0.0f, 1.0f);
-                    context.glVertex(1.0f, 0.0f, 0.0f);
-                    context.glVertex(1.0f, 1.0f, 0.0f);
-                    context.glVertex(1.0f, 0.0f, 0.0f);
-                    context.glVertex(1.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
+                    GL.Vertex3(1.0f, 0.0f, 0.0f);
+                    GL.Vertex3(1.0f, 1.0f, 0.0f);
+                    GL.Vertex3(1.0f, 0.0f, 0.0f);
+                    GL.Vertex3(1.0f, 0.0f, 1.0f);
 
                     if (_snapX || _snapXY || _snapXZ)
-                        context.glColor(1.0f, 1.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
                     else
-                        context.glColor(1.0f, 0.0f, 0.0f, 1.0f);
-                    context.glVertex(0.0f, 0.0f, 0.0f);
-                    context.glVertex(2.0f, 0.0f, 0.0f);
+                        GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
+                    GL.Vertex3(0.0f, 0.0f, 0.0f);
+                    GL.Vertex3(2.0f, 0.0f, 0.0f);
 
-                    context.glEnd();
+                    GL.End();
 
-                    context.glBegin(GLPrimitiveType.Triangles);
+                    GL.Begin(BeginMode.Triangles);
 
-                    context.glVertex(2.0f, 0.0f, 0.0f);
-                    context.glVertex(dst, apthm, -apthm);
-                    context.glVertex(dst, apthm, apthm);
+                    GL.Vertex3(2.0f, 0.0f, 0.0f);
+                    GL.Vertex3(dst, apthm, -apthm);
+                    GL.Vertex3(dst, apthm, apthm);
 
-                    context.glVertex(2.0f, 0.0f, 0.0f);
-                    context.glVertex(dst, -apthm, apthm);
-                    context.glVertex(dst, -apthm, -apthm);
+                    GL.Vertex3(2.0f, 0.0f, 0.0f);
+                    GL.Vertex3(dst, -apthm, apthm);
+                    GL.Vertex3(dst, -apthm, -apthm);
 
-                    context.glVertex(2.0f, 0.0f, 0.0f);
-                    context.glVertex(dst, apthm, apthm);
-                    context.glVertex(dst, -apthm, apthm);
+                    GL.Vertex3(2.0f, 0.0f, 0.0f);
+                    GL.Vertex3(dst, apthm, apthm);
+                    GL.Vertex3(dst, -apthm, apthm);
 
-                    context.glVertex(2.0f, 0.0f, 0.0f);
-                    context.glVertex(dst, -apthm, -apthm);
-                    context.glVertex(dst, apthm, -apthm);
+                    GL.Vertex3(2.0f, 0.0f, 0.0f);
+                    GL.Vertex3(dst, -apthm, -apthm);
+                    GL.Vertex3(dst, apthm, -apthm);
 
-                    context.glEnd();
+                    GL.End();
 
-                    context.glBegin(GLPrimitiveType.Lines);
+                    GL.Begin(BeginMode.Lines);
 
                     //Y
                     if (!_snapXY && !_snapYZ)
-                        context.glColor(0.0f, 1.0f, 0.0f, 1.0f);
-                    context.glVertex(0.0f, 1.0f, 0.0f);
-                    context.glVertex(1.0f, 1.0f, 0.0f);
-                    context.glVertex(0.0f, 1.0f, 0.0f);
-                    context.glVertex(0.0f, 1.0f, 1.0f);
+                        GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
+                    GL.Vertex3(0.0f, 1.0f, 0.0f);
+                    GL.Vertex3(1.0f, 1.0f, 0.0f);
+                    GL.Vertex3(0.0f, 1.0f, 0.0f);
+                    GL.Vertex3(0.0f, 1.0f, 1.0f);
                     if (_snapY || _snapXY || _snapYZ)
-                        context.glColor(1.0f, 1.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
                     else
-                        context.glColor(0.0f, 1.0f, 0.0f, 1.0f);
-                    context.glVertex(0.0f, 0.0f, 0.0f);
-                    context.glVertex(0.0f, 2.0f, 0.0f);
+                        GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
+                    GL.Vertex3(0.0f, 0.0f, 0.0f);
+                    GL.Vertex3(0.0f, 2.0f, 0.0f);
 
-                    context.glEnd();
+                    GL.End();
 
-                    context.glBegin(GLPrimitiveType.Triangles);
+                    GL.Begin(BeginMode.Triangles);
 
-                    context.glVertex(0.0f, 2.0f, 0.0f);
-                    context.glVertex(apthm, dst, -apthm);
-                    context.glVertex(apthm, dst, apthm);
+                    GL.Vertex3(0.0f, 2.0f, 0.0f);
+                    GL.Vertex3(apthm, dst, -apthm);
+                    GL.Vertex3(apthm, dst, apthm);
 
-                    context.glVertex(0.0f, 2.0f, 0.0f);
-                    context.glVertex(-apthm, dst, apthm);
-                    context.glVertex(-apthm, dst, -apthm);
+                    GL.Vertex3(0.0f, 2.0f, 0.0f);
+                    GL.Vertex3(-apthm, dst, apthm);
+                    GL.Vertex3(-apthm, dst, -apthm);
 
-                    context.glVertex(0.0f, 2.0f, 0.0f);
-                    context.glVertex(apthm, dst, apthm);
-                    context.glVertex(-apthm, dst, apthm);
+                    GL.Vertex3(0.0f, 2.0f, 0.0f);
+                    GL.Vertex3(apthm, dst, apthm);
+                    GL.Vertex3(-apthm, dst, apthm);
 
-                    context.glVertex(0.0f, 2.0f, 0.0f);
-                    context.glVertex(-apthm, dst, -apthm);
-                    context.glVertex(apthm, dst, -apthm);
+                    GL.Vertex3(0.0f, 2.0f, 0.0f);
+                    GL.Vertex3(-apthm, dst, -apthm);
+                    GL.Vertex3(apthm, dst, -apthm);
 
-                    context.glEnd();
+                    GL.End();
 
-                    context.glBegin(GLPrimitiveType.Lines);
+                    GL.Begin(BeginMode.Lines);
 
                     //Z
                     if (!_snapXZ && !_snapYZ)
-                        context.glColor(0.0f, 0.0f, 1.0f, 1.0f);
-                    context.glVertex(0.0f, 0.0f, 1.0f);
-                    context.glVertex(1.0f, 0.0f, 1.0f);
-                    context.glVertex(0.0f, 0.0f, 1.0f);
-                    context.glVertex(0.0f, 1.0f, 1.0f);
+                        GL.Color4(0.0f, 0.0f, 1.0f, 1.0f);
+                    GL.Vertex3(0.0f, 0.0f, 1.0f);
+                    GL.Vertex3(1.0f, 0.0f, 1.0f);
+                    GL.Vertex3(0.0f, 0.0f, 1.0f);
+                    GL.Vertex3(0.0f, 1.0f, 1.0f);
                     if (_snapZ || _snapXZ || _snapYZ)
-                        context.glColor(1.0f, 1.0f, 0.0f, 1.0f);
+                        GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
                     else
-                        context.glColor(0.0f, 0.0f, 1.0f, 1.0f);
-                    context.glVertex(0.0f, 0.0f, 0.0f);
-                    context.glVertex(0.0f, 0.0f, 2.0f);
+                        GL.Color4(0.0f, 0.0f, 1.0f, 1.0f);
+                    GL.Vertex3(0.0f, 0.0f, 0.0f);
+                    GL.Vertex3(0.0f, 0.0f, 2.0f);
 
-                    context.glEnd();
+                    GL.End();
 
-                    context.glBegin(GLPrimitiveType.Triangles);
+                    GL.Begin(BeginMode.Triangles);
 
-                    context.glVertex(0.0f, 0.0f, 2.0f);
-                    context.glVertex(apthm, -apthm, dst);
-                    context.glVertex(apthm, apthm, dst);
+                    GL.Vertex3(0.0f, 0.0f, 2.0f);
+                    GL.Vertex3(apthm, -apthm, dst);
+                    GL.Vertex3(apthm, apthm, dst);
 
-                    context.glVertex(0.0f, 0.0f, 2.0f);
-                    context.glVertex(-apthm, apthm, dst);
-                    context.glVertex(-apthm, -apthm, dst);
+                    GL.Vertex3(0.0f, 0.0f, 2.0f);
+                    GL.Vertex3(-apthm, apthm, dst);
+                    GL.Vertex3(-apthm, -apthm, dst);
 
-                    context.glVertex(0.0f, 0.0f, 2.0f);
-                    context.glVertex(apthm, apthm, dst);
-                    context.glVertex(-apthm, apthm, dst);
+                    GL.Vertex3(0.0f, 0.0f, 2.0f);
+                    GL.Vertex3(apthm, apthm, dst);
+                    GL.Vertex3(-apthm, apthm, dst);
 
-                    context.glVertex(0.0f, 0.0f, 2.0f);
-                    context.glVertex(-apthm, -apthm, dst);
-                    context.glVertex(apthm, -apthm, dst);
+                    GL.Vertex3(0.0f, 0.0f, 2.0f);
+                    GL.Vertex3(-apthm, -apthm, dst);
+                    GL.Vertex3(apthm, -apthm, dst);
 
-                    context.glEnd();
+                    GL.End();
 
                     axis.End();
 
                     //Pop
-                    context.glPopMatrix();
+                    GL.PopMatrix();
 
                     //Enter local space
                     m = Matrix.TransformMatrix(new Vector3(radius), bone._frameMatrix.GetAngles(), center);
-                    context.glPushMatrix();
-                    context.glMultMatrix((float*)&m);
+                    GL.PushMatrix();
+                    GL.MultMatrix((float*)&m);
 
                     axis.Call();
                 }
@@ -3670,31 +3802,31 @@ namespace System.Windows.Forms
                 }
 
                 //Pop
-                context.glPopMatrix();
-
+                GL.PopMatrix();
+                
                 //Clear depth buffer for next operation
-                context.glClear(GLClearMask.DepthBuffer);
+                GL.Clear(ClearBufferMask.DepthBufferBit);
             }
 
             if (RenderBones && !modelPanel1._grabbing && !modelPanel1._scrolling && !_playing) 
             {
                 //Render invisible depth orbs
-                context.glColorMask(false, false, false, false);
+                GL.ColorMask(false, false, false, false);
                 if (_editingAll)
                 {
                     GLDisplayList list = context.GetSphereList();
                     foreach (MDL0Node m in _targetModels)
                         foreach (MDL0BoneNode bone in m._linker.BoneCache)
-                            RenderOrbRecursive(bone, context, list);
+                            RenderOrbRecursive(bone, list);
                 }
                 else
                 if (TargetModel != null && TargetModel._linker.BoneCache != null)
                 {
                     GLDisplayList list = context.GetSphereList();
                     foreach (MDL0BoneNode bone in _targetModel._linker.BoneCache)
-                        RenderOrbRecursive(bone, context, list);
+                        RenderOrbRecursive(bone, list);
                 }
-                context.glColorMask(true, true, true, true);
+                GL.ColorMask(true, true, true, true);
             }
 
             //if (_targetModel != null)
@@ -3704,14 +3836,14 @@ namespace System.Windows.Forms
             //}
         }
 
-        private unsafe void RenderOrbRecursive(MDL0BoneNode bone, GLContext ctx, GLDisplayList list)
+        private unsafe void RenderOrbRecursive(MDL0BoneNode bone, GLDisplayList list)
         {
             Matrix m = Matrix.TransformMatrix(new Vector3(MDL0BoneNode._nodeRadius), new Vector3(), bone._frameMatrix.GetPoint());
-            ctx.glPushMatrix();
-            ctx.glMultMatrix((float*)&m);
+            GL.PushMatrix();
+            GL.MultMatrix((float*)&m);
 
             list.Call();
-            ctx.glPopMatrix();
+            GL.PopMatrix();
 
             //foreach (MDL0BoneNode b in bone.Children)
             //    RenderOrbRecursive(b, ctx, list);
@@ -4262,6 +4394,86 @@ namespace System.Windows.Forms
             else
             {
 
+            }
+        }
+
+        private void exportToImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Bitmap bmp = modelPanel1.GrabScreenshot();
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = 
+            "Portable Network Graphics (*.png)|*.png|" +
+            "Truevision TARGA (*.tga)|*.tga|" +
+            "Tagged Image File Format (*.tif, *.tiff)|*.tif;*.tiff|" +
+            "Bitmap (*.bmp)|*.bmp|" +
+            "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
+            "Gif (*.gif)|*.gif";
+            saveFileDialog1.Title = "Save Image";
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK && saveFileDialog1.FileName != "")
+            {
+                FileStream fs = (FileStream)saveFileDialog1.OpenFile();
+                switch (saveFileDialog1.FilterIndex)
+                {
+                    case 1: bmp.Save(fs, ImageFormat.Png); break;
+                    case 2: bmp.SaveTGA(fs); break;
+                    case 3: bmp.Save(fs, ImageFormat.Tiff); break;
+                    case 4: bmp.Save(fs, ImageFormat.Bmp); break;
+                    case 5: bmp.Save(fs, ImageFormat.Jpeg); break;
+                    case 6: bmp.Save(fs, ImageFormat.Gif); break;
+                }
+                fs.Close();
+            }
+            bmp.Dispose();
+        }
+
+        private void RenderToGIF(Image[] images)
+        {
+            string outputFilePath = Application.StartupPath + "\\test.gif";
+            AnimatedGifEncoder e = new AnimatedGifEncoder();
+            e.Start(outputFilePath);
+            e.SetDelay(0);
+            e.SetRepeat(0);
+            e.SetQuality(20);
+            for (int i = 0, count = images.Length; i < count; i++) e.AddFrame(images[i]);
+            e.Finish();
+        }
+        
+        bool _capture = false;
+        List<Image> images = new List<Image>();
+        private void exportToAnimatedGIFToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SetFrame(1);
+            images = new List<Image>();
+            _loop = false;
+            _capture = true;
+            btnPlay_Click(null, null);
+        }
+
+        private void chkShaders_CheckedChanged(object sender, EventArgs e)
+        {
+            if (modelPanel1._ctx != null)
+            {
+                if (modelPanel1._ctx._canUseShaders) { GL.UseProgram(0); }
+                modelPanel1._ctx._canUseShaders = chkShaders.Checked && modelPanel1._ctx._version >= 2;
+            }
+            modelPanel1.Invalidate();
+        }
+
+        private void btnSaveCam_Click(object sender, EventArgs e)
+        {
+            if (btnSaveCam.Text == "Save Camera")
+            {
+                modelPanel1._defaultRotate = new Vector2(modelPanel1._camera._rotation._x, modelPanel1._camera._rotation._y);
+                modelPanel1._defaultTranslate = modelPanel1._camera._matrixInverse.Multiply(new Vector3());
+
+                btnSaveCam.Text = "Clear Camera";
+            }
+            else
+            {
+                modelPanel1._defaultRotate = new Vector2();
+                modelPanel1._defaultTranslate = new Vector3();
+
+                btnSaveCam.Text = "Save Camera";
             }
         }
     }

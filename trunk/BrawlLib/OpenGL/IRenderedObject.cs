@@ -8,9 +8,9 @@ namespace BrawlLib.OpenGL
 {
     public interface IRenderedObject
     {
-        void Attach(GLContext context);
-        void Detach(GLContext context);
-        void Refesh(GLContext context);
-        void Render(GLContext context, ModelEditControl mainWindow);
+        void Attach(TKContext ctx);
+        void Detach();
+        void Refesh();
+        void Render(TKContext ctx, ModelEditControl mainWindow);
     }
 }

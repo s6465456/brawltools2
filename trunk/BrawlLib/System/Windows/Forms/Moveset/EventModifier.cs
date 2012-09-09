@@ -437,8 +437,12 @@ namespace System.Windows.Forms
 
                     for (int i = 0; i < newEv.numArguments; i++)
                     {
-                        int type = (int)(origEvent.Children[i] as MoveDefEventParameterNode)._type;
-                        int value = (origEvent.Children[i] as MoveDefEventParameterNode)._value;
+                        int type = 0, value = 0;
+                        if (origEvent.Children.Count > i)
+                        {
+                            type = (int)(origEvent.Children[i] as MoveDefEventParameterNode)._type;
+                            value = (int)(origEvent.Children[i] as MoveDefEventParameterNode)._value;
+                        }
                         newEv.NewParam(i, value, type);
                         if (type == (int)ArgVarType.Offset)
                         {
@@ -557,12 +561,6 @@ namespace System.Windows.Forms
 
                 newEvent.EventID = (uint)frmEventList.eventEvent;
                 ActionEventInfo info = newEvent.EventInfo;
-
-                if (info == null || info.Params == null)
-                {
-                    DisplayEvent();
-                    return;
-                }
 
                 newEvent.NewChildren();
             }

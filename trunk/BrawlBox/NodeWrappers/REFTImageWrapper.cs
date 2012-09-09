@@ -12,7 +12,7 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.REFTImage)]
     class REFTImageWrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.REFTImage; } }
+        public override string ExportFilter { get { return ExportFilters.Images; } }
 
         public override void OnReplace(string inStream, int filterIndex)
         {

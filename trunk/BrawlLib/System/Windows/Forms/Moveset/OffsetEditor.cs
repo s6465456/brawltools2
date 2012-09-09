@@ -11,12 +11,12 @@ namespace System.Windows.Forms
 
         private void InitializeComponent()
         {
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.listBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.indexBox = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.comboBox3 = new System.Windows.Forms.ComboBox();
+            this.typeBox = new System.Windows.Forms.ComboBox();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
@@ -25,19 +25,19 @@ namespace System.Windows.Forms
             // 
             // comboBox1
             // 
-            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
+            this.listBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.listBox.FormattingEnabled = true;
+            this.listBox.Items.AddRange(new object[] {
             "Actions",
             "Animations",
             "SubRoutines",
             "External",
             "Null"});
-            this.comboBox1.Location = new System.Drawing.Point(49, 3);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 0;
-            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
+            this.listBox.Location = new System.Drawing.Point(49, 3);
+            this.listBox.Name = "comboBox1";
+            this.listBox.Size = new System.Drawing.Size(121, 21);
+            this.listBox.TabIndex = 0;
+            this.listBox.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -61,13 +61,13 @@ namespace System.Windows.Forms
             // 
             // comboBox2
             // 
-            this.comboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(49, 27);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(121, 21);
-            this.comboBox2.TabIndex = 2;
-            this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
+            this.indexBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.indexBox.FormattingEnabled = true;
+            this.indexBox.Location = new System.Drawing.Point(49, 27);
+            this.indexBox.Name = "comboBox2";
+            this.indexBox.Size = new System.Drawing.Size(121, 21);
+            this.indexBox.TabIndex = 2;
+            this.indexBox.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
             // 
             // label3
             // 
@@ -81,13 +81,13 @@ namespace System.Windows.Forms
             // 
             // comboBox3
             // 
-            this.comboBox3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBox3.FormattingEnabled = true;
-            this.comboBox3.Location = new System.Drawing.Point(216, 3);
-            this.comboBox3.Name = "comboBox3";
-            this.comboBox3.Size = new System.Drawing.Size(74, 21);
-            this.comboBox3.TabIndex = 4;
-            this.comboBox3.SelectedIndexChanged += new System.EventHandler(this.comboBox3_SelectedIndexChanged);
+            this.typeBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.typeBox.FormattingEnabled = true;
+            this.typeBox.Location = new System.Drawing.Point(216, 3);
+            this.typeBox.Name = "comboBox3";
+            this.typeBox.Size = new System.Drawing.Size(74, 21);
+            this.typeBox.TabIndex = 4;
+            this.typeBox.SelectedIndexChanged += new System.EventHandler(this.comboBox3_SelectedIndexChanged);
             // 
             // richTextBox1
             // 
@@ -107,9 +107,9 @@ namespace System.Windows.Forms
             // panel1
             // 
             this.panel1.Controls.Add(this.button1);
-            this.panel1.Controls.Add(this.comboBox1);
-            this.panel1.Controls.Add(this.comboBox2);
-            this.panel1.Controls.Add(this.comboBox3);
+            this.panel1.Controls.Add(this.listBox);
+            this.panel1.Controls.Add(this.indexBox);
+            this.panel1.Controls.Add(this.typeBox);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label3);
@@ -144,12 +144,12 @@ namespace System.Windows.Forms
         #endregion
 
         int index = -2;
-        private ComboBox comboBox1;
+        private ComboBox listBox;
         private Label label1;
         private Label label2;
-        private ComboBox comboBox2;
+        private ComboBox indexBox;
         private Label label3;
-        private ComboBox comboBox3;
+        private ComboBox typeBox;
         public RichTextBox richTextBox1;
         private Panel panel1;
         private Button button1;
@@ -169,11 +169,33 @@ namespace System.Windows.Forms
 
             _updating = true;
 
-            comboBox1.SelectedIndex = _targetNode.list;
+            if (_targetNode.Root.dataCommon != null)
+            {
+                listBox.Items.Clear();
+                listBox.Items.AddRange(new object[] {
+                "Actions",
+                "Animations",
+                "SubRoutines",
+                "External",
+                "Null",
+                "Screen Tints",
+                "Flash Overlays"});
+            }
+            else
+            {
+                listBox.Items.AddRange(new object[] {
+                "Actions",
+                "Animations",
+                "SubRoutines",
+                "External",
+                "Null"});
+            }
+
+            listBox.SelectedIndex = _targetNode.list;
             if (_targetNode.type != -1)
-                comboBox3.SelectedIndex = _targetNode.type;
-            if (_targetNode.index != -1 && comboBox2.Items.Count > _targetNode.index)
-                comboBox2.SelectedIndex = _targetNode.index;
+                typeBox.SelectedIndex = _targetNode.type;
+            if (_targetNode.index != -1 && indexBox.Items.Count > _targetNode.index)
+                indexBox.SelectedIndex = _targetNode.index;
 
             //if (_targetNode.list < 3)
             //{
@@ -194,47 +216,57 @@ namespace System.Windows.Forms
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboBox1.SelectedIndex == 0)
+            if (listBox.SelectedIndex == 0)
             {
-                comboBox3.Items.Clear();
-                comboBox3.Items.Add("Entry");
-                comboBox3.Items.Add("Exit");
+                typeBox.Items.Clear();
+                typeBox.Items.Add("Entry");
+                typeBox.Items.Add("Exit");
 
-                comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(_targetNode.Root._actions.Children.ToArray());
+                indexBox.Items.Clear();
+                indexBox.Items.AddRange(_targetNode.Root._actions.Children.ToArray());
             }
-            if (comboBox1.SelectedIndex == 1)
+            if (listBox.SelectedIndex == 1)
             {
-                comboBox3.Items.Clear();
-                comboBox3.Items.Add("Main");
-                comboBox3.Items.Add("GFX");
-                comboBox3.Items.Add("SFX");
-                comboBox3.Items.Add("Other");
+                typeBox.Items.Clear();
+                typeBox.Items.Add("Main");
+                typeBox.Items.Add("GFX");
+                typeBox.Items.Add("SFX");
+                typeBox.Items.Add("Other");
 
-                comboBox2.Items.Clear();
+                indexBox.Items.Clear();
                 if (TargetNode.Root._subActions != null)
-                comboBox2.Items.AddRange(_targetNode.Root._subActions.Children.ToArray());
+                indexBox.Items.AddRange(_targetNode.Root._subActions.Children.ToArray());
             }
 
-            if (comboBox1.SelectedIndex >= 2)
-                comboBox3.Visible = label3.Visible = false;
+            if (listBox.SelectedIndex >= 2)
+                typeBox.Visible = label3.Visible = false;
             else
-                comboBox3.Visible = label3.Visible = true;
+                typeBox.Visible = label3.Visible = true;
 
-            if (comboBox1.SelectedIndex == 4)
-                comboBox2.Visible = label2.Visible = false;
+            if (listBox.SelectedIndex == 4)
+                indexBox.Visible = label2.Visible = false;
             else
-                comboBox2.Visible = label2.Visible = true;
+                indexBox.Visible = label2.Visible = true;
 
-            if (comboBox1.SelectedIndex == 2)
+            if (listBox.SelectedIndex == 2)
             {
-                comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(_targetNode.Root._subRoutineList.ToArray());
+                indexBox.Items.Clear();
+                indexBox.Items.AddRange(_targetNode.Root._subRoutineList.ToArray());
             }
-            if (comboBox1.SelectedIndex == 3)
+            if (listBox.SelectedIndex == 3)
             {
-                comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(_targetNode.Root._externalRefs.ToArray());
+                indexBox.Items.Clear();
+                indexBox.Items.AddRange(_targetNode.Root._externalRefs.ToArray());
+            }
+            if (listBox.SelectedIndex == 5)
+            {
+                indexBox.Items.Clear();
+                indexBox.Items.AddRange(_targetNode.Root.dataCommon._screenTint.Children.ToArray());
+            }
+            if (listBox.SelectedIndex == 6)
+            {
+                indexBox.Items.Clear();
+                indexBox.Items.AddRange(_targetNode.Root.dataCommon._flashOverlay.Children.ToArray());
             }
             if (!_updating)
                 UpdateText();
@@ -242,10 +274,10 @@ namespace System.Windows.Forms
 
         private void UpdateText()
         {
-            if (comboBox1.SelectedIndex == 4)
+            if (listBox.SelectedIndex == 4)
                 richTextBox1.Text = "Go nowhere.";
             else
-                richTextBox1.Text = "Go to " + comboBox2.Text + (comboBox1.SelectedIndex >= 2 ? "" : " - " + comboBox3.Text) + " in the " + comboBox1.Text + " list.";
+                richTextBox1.Text = "Go to " + indexBox.Text + (listBox.SelectedIndex >= 2 ? "" : " - " + typeBox.Text) + " in the " + listBox.Text + " list.";
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
@@ -267,16 +299,16 @@ namespace System.Windows.Forms
                 _targetNode._value = -1;
                 (_targetNode as MoveDefEventOffsetNode).action._actionRefs.Remove(_targetNode);
             }
-            if (comboBox1.SelectedIndex >= 3)
+            if (listBox.SelectedIndex >= 3)
             {
-                if (comboBox1.SelectedIndex == 3 && comboBox2.SelectedIndex >= 0 && comboBox2.SelectedIndex < _targetNode.Root._externalRefs.Count)
+                if (listBox.SelectedIndex == 3 && indexBox.SelectedIndex >= 0 && indexBox.SelectedIndex < _targetNode.Root._externalRefs.Count)
                 {
                     if (_targetNode._extNode != null)
                     {
                         _targetNode._extNode._refs.Remove(_targetNode);
                         _targetNode._extNode = null;
                     }
-                    (_targetNode._extNode = _targetNode.Root._externalRefs[comboBox2.SelectedIndex] as MoveDefExternalNode)._refs.Add(_targetNode);
+                    (_targetNode._extNode = _targetNode.Root._externalRefs[indexBox.SelectedIndex] as MoveDefExternalNode)._refs.Add(_targetNode);
                     _targetNode.Name = _targetNode._extNode.Name;
                 }
             }
@@ -288,9 +320,9 @@ namespace System.Windows.Forms
                     _targetNode._extNode = null;
                 }
             }
-            _targetNode.list = comboBox1.SelectedIndex;
-            _targetNode.type = (comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex);
-            _targetNode.index = (comboBox1.SelectedIndex == 4 ? -1 : comboBox2.SelectedIndex);
+            _targetNode.list = listBox.SelectedIndex;
+            _targetNode.type = (listBox.SelectedIndex >= 2 ? -1 : typeBox.SelectedIndex);
+            _targetNode.index = (listBox.SelectedIndex == 4 ? -1 : indexBox.SelectedIndex);
             _targetNode.action = _targetNode.Root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
             if (_targetNode.action != null)
                 _targetNode._value = _targetNode.action._offset;

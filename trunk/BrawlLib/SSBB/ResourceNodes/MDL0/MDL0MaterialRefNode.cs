@@ -119,12 +119,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                         Model.SignalPropertyChange();
 
                         if (n._vertexNode.Format != WiiVertexComponentType.Float)
-                            n._vertexNode._forceRebuild = value;
+                            n._vertexNode._forceRebuild = n._vertexNode._forceFloat = value;
+
                         if (n._normalNode.Format != WiiVertexComponentType.Float)
-                            n._normalNode._forceRebuild = value;
+                            n._normalNode._forceRebuild = n._normalNode._forceFloat = value;
+
                         for (int i = 4; i < 12; i++)
                             if (n._uvSet[i - 4] != null && n._uvSet[i - 4].Format != WiiVertexComponentType.Float)
-                                n._uvSet[i - 4]._forceRebuild = value;
+                                n._uvSet[i - 4]._forceRebuild = n._uvSet[i - 4]._forceFloat = value;
 
                         changed = true;
                     }
@@ -440,27 +442,26 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_pad = (short)0;
         }
 
-        internal override void Bind(GLContext ctx)
+        internal void Bind(TKContext ctx, int prog)
         {
             if (_texture != null)
-                _texture.Prepare(ctx, this);
+                _texture.Prepare(this, prog, ctx);
 
             if (PAT0Texture != null)
             {
                 if (!PAT0Textures.ContainsKey(PAT0Texture))
                     PAT0Textures[PAT0Texture] = new MDL0TextureNode(PAT0Texture) { Source = null, palette = PAT0Palette != null ? RootNode.FindChildByType(PAT0Palette, true, ResourceNodes.ResourceType.PLT0) as PLT0Node : null };
-                PAT0Textures[PAT0Texture].Prepare(ctx, this);
+                PAT0Textures[PAT0Texture].Prepare(this, prog, ctx);
             }
         }
 
-        internal override void Unbind(GLContext ctx)
+        internal override void Unbind()
         {
-            if (_texture != null && _texture._context != null)
+            if (_texture != null)
                 _texture.Unbind();
             
             foreach (MDL0TextureNode t in PAT0Textures.Values)
-                if (t._context != null)
-                    t.Unbind();
+                t.Unbind();
         }
 
         public FrameState _frameState, _bindState;

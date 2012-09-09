@@ -46,6 +46,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("Vertex Data")]
         //public int Pad2 { get { return Header->_pad2; } }
 
+        public bool ForceRebuild { get { return _forceRebuild; } set { if (_forceRebuild != value) { _forceRebuild = value; SignalPropertyChange(); } } }
+        public bool ForceFloat { get { return _forceFloat; } set { if (_forceFloat != value) { _forceFloat = value; } } }
+        
         public Vector3[] _vertices;
         public Vector3[] Vertices
         {
@@ -68,11 +71,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public VertexCodec _enc;
         public bool _forceRebuild = false;
+        public bool _forceFloat = false;
         protected override int OnCalculateSize(bool force)
         {
             if (Model._isImport || _forceRebuild)
             {
-                _enc = new VertexCodec(Vertices, false, _forceRebuild);
+                _enc = new VertexCodec(Vertices, false, _forceFloat);
                 return _enc._dataLen.Align(0x20) + 0x40;
             }
             else return base.OnCalculateSize(force);

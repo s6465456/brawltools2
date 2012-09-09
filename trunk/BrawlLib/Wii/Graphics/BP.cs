@@ -23,9 +23,9 @@ namespace BrawlLib.Wii.Graphics
     
     //Not reversed, can be used directly
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct AlphaFunction
+    public struct GXAlphaFunction
     {
-        public static readonly AlphaFunction Default = new AlphaFunction() { dat = 0x3F };
+        public static readonly GXAlphaFunction Default = new GXAlphaFunction() { dat = 0x3F };
         //0000 0000 0000 0000 1111 1111   ref0
         //0000 0000 1111 1111 0000 0000   ref1
         //0000 0111 0000 0000 0000 0000   comp0

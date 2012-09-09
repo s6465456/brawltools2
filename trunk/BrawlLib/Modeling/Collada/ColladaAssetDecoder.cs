@@ -5,6 +5,7 @@ using BrawlLib.Wii.Models;
 using BrawlLib.Imaging;
 using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.OpenGL;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.Modeling
 {
@@ -297,12 +298,12 @@ namespace BrawlLib.Modeling
             //Create primitives
             if (faces > 0)
             {
-                manager._triangles = new NewPrimitive(faces * 3, OpenGL.GLPrimitiveType.Triangles);
+                manager._triangles = new NewPrimitive(faces * 3, BeginMode.Triangles);
                 pTri = (ushort*)manager._triangles._indices.Address;
             }
             if (lines > 0)
             {
-                manager._lines = new NewPrimitive(lines * 2, OpenGL.GLPrimitiveType.Lines);
+                manager._lines = new NewPrimitive(lines * 2, BeginMode.Lines);
                 pLin = (ushort*)manager._lines._indices.Address;
             }
 

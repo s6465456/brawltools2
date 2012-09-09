@@ -738,6 +738,11 @@ namespace BrawlLib.SSBBTypes
         public buint nameTable;
         public buint infoTable;
     }
+    public struct AnimCurveTableHeader
+    {
+        public bushort count;
+        public bushort pad;
+    }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct PostFieldInfo
     {
