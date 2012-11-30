@@ -45,6 +45,14 @@ namespace BrawlLib.Wii.Graphics
         Always//GX_ALWAYS
     }
 
+    public enum GXBlendMode
+    {
+        None,
+        Blend,
+        Logic,
+        Subtract
+    }
+
     public enum GXLogicOp
     {
         Clear,//GX_LO_CLEAR,
@@ -159,20 +167,20 @@ namespace BrawlLib.Wii.Graphics
 
     public enum TevOp
     {
-        GX_TEV_ADD = 0,
-        GX_TEV_SUB = 1,
+        Add = 0,
+        Subtract = 1,
 
-        GX_TEV_COMP_R8_GT = 8,
-        GX_TEV_COMP_R8_EQ = 9,
-        GX_TEV_COMP_GR16_GT = 10,
-        GX_TEV_COMP_GR16_EQ = 11,
-        GX_TEV_COMP_BGR24_GT = 12,
-        GX_TEV_COMP_BGR24_EQ = 13,
-        GX_TEV_COMP_RGB8_GT = 14,
-        GX_TEV_COMP_RGB8_EQ = 15,
-
-        GX_TEV_COMP_A8_GT = GX_TEV_COMP_RGB8_GT, // for alpha channel
-        GX_TEV_COMP_A8_EQ = GX_TEV_COMP_RGB8_EQ  // for alpha channel
+        CompR8Greater = 8,
+        CompR8Equal = 9,
+        CompGR16Greater = 10,
+        CompGR16Equal = 11,
+        CompBGR24Greater = 12,
+        CompBGR24Equal = 13,
+        CompRGB8Greater = 14,
+        CompRGB8Equal = 15,
+        
+        //GX_TEV_COMP_A8_GT = GX_TEV_COMP_RGB8_GT, // for alpha channel
+        //GX_TEV_COMP_A8_EQ = GX_TEV_COMP_RGB8_EQ  // for alpha channel
     }
 
     public enum BlendFactor

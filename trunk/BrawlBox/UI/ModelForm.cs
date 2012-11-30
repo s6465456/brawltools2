@@ -8,6 +8,7 @@ using BrawlLib.Modeling;
 using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.IO;
 using System.IO;
+using System.Drawing;
 
 namespace BrawlBox
 {
@@ -63,8 +64,26 @@ namespace BrawlBox
         {
             _models.Add(model);
             ReadSettings();
-            try { return ShowDialog(owner); }
+            try 
+            { 
+                return base.ShowDialog(owner);
+            }
             finally { _models = null; }
+        }
+
+        public void Show(List<MDL0Node> models) { Show(null, models); }
+        public void Show(IWin32Window owner, List<MDL0Node> models)
+        {
+            _models = models;
+            ReadSettings();
+            base.Show(owner);
+        }
+        public void Show(MDL0Node model) { Show(null, model); }
+        public void Show(IWin32Window owner, MDL0Node model)
+        {
+            _models.Add(model);
+            ReadSettings();
+            base.Show(owner);
         }
 
         public unsafe void ReadSettings()
@@ -90,7 +109,7 @@ namespace BrawlBox
                 modelEditControl1.modelPanel1._diffuse = settings->diff;
                 modelEditControl1.modelPanel1._specular = settings->spec;
 
-                if (settings->CameraSet)
+                if (settings->CameraSet && settings->_version >= 2)
                 {
                     modelEditControl1.btnSaveCam.Text = "Clear Camera";
                     modelEditControl1.modelPanel1._defaultTranslate = settings->defaultCam;
@@ -104,6 +123,12 @@ namespace BrawlBox
                 modelEditControl1.modelPanel1.ZoomScale = settings->zScale;
                 modelEditControl1.modelPanel1.TranslationScale = settings->tScale;
                 modelEditControl1.modelPanel1.RotationScale = settings->rScale;
+
+                if (settings->_version >= 2)
+                {
+                    MDL0BoneNode.DefaultNodeColor = (Color)settings->orbColor;
+                    MDL0BoneNode.DefaultBoneColor = (Color)settings->lineColor;
+                }
 
                 if (settings->Maximize)
                     WindowState = FormWindowState.Maximized;

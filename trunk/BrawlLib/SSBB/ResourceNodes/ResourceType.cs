@@ -14,6 +14,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         Container = 0x0001,
 
         ARC = 0x0202,
+        U8 = 0x1D02,
+        U8Folder = 0x1C01,
         BRES = 0x0203,
         MSBin = 0x0204,
         EFLS = 0x0213,
@@ -60,7 +62,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         RSARBank = 0x0B12,
 
         RWSD = 0x0A00,
-        RWSDDataEntry = 0x0800,
+        RWSDDataEntry = 0x1800,
         RWSDWaveEntry = 0x0800,
 
         RBNK = 0x1B00,
@@ -85,7 +87,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         RSARFolder = 0x0B01,
 
-        RWSDGroup = 0x1101,
+        RWSDSoundGroup = 0x1101,
+        RWSDDataGroup = 0x1401,
         RSEQGroup = 0x1201,
         RBNKGroup = 0x1301,
         

@@ -71,8 +71,8 @@ namespace BrawlBox.NodeWrappers
 
             MoveDefNode node = _resource as MoveDefNode;
 
-            if (node.EventDictionary == null)
-                node.LoadEventDictionary();
+            if (MoveDefNode.EventDictionary == null)
+                MoveDefNode.LoadEventDictionary();
 
             bool go = true;
             string events = Application.StartupPath + "/MovesetData/Events.txt";
@@ -86,9 +86,9 @@ namespace BrawlBox.NodeWrappers
             if (go)
                 using (StreamWriter file = new StreamWriter(events))
                 {
-                    foreach (ActionEventInfo info in node.EventDictionary.Values)
+                    foreach (ActionEventInfo info in MoveDefNode.EventDictionary.Values)
                     {
-                        file.WriteLine(MParams.Hex8(info.idNumber));
+                        file.WriteLine(Helpers.Hex8(info.idNumber));
                         file.WriteLine(info._name);
                         file.WriteLine(info._description);
                         string s = "";
@@ -107,8 +107,8 @@ namespace BrawlBox.NodeWrappers
 
             MoveDefNode node = _resource as MoveDefNode;
 
-            if (node.EventDictionary == null)
-                node.LoadEventDictionary();
+            if (MoveDefNode.EventDictionary == null)
+                MoveDefNode.LoadEventDictionary();
 
             bool go = true;
             string parameters = Application.StartupPath + "/MovesetData/Parameters.txt";
@@ -123,11 +123,11 @@ namespace BrawlBox.NodeWrappers
             if (go)
                 using (StreamWriter file = new StreamWriter(parameters))
                 {
-                    foreach (ActionEventInfo info in node.EventDictionary.Values)
+                    foreach (ActionEventInfo info in MoveDefNode.EventDictionary.Values)
                     {
                         if (info.Params != null && info.Params.Length > 0)
                         {
-                            file.WriteLine(MParams.Hex8(info.idNumber));
+                            file.WriteLine(Helpers.Hex8(info.idNumber));
                             for (int i = 0; i < info.Params.Length; i++)
                             {
                                 file.WriteLine(info.Params[i]);
@@ -149,8 +149,8 @@ namespace BrawlBox.NodeWrappers
 
             MoveDefNode node = _resource as MoveDefNode;
 
-            if (node.EventDictionary == null)
-                node.LoadEventDictionary();
+            if (MoveDefNode.EventDictionary == null)
+                MoveDefNode.LoadEventDictionary();
 
             bool go = true;
             string syntax = Application.StartupPath + "/MovesetData/EventSyntax.txt";
@@ -165,12 +165,12 @@ namespace BrawlBox.NodeWrappers
             if (go)
                 using (StreamWriter file = new StreamWriter(syntax))
                 {
-                    foreach (ActionEventInfo info in node.EventDictionary.Values)
+                    foreach (ActionEventInfo info in MoveDefNode.EventDictionary.Values)
                     {
                         if (String.IsNullOrEmpty(info._syntax))
                             continue;
 
-                        file.WriteLine(MParams.Hex8(info.idNumber));
+                        file.WriteLine(Helpers.Hex8(info.idNumber));
                         file.WriteLine(info._syntax);
                         file.WriteLine();
                     }
@@ -288,8 +288,8 @@ namespace BrawlBox.NodeWrappers
                 node.iCollisionStats == null)
                 node.LoadOtherData();
 
-            if (node.EventDictionary == null)
-                node.LoadEventDictionary();
+            if (MoveDefNode.EventDictionary == null)
+                MoveDefNode.LoadEventDictionary();
 
             bool go = true;
             string airground = Application.StartupPath + "/MovesetData/AirGroundStats.txt";
@@ -350,7 +350,7 @@ namespace BrawlBox.NodeWrappers
                 //enum index, event id, param index list
                 Dictionary<int, Dictionary<long, List<int>>> EnumIds = new Dictionary<int, Dictionary<long, List<int>>>();
                 //remap events and enums
-                foreach (ActionEventInfo info in node.EventDictionary.Values)
+                foreach (ActionEventInfo info in MoveDefNode.EventDictionary.Values)
                 {
                     if (info.Enums != null && info.Enums.Count > 0)
                     {
@@ -408,7 +408,7 @@ namespace BrawlBox.NodeWrappers
                         Dictionary<long, List<int>> events = EnumIds[i];
                         foreach (var ev in events)
                         {
-                            file.WriteLine(MParams.Hex8(ev.Key));
+                            file.WriteLine(Helpers.Hex8(ev.Key));
                             foreach (int v in ev.Value)
                                 file.WriteLine(v);
                             file.WriteLine();
@@ -482,18 +482,18 @@ namespace BrawlBox.NodeWrappers
             MoveDefEventNode e = _resource as MoveDefEventNode;
             uint ev = e._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
-            if (e.Root.EventDictionary.ContainsKey(ev))
-                temp.Name = e.Root.EventDictionary[ev]._name;
+            if (MoveDefNode.EventDictionary.ContainsKey(ev))
+                temp.Name = MoveDefNode.EventDictionary[ev]._name;
             else
                 temp.Name = "";
             using (RenameDialog dlg = new RenameDialog()) { res = dlg.ShowDialog(MainForm.Instance, temp); }
             if (res == DialogResult.OK)
             {
-                if (e.Root.EventDictionary.ContainsKey(ev))
-                    e.Root.EventDictionary[ev]._name = temp.Name;
+                if (MoveDefNode.EventDictionary.ContainsKey(ev))
+                    MoveDefNode.EventDictionary[ev]._name = temp.Name;
                 else
-                    e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Children.Count], pDescs = new string[_resource.Children.Count], _name = temp.Name, idNumber = ev });
-                e.Root._dictionaryChanged = true;
+                    MoveDefNode.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Children.Count], pDescs = new string[_resource.Children.Count], _name = temp.Name, idNumber = ev });
+                MoveDefNode._dictionaryChanged = true;
                 foreach (MoveDefEventNode n in e.Root._events[ev])
                 {
                     n.Name = temp.Name;
@@ -509,18 +509,18 @@ namespace BrawlBox.NodeWrappers
             MoveDefEventNode e = _resource as MoveDefEventNode;
             long ev = e._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
-            if (e.Root.EventDictionary.ContainsKey(ev))
-                temp.Name = e.Root.EventDictionary[ev]._description;
+            if (MoveDefNode.EventDictionary.ContainsKey(ev))
+                temp.Name = MoveDefNode.EventDictionary[ev]._description;
             else
                 temp.Name = "";
             using (RenameDialog dlg = new RenameDialog()) { res = dlg.ShowDialog(MainForm.Instance, temp); }
             if (res == DialogResult.OK)
             {
-                if (e.Root.EventDictionary.ContainsKey(ev))
-                    e.Root.EventDictionary[ev]._description = temp.Name;
+                if (MoveDefNode.EventDictionary.ContainsKey(ev))
+                    MoveDefNode.EventDictionary[ev]._description = temp.Name;
                 else
-                    e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Children.Count], pDescs = new string[_resource.Children.Count], _description = temp.Name, idNumber = ev });
-                e.Root._dictionaryChanged = true;
+                    MoveDefNode.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Children.Count], pDescs = new string[_resource.Children.Count], _description = temp.Name, idNumber = ev });
+                MoveDefNode._dictionaryChanged = true;
             }
             temp.Dispose();
             temp = null;
@@ -531,18 +531,18 @@ namespace BrawlBox.NodeWrappers
             MoveDefEventNode e = _resource as MoveDefEventNode;
             long ev = e._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
-            if (e.Root.EventDictionary.ContainsKey(ev))
-                temp.Name = e.Root.EventDictionary[ev]._syntax;
+            if (MoveDefNode.EventDictionary.ContainsKey(ev))
+                temp.Name = MoveDefNode.EventDictionary[ev]._syntax;
             else
                 temp.Name = "";
             using (RenameDialog dlg = new RenameDialog()) { res = dlg.ShowDialog(MainForm.Instance, temp); }
             if (res == DialogResult.OK)
             {
-                if (e.Root.EventDictionary.ContainsKey(ev))
-                    e.Root.EventDictionary[ev]._syntax = temp.Name;
+                if (MoveDefNode.EventDictionary.ContainsKey(ev))
+                    MoveDefNode.EventDictionary[ev]._syntax = temp.Name;
                 else
-                    e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Children.Count], pDescs = new string[_resource.Children.Count], _syntax = temp.Name, idNumber = ev });
-                e.Root._dictionaryChanged = true;
+                    MoveDefNode.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Children.Count], pDescs = new string[_resource.Children.Count], _syntax = temp.Name, idNumber = ev });
+                MoveDefNode._dictionaryChanged = true;
             }
             temp.Dispose();
             temp = null;
@@ -587,17 +587,17 @@ namespace BrawlBox.NodeWrappers
             MoveDefEventParameterNode e = _resource as MoveDefEventParameterNode;
             uint ev = (e.Parent as MoveDefEventNode)._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
-            if (e.Root.EventDictionary.ContainsKey(ev))
-                temp.Name = e.Root.EventDictionary[ev].Params[_resource.Index];
+            if (MoveDefNode.EventDictionary.ContainsKey(ev))
+                temp.Name = MoveDefNode.EventDictionary[ev].Params[_resource.Index];
             else
                 temp.Name = "";
             using (RenameDialog dlg = new RenameDialog()) { res = dlg.ShowDialog(MainForm.Instance, temp); }
             if (res == DialogResult.OK)
             {
-                if (!e.Root.EventDictionary.ContainsKey(ev))
-                    e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Parent.Children.Count], pDescs = new string[_resource.Parent.Children.Count], idNumber = ev });
-                e.Root.EventDictionary[ev].Params[_resource.Index] = temp.Name;
-                e.Root._dictionaryChanged = true;
+                if (!MoveDefNode.EventDictionary.ContainsKey(ev))
+                    MoveDefNode.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Parent.Children.Count], pDescs = new string[_resource.Parent.Children.Count], idNumber = ev });
+                MoveDefNode.EventDictionary[ev].Params[_resource.Index] = temp.Name;
+                MoveDefNode._dictionaryChanged = true;
                 foreach (MoveDefEventNode n in e.Root._events[ev])
                 {
                     n.Children[_resource.Index].Name = temp.Name;
@@ -613,17 +613,17 @@ namespace BrawlBox.NodeWrappers
             MoveDefEventParameterNode e = _resource as MoveDefEventParameterNode;
             long ev = (e.Parent as MoveDefEventNode)._event;
             MoveDefEntryNode temp = new MoveDefEntryNode();
-            if (e.Root.EventDictionary.ContainsKey(ev))
-                temp.Name = e.Root.EventDictionary[ev].pDescs[_resource.Index];
+            if (MoveDefNode.EventDictionary.ContainsKey(ev))
+                temp.Name = MoveDefNode.EventDictionary[ev].pDescs[_resource.Index];
             else
                 temp.Name = "";
             using (RenameDialog dlg = new RenameDialog()) { res = dlg.ShowDialog(MainForm.Instance, temp); }
             if (res == DialogResult.OK)
             {
-                if (!e.Root.EventDictionary.ContainsKey(ev))
-                    e.Root.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Parent.Children.Count], pDescs = new string[_resource.Parent.Children.Count], idNumber = ev });
-                e.Root.EventDictionary[ev].pDescs[_resource.Index] = temp.Name;
-                e.Root._dictionaryChanged = true;
+                if (!MoveDefNode.EventDictionary.ContainsKey(ev))
+                    MoveDefNode.EventDictionary.Add(ev, new ActionEventInfo() { Params = new string[_resource.Parent.Children.Count], pDescs = new string[_resource.Parent.Children.Count], idNumber = ev });
+                MoveDefNode.EventDictionary[ev].pDescs[_resource.Index] = temp.Name;
+                MoveDefNode._dictionaryChanged = true;
             }
             temp.Dispose();
             temp = null;

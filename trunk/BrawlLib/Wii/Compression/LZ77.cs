@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Windows.Forms;
 using BrawlLib.SSBBTypes;
+using BrawlLib.SSBB.ResourceNodes;
 
 namespace BrawlLib.Wii.Compression
 {
@@ -65,7 +66,7 @@ namespace BrawlLib.Wii.Compression
             if (progress != null)
                 progress.Begin(0, remaining, 0);
 
-            while(remaining > 0)
+            while (remaining > 0)
             {
                 dInd = 1;
                 //dPtr = blockBuffer + 1;
@@ -188,10 +189,10 @@ namespace BrawlLib.Wii.Compression
             }
         }
 
-        public static int Compact(VoidPtr srcAddr, int srcLen, Stream outStream, string name)
+        public static int Compact(VoidPtr srcAddr, int srcLen, Stream outStream, ResourceNode r)
         {
             using (LZ77 lz = new LZ77())
-            using (ProgressWindow prog = new ProgressWindow(null, "LZ77", String.Format("Compressing {0}, please wait...", name), false))
+            using (ProgressWindow prog = new ProgressWindow(r.RootNode._mainForm, "LZ77", String.Format("Compressing {0}, please wait...", r.Name), false))
                 return lz.Compress(srcAddr, srcLen, outStream, prog);
         }
 

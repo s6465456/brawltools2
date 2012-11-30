@@ -27,7 +27,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     Root.Params[TreePath].NewName = value;
                 else
                     Root.Params[OldName].NewName = value;
-                Root._dictionaryChanged = true;
+                MoveDefNode._dictionaryChanged = true;
             }
         }
 

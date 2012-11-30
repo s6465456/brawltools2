@@ -1,4 +1,5 @@
 ﻿using System;
+using BrawlLib.Imaging;
 
 namespace System
 {
@@ -23,7 +24,9 @@ namespace System
         public BVec4 amb, pos, diff, spec;
         public BVec3 defaultCam;
         public BVec2 defaultRot;
-        public BVec3 pad;
+        public ARGBPixel orbColor;
+        public ARGBPixel lineColor;
+        public int pad;
         
         public bool RetrieveCorrAnims { get { return (_options >> 0 & 1) != 0; } }
         public bool Unused { get { return (_options >> 1 & 1) != 0; } }

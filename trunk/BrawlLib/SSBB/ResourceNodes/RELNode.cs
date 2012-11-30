@@ -165,18 +165,22 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _sections = new RELSectionNode[_numSections];
             for (int i = 0; i < _numSections; i++)
-                (_sections[i] = new RELSectionNode()).Initialize(Children[0], &Header->SectionInfo[i], RELSection.Size);
+                //if (Header->SectionInfo[i]._size != 0)
+                    (_sections[i] = new RELSectionNode()).Initialize(Children[0], &Header->SectionInfo[i], RELSection.Size);
 
             for (int i = 0; i < Header->ImportListCount; i++)
                 new RELImportNode().Initialize(Children[1], &Header->Imports[i], RELImport.Size);
 
             foreach (RELSectionNode s in _sections)
             {
-                foreach (RelCommand c in s._commandList)
-                    if (c != null)
-                        c.Execute();
-                if (s.CodeSection)
-                    s._code = new ASM(s._dataBuffer.Address, s._dataBuffer.Length / 4);
+                if (s != null)
+                {
+                    foreach (RelCommand c in s._commandList)
+                        if (c != null)
+                            c.Execute();
+                    if (s.CodeSection)
+                        s._code = new ASM(s._dataBuffer.Address, s._dataBuffer.Length / 4);
+                }
             }
         }
     }
@@ -186,7 +190,31 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.MDefNoEdit; } }
     }
 
-    public unsafe class RELSectionNode : RELEntryNode
+    public class RELDataNode : RELEntryNode
+    {
+        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+
+        public ASM _code;
+        public PPCOpCode[] _codeList = null;
+        [Browsable(false)]
+        public PPCOpCode[] CodeList { get { if (_codeList == null) return _codeList = _code.ToCollection(); else return _codeList; } }
+
+        public RelCommand[] _commandList;
+        public UnsafeBuffer _dataBuffer;
+
+        static Color clrNotRelocated = Color.FromArgb(255, 255, 255);
+        static Color clrRelocated = Color.FromArgb(200, 255, 200);
+        static Color clrBadRelocate = Color.FromArgb(255, 200, 200);
+        public Color StatusColor(int offset)
+        {
+            RelCommand command = _commandList[offset];
+            if (command == null) return clrNotRelocated;
+            if (command.Initialized) return clrRelocated;
+            return clrBadRelocate;
+        }
+    }
+
+    public unsafe class RELSectionNode : RELDataNode
     {
         internal RELSection* Header { get { return (RELSection*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -201,16 +229,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public VoidPtr _sectionAddr;
         public bool _isDynamic = false;
 
-        public ASM _code;
-        public PPCOpCode[] _codeList = null;
-        [Browsable(false)]
-        public PPCOpCode[] CodeList { get { if (_codeList == null) return _codeList = _code.ToCollection(); else return _codeList; } }
-
-        public RelCommand[] _commandList;
-        public UnsafeBuffer _dataBuffer;
-        
         protected override bool OnInitialize()
         {
+            //if (Offset == 0 && Size == 0) { Remove(); return false; }
+
             if (Offset == 0 && Size != 0)
             {
                 _sectionAddr = System.Memory.Alloc((int)Size);
@@ -219,15 +241,16 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 _sectionAddr = (VoidPtr)Root.Header + Offset;
 
+            _name = String.Format("[{0}] ", Index);
             switch (Index)
             {
-                default: _name = "Section" + Index; break;
-                case 1: _name = "Initialization"; break;
-                case 2: _name = "Constructors"; break;
-                case 3: _name = "Destructors"; break;
-                case 4: _name = "Text"; break;
-                case 5: _name = "ROData"; break;
-                case 6: _name = "BSSData"; break;
+                default: _name += "Section"; break;
+                case 1: _name += "Assembly"; break;
+                case 2: _name += "Constructors"; break;
+                case 3: _name += "Destructors"; break;
+                case 4: _name += "Constants"; break;
+                case 5: _name += "Objects"; break;
+                case 6: _name += "BSS"; break;
             }
 
             _dataBuffer = new UnsafeBuffer((int)Size.RoundUp(4));
@@ -241,7 +264,25 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (; i < Size.RoundUp(4); i++)
                 *pOut++ = 0;
 
-            return false;
+            return Index > 1 && Index < 5;
+        }
+
+        protected override void OnPopulate()
+        {
+            switch (Index)
+            {
+                case 2:
+                case 3:
+                    buint* addr = (buint*)_dataBuffer.Address;
+                    for (int i = 0; i < _dataBuffer.Length / 4; i++)
+                        if (addr[i] > 0)
+                            new RELDeConStructor() { _name = "Constructor" + i, _destruct = Index == 3 }.Initialize(this, (VoidPtr)Root.Header + addr[i], 0);
+                    break;
+                case 4:
+                    new MoveDefSectionParamNode().Initialize(this, _dataBuffer.Address, _dataBuffer.Length);
+                    break;
+            }
+
         }
 
         public override unsafe void Export(string outPath)
@@ -259,17 +300,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         *pOut++ = *pIn++;
                 }
             }
-        }
-
-        static Color clrNotRelocated = Color.FromArgb(255, 255, 255);
-        static Color clrRelocated = Color.FromArgb(200, 255, 200);
-        static Color clrBadRelocate = Color.FromArgb(255, 200, 200);
-        public Color StatusColor(int offset)
-        {
-            RelCommand command = _commandList[offset];
-            if (command == null) return clrNotRelocated;
-            if (command.Initialized) return clrRelocated;
-            return clrBadRelocate;
         }
     }
 
@@ -477,13 +507,64 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
+    public unsafe class RELDeConStructor : RELDataNode
+    {
+        internal buint* Header { get { return (buint*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+
+        public bool _destruct;
+
+        protected override bool OnInitialize()
+        {
+            _name = String.Format("{0}{1}", _destruct ? "Destructor" : "Constructor", Index);
+
+            RELSectionNode section = Location;
+            uint relative = (uint)Header - (uint)section._sectionAddr;
+
+            int x = 0;
+            buint* addr = Header;
+            while ((PPCOpCode.Disassemble(addr[x], (uint)&addr[x++])).FormName() != "blr") ;
+
+            _commandList = new RelCommand[x];
+            Array.Copy(section._commandList, relative / 4, _commandList, 0, x);
+
+            _dataBuffer = new UnsafeBuffer(x * 4);
+
+            byte* pOut = (byte*)_dataBuffer.Address;
+            byte* pIn = (byte*)section._dataBuffer.Address + relative;
+            for (int i = 0; i < _dataBuffer.Length; i++)
+                *pOut++ = *pIn++;
+
+            _code = new ASM(_dataBuffer.Address, x);
+
+            return false;
+        }
+
+        public override unsafe void Export(string outPath)
+        {
+            using (FileStream stream = new FileStream(outPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 8, FileOptions.RandomAccess))
+            {
+                stream.SetLength(_dataBuffer.Length);
+                using (FileMap map = FileMap.FromStream(stream))
+                {
+                    VoidPtr addr = _dataBuffer.Address;
+
+                    byte* pIn = (byte*)addr;
+                    byte* pOut = (byte*)map.Address;
+                    for (int i = 0; i < _dataBuffer.Length; i++)
+                        *pOut++ = *pIn++;
+                }
+            }
+        }
+    }
+
     public unsafe class RELEntryNode : ResourceNode
     {
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
         internal VoidPtr Data { get { return WorkingUncompressed.Address; } }
         
         [Browsable(false)]
-        public uint _offset { get { return Root != null ? ((uint)Data - (uint)Root.Header) : 0; } }
+        public uint _offset { get { return Root != null ? ((uint)Data - (uint)(VoidPtr)Root.Header) : 0; } }
         public string FileOffset { get { return "0x" + _offset.ToString("X"); } }
         
         [Browsable(false)]
@@ -495,6 +576,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                 while (!(n is RELNode) && (n != null))
                     n = n._parent;
                 return n as RELNode;
+            }
+        }
+
+        [Browsable(false)]
+        public RELSectionNode Location
+        {
+            get
+            {
+                List<ResourceNode> list = Root.Children[0].Children;
+                foreach (RELSectionNode s in list)
+                    if (s._offset <= _offset && s._offset + s.Size > _offset)
+                        return s;
+                return null;
             }
         }
     }

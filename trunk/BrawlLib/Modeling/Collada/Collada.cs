@@ -37,7 +37,7 @@ namespace BrawlLib.Modeling
 
                 writer.WriteStartElement("asset");
                 writer.WriteStartElement("contributor");
-                writer.WriteElementString("authoring_tool", "Brawlbox v0.65c");
+                writer.WriteElementString("authoring_tool", "Brawlbox");
                 writer.WriteEndElement();
                 writer.WriteElementString("up_axis", "Y_UP");
                 writer.WriteEndElement();
@@ -198,7 +198,7 @@ namespace BrawlLib.Modeling
                 writer.WriteStartElement("mesh");
 
                 //Write vertex data first
-                WriteVertices(poly._name, manager._vertices, writer);
+                WriteVertices(poly._name, manager._vertices, poly.SingleBindInf, writer);
 
                 //Face assets
                 for (int i = 0; i < 12; i++)
@@ -257,7 +257,7 @@ namespace BrawlLib.Modeling
             writer.WriteEndElement();
         }
 
-        private static void WriteVertices(string name, List<Vertex3> vertices, XmlWriter writer)
+        private static void WriteVertices(string name, List<Vertex3> vertices, IMatrixNode singleBind, XmlWriter writer)
         {
             bool first = true;
 
@@ -277,7 +277,8 @@ namespace BrawlLib.Modeling
                 else
                     writer.WriteString(" ");
 
-                writer.WriteString(String.Format("{0} {1} {2}", v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z));
+                Vector3 p = singleBind == null ? v.WeightedPosition : singleBind.Matrix * v.WeightedPosition;
+                writer.WriteString(String.Format("{0} {1} {2}", p._x, p._y, p._z));
             }
 
             writer.WriteEndElement(); //float_array
@@ -610,9 +611,9 @@ namespace BrawlLib.Modeling
                 writer.WriteStartElement("bind_shape_matrix");
 
                 //Set bind pose matrix
-                if (poly._singleBind != null)
-                    m = poly._singleBind.Matrix;
-                else
+                //if (poly._singleBind != null)
+                //    m = poly._singleBind.Matrix;
+                //else
                     m = Matrix.Identity;
 
                 float* fPtr = (float*)&m;
@@ -872,7 +873,7 @@ namespace BrawlLib.Modeling
 
             if (model._polyList != null)
                 foreach (MDL0PolygonNode poly in model._polyList)
-                    if (poly._singleBind == null) //Single bind objects will be written under their bone
+                    //if (poly._singleBind == null) //Single bind objects will be written under their bone
                         WritePolyInstance(poly, writer);
         }
 
@@ -898,8 +899,8 @@ namespace BrawlLib.Modeling
             writer.WriteEndElement(); //matrix
 
             //Write single-bind geometry
-            foreach (MDL0PolygonNode poly in bone._infPolys)
-                WritePolyInstance(poly, writer);
+            //foreach (MDL0PolygonNode poly in bone._infPolys)
+            //    WritePolyInstance(poly, writer);
 
             foreach (MDL0BoneNode b in bone.Children)
                 WriteBone(b, writer);
@@ -913,17 +914,17 @@ namespace BrawlLib.Modeling
             writer.WriteAttributeString("id", poly.Name);
             writer.WriteAttributeString("name", poly.Name);
 
-            if (poly._singleBind != null)
-            {
-                //Doesn't create a skin modifier, but works
-                writer.WriteStartElement("instance_geometry");
-                writer.WriteAttributeString("url", String.Format("#{0}", poly.Name));
-            }
-            else
-            {
+            //if (poly._singleBind != null)
+            //{
+            //    //Doesn't create a skin modifier, but works
+            //    writer.WriteStartElement("instance_geometry");
+            //    writer.WriteAttributeString("url", String.Format("#{0}", poly.Name));
+            //}
+            //else
+            //{
                 writer.WriteStartElement("instance_controller");
                 writer.WriteAttributeString("url", String.Format("#{0}_Controller", poly.Name));
-            }
+            //}
 
             //writer.WriteStartElement("skeleton");
             //writer.WriteString("#" + poly.Model._linker.BoneCache[0].Name);

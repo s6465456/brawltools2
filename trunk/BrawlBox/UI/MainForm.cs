@@ -31,6 +31,7 @@ namespace BrawlBox
         {
             InitializeComponent();
             this.Text = Program.AssemblyTitle;
+            soundPackControl1._grid = propertyGrid1;
             soundPackControl1.lstSets.SmallImageList = ResourceTree.Images;
             previewPanel1.Dock = 
             msBinEditor1.Dock = 
@@ -43,7 +44,10 @@ namespace BrawlBox
             visEditor.Dock = 
             offsetEditor1.Dock = 
             attributeControl.Dock = 
-            articleAttributeGrid.Dock = 
+            articleAttributeGrid.Dock =
+            scN0CameraEditControl1.Dock =
+            scN0LightEditControl1.Dock =
+            scN0FogEditControl1.Dock = 
             movesetEditor1.Dock = DockStyle.Fill;
             m_DelegateOpenFile = new DelegateOpenFile(Program.Open);
         }
@@ -69,6 +73,8 @@ namespace BrawlBox
                 closeToolStripMenuItem.Enabled = true;
                 saveAsToolStripMenuItem.Enabled = true;
                 saveToolStripMenuItem.Enabled = true;
+
+                Program.RootNode._mainForm = this;
             }
             else
             {
@@ -117,12 +123,16 @@ namespace BrawlBox
             movesetEditor1.TargetNode = null;
             attributeControl.TargetNode = null;
             offsetEditor1.TargetNode = null;
+            scN0CameraEditControl1.TargetSequence = null;
+            scN0LightEditControl1.TargetSequence = null;
+            scN0FogEditControl1.TargetSequence = null;
 
             Control newControl = null;
             Control newControl2 = null;
 
             BaseWrapper w;
             ResourceNode node;
+            bool disable2nd = false;
             if ((resourceTree.SelectedNode is BaseWrapper) && ((node = (w = resourceTree.SelectedNode as BaseWrapper).ResourceNode) != null))
             {
                 propertyGrid1.SelectedObject = node;
@@ -160,7 +170,8 @@ namespace BrawlBox
                 else if (node is IAudioSource)
                 {
                     audioPlaybackPanel1.TargetSource = node as IAudioSource;
-                    newControl = audioPlaybackPanel1;
+                    if (audioPlaybackPanel1.TargetSource.CreateStream() != null)
+                        newControl = audioPlaybackPanel1;
                 }
                 else if (node is VIS0EntryNode)
                 {
@@ -203,14 +214,22 @@ namespace BrawlBox
                     articleAttributeGrid.TargetNode = node as MoveDefSectionParamNode;
                     newControl = articleAttributeGrid;
                 }
-                if (node is IColorSource)
+                else if (node is SCN0CameraNode)
                 {
-                    clrControl.ColorSource = node as IColorSource;
-                    if (((IColorSource)node).ColorCount > 0)
-                    if (newControl != null)
-                        newControl2 = clrControl;
-                    else
-                        newControl = clrControl;
+                    scN0CameraEditControl1.TargetSequence = node as SCN0CameraNode;
+                    newControl = scN0CameraEditControl1;
+                }
+                else if (node is SCN0LightNode)
+                {
+                    scN0LightEditControl1.TargetSequence = node as SCN0LightNode;
+                    newControl = scN0LightEditControl1;
+                    disable2nd = true;
+                }
+                else if (node is SCN0FogNode)
+                {
+                    scN0FogEditControl1.TargetSequence = node as SCN0FogNode;
+                    newControl = scN0FogEditControl1;
+                    disable2nd = true;
                 }
                 else if (node is RELSectionNode)
                 {
@@ -219,6 +238,21 @@ namespace BrawlBox
                         relDisassembler1.Section = (RELSectionNode)node;
                         newControl = relDisassembler1;
                     }
+                }
+                else if (node is RELDeConStructor)
+                {
+                    relDisassembler1.Section = (RELDataNode)node;
+                    newControl = relDisassembler1;
+                }
+
+                if (node is IColorSource && !disable2nd)
+                {
+                    clrControl.ColorSource = node as IColorSource;
+                    if (((IColorSource)node).ColorCount(0) > 0)
+                        if (newControl != null)
+                            newControl2 = clrControl;
+                        else
+                            newControl = clrControl;
                 }
 
                 if ((editToolStripMenuItem.DropDown = w.ContextMenuStrip) != null)
@@ -311,6 +345,7 @@ namespace BrawlBox
 
         #region File Menu
         private void aRCArchiveToolStripMenuItem_Click(object sender, EventArgs e) { Program.New<ARCNode>(); }
+        private void u8FileArchiveToolStripMenuItem_Click(object sender, EventArgs e) { Program.New<U8Node>(); }
         private void brresPackToolStripMenuItem_Click(object sender, EventArgs e) { Program.New<BRESNode>(); }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e) { Program.Save(); }

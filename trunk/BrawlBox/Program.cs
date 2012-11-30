@@ -41,73 +41,82 @@ namespace BrawlBox
             _folderDlg = new FolderBrowserDialog();
         }
 
-        public static string getNextWord(string str, bool t)
-        {
-            string s = str;
-            int i = MParams.FindFirstNotDual(str, 0, ' ', ',');
-            if (i > 0)
-                s = str.Substring(i);
-            i = MParams.FindFirst(s, 0, t ? ' ' : '(');
-            if (i > 0)
-                s = s.Substring(0, i);
-            return s;
-        }
+        //public static string getNextWord(string str, bool t)
+        //{
+        //    string s = str;
+        //    int i = Helpers.FindFirstNotDual(str, 0, ' ', ',');
+        //    if (i > 0)
+        //        s = str.Substring(i);
+        //    i = Helpers.FindFirst(s, 0, t ? ' ' : '(');
+        //    if (i > 0)
+        //        s = s.Substring(0, i);
+        //    return s;
+        //}
 
-        public static string removePhrase(string str, string phrase)
-        {
-            string s = str;
-            Top:
-            int index = s.IndexOf(phrase);
-            if (index >= 0)
-            {
-                s = s.Substring(0, index) + s.Substring(index + phrase.Length);
-                goto Top;
-            }
-            return s;
-        }
+        //public static string removePhrase(string str, string phrase)
+        //{
+        //    string s = str;
+        //    Top:
+        //    int index = s.IndexOf(phrase);
+        //    if (index >= 0)
+        //    {
+        //        s = s.Substring(0, index) + s.Substring(index + phrase.Length);
+        //        goto Top;
+        //    }
+        //    return s;
+        //}
 
-        public static int FindFirstCommaSplit(string str)
-        {
-            for (int i = 0; i < str.Length; i++)
-                if (str[i] == ',')
-                    if (str[i - 1] != ',' && str[i - 1] != '[')
-                        if (str[i + 1] != ',' && str[i + 1] != ']')
-                            return i;
+        //public static int FindFirstCommaSplit(string str)
+        //{
+        //    for (int i = 0; i < str.Length; i++)
+        //        if (str[i] == ',')
+        //            if (str[i - 1] != ',' && str[i - 1] != '[')
+        //                if (str[i + 1] != ',' && str[i + 1] != ']')
+        //                    return i;
 
-            return -1;
-        }
+        //    return -1;
+        //}
 
-        public static List<string> parseInputNames(string str)
-        {
-            List<string> input = new List<string>();
-            string s = str;
-            int i = MParams.FindFirst(str, 0, '(');
-            if (i > 0)
-            {
-                s = str.Substring(i + 1);
-                i = MParams.FindFirst(s, 0, ')');
-                if (i > 0)
-                {
-                    s = removePhrase(removePhrase(removePhrase(s.Substring(0, i), "[OutAttribute] "), "[InAttribute] "), "[InAttribute, OutAttribute] ");
-                    int h1, h2;
-                    string name = "";
-                    while(true)
-                    {
-                        h2 = FindFirstCommaSplit(s);
-                        string v = h2 >= 0 ? s.Substring(0, h2) : s;
-                        h1 = MParams.FindLast(v, 0, ' ');
-                        name = v.Substring(h1 + 1);
-                        if (MParams.FindCount(v, 0, ' ') == 2)
-                            name = getNextWord(v, true) + " " + name;
-                        input.Add(name);
-                        if (h2 < 0) break;
-                        s = s.Substring(h2 + 2);
-                    }
+        //public static List<string> parseInputNames(string str)
+        //{
+        //    List<string> input = new List<string>();
+        //    string s = str;
+        //    int i = Helpers.FindFirst(str, 0, '(');
+        //    if (i > 0)
+        //    {
+        //        s = str.Substring(i + 1);
+        //        i = Helpers.FindFirst(s, 0, ')');
+        //        if (i > 0)
+        //        {
+        //            s = removePhrase(removePhrase(removePhrase(s.Substring(0, i), "[OutAttribute] "), "[InAttribute] "), "[InAttribute, OutAttribute] ");
+        //            int h1, h2;
+        //            string name = "";
+        //            while(true)
+        //            {
+        //                h2 = FindFirstCommaSplit(s);
+        //                string v = h2 >= 0 ? s.Substring(0, h2) : s;
+        //                h1 = Helpers.FindLast(v, 0, ' ');
+        //                name = v.Substring(h1 + 1);
+        //                if (Helpers.FindCount(v, 0, ' ') == 2)
+        //                    name = getNextWord(v, true) + " " + name;
+        //                input.Add(name);
+        //                if (h2 < 0) break;
+        //                s = s.Substring(h2 + 2);
+        //            }
 
-                }
-            }
-            return input;
-        }
+        //        }
+        //    }
+        //    return input;
+        //}
+
+        //public static string name = "";
+        //private static bool EqualsName(string s)
+        //{
+        //    if (s == name)
+        //        return true;
+        //    else
+        //        return false;
+        //}
 
         [STAThread]
         public static void Main(string[] args)
@@ -188,15 +197,6 @@ namespace BrawlBox
             }
             //catch (Exception x) { Program.Say(x.ToString()); }
             finally { Close(true); }
-        }
-
-        public static string name = "";
-        private static bool EqualsName(string s)
-        {
-            if (s == name)
-                return true;
-            else
-                return false;
         }
 
         public static void Say(string msg)
@@ -288,8 +288,8 @@ namespace BrawlBox
         public static int OpenFile(string filter, out string fileName, bool categorize)
         {
             _openDlg.Filter = filter;
-            try
-            {
+            //try
+            //{
                 if (_openDlg.ShowDialog() == DialogResult.OK)
                 {
                     fileName = _openDlg.FileName;
@@ -298,8 +298,8 @@ namespace BrawlBox
                     else
                         return _openDlg.FilterIndex;
                 }
-            }
-            catch (Exception ex) { Say(ex.ToString()); }
+            //}
+            //catch (Exception ex) { Say(ex.ToString()); }
             fileName = null;
             return 0;
             

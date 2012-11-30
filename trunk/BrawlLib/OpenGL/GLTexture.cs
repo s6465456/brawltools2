@@ -115,9 +115,10 @@ namespace BrawlLib.OpenGL
         public void Bind() { Bind(-1, -1, null); }
         public void Bind(int index, int program, TKContext ctx)
         {
-            GL.ClientActiveTexture(TextureUnit.Texture0 + index);
             if (program != -1 && index >= 0 && index <= 7 && ctx != null && ctx._canUseShaders)
             {
+                //GL.ActiveTexture(TextureUnit.Texture0 + index);
+                GL.ClientActiveTexture(TextureUnit.Texture0 + index);
                 int i = GL.GetUniformLocation(program, "samp" + index);
                 if (i > -1) GL.Uniform1(i, index);
             }

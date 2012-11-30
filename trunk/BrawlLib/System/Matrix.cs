@@ -290,26 +290,6 @@ namespace System
             return m;
         }
 
-        public Matrix Inverse()
-        {
-            Matrix m = this;
-
-            float* p = (float*)&m;
-            int i = 0;
-            while (i < 16)
-            {
-                if (i == 0 || i == 5 || i == 10 || i == 15)
-                {
-                    p++;
-                }
-                else
-                    *p = -*p++;
-                i++;
-            }
-
-            return m;
-        }
-
         public override string ToString()
         {
             return String.Format("({0},{1},{2},{3})({4},{5},{6},{7})({8},{9},{10},{11})({12},{13},{14},{15})", this[0], this[1], this[2], this[3], this[4], this[5], this[6], this[7], this[8], this[9], this[10], this[11], this[12], this[13], this[14], this[15]);
@@ -873,6 +853,70 @@ namespace System
                 pOut[8] = vt._z + vSin._y;
                 pOut[9] = vt._y - vSin._x;
             }
+            return m;
+        }
+
+        public static Matrix Lookat(Vector3 eye, Vector3 target, float roll)
+        {
+            Vector3 up = new Vector3(-(float)Math.Sin(roll), (float)Math.Cos(roll), 0);
+
+            Vector3 zaxis = (eye - target).Normalize();
+            Vector3 xaxis = up.Cross(zaxis).Normalize();
+            Vector3 yaxis = zaxis.Cross(xaxis).Normalize();
+
+            Matrix m = Matrix.Identity;
+            float* pOut = (float*)&m;
+
+            pOut[0] = xaxis._x;
+            pOut[4] = yaxis._x;
+            pOut[8] = zaxis._x;
+
+            pOut[1] = xaxis._y;
+            pOut[5] = yaxis._y;
+            pOut[9] = zaxis._y;
+
+            pOut[2] = xaxis._z;
+            pOut[6] = yaxis._z;
+            pOut[10] = zaxis._z;
+
+            pOut[12] = eye._x;
+            pOut[13] = eye._y;
+            pOut[14] = eye._z;
+
+            return m;
+        }
+
+        public static Matrix ReverseLookat(Vector3 eye, Vector3 target, float roll)
+        {
+            Vector3 up = new Vector3(-(float)Math.Sin(roll), (float)Math.Cos(roll), 0);
+
+            Vector3 zaxis = (target - eye).Normalize();
+            Vector3 xaxis = up.Cross(zaxis).Normalize();
+            Vector3 yaxis = xaxis.Cross(zaxis).Normalize();
+
+            Matrix m = Matrix.Identity;
+            float* pOut = (float*)&m;
+
+            pOut[0] = xaxis._x;
+            pOut[1] = yaxis._x;
+            pOut[2] = zaxis._x;
+
+            pOut[4] = xaxis._y;
+            pOut[5] = yaxis._y;
+            pOut[6] = zaxis._y;
+
+            pOut[8] = xaxis._z;
+            pOut[9] = yaxis._z;
+            pOut[10] = zaxis._z;
+
+            eye._x = -eye._x;
+            eye._y = -eye._y;
+            eye._z = -eye._z;
+
+            pOut[12] = (eye._x * pOut[0]) + (eye._y * pOut[4]) + (eye._z * pOut[8]);
+            pOut[13] = (eye._x * pOut[1]) + (eye._y * pOut[5]) + (eye._z * pOut[9]);
+            pOut[14] = (eye._x * pOut[2]) + (eye._y * pOut[6]) + (eye._z * pOut[10]);
+
             return m;
         }
 

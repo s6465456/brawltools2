@@ -14,7 +14,7 @@ namespace BrawlLib.SSBB
 
         public void Clear() { _labels.Clear(); }
 
-        public void Add(int tag, string str) { _labels.Add(new LabelItem() { Tag = tag, String = str }); }
+        public void Add(uint tag, string str) { _labels.Add(new LabelItem() { Tag = tag, String = str }); }
 
         public int GetSize()
         {
@@ -26,7 +26,7 @@ namespace BrawlLib.SSBB
 
         public void Write(VoidPtr address)
         {
-            RSEQ_LABLHeader* header = (RSEQ_LABLHeader*)address;
+            LABLHeader* header = (LABLHeader*)address;
             int count = _labels.Count;
             VoidPtr dataAddr = address + 12 + (count * 4);
             bint* list = (bint*)(address + 8);
@@ -38,7 +38,7 @@ namespace BrawlLib.SSBB
             {
                 label = _labels[i++];
                 list[i] = (int)dataAddr - (int)list;
-                ((RSEQ_LABLEntry*)dataAddr)->Set(label.Tag, label.String);
+                ((LABLEntry*)dataAddr)->Set(label.Tag, label.String);
                 dataAddr += label.DataLen;
             }
 
@@ -52,7 +52,7 @@ namespace BrawlLib.SSBB
 
     public struct LabelItem
     {
-        public int Tag;
+        public uint Tag;
         public string String;
 
         public int DataLen { get { return (String.Length + 9).Align(4); } }

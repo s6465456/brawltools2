@@ -338,7 +338,7 @@ namespace BrawlLib.Modeling
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
-                                //*(BVec3*)address = f.Vertex.Position;
+                                *(BVec3*)address = f.Vertex.Position;
                                 address += 12;
                                 break;
                             case XFDataFormat.Index8:
@@ -354,7 +354,7 @@ namespace BrawlLib.Modeling
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
-                                //*(BVec3*)address = f.Normal;
+                                *(BVec3*)address = f.Vertex.Normal;
                                 address += 12;
                                 break;
                             case XFDataFormat.Index8:
@@ -371,10 +371,10 @@ namespace BrawlLib.Modeling
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
-                                //*(byte*)address++ = (byte)f.Color[(int)d.attr - 11].R;
-                                //*(byte*)address++ = (byte)f.Color[(int)d.attr - 11].G;
-                                //*(byte*)address++ = (byte)f.Color[(int)d.attr - 11].B;
-                                //*(byte*)address++ = (byte)f.Color[(int)d.attr - 11].A;
+                                *(byte*)address++ = (byte)f.Vertex.Color[(int)d.attr - 11].R;
+                                *(byte*)address++ = (byte)f.Vertex.Color[(int)d.attr - 11].G;
+                                *(byte*)address++ = (byte)f.Vertex.Color[(int)d.attr - 11].B;
+                                *(byte*)address++ = (byte)f.Vertex.Color[(int)d.attr - 11].A;
                                 break;
                             case XFDataFormat.Index8:
                                 if ((_polygon._c0Changed && d.attr == GXAttr.GX_VA_CLR0) ||
@@ -404,7 +404,7 @@ namespace BrawlLib.Modeling
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
-                                //*(BVec2*)address = f.UV[(int)d.attr - 11];
+                                *(BVec2*)address = f.Vertex.UV[(int)d.attr - 13];
                                 address += 8;
                                 break;
                             case XFDataFormat.Index8:
@@ -521,7 +521,9 @@ namespace BrawlLib.Modeling
 
                     if (newGroup == true) newGroup = false;
                     d3 += ((count = *(bushort*)pTemp) - 2) * 3;
-                    //d4 += (count = *(bushort*)pTemp);
+
+                    //d4 += ((count = *(bushort*)pTemp) - 2) * 3; //Fans
+
                     group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.TriangleFan, Entries = (ushort)count });
                     
                     break;
@@ -530,7 +532,9 @@ namespace BrawlLib.Modeling
 
                     if (newGroup == true) newGroup = false;
                     d3 += ((count = *(bushort*)pTemp) - 2) * 3;
-                    //d5 += (count = *(bushort*)pTemp);
+                    
+                    //d5 += ((count = *(bushort*)pTemp) - 2) * 3; //Strips
+
                     group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.TriangleStrip, Entries = (ushort)count });
                     
                     break;
@@ -572,15 +576,15 @@ namespace BrawlLib.Modeling
             goto NextPrimitive;
 
         Next: //Create primitives
-            //if (d5 > 0)
-            //{ _tristrips = new NewPrimitive(d5, GLPrimitiveType.TriangleStrip); p5 = (ushort*)_tristrips._indices.Address; }
-            //else
-            //{ _tristrips = null; p5 = null; }
+            if (d5 > 0)
+            { _tristrips = new NewPrimitive(d5, BeginMode.TriangleStrip); p5 = (ushort*)_tristrips._indices.Address; }
+            else
+            { _tristrips = null; p5 = null; }
 
-            //if (d4 > 0)
-            //{ _trifans = new NewPrimitive(d4, GLPrimitiveType.TriangleFan); p4 = (ushort*)_trifans._indices.Address; }
-            //else
-            //{ _trifans = null; p4 = null; }
+            if (d4 > 0)
+            { _trifans = new NewPrimitive(d4, BeginMode.TriangleFan); p4 = (ushort*)_trifans._indices.Address; }
+            else
+            { _trifans = null; p4 = null; }
 
             if (d3 > 0)
             { _triangles = new NewPrimitive(d3, BeginMode.Triangles); p3 = (ushort*)_triangles._indices.Address; }
@@ -635,7 +639,7 @@ namespace BrawlLib.Modeling
                     {
                         *p3++ = (ushort)(index + 2);
                         *p3++ = (ushort)(index + 1);
-                        *p3++ = index;
+                        *p3++ = (ushort)(index + 0);
                         index += 3;
                     }
                     break;
@@ -644,9 +648,14 @@ namespace BrawlLib.Modeling
                     temp = index++;
                     for (int i = 2; i < count; i++)
                     {
+                        //*p3++ = temp;
+                        //*p3++ = (ushort)(index + 1);
+                        //*p3++ = index++;
+
                         *p3++ = temp;
                         *p3++ = (ushort)(index + 1);
                         *p3++ = index++;
+
                     }
                     index++;
                     break;
@@ -658,23 +667,31 @@ namespace BrawlLib.Modeling
                     {
                         if ((i & 1) == 0)
                         {
-                            *p3++ = (ushort)(index - 2);
-                            *p3++ = index;
+                            *p3++ = (ushort)(index - 0);
                             *p3++ = (ushort)(index - 1);
+                            *p3++ = (ushort)(index - 2);
+
+                            //*p3++ = (ushort)(index - 2);
+                            //*p3++ = index;
+                            //*p3++ = (ushort)(index - 1);
                             index++;
-                            //*p3++ = temp++;
-                            //*p3++ = temp++;
-                            //*p3++ = index++;
+                            ////*p3++ = temp++;
+                            ////*p3++ = temp++;
+                            ////*p3++ = index++;
                         }
                         else
                         {
-                            *p3++ = (ushort)(index - 1);
-                            *p3++ = index;
+                            *p3++ = (ushort)(index - 0);
                             *p3++ = (ushort)(index - 2);
+                            *p3++ = (ushort)(index - 1);
+
+                            //*p3++ = (ushort)(index - 1);
+                            //*p3++ = index;
+                            //*p3++ = (ushort)(index - 2);
                             index++;
-                            //*p3++ = temp--;
-                            //*p3++ = temp++;
-                            //*p3++ = index++;
+                            ////*p3++ = temp--;
+                            ////*p3++ = temp++;
+                            ////*p3++ = index++;
                         }
                     }
                     break;
@@ -869,42 +886,59 @@ namespace BrawlLib.Modeling
                 if (_dirty[i]) 
                     UpdateStream(i);
 
-            GL.GenBuffers(1, out _bufferHandle);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _bufferHandle);
-            GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(bufferSize), _graphicsBuffer.Address, BufferUsageHint.DynamicDraw);
+            //GL.GenBuffers(1, out _bufferHandle);
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, _bufferHandle);
+            //GL.BufferData(BufferTarget.ArrayBuffer, new IntPtr(bufferSize), _graphicsBuffer.Address, BufferUsageHint.StaticDraw);
 
-            int x = 0;
+            byte* pData = (byte*)_graphicsBuffer.Address;
             for (int i = 0; i < 12; i++)
                 if (_faceData[i] != null)
                     switch (i)
                     {
                         case 0:
+                            GL.EnableClientState(ArrayCap.VertexArray);
+                            GL.VertexPointer(3, VertexPointerType.Float, _stride, (IntPtr)pData);
+                            pData += 12;
+                            break;
                         case 1:
-                            GL.EnableVertexAttribArray(i);
-                            GL.VertexAttribPointer(i, 3, VertexAttribPointerType.Float, true, _stride, x);
-                            GL.BindAttribLocation(_polygon.shaderProgramHandle, i, (i == 0 ? "poscoords" : "normcoords"));
-                            x += 12;
+                            GL.EnableClientState(ArrayCap.NormalArray);
+                            GL.NormalPointer(NormalPointerType.Float, _stride, (IntPtr)pData);
+                            //GL.EnableVertexAttribArray(i);
+                            //GL.VertexAttribPointer(i, 3, VertexAttribPointerType.Float, true, _stride, x);
+                            //GL.BindAttribLocation(_polygon.shaderProgramHandle, i, (i == 0 ? "rawpos" : "rawnorm0"));
+                            pData += 12;
                             break;
 
                         case 2:
+                            GL.EnableClientState(ArrayCap.ColorArray);
+                            GL.ColorPointer(4, ColorPointerType.Byte, _stride, (IntPtr)pData);
+                            pData += 4;
+                            break;
                         case 3:
-                            GL.EnableVertexAttribArray(i);
-                            GL.VertexAttribPointer(i, 4, VertexAttribPointerType.Byte, true, _stride, x);
-                            GL.BindAttribLocation(_polygon.shaderProgramHandle, i, "rascolor" + i);
-                            x += 4;
+                            GL.EnableClientState(ArrayCap.SecondaryColorArray);
+                            GL.SecondaryColorPointer(4, ColorPointerType.Byte, _stride, (IntPtr)pData);
+                            //GL.EnableVertexAttribArray(i);
+                            //GL.VertexAttribPointer(i, 4, VertexAttribPointerType.Byte, true, _stride, x);
+                            //GL.BindAttribLocation(_polygon.shaderProgramHandle, i, "color" + i);
+                            pData += 4;
                             break;
 
                         default:
-                            x += 8;
+                            pData += 8;
                             break;
                     }
         }
 
         internal unsafe void DetachStreams()
         {
-            for (int i = 0; i < 12; i++)
-                if (_faceData[i] != null)
-                    GL.DisableVertexAttribArray(i);
+            //for (int i = 0; i < 12; i++)
+            //    if (_faceData[i] != null)
+            //        GL.DisableVertexAttribArray(i);
+
+            GL.DisableClientState(ArrayCap.VertexArray);
+            GL.DisableClientState(ArrayCap.NormalArray);
+            GL.DisableClientState(ArrayCap.ColorArray);
+            GL.DisableClientState(ArrayCap.TextureCoordArray);
 
             GL.Disable(EnableCap.Texture2D);
         }
@@ -917,8 +951,8 @@ namespace BrawlLib.Modeling
                 //texId = texId < 0 ? 0 : texId;
                 if ((texId >= 0) && (_faceData[texId += 4] != null))
                 {
-                    //byte* pData = (byte*)_graphicsBuffer.Address;
-                    int pData = 0;
+                    byte* pData = (byte*)_graphicsBuffer.Address;
+                    //int pData = 0;
                     for (int i = 0; i < texId; i++)
                         if (_faceData[i] != null)
                             if (i < 2)
@@ -929,54 +963,20 @@ namespace BrawlLib.Modeling
                                 pData += 8;
 
                     GL.Enable(EnableCap.Texture2D);
-                    //GL.EnableClientState(ArrayCap.TextureCoordArray);
-                    //GL.TexCoordPointer(2, TexCoordPointerType.Float, _stride, (IntPtr)pData);
-                    GL.EnableVertexAttribArray(texId);
-                    GL.VertexAttribPointer(texId, 2, VertexAttribPointerType.Float, true, _stride, pData);
-                    GL.BindAttribLocation(_polygon.shaderProgramHandle, texId, "texcoord" + texId);
+                    GL.EnableClientState(ArrayCap.TextureCoordArray);
+                    GL.TexCoordPointer(2, TexCoordPointerType.Float, _stride, (IntPtr)pData);
+                    //GL.EnableVertexAttribArray(texId);
+                    //GL.VertexAttribPointer(texId, 2, VertexAttribPointerType.Float, true, _stride, pData);
+                    //GL.BindAttribLocation(_polygon.shaderProgramHandle, texId - 4, "tex" + (texId - 4));
                 }
                 else
                 {
-                    if (texId < 0)
-                    {
-                        switch (texId)
-                        {
-                            case -1: //Vertex coords
-                                
-                                break;
-                            case -2: //Normal coords
-                                //GL.Enable(GLEnableCap.TEXTURE_GEN_S);
-                                //GL.TexGen(TextureCoordName.S, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
-                                //GL.Enable(GLEnableCap.TEXTURE_GEN_T);
-                                //GL.TexGen(TextureCoordName.T, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
-                                //GL.Enable(GLEnableCap.TEXTURE_GEN_Q);
-                                //GL.TexGen(TextureCoordName.Q, TextureGenParameter.TEXTURE_GEN_MODE, (int)TextureGenMode.SPHERE_MAP);
-                                break;
-                            case -3: //Color coords
 
-                                break;
-                            case -4: //Binormal B coords
-
-                                break;
-                            case -5: //Binormal T coords
-
-                                break;
-                            default:
-                                //GL.DisableClientState(ArrayCap.TextureCoordArray);
-                                GL.Disable(EnableCap.Texture2D);
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        //GL.DisableClientState(ArrayCap.TextureCoordArray);
-                        GL.Disable(EnableCap.Texture2D);
-                    }
                 }
             }
             else
             {
-                //GL.DisableClientState(ArrayCap.TextureCoordArray);
+                GL.DisableClientState(ArrayCap.TextureCoordArray);
                 GL.Disable(EnableCap.Texture2D);
             }
 

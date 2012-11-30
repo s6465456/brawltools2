@@ -39,11 +39,10 @@ namespace System.Windows.Forms
         private int _yInit = 100;
         public int InitialYFactor { get { return _yInit; } set { _yInit = value; } }
 
-        private Vector3 _eyePoint;
-        private Vector3 _viewPoint, _viewRot;
         private float _viewDistance = 5.0f;
-        private Matrix43 _viewMatrix = Matrix43.Identity;
-
+        private float _spotCutoff = 180.0f;
+        private float _spotExponent = 100.0f;
+        
         public Vector3 _defaultTranslate;
         public Vector2 _defaultRotate;
 
@@ -83,12 +82,10 @@ namespace System.Windows.Forms
 
         public override Image BackgroundImage
         {
-            get { return base.BackgroundImage; }
+            get { return BGImage; }
             set
             {
-                //GL.ClearColor(0, 0, 0, 0);
-                base.BackgroundImage = value;
-                //base.BackColor = Color.Transparent;
+                BGImage = value;
                 Invalidate();
             }
         }
@@ -116,13 +113,17 @@ namespace System.Windows.Forms
             set
             {
                 _position = value;
+
                 GL.Enable(EnableCap.Lighting);
                 GL.Enable(EnableCap.Light0);
+
                 float r = value._x;
                 float azimuth = value._y * Maths._deg2radf;
                 float elevation = value._z * Maths._deg2radf;
+
                 Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
                 Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
+                
                 GL.Light(LightName.Light0, LightParameter.Position, (float*)&PositionLight);
                 GL.Light(LightName.Light0, LightParameter.SpotDirection, (float*)&SpotDirectionLight);
             }
@@ -213,8 +214,11 @@ namespace System.Windows.Forms
             ClearTargets();
             ClearReferences();
 
-            _ctx.Unbind();
-            _ctx._states["_Node_Refs"] = _resourceList;
+            if (_ctx != null)
+            {
+                _ctx.Unbind();
+                _ctx._states["_Node_Refs"] = _resourceList;
+            }
         }
 
         public void AddTarget(IRenderedObject target)
@@ -313,22 +317,26 @@ namespace System.Windows.Forms
             _lastX = e.X;
             _lastY = e.Y;
 
-            if (Control.ModifierKeys == Keys.Shift)
+            Keys mod = Control.ModifierKeys;
+            bool ctrl = (mod & Keys.Control) != 0;
+            bool shift = (mod & Keys.Shift) != 0;
+            bool alt = (mod & Keys.Alt) != 0;
+
+            if (shift)
             {
                 xDiff *= 16;
                 yDiff *= 16;
             }
 
-            lock(_ctx)
-            {
+            lock (_ctx)
                 if (_grabbing)
-                {
-                    if (ModifierKeys == Keys.Control)
-                        Rotate(yDiff * _rotFactor, -xDiff * _rotFactor);
+                    if (ctrl)
+                        if (alt)
+                            Rotate(0, 0, -yDiff * _rotFactor);
+                        else
+                            Rotate(yDiff * _rotFactor, -xDiff * _rotFactor);
                     else
                         Translate(-xDiff * _transFactor, -yDiff * _transFactor, 0.0f);
-                }
-            }
 
             base.OnMouseMove(e);
         }
@@ -435,11 +443,15 @@ namespace System.Windows.Forms
             _camera.Pivot(_viewDistance, x, y);
             this.Invalidate();
         }
-
+        private void Rotate(float x, float y, float z)
+        {
+            _camera.Rotate(x, y, z);
+            this.Invalidate();
+        }
         public void RecalcLight(SCN0Node scn)
         {
-            GL.Light(LightName.Light0, LightParameter.SpotCutoff, 180.0f);
-            GL.Light(LightName.Light0, LightParameter.SpotExponent, 100.0f);
+            GL.Light(LightName.Light0, LightParameter.SpotCutoff, _spotCutoff);
+            GL.Light(LightName.Light0, LightParameter.SpotExponent, _spotExponent);
 
             float r = _position._x;
             float azimuth = _position._y * Maths._deg2radf;
@@ -470,6 +482,9 @@ namespace System.Windows.Forms
                 GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Specular);
                 GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Emission);
             }
+            //GL.LightModel(LightModelParameter.LightModelAmbient, new float[] { 0.2f, 0.2f, 0.2f, 1.0f });
+            //GL.LightModel(LightModelParameter.LightModelTwoSide, 1);
+            //GL.LightModel(LightModelParameter.LightModelLocalViewer, 1);
         }
 
         protected internal unsafe override void OnInit(TKContext ctx)
@@ -494,7 +509,7 @@ namespace System.Windows.Forms
             GL.ClearDepth(1.0f);
 
             GL.Enable(EnableCap.DepthTest);
-            GL.DepthFunc(DepthFunction.Less);
+            GL.DepthFunc(DepthFunction.Lequal);
             
             GL.ShadeModel(ShadingModel.Smooth);
 
@@ -516,6 +531,12 @@ namespace System.Windows.Forms
 
         protected internal override void OnRender(TKContext ctx, SCN0Node scn)
         {
+            if (_mainWindow != null)
+            {
+                _mainWindow.lblPos.Text = "Position: " + _camera.GetPoint();
+                _mainWindow.lblRot.Text = "Rotation: " + _camera._rotation;
+            }
+
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             
             RecalcLight(scn);
@@ -540,6 +561,26 @@ namespace System.Windows.Forms
             bmp.UnlockBits(data);
             bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
             return bmp;
+        }
+
+        Form popoutForm;
+
+        //Gummers told me to put this here
+        public void Popout()
+        {
+            popoutForm = new Form();
+            _mainWindow.Controls.Remove(this);
+            popoutForm.Controls.Add(this);
+            Dock = DockStyle.Fill;
+            popoutForm.Show();
+        }
+
+        public void Popin()
+        {
+            popoutForm.Controls.Remove(this);
+            _mainWindow.Controls.Add(this);
+            popoutForm.Close();
+            Dock = DockStyle.Fill;
         }
     }
 }

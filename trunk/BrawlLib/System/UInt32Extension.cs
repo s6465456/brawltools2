@@ -17,5 +17,9 @@ namespace System
             if (temp != 0) value += align - temp;
             return value;
         }
+        public static UInt32 Clamp(this UInt32 value, uint min, uint max)
+        {
+            return value < min ? min : value > max ? max : value;
+        }
     }
 }

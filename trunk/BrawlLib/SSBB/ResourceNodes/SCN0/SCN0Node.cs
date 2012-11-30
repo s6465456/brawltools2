@@ -15,14 +15,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal SCN0v5* Header5 { get { return (SCN0v5*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.SCN0; } }
 
-        private int _version = 4, _origPathOffset, _frameCount = 1, _specLights, _loop, _lightset, _amblights, _lights, _fog, _camera, _pad;
+        public int _version = 4, _origPathOffset, _frameCount = 1, _specLights, _loop, _lightset, _amblights, _lights, _fog, _camera, _pad;
+
+        [Browsable(false)]
+        public override int tFrameCount { get { return FrameCount; } set { FrameCount = value; } }
+        [Browsable(false)]
+        public override bool tLoop { get { return Loop; } set { Loop = value; } }
 
         [Category("Scene Data")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
         public int FrameCount { get { return _frameCount; } set { _frameCount = value; SignalPropertyChange(); } }
-        [Category("Scene Data")]
-        public int SpecularLightCount { get { return _specLights; } set { _specLights = value; SignalPropertyChange(); } }
+        //[Category("Scene Data")]
+        //public int SpecularLightCount { get { return _specLights; } set { _specLights = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
         public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
 
@@ -99,14 +104,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
             {
                 ResourceGroup* group = Header4->Group;
-                SCN0GroupNode g;
+                SCN0GroupNode g, lightsets = null;
                 for (int i = 0; i < group->_numEntries; i++)
                 {
                     string name = group->First[i].GetName();
                     (g = new SCN0GroupNode(name)).Initialize(this, new DataSource(group->First[i].DataAddress, 0));
                     if (name == "LightSet(NW4R)")
                         for (int x = 0; x < Header4->_lightSetCount; x++)
-                            new SCN0LightSetNode().Initialize(g, new DataSource(&Header4->LightSets[x], SCN0LightSet.Size));
+                            new SCN0LightSetNode().Initialize(lightsets = g, new DataSource(&Header4->LightSets[x], SCN0LightSet.Size));
                     else if (name == "AmbLights(NW4R)")
                         for (int x = 0; x < Header4->_ambientCount; x++)
                             new SCN0AmbientLightNode().Initialize(g, new DataSource(&Header4->AmbientLights[x], SCN0AmbientLight.Size));
@@ -120,6 +125,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         for (int x = 0; x < Header4->_cameraCount; x++)
                             new SCN0CameraNode().Initialize(g, new DataSource(&Header4->Cameras[x], SCN0Camera.Size));
                 }
+                foreach (SCN0LightSetNode t in lightsets.Children)
+                    t.AttachNodes();
             }
         }
 
@@ -181,6 +188,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override int OnCalculateSize(bool force)
         {
+            _specLights = 0;
             int size = SCN0v4.Size + 0x18 + Children.Count * 0x10;
             foreach (SCN0GroupNode n in Children)
                 size += n.CalculateSize(true);

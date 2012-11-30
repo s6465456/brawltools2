@@ -68,16 +68,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region IColorSource Members
 
+        public bool HasPrimary(int id) { return false; }
+        public ARGBPixel GetPrimaryColor(int id) { return new ARGBPixel(); }
+        public void SetPrimaryColor(int id, ARGBPixel color) { }
         [Browsable(false)]
-        public bool HasPrimary { get { return false; } }
+        public string PrimaryColorName(int id) { return null; }
         [Browsable(false)]
-        public ARGBPixel PrimaryColor { get { return new ARGBPixel(); } set { } }
-        [Browsable(false)]
-        public string PrimaryColorName { get { return null; } }
-        [Browsable(false)]
-        public int ColorCount { get { return Palette.Entries.Length; } }
-        public ARGBPixel GetColor(int index) { return (ARGBPixel)Palette.Entries[index]; }
-        public void SetColor(int index, ARGBPixel color) { Palette.Entries[index] = (Color)color; SignalPropertyChange(); }
+        public int ColorCount(int id) { return Palette.Entries.Length; }
+        public ARGBPixel GetColor(int index, int id) { return (ARGBPixel)Palette.Entries[index]; }
+        public void SetColor(int index, int id, ARGBPixel color) { Palette.Entries[index] = (Color)color; SignalPropertyChange(); }
 
         #endregion
 

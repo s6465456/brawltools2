@@ -13,7 +13,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal U8* Header { get { return (U8*)WorkingUncompressed.Address; } }
         
-        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+        public override ResourceType ResourceType { get { return ResourceType.U8; } }
 
         protected override void OnPopulate()
         {
@@ -105,7 +105,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void RebuildNode(VoidPtr header, U8EntryNode node, ref U8Entry* entry, VoidPtr sTableStart, ref VoidPtr dataAddr, U8StringTable sTable, bool force)
         {
             entry->_type = (byte)((node is U8FolderNode) ? 1 : 0);
-            entry->_stringOffset.Value = (int)sTable[node.Name] - (int)sTableStart;
+            entry->_stringOffset.Value = (uint)sTable[node.Name] - (uint)sTableStart;
             if (entry->_type == 1)
             {
                 if (node.Parent != this && node.Parent != null)
@@ -152,12 +152,18 @@ namespace BrawlLib.SSBB.ResourceNodes
             ExportNonYaz0(outPath);
         }
 
-        public void ExportAsMRG(string path)
+        public void ExportSZS(string outPath)
         {
-            MRGNode node = new MRGNode();
-            node._children = Children;
-            node._changed = true;
-            node.Export(path);
+            ExportNonYaz0(outPath);
+        }
+
+        public void ExportPair(string outPath)
+        {
+            if (Path.HasExtension(outPath))
+                outPath = outPath.Substring(0, outPath.LastIndexOf('.'));
+
+            ExportNonYaz0(outPath + ".arc");
+            ExportCompressed(outPath + ".szs");
         }
 
         public void ExportNonYaz0(string outPath)
@@ -214,7 +220,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     }
     public unsafe class U8FolderNode : U8EntryNode
     {
-        public override ResourceType ResourceType { get { return ResourceType.Container; } }
+        public override ResourceType ResourceType { get { return ResourceType.U8Folder; } }
 
         protected override bool OnInitialize()
         {
@@ -224,6 +230,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override int OnCalculateSize(bool force)
         {
             return 0;
+        }
+
+        public T CreateResource<T>(string name) where T : U8EntryNode
+        {
+            T n = Activator.CreateInstance<T>();
+            n.Name = FindName(name);
+            AddChild(n);
+
+            return n;
         }
     }
 

@@ -2,6 +2,8 @@
 using BrawlLib.SSBBTypes;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -12,8 +14,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //protected override void GetStrings(LabelBuilder builder)
         //{
-        //    foreach (RWSDDataNode node in Children[0].Children)
-        //        builder.Add(node._soundIndex, node._name);
+        //    //foreach (RWSDDataNode node in Children[0].Children)
+        //    //    builder.Add(0, node._name);
         //}
 
         //Finds labels using LABL block between header and footer, also initializes array
@@ -21,29 +23,28 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             RBNKHeader* header = (RBNKHeader*)WorkingUncompressed.Address;
             int len = header->_header._length;
-            RSEQ_LABLHeader* labl = (RSEQ_LABLHeader*)((int)header + len);
+            LABLHeader* labl = (LABLHeader*)((int)header + len);
 
-            if ((WorkingUncompressed.Length > len) && (labl->_tag == RSEQ_LABLHeader.Tag))
+            if ((WorkingUncompressed.Length > len) && (labl->_tag == LABLHeader.Tag))
             {
                 _labels = new LabelItem[count];
                 count = labl->_numEntries;
                 for (int i = 0; i < count; i++)
                 {
-                    RSEQ_LABLEntry* entry = labl->Get(i);
-                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_offset };
+                    LABLEntry* entry = labl->Get(i);
+                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_id };
                 }
                 return true;
             }
 
             return false;
         }
-
         protected override bool OnInitialize()
         {
-            RSARNode parent;
+            RSARNode parent = RSARNode;
 
-            //Find bank entry in rsar
-            if ((_name == null) && ((parent = RSARNode) != null))
+            //Find bank entry in rsar - only appears once
+            if (parent != null)
             {
                 RSARHeader* rsar = parent.Header;
                 RuintList* list = rsar->INFOBlock->Banks;
@@ -56,12 +57,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     INFOBankEntry* bank = (INFOBankEntry*)list->Get(offset, i);
                     if (bank->_fileId == _fileIndex)
                     {
-                        _name = symb->GetStringEntry(bank->_stringId);
+                        _name = String.Format("[{0}] {1}", _fileIndex, symb->GetStringEntry(bank->_stringId));
                         break;
                     }
                 }
             }
-            
+
             base.OnInitialize();
 
             ParseBlocks();
@@ -71,75 +72,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override void OnPopulate()
         {
-            RSARNode rsar = RSARNode;
-            SYMBHeader* symb = null;
-            RuintList* bankList = null;
-            //INFOBankEntry** soundIndices = null;
-            VoidPtr soundOffset = null;
-            //INFOBankEntry* sEntry;
-            RBNKGroupNode g;
-            RBNKHeader* rwsd = Header;
-            RBNK_DATAHeader* data = rwsd->Data;
-            //RWSD_WAVEHeader* wave = rwsd->Wave;
-            RuintList* list = &data->_list;
-            //RuintList* waveList = &wave->_list;
-            int count = list->_numEntries;
-
-            //Get sound info from RSAR (mainly for names)
-            if (rsar != null)
-            {
-                symb = rsar.Header->SYMBBlock;
-                soundOffset = &rsar.Header->INFOBlock->_collection;
-                bankList = rsar.Header->INFOBlock->Banks;
-                //soundIndices = (INFOBankEntry**)Marshal.AllocHGlobal(count * 4);
-
-                //int sIndex = 0;
-                //int soundCount = soundList->_numEntries;
-                //for (int i = 0; i < soundCount; i++)
-                //    if ((sEntry = (INFOBankEntry*)soundList->Get(soundOffset, i))->_fileId == _fileIndex)
-                //        soundIndices[((INFOSoundPart2*)sEntry->GetPart2(soundOffset))->_soundIndex] = sEntry;
-            }
-            (g = new RBNKGroupNode()).Initialize(this, Header->Data, Header->_dataLength);
-            for (int i = 0; i < count; i++)
-            {
-                RBNK_DATAEntry* entry = (RBNK_DATAEntry*)list->Get(list, i);
-                RBNKDataNode node = new RBNKDataNode();
-                node._offset = list;
-                node.Initialize(g, entry, 0);
-
-                //Attach from INFO block
-                //if (soundIndices != null)
-                //{
-                //    sEntry = soundIndices[i];
-                //    node._name = symb->GetStringEntry(sEntry->_stringId);
-                //}
-            }
-
-            //if (soundIndices != null)
-            //    Marshal.FreeHGlobal((IntPtr)soundIndices);
-
-            //Get labels
-            RSARNode parent;
-            int count2 = Header->Data->_list._numEntries;
-            if ((_labels == null) && ((parent = RSARNode) != null))
-            {
-                _labels = new LabelItem[count2];// new string[count];
-
-                //Get them from RSAR
-                SYMBHeader* symb2 = parent.Header->SYMBBlock;
-                INFOHeader* info = parent.Header->INFOBlock;
-
-                VoidPtr offset = &info->_collection;
-                RuintList* bankList2 = info->Banks;
-                count2 = bankList2->_numEntries;
-
-                //INFOBankEntry* entry;
-                //for (int i = 0; i < count2; i++)
-                //    if ((entry = (INFOBankEntry*)soundList2->Get(offset, i))->_fileId == _fileIndex)
-                //        _labels[((INFOSoundPart2*)entry->GetPart2(offset))->_soundIndex] = new LabelItem() { Tag = i, String = symb2->GetStringEntry(entry->_stringId) };
-            }
-
-            new RBNKGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
+            new RBNKDataGroupNode().Initialize(this, Header->Data, Header->_dataLength);
+            new RBNKSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
         }
 
         private void ParseBlocks()
@@ -149,16 +83,16 @@ namespace BrawlLib.SSBB.ResourceNodes
             int total = WorkingUncompressed.Length;
 
             //Look for labl block
-            RSEQ_LABLHeader* labl = (RSEQ_LABLHeader*)(dataAddr + len);
-            if ((total > len) && (labl->_tag == RSEQ_LABLHeader.Tag))
+            LABLHeader* labl = (LABLHeader*)(dataAddr + len);
+            if ((total > len) && (labl->_tag == LABLHeader.Tag))
             {
                 int count = labl->_numEntries;
                 _labels = new LabelItem[count];
                 count = labl->_numEntries;
                 for (int i = 0; i < count; i++)
                 {
-                    RSEQ_LABLEntry* entry = labl->Get(i);
-                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_offset };
+                    LABLEntry* entry = labl->Get(i);
+                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_id };
                 }
                 len += labl->_size;
             }
@@ -170,12 +104,42 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override int OnCalculateSize(bool force)
         {
-            return base.OnCalculateSize(force);
-        }
+            _audioLen = 0;
+            _headerLen = RBNKHeader.Size;
+            foreach (ResourceNode g in Children)
+                _headerLen += g.CalculateSize(true);
+            //foreach (RWSDSoundNode s in Children[1].Children)
+            //    _audioLen += s._audioSource.Length;
 
+            return _headerLen + (_audioLen = _audioSource.Length);
+        }
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            base.OnRebuild(address, length, force);
+            VoidPtr addr = address;
+
+            RBNKHeader* header = (RBNKHeader*)address;
+            header->_header._length = length - _audioSource.Length;
+            header->_header._tag = RBNKHeader.Tag;
+            header->_header._numEntries = 2;
+            header->_header._firstOffset = 0x20;
+            header->_header._endian = -2;
+            header->_header._version = 0x102;
+            header->_dataOffset = 0x20;
+            header->_dataLength = Children[0]._calcSize;
+            header->_waveOffset = 0x20 + Children[0]._calcSize;
+            header->_waveLength = Children[1]._calcSize;
+
+            addr += 0x20; //Advance address to data header
+
+            //VoidPtr audioAddr = addr;
+            //foreach (ResourceNode e in Children)
+            //    audioAddr += e._calcSize;
+            (Children[1] as RWSDSoundGroupNode)._audioAddr = _rebuildAudioAddr;
+
+            Children[0].Rebuild(addr, Children[0]._calcSize, true);
+            addr += Children[0]._calcSize;
+            Children[1].Rebuild(addr, Children[1]._calcSize, true);
+            addr += Children[1]._calcSize;
         }
 
         public override void Remove()

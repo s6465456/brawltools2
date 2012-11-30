@@ -471,7 +471,7 @@ namespace BrawlLib.Wii.Models
             DecodeOp o;
             ElementDef* pDef;
             byte* p;
-            //byte[] pTexMtx = new byte[8];
+            byte[] pTexMtx = new byte[8];
 
             byte* tIn, tOut;
 
@@ -508,15 +508,14 @@ namespace BrawlLib.Wii.Models
                         case DecodeOp.TexMtx5:
                         case DecodeOp.TexMtx6:
                         case DecodeOp.TexMtx7:
-                            //index = (int)o - (int)DecodeOp.TexMtx0;
-                            if (*pIn++ == 0x60) //Identity matrix...
-                                Console.WriteLine("wtf");
-                            //pTexMtx[index] = (byte)(*pIn++ / 3);
+                            index = (int)o - (int)DecodeOp.TexMtx0;
+                            //if (*pIn++ == 0x60) //Identity matrix...
+                            //    Console.WriteLine();
+                            pTexMtx[index] = (byte)(*pIn++ / 3);
                             goto Top;
 
                         case DecodeOp.ElementDirect:
-                            ElementCodec.Decoders[pDef->Output]
-                                (ref pIn, ref pOut[pDef->Type], VQuant.DeQuantTable[pDef->Scale]);
+                            ElementCodec.Decoders[pDef->Output](ref pIn, ref pOut[pDef->Type], VQuant.DeQuantTable[pDef->Scale]);
                             goto Top;
 
                         case DecodeOp.ElementIndexed:

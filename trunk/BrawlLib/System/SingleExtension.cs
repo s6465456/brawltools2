@@ -18,5 +18,10 @@ namespace System
         //    double v = value + _double2fixmagic;
         //    return *((int*)&v) >> 16; 
         //}
+
+        public static Single Clamp(this Single value, Single min, Single max)
+        {
+            return value <= min ? min : value >= max ? max : value;
+        }
     }
 }

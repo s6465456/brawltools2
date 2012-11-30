@@ -311,9 +311,9 @@ namespace System.Windows.Forms
                 if (script[i] == "") script[i] = GetDefaultSyntax(node);
 
                 //Add tabs to the script in correspondence to the code Params.
-                tabs -= MParams.TabDownEvents(node._event);
+                tabs -= Helpers.TabDownEvents(node._event);
                 for (int i2 = 0; i2 < tabs; i2++) script[i] = "\t" + script[i];
-                tabs += MParams.TabUpEvents(node._event);
+                tabs += Helpers.TabUpEvents(node._event);
             }
             EventList.Items.Clear();
             EventList.Items.AddRange(script);
@@ -322,8 +322,8 @@ namespace System.Windows.Forms
         //  Return the event syntax corresponding to the event id passed
         public string GetEventSyntax(uint id)
         {
-            if (TargetNode.Root.EventDictionary.ContainsKey(id))
-                return TargetNode.Root.EventDictionary[id]._syntax;
+            if (MoveDefNode.EventDictionary.ContainsKey(id))
+                return MoveDefNode.EventDictionary[id]._syntax;
             
             return "";
         }
@@ -340,12 +340,12 @@ namespace System.Windows.Forms
             //Search for a ',' or a ')' and return the preceeding string.
             do
             {
-                paramEnd = MParams.FindFirstOfIgnoreNest(strParams, loc, new char[] { ',', ')' }, ref chrFound);
+                paramEnd = Helpers.FindFirstOfIgnoreNest(strParams, loc, new char[] { ',', ')' }, ref chrFound);
                 if (paramEnd == -1) paramEnd = strParams.Length;
 
                 Array.Resize<string>(ref parameters, index + 1);
                 parameters[index] = strParams.Substring(loc, paramEnd - loc);
-                parameters[index] = MParams.ClearWhiteSpace(parameters[index]);
+                parameters[index] = Helpers.ClearWhiteSpace(parameters[index]);
 
                 loc = paramEnd + 1;
                 index++;
@@ -379,9 +379,9 @@ namespace System.Windows.Forms
         //Return the collision status corresponding to the value passed.
         public string GetEnum(int paramIndex, long value, Event eventData)
         {
-            if (TargetNode.Root.EventDictionary.ContainsKey(eventData.eventEvent))
+            if (MoveDefNode.EventDictionary.ContainsKey(eventData.eventEvent))
             {
-                Dictionary<int, List<string>> Params = TargetNode.Root.EventDictionary[eventData.eventEvent].Enums;
+                Dictionary<int, List<string>> Params = MoveDefNode.EventDictionary[eventData.eventEvent].Enums;
                 if (Params.ContainsKey(paramIndex))
                 {
                     List<string> values = Params[paramIndex];
@@ -469,7 +469,7 @@ namespace System.Windows.Forms
                     try { return GetEnum(int.Parse(Params[1]), int.Parse(Params[0]), eventData); }
                     catch { return "Undefined(" + Params[1] + ")"; }
                 case "\\cmpsign":
-                    try { return MParams.GetComparisonSign(int.Parse(Params[0])); }
+                    try { return Helpers.GetComparisonSign(int.Parse(Params[0])); }
                     catch { return Params[0]; }
                 case "\\name":
                     return GetEventInfo(eventData.eventEvent)._name;
@@ -490,10 +490,10 @@ namespace System.Windows.Forms
                 switch ((int)eventData.parameters[i]._type)
                 {
                     case 0: p[i] = GetValue(eventData.eventEvent, i, eventData.parameters[i]._data); break;
-                    case 1: p[i] = MParams.UnScalar(eventData.parameters[i]._data).ToString(); break;
+                    case 1: p[i] = Helpers.UnScalar(eventData.parameters[i]._data).ToString(); break;
                     case 2: p[i] = ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
                     case 3: p[i] = (eventData.parameters[i]._data != 0 ? "true" : "false"); break;
-                    case 4: p[i] = MParams.Hex(eventData.parameters[i]._data); break;
+                    case 4: p[i] = Helpers.Hex(eventData.parameters[i]._data); break;
                     case 5: p[i] = ResolveVariable(eventData.parameters[i]._data); break;
                     case 6: p[i] = GetRequirement(eventData.parameters[i]._data); break;
                 }
@@ -512,7 +512,7 @@ namespace System.Windows.Forms
                 return "External: " + node._extNode.Name;
 
             if (node.list == 4)
-                return "0x" + MParams.Hex(parameter._data);
+                return "0x" + Helpers.Hex(parameter._data);
             else
             {
                 string name = "", t = "", grp = "";
@@ -618,7 +618,7 @@ namespace System.Windows.Forms
             long requirement = value & 0xFF;
 
             if (requirement > iRequirements.Length)
-                return MParams.Hex(requirement);
+                return Helpers.Hex(requirement);
 
             if (not == true)
                 return "Not " + iRequirements[requirement];
@@ -627,11 +627,11 @@ namespace System.Windows.Forms
         }
         public ActionEventInfo GetEventInfo(long id)
         {
-            if (MoveDef.EventDictionary == null)
-                MoveDef.LoadEventDictionary();
+            if (MoveDefNode.EventDictionary == null)
+                MoveDefNode.LoadEventDictionary();
 
-            if (MoveDef.EventDictionary.ContainsKey(id))
-                return MoveDef.EventDictionary[id];
+            if (MoveDefNode.EventDictionary.ContainsKey(id))
+                return MoveDefNode.EventDictionary[id];
 
             return new ActionEventInfo(id, id.ToString("X"), "No Description Available.", null, null);
         }
@@ -647,7 +647,7 @@ namespace System.Windows.Forms
                 switch ((int)eventData.parameters[i]._type)
                 {
                     case 0: script += GetValue(eventData.eventEvent, i, eventData.parameters[i]._data); break;
-                    case 1: script += MParams.UnScalar(eventData.parameters[i]._data).ToString(); break;
+                    case 1: script += Helpers.UnScalar(eventData.parameters[i]._data).ToString(); break;
                     case 2: script += ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
                     case 3: script += (eventData.parameters[i]._data != 0 ? "true" : "false"); break;
                     case 4: script += eventData.parameters[i]._data; break;
@@ -671,15 +671,15 @@ namespace System.Windows.Forms
                 string strParams = "";
                 string[] kParams;
 
-                int keyBegin = MParams.FindFirst(syntax, 0, '\\');
+                int keyBegin = Helpers.FindFirst(syntax, 0, '\\');
                 if (keyBegin == -1) break;
 
-                int keyEnd = MParams.FindFirst(syntax, keyBegin, '(');
+                int keyEnd = Helpers.FindFirst(syntax, keyBegin, '(');
                 if (keyEnd == -1) keyEnd = syntax.Length;
 
                 int paramsBegin = keyEnd + 1;
 
-                int paramsEnd = MParams.FindFirstIgnoreNest(syntax, paramsBegin, ')');
+                int paramsEnd = Helpers.FindFirstIgnoreNest(syntax, paramsBegin, ')');
                 if (paramsEnd == -1) paramsEnd = syntax.Length;
 
                 keyword = syntax.Substring(keyBegin, keyEnd - keyBegin);
@@ -689,8 +689,8 @@ namespace System.Windows.Forms
 
                 keyResult = ResolveKeyword(keyword, kParams, Event);
 
-                syntax = MParams.DelSubstring(syntax, keyBegin, (paramsEnd + 1) - keyBegin);
-                syntax = MParams.InsString(syntax, keyResult, keyBegin);
+                syntax = Helpers.DelSubstring(syntax, keyBegin, (paramsEnd + 1) - keyBegin);
+                syntax = Helpers.InsString(syntax, keyResult, keyBegin);
             }
 
             return syntax;

@@ -38,6 +38,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             foreach (PAT0TextureEntryNode e in t.Children)
                                 if (t.hasTex && !String.IsNullOrEmpty(e.tex) && !_textureFiles.Contains(e.tex))
                                     _textureFiles.Add(e.tex);
+                    _textureFiles.Sort();
                     texChanged = false;
                 }
                 return _textureFiles.ToArray();
@@ -56,6 +57,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             foreach (PAT0TextureEntryNode e in t.Children)
                                 if (t.hasPlt && !String.IsNullOrEmpty(e.plt) && !_paletteFiles.Contains(e.plt))
                                     _paletteFiles.Add(e.plt);
+                    _paletteFiles.Sort();
                     pltChanged = false;
                 }
                 return _paletteFiles.ToArray();
@@ -76,7 +78,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         [Category("Texture Pattern")]
         public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
-        
+
+        [Browsable(false)]
         public override int tFrameCount
         {
             get { return FrameCount; }
@@ -125,6 +128,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0; i < pltPtr; i++)
                 _paletteFiles.Add(Header3->GetPltStringEntry(i));
 
+            //Link all entries
+            Populate();
+
             return Header3->Group->_numEntries > 0;
         }
 
@@ -163,6 +169,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                         if (t.hasPlt && !String.IsNullOrEmpty(e.plt) && !_paletteFiles.Contains(e.plt))
                             _paletteFiles.Add(e.plt);
                     }
+
+            _textureFiles.Sort();
+            _paletteFiles.Sort();
 
             int size = PAT0v3.Size + 0x18 + Children.Count * 0x10;
             size += (_textureFiles.Count + _paletteFiles.Count) * 8;
@@ -693,7 +702,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         PAT0TextureEntryNode exte = (PAT0TextureEntryNode)table.Children[l];
                         PAT0TextureEntryNode inte = (PAT0TextureEntryNode)Children[l];
 
-                        if (exte.key != inte.key || exte.texFileIndex != inte.texFileIndex || exte.pltFileIndex != inte.pltFileIndex)
+                        if (exte.key != inte.key || exte.Texture != inte.Texture || exte.Palette != inte.Palette)
                         {
                             same = false;
                             break;

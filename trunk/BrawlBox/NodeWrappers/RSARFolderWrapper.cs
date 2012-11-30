@@ -57,25 +57,28 @@ namespace BrawlBox.NodeWrappers
         {
 
         }
+
         public void ImportSound()
         {
 
         }
+
         public void NewSound()
         {
             using (CloneSoundDialog dlg = new CloneSoundDialog())
-            {
                 dlg.ShowDialog(null, this.ResourceNode as RSARFolderNode);
-            }
         }
+
         public void NewBank()
         {
 
         }
+
         public void NewType()
         {
 
         }
+
         public void NewGroup()
         {
 

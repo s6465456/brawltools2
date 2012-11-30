@@ -42,100 +42,100 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override bool OnInitialize()
-        {
-            switch (Index)
-            {
-                case 0:
-                    _name = "Types";
-                    _listIndex = 2;
-                    break;
-                case 1:
-                    _name = "Files";
-                    _listIndex = 3;
-                    break;
-                case 2:
-                    _name = "Groups";
-                    _listIndex = 4;
-                    break;
-            }
-            return true;
-        }
+        //protected override bool OnInitialize()
+        //{
+        //    switch (Index)
+        //    {
+        //        case 0:
+        //            _name = "Types";
+        //            _listIndex = 2;
+        //            break;
+        //        case 1:
+        //            _name = "Files";
+        //            _listIndex = 3;
+        //            break;
+        //        case 2:
+        //            _name = "Groups";
+        //            _listIndex = 4;
+        //            break;
+        //    }
+        //    return true;
+        //}
 
-        protected override void OnPopulate()
-        {
-            RSARHeader* rsar = Header;
-            INFOHeader* info = Header->INFOBlock;
-            VoidPtr offset = &info->_collection;
-            RuintList* list = (RuintList*)info->_collection[_listIndex];
-            int count = list->_numEntries;
+        //protected override void OnPopulate()
+        //{
+        //    RSARHeader* rsar = Header;
+        //    INFOHeader* info = Header->INFOBlock;
+        //    VoidPtr offset = &info->_collection;
+        //    RuintList* list = (RuintList*)info->_collection[_listIndex];
+        //    int count = list->_numEntries;
 
-            Type t;
-            switch (_listIndex)
-            {
-                case 2:
-                    t = typeof(RSARTypeNode);
-                    break; //Types
+        //    Type t;
+        //    switch (_listIndex)
+        //    {
+        //        case 2:
+        //            t = typeof(RSARTypeNode);
+        //            break; //Types
 
-                case 3: //Files
-                    INFOFileHeader* fileHeader;
-                    INFOFileEntry* fileEntry;
-                    RuintList* entryList;
-                    INFOGroupHeader* group;
-                    INFOGroupEntry* gEntry;
-                    RuintList* groupList = info->Groups;
-                    RSARFileNode n;
-                    DataSource source;
+        //        case 3: //Files
+        //            INFOFileHeader* fileHeader;
+        //            INFOFileEntry* fileEntry;
+        //            RuintList* entryList;
+        //            INFOGroupHeader* group;
+        //            INFOGroupEntry* gEntry;
+        //            RuintList* groupList = info->Groups;
+        //            RSARFileNode n;
+        //            DataSource source;
 
-                    for (int i = 0; i < count; i++)
-                    {
-                        fileHeader = (INFOFileHeader*)list->Get(offset, i);
-                        entryList = fileHeader->GetList(offset);
-                        if (entryList->_numEntries == 0)
-                        {
-                            //Must be external file.
-                            n = new RSARExtFileNode();
-                            n._fileIndex = i;
-                            n.Initialize(this, fileHeader, 0);
-                        }
-                        else
-                        {
-                            //use first entry
-                            fileEntry = (INFOFileEntry*)entryList->Get(offset, 0);
-                            //Find group with matching ID
-                            group = (INFOGroupHeader*)groupList->Get(offset, fileEntry->_groupId);
-                            //Find group entry with matching index
-                            gEntry = (INFOGroupEntry*)group->GetCollection(offset)->Get(offset, fileEntry->_index);
+        //            for (int i = 0; i < count; i++)
+        //            {
+        //                fileHeader = (INFOFileHeader*)list->Get(offset, i);
+        //                entryList = fileHeader->GetList(offset);
+        //                if (entryList->_numEntries == 0)
+        //                {
+        //                    //Must be external file.
+        //                    n = new RSARExtFileNode();
+        //                    n._fileIndex = i;
+        //                    n.Initialize(this, fileHeader, 0);
+        //                }
+        //                else
+        //                {
+        //                    //Use first entry
+        //                    fileEntry = (INFOFileEntry*)entryList->Get(offset, 0);
+        //                    //Find group with matching ID
+        //                    group = (INFOGroupHeader*)groupList->Get(offset, fileEntry->_groupId);
+        //                    //Find group entry with matching index
+        //                    gEntry = (INFOGroupEntry*)group->GetCollection(offset)->Get(offset, fileEntry->_index);
 
-                            //Create node and parse
-                            source = new DataSource((int)rsar + group->_headerOffset + gEntry->_headerOffset, gEntry->_headerLength);
-                            if ((n = NodeFactory.GetRaw(source) as RSARFileNode) == null)
-                                n = new RSARFileNode();
+        //                    //Create node and parse
+        //                    source = new DataSource((int)rsar + group->_headerOffset + gEntry->_headerOffset, gEntry->_headerLength);
+        //                    if ((n = NodeFactory.GetRaw(source) as RSARFileNode) == null)
+        //                        n = new RSARFileNode();
                             
-                            n._audioSource = new DataSource((int)rsar + group->_dataOffset + gEntry->_dataOffset, gEntry->_dataLength);
-                            n._fileIndex = i;
-                            n.Initialize(this, source);
-                        }
-                    }
+        //                    n._audioSource = new DataSource((int)rsar + group->_waveDataOffset + gEntry->_dataOffset, gEntry->_dataLength);
+        //                    n._fileIndex = i;
+        //                    n.Initialize(this, source);
+        //                }
+        //            }
 
-                    return;
+        //            return;
 
-                case 4:
-                    t = typeof(RSARGroupNode);
-                    break; //Groups
-                default:
-                    return;
-            }
+        //        case 4:
+        //            t = typeof(RSARGroupNode);
+        //            break; //Groups
+        //        default:
+        //            return;
+        //    }
 
 
-            for (int i = 0; i < count; i++)
-            {
-                ResourceNode node = Activator.CreateInstance(t) as ResourceNode;
-                node.Initialize(this, list->Get(offset, i), 0);
-            }
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        ResourceNode node = Activator.CreateInstance(t) as ResourceNode;
+        //        node.Initialize(this, list->Get(offset, i), 0);
+        //    }
 
-            base.OnPopulate();
-        }
+        //    base.OnPopulate();
+        //}
 
         internal virtual void GetStrings(sbyte* path, int pathLen, RSAREntryList list)
         {

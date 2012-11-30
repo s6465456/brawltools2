@@ -1,5 +1,6 @@
 ﻿using System;
 using BrawlLib.IO;
+using BrawlLib.SSBBTypes;
 
 namespace System.Audio
 {
@@ -47,6 +48,36 @@ namespace System.Audio
 
             _source = (short*)(_sourceMap.Address + header->GetSize);
             _samplePos = 0;
+        }
+
+        internal PCMStream(short* source, int samples, int sampleRate, int channels, int bps)
+        {
+            _sourceMap = null;
+
+            _bps = bps; //16
+            _numChannels = channels;
+            _frequency = sampleRate;
+            _numSamples = samples;
+
+            _source = source;
+            _samplePos = 0;
+        }
+
+        internal PCMStream(WaveInfo* pWAVE, VoidPtr dataAddr)
+        {
+            _looped = pWAVE->_format._looped != 0;
+            _frequency = pWAVE->_sampleRate;
+            _numSamples = pWAVE->_nibbles;
+            _numChannels = pWAVE->_format._channels;
+
+            _bps = pWAVE->_format._encoding == 0 ? 8 : 16;
+
+            if (_numSamples <= 0) return;
+
+            _loopStart = (int)pWAVE->_loopStartSample;
+            _loopEnd = _numSamples;
+
+            _source = (short*)dataAddr;
         }
 
         public int ReadSamples(VoidPtr destAddr, int numSamples)

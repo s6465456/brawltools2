@@ -44,7 +44,7 @@ namespace BrawlLib.SSBBTypes
         public const int Size = 0xC;
 
         public byte _type; //1 == Folder, 0 == Node
-        public Int24 _stringOffset; //Base is string table
+        public UInt24 _stringOffset; //Base is string table
         public buint _dataOffset; //Folder == Parent entry index
         public buint _dataLength; //Folder == Index of first entry that's not a child
         

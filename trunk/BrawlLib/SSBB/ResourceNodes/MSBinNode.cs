@@ -51,12 +51,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (string s in _strings)
             {
                 *offsets++ = (int)current - (int)address;
-                //int len = MSBinDecoder.EncodeString(s, current);
                 current += MSBinDecoder.EncodeString(s, current);
             }
             *offsets = (int)current - (int)address;
         }
-
 
         internal static ResourceNode TryParse(DataSource source)
         {

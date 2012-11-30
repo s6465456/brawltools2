@@ -39,6 +39,7 @@ namespace System.Windows.Forms
             // 
             this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listBox1.FormattingEnabled = true;
+            this.listBox1.IntegralHeight = false;
             this.listBox1.Location = new System.Drawing.Point(0, 0);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(256, 49);
@@ -58,6 +59,7 @@ namespace System.Windows.Forms
             // 
             this.listBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listBox2.FormattingEnabled = true;
+            this.listBox2.IntegralHeight = false;
             this.listBox2.Location = new System.Drawing.Point(3, 0);
             this.listBox2.Name = "listBox2";
             this.listBox2.Size = new System.Drawing.Size(261, 49);
@@ -407,16 +409,16 @@ namespace System.Windows.Forms
                 ((entry = SelectedAnimation.FindChild(vSet.Name, false) as SHP0EntryNode) != null) && 
                 (v = entry.FindChild(SelectedDestination.Name, false) as SHP0VertexSetNode) != null)
             {
-                KeyframeEntry e = v.Keyframes.GetKeyframe(KeyFrameMode.ScaleX, CurrentFrame - 1);
+                KeyframeEntry e = v.Keyframes.GetKeyframe(CurrentFrame - 1);
                 if (e == null)
                 {
-                    float val = v.Keyframes[KeyFrameMode.ScaleX, CurrentFrame - 1];
-                    textBox1.Value = (val > 1 ? 1 : val < 0 ? 0 : val) * 100.0f;
+                    float val = v.Keyframes[CurrentFrame - 1];
+                    textBox1.Value = val.Clamp(0, 1) * 100.0f;
                     textBox1.BackColor = Color.White;
                 }
                 else
                 {
-                    textBox1.Value = (e._value > 1 ? 1 : e._value < 0 ? 0 : e._value) * 100.0f;
+                    textBox1.Value = e._value.Clamp(0, 1) * 100.0f;
                     textBox1.BackColor = Color.Yellow;
                 }
             }

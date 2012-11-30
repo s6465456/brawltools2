@@ -39,7 +39,7 @@ namespace System.Audio
 
         //Number of bytes in each sample. (_bitsPerSample * _channels / 8)
         internal int _blockAlign;
-        public int BlockAlign{get{return _blockAlign;}}
+        public int BlockAlign { get { return _blockAlign; } }
 
         //Byte offset within buffer in which to continue writing.
         //Read-only. It is the responsibility of the application to update the audio data in a timely manner.

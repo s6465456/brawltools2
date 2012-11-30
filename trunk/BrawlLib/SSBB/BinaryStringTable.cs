@@ -73,7 +73,6 @@ namespace BrawlLib
             _id = (name == "") ? -1 : ((name.Length - 1) << 3) | CompareBits(name[name.Length - 1], 0);
         }
 
-
         public void InsertLeft(BinaryStringEntry entry)
         {
             if (entry.IsRight(_left))

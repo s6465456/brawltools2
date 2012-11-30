@@ -6,14 +6,14 @@ using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class RSEQLabelNode : RSEQEntryNode
+    public unsafe class RSEQLabelNode : ResourceNode
     {
-        internal RSEQ_LABLEntry* Header { get { return (RSEQ_LABLEntry*)WorkingUncompressed.Address; } }
+        internal LABLEntry* Header { get { return (LABLEntry*)WorkingUncompressed.Address; } }
 
-        int _id;
+        uint _id;
 
-        [Category("RSEQ Label")]
-        public int Id { get { return _id; } set { _id = value; SignalPropertyChange(); } }
+        [Category("RSEQ Label")] //Matches with RSAR Sound Part2 pack index
+        public uint Id { get { return _id; } set { _id = value; SignalPropertyChange(); } } 
         
         protected override bool OnInitialize()
         {
@@ -21,21 +21,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (Header->_stringLength > 0)
                     _name = Header->Name;
                 else
-                    _name = string.Format("Label[{0:X2}]", Index);
+                    _name = string.Format("Label[{0}]", Index);
 
-            _id = Header->_offset;
+            _id = Header->_id;
 
             return false;
-        }
-
-        protected override int OnCalculateSize(bool force)
-        {
-            return base.OnCalculateSize(force);
-        }
-
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
-        {
-            base.OnRebuild(address, length, force);
         }
     }
 }

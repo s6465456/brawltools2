@@ -265,11 +265,13 @@ namespace System.Windows.Forms
             this.fileType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.fileType.FormattingEnabled = true;
             this.fileType.Items.AddRange(new object[] {
-            "CHR0",
-            "SRT0",
-            "SHP0",
-            "PAT0",
-            "VIS0"});
+            "CHR",
+            "SRT",
+            "SHP",
+            "PAT",
+            "VIS",
+            "SCN",
+            "CLR"});
             this.fileType.Location = new System.Drawing.Point(82, 0);
             this.fileType.Name = "fileType";
             this.fileType.Size = new System.Drawing.Size(53, 21);
@@ -567,7 +569,15 @@ namespace System.Windows.Forms
         public MDL0BoneNode TargetBone { get { return _mainWindow._targetBone; } set { _mainWindow.TargetBone = value; } }
         
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
+        public MDL0MaterialRefNode TargetTexRef
+        {
+            get { return _mainWindow._targetTexRef; }
+            set
+            {
+                _mainWindow.TargetTexRef = value; if (_mainWindow._srt0 != null && TargetTexRef != null)
+                    _mainWindow.pnlKeyframes.TargetSequence = _mainWindow.srt0Editor.TexEntry;
+            }
+        }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrame
@@ -640,6 +650,8 @@ namespace System.Windows.Forms
                 case ResourceType.SHP0: found = true; if (type == 2) goto Add; break;
                 case ResourceType.PAT0: found = true; if (type == 3) goto Add; break;
                 case ResourceType.VIS0: found = true; if (type == 4) goto Add; break;
+                case ResourceType.SCN0: found = true; if (type == 5) goto Add; break;
+                case ResourceType.CLR0: found = true; if (type == 6) goto Add; break;
             }
             return found;
             Add: listAnims.Items.Add(new ListViewItem(node.Name, (int)node.ResourceType, _AnimGroup) { Tag = node });
@@ -924,30 +936,30 @@ namespace System.Windows.Forms
 
         public event EventHandler Key;
         public event EventHandler Unkey;
-        protected override bool ProcessKeyPreview(ref Message m)
-        {
-            if (m.Msg == 0x100)
-            {
-                Keys key = (Keys)m.WParam;
-                if (Control.ModifierKeys == Keys.Control)
-                {
-                    if (key == Keys.K)
-                    {
-                        if (Key != null)
-                            Key(this, null);
-                        return true;
-                    }
-                    else if (key == Keys.L)
-                    {
-                        if (Unkey != null)
-                            Unkey(this, null);
-                        return true;
-                    }
-                    return false;
-                }
-            }
-            return base.ProcessKeyPreview(ref m);
-        }
+        //protected override bool ProcessKeyPreview(ref Message m)
+        //{
+        //    if (m.Msg == 0x100)
+        //    {
+        //        Keys key = (Keys)m.WParam;
+        //        if (Control.ModifierKeys == Keys.Control)
+        //        {
+        //            if (key == Keys.K)
+        //            {
+        //                if (Key != null)
+        //                    Key(this, null);
+        //                return true;
+        //            }
+        //            else if (key == Keys.L)
+        //            {
+        //                if (Unkey != null)
+        //                    Unkey(this, null);
+        //                return true;
+        //            }
+        //            return false;
+        //        }
+        //    }
+        //    return base.ProcessKeyPreview(ref m);
+        //}
 
         private void lstTextures_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -1218,6 +1230,12 @@ namespace System.Windows.Forms
                     case 4: _mainWindow._vis0 = listAnims.SelectedItems[0].Tag as VIS0Node;
                         createNewToolStripMenuItem.Text = "Create New VIS0";
                         break;
+                    case 5: _mainWindow._scn0 = listAnims.SelectedItems[0].Tag as SCN0Node;
+                        createNewToolStripMenuItem.Text = "Create New SCN0";
+                        break;
+                    case 6: _mainWindow._clr0 = listAnims.SelectedItems[0].Tag as CLR0Node;
+                        createNewToolStripMenuItem.Text = "Create New CLR0";
+                        break;
                 }
                 if (_mainWindow.syncAnimationsTogetherToolStripMenuItem.Checked)
                     _mainWindow.GetFiles(fileType.SelectedIndex);
@@ -1290,6 +1308,8 @@ namespace System.Windows.Forms
                 case 2: dlgOpen.Filter = ExportFilters.SHP0; break;
                 case 3: dlgOpen.Filter = ExportFilters.PAT0; break;
                 case 4: dlgOpen.Filter = ExportFilters.VIS0; break;
+                case 5: dlgOpen.Filter = ExportFilters.SCN0; break;
+                case 6: dlgOpen.Filter = ExportFilters.CLR0; break;
             }
 
             if (dlgOpen.ShowDialog() == DialogResult.OK)

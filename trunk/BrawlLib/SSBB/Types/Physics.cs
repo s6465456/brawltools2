@@ -75,7 +75,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct PhysicsClassName
     {
-        public bint _unk1;
+        public buint _unk1;
         public byte _unk2; //9
         public String _value { get { return new String((sbyte*)Address + 5); } }
 
@@ -92,6 +92,16 @@ namespace BrawlLib.SSBBTypes
         public buint _dataOffset;
         public buint _stringOffset;
 
+        private VoidPtr Address { get { fixed (void* p = &this)return p; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct PhysicsVector
+    {
+        public bint _x;
+        public bint _y;
+        public bint _z;
+        
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }
 }

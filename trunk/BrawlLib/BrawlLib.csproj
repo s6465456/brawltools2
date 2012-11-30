@@ -39,7 +39,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -104,6 +104,7 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -170,7 +171,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="OpenGL\GLTexture.cs" />
-    <Compile Include="OpenGL\Half.cs" />
     <Compile Include="OpenGL\IRenderedObject.cs" />
     <Compile Include="Platform\Win32.DirectSound.cs" />
     <Compile Include="Platform\Win32.DirectSoundBuffer.cs" />
@@ -188,6 +188,7 @@
     <Compile Include="SSBB\ResourceNodes\AI\ATKDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\AI\CENode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Graphics\REFFTEVStage.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Items\AnimParamNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Common Nodes\MoveDefPatternPowerMulNode.cs" />
     <Compile Include="SSBB\ResourceNodes\UserData.cs" />
@@ -216,15 +217,13 @@
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefGeneralNodes.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefStringTables.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataReferenceNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefParams.cs" />
+    <Compile Include="System\Helpers.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefLookupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RASDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0TEVStage.cs" />
     <Compile Include="SSBB\ResourceNodes\PhysicsNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RBNK\RBNKDataNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RBNK\RBNKGroupNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RSEQ\RSEQDataNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RSEQ\RSEQGroupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RSEQ\RSEQLabelNode.cs" />
     <Compile Include="SSBB\ResourceNodes\SCN0\SCN0CameraNode.cs" />
     <Compile Include="SSBB\ResourceNodes\SCN0\SCN0FogNode.cs" />
@@ -257,24 +256,24 @@
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0VertexNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MSBinNode.cs" />
     <Compile Include="SSBB\ResourceNodes\ResourceType.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\FILENode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\INFONode.cs" />
+    <Compile Include="SSBB\ResourceNodes\RSAR\Old\FILENode.cs" />
+    <Compile Include="SSBB\ResourceNodes\RSAR\Old\INFONode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RBNK\RBNKNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARBankNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\RSAREntryNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARExtFileNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\RSAR\RSARExtFileNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\RSARFolderNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARGroupNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\RSARListNode.cs" />
+    <None Include="SSBB\ResourceNodes\RSAR\RSARListNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\RSARNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARFileNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\RSAR\RSARFileNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARSoundNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARTypeNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARPlayerInfoNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RSEQ\RSEQNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDDataNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDGroupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\SYMBNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\RSAR\Old\SYMBNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSTMNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDSoundNode.cs" />
     <Compile Include="SSBB\StringTable.cs" />
@@ -307,7 +306,9 @@
     <Compile Include="System\Audio\wAudioDevice.cs" />
     <Compile Include="System\Audio\wAudioProvider.cs" />
     <Compile Include="System\Audio\WAV.cs" />
+    <Compile Include="System\BinaryHandlers.cs" />
     <Compile Include="System\Int24.cs" />
+    <Compile Include="System\UInt24.cs" />
     <Compile Include="System\IO\GeckoStream.cs" />
     <Compile Include="System\PowerPCAssembly\Assembly Manager.cs" />
     <Compile Include="System\PowerPCAssembly\PowerPcAssembly.cs" />
@@ -363,7 +364,28 @@
     <None Include="System\Windows\Forms\GradientDialog2.cs">
       <SubType>Form</SubType>
     </None>
-    <Compile Include="System\Windows\Forms\SCN0LightEditControl.cs">
+    <Compile Include="System\Windows\Forms\EditRSARFileDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\Editors\CLR0Editor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelViewerHelp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\Panels\KeyframePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\Panels\KeyframePanel.Designer.cs">
+      <DependentUpon>KeyframePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Controls\SCN0FogEditControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\SCN0CameraEditControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\SCN0LightEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\ModuleSectionEditor.cs">
@@ -375,31 +397,28 @@
     <Compile Include="System\Windows\Forms\ExportAllAskFormat.designer.cs">
       <DependentUpon>ExportAllAskFormat.cs</DependentUpon>
     </Compile>
-    <Compile Include="System\Windows\Forms\AnimEditControl.cs">
+    <Compile Include="System\Windows\Controls\AnimEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\AudioPlaybackPanel.cs">
+    <Compile Include="System\Windows\Controls\AudioPlaybackPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\BrstmConverterDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\BufferedPanel.cs">
+    <Compile Include="System\Windows\Controls\BufferedPanel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\CLRControl.cs">
+    <Compile Include="System\Windows\Controls\CLRControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\CollisionEditor.cs">
+    <Compile Include="System\Windows\Controls\CollisionEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\CollisionForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\ChangeToDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\ChangeToDialog2.cs">
+    <Compile Include="System\Windows\Forms\EditAllDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Moveset\AttributeGrid.cs">
@@ -423,19 +442,19 @@
     <Compile Include="System\Windows\Forms\Moveset\EventModifierWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\ShpAnimEditControl.cs">
+    <Compile Include="System\Windows\Controls\ShpAnimEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\StageModuleConverter.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\StringInputComboBox.cs">
+    <Compile Include="System\Windows\Controls\StringInputComboBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\TangentEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\NewModelEditControl.cs">
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\Editors\CHR0Editor.cs">
@@ -462,7 +481,7 @@
     <Compile Include="System\Windows\Forms\Model Previewer\Panels\BonesPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\TexAnimEditControl.cs">
+    <Compile Include="System\Windows\Controls\TexAnimEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Moveset\EventDescription.cs">
@@ -474,7 +493,7 @@
     <Compile Include="System\Windows\Forms\ObjectImporter.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelLightEditor.cs">
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelViewerSettings.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\Panels\MovesetPanel.cs">
@@ -483,25 +502,25 @@
     <Compile Include="System\Windows\Forms\Model Previewer\ModelSwitcher.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\EditDialog.cs">
+    <Compile Include="System\Windows\Forms\EditAllKeyframesDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\CustomTrackBar.cs">
+    <Compile Include="System\Windows\Controls\CustomTrackBar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\GLTexturePanel.cs">
+    <Compile Include="System\Windows\Controls\GLTexturePanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\GLTextureWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\GoodColorControl.cs">
+    <Compile Include="System\Windows\Controls\GoodColorControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\GoodColorDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\GoodPictureBox.cs">
+    <Compile Include="System\Windows\Controls\GoodPictureBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\GradientDialog.cs">
@@ -513,9 +532,6 @@
     <None Include="System\Windows\Forms\Model Previewer\Panels\Old\AssetPanel.cs">
       <SubType>UserControl</SubType>
     </None>
-    <None Include="System\Windows\Forms\Model Previewer\OldModelEditControl.cs">
-      <SubType>UserControl</SubType>
-    </None>
     <None Include="System\Windows\Forms\Model Previewer\Panels\Old\OptionPanel.cs">
       <SubType>UserControl</SubType>
     </None>
@@ -525,22 +541,22 @@
     <Compile Include="System\Windows\Forms\Model Previewer\Panels\PlaybackPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\MSBinEditor.cs">
+    <Compile Include="System\Windows\Controls\MSBinEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\MSBinTextBox.cs">
+    <Compile Include="System\Windows\Controls\MSBinTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\NumericInputBox.cs">
+    <Compile Include="System\Windows\Controls\NumericInputBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\ProxySplitter.cs">
+    <Compile Include="System\Windows\Controls\ProxySplitter.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\RenameDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\SoundPackControl.cs">
+    <Compile Include="System\Windows\Controls\SoundPackControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\SoundPathChanger.cs">
@@ -550,14 +566,16 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\StringConverters.cs" />
-    <Compile Include="System\Windows\Forms\TransformEditControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="System\PString.cs" />
-    <Compile Include="System\Windows\Forms\VisEditor.cs">
+    <Compile Include="System\Windows\Controls\VisEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Wii\Animations\CHR0TextImporter.cs" />
+    <Compile Include="Wii\Audio\RSARSoundConverter.cs" />
+    <Compile Include="Wii\Compression\CXSecureDecompression.cs" />
+    <Compile Include="Wii\Compression\CXStreamingDecompression.cs" />
+    <Compile Include="Wii\Compression\CXDecompression.cs" />
+    <Compile Include="Wii\Compression\CXCompression.cs" />
     <Compile Include="Wii\Compression\RunLength.cs" />
     <Compile Include="Wii\Models\AnimationCode.cs" />
     <Compile Include="Wii\Animations\AnimationConverter.cs" />
@@ -605,7 +623,7 @@
     <Compile Include="System\UInt16Extension.cs" />
     <Compile Include="System\UInt32Extension.cs" />
     <Compile Include="System\VoidPtr.cs" />
-    <Compile Include="System\Windows\Forms\GoodProgressBar.cs">
+    <Compile Include="System\Windows\Controls\GoodProgressBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\ProgressWindow.cs">
@@ -659,7 +677,25 @@
     <EmbeddedResource Include="System\PowerPCAssembly\RelPowerPcDisassembler.resx">
       <DependentUpon>RelPowerPcDisassembler.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\SCN0LightEditControl.resx">
+    <EmbeddedResource Include="System\Windows\Forms\EditRSARFileDialog.resx">
+      <DependentUpon>EditRSARFileDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\CLR0Editor.resx">
+      <DependentUpon>CLR0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelViewerHelp.resx">
+      <DependentUpon>ModelViewerHelp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\KeyframePanel.resx">
+      <DependentUpon>KeyframePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\SCN0FogEditControl.resx">
+      <DependentUpon>SCN0FogEditControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\SCN0CameraEditControl.resx">
+      <DependentUpon>SCN0CameraEditControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\SCN0LightEditControl.resx">
       <DependentUpon>SCN0LightEditControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ModuleSectionEditor.resx">
@@ -671,30 +707,27 @@
     <EmbeddedResource Include="System\Windows\Forms\ExportAllAskFormat.resx">
       <DependentUpon>ExportAllAskFormat.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\AnimEditControl.resx">
+    <EmbeddedResource Include="System\Windows\Controls\AnimEditControl.resx">
       <DependentUpon>AnimEditControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\AudioPlaybackPanel.resx">
+    <EmbeddedResource Include="System\Windows\Controls\AudioPlaybackPanel.resx">
       <DependentUpon>AudioPlaybackPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\BrstmConverterDialog.resx">
       <DependentUpon>BrstmConverterDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\CLRControl.resx">
+    <EmbeddedResource Include="System\Windows\Controls\CLRControl.resx">
       <DependentUpon>CLRControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\CollisionEditor.resx">
+    <EmbeddedResource Include="System\Windows\Controls\CollisionEditor.resx">
       <DependentUpon>CollisionEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\CollisionForm.resx">
       <DependentUpon>CollisionForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\ChangeToDialog.resx">
-      <DependentUpon>ChangeToDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\ChangeToDialog2.resx">
-      <DependentUpon>ChangeToDialog2.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Forms\EditAllDialog.resx">
+      <DependentUpon>EditAllDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Moveset\AttributeGrid.resx">
       <DependentUpon>AttributeGrid.cs</DependentUpon>
@@ -714,14 +747,14 @@
     <EmbeddedResource Include="System\Windows\Forms\Moveset\EventModifierWindow.resx">
       <DependentUpon>EventModifierWindow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\ShpAnimEditControl.resx">
+    <EmbeddedResource Include="System\Windows\Controls\ShpAnimEditControl.resx">
       <DependentUpon>ShpAnimEditControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\TangentEditor.resx">
       <DependentUpon>TangentEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\NewModelEditControl.resx">
-      <DependentUpon>NewModelEditControl.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelEditControl.resx">
+      <DependentUpon>ModelEditControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\CHR0Editor.resx">
       <DependentUpon>CHR0Editor.cs</DependentUpon>
@@ -747,7 +780,7 @@
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\BonesPanel.resx">
       <DependentUpon>BonesPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\TexAnimEditControl.resx">
+    <EmbeddedResource Include="System\Windows\Controls\TexAnimEditControl.resx">
       <DependentUpon>TexAnimEditControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Moveset\EventDescription.resx">
@@ -759,8 +792,8 @@
     <EmbeddedResource Include="System\Windows\Forms\ObjectImporter.resx">
       <DependentUpon>ObjectImporter.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelLightEditor.resx">
-      <DependentUpon>ModelLightEditor.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelViewerSettings.resx">
+      <DependentUpon>ModelViewerSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\MovesetPanel.resx">
       <DependentUpon>MovesetPanel.cs</DependentUpon>
@@ -768,10 +801,10 @@
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelSwitcher.resx">
       <DependentUpon>ModelSwitcher.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\EditDialog.resx">
-      <DependentUpon>EditDialog.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Forms\EditAllKeyframesDialog.resx">
+      <DependentUpon>EditAllKeyframesDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\GoodColorControl.resx">
+    <EmbeddedResource Include="System\Windows\Controls\GoodColorControl.resx">
       <DependentUpon>GoodColorControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\GoodColorDialog.resx">
@@ -786,16 +819,13 @@
     <None Include="System\Windows\Forms\Model Previewer\Panels\Old\AssetPanel.resx">
       <DependentUpon>AssetPanel.cs</DependentUpon>
     </None>
-    <None Include="System\Windows\Forms\Model Previewer\OldModelEditControl.resx">
-      <DependentUpon>OldModelEditControl.cs</DependentUpon>
-    </None>
     <None Include="System\Windows\Forms\Model Previewer\Panels\Old\OptionPanel.resx">
       <DependentUpon>OptionPanel.cs</DependentUpon>
     </None>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\PlaybackPanel.resx">
       <DependentUpon>PlaybackPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\MSBinEditor.resx">
+    <EmbeddedResource Include="System\Windows\Controls\MSBinEditor.resx">
       <DependentUpon>MSBinEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ProgressWindow.resx">
@@ -804,7 +834,7 @@
     <EmbeddedResource Include="System\Windows\Forms\RenameDialog.resx">
       <DependentUpon>RenameDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\SoundPackControl.resx">
+    <EmbeddedResource Include="System\Windows\Controls\SoundPackControl.resx">
       <DependentUpon>SoundPackControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\SoundPathChanger.resx">
@@ -813,10 +843,7 @@
     <EmbeddedResource Include="System\Windows\Forms\TextureConverterDialog.resx">
       <DependentUpon>TextureConverterDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\TransformEditControl.resx">
-      <DependentUpon>TransformEditControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\VisEditor.resx">
+    <EmbeddedResource Include="System\Windows\Controls\VisEditor.resx">
       <DependentUpon>VisEditor.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>

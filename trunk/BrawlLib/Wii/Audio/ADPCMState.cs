@@ -41,6 +41,7 @@ namespace BrawlLib.Wii.Audio
 
             //if ((_sampleIndex == 0) && (_ps != 0))
             //    _srcPtr++;
+
             if (_sampleIndex % 14 == 0)
                 _ps = *_srcPtr++;
 
@@ -55,12 +56,7 @@ namespace BrawlLib.Wii.Audio
             scale = 1 << (_ps & 0x0F);
             cIndex = (_ps >> 4) << 1;
 
-            outSample = (0x400 + (scale * outSample << 11) + (_coefs[cIndex] * _yn1) + (_coefs[cIndex + 1] * _yn2)) >> 11;
-
-            //if (outSample > 32767)
-            //    outSample = 32767;
-            //if (outSample < -32768)
-            //    outSample = -32768;
+            outSample = (0x400 + (scale * outSample << 11) + (_coefs[cIndex.Clamp(0, 15)] * _yn1) + (_coefs[(cIndex + 1).Clamp(0, 15)] * _yn2)) >> 11;
 
             _yn2 = _yn1;
             return _yn1 = (short)outSample.Clamp(-32768, 32767);

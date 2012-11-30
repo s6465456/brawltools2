@@ -2,6 +2,7 @@
 using System.Audio;
 using BrawlLib.SSBBTypes;
 using System.IO;
+using System.Windows.Forms;
 
 namespace BrawlLib.Wii.Audio
 {
@@ -27,7 +28,7 @@ namespace BrawlLib.Wii.Audio
         public ADPCMStream(RSTMHeader* pRSTM)
         {
             HEADHeader* pHeader = pRSTM->HEADData;
-            HEADPart1* part1 = pHeader->Part1;
+            StrmDataInfo* part1 = pHeader->Part1;
             bshort* ynCache = (bshort*)pRSTM->ADPCData->Data;
             byte* sPtr;
             short[][] coefs;
@@ -88,28 +89,28 @@ namespace BrawlLib.Wii.Audio
                     //Advance address
                     sPtr += (bIndex == _numBlocks - 1) ? _lastBlockSize : _blockLen;
                 }
-
         }
 
-        public ADPCMStream(RWSD_WAVEEntry* pWAVE, VoidPtr dataAddr)
+        public ADPCMStream(WaveInfo* pWAVE, VoidPtr dataAddr)
         {
             ADPCMInfo* info;
             short[][] coefs;
             short yn1 = 0, yn2 = 0;
+            int loopBlock, loopChunk;
+            byte* sPtr;
 
             coefs = new short[_numChannels = pWAVE->_format._channels][];
-            if (_numChannels == 2)
-                Console.WriteLine("2 channels");
             _currentStates = new ADPCMState[_numChannels];
             _loopStates = new ADPCMState[_numChannels];
             _isLooped = pWAVE->_format._looped != 0;
             _sampleRate = pWAVE->_sampleRate;
             _numSamples = pWAVE->NumSamples;
 
+            if (_numSamples <= 0) return;
+
             _blockLen = (_numSamples.Align(14) / 14 * 8).Align(0x20);
             _loopStartSample = (int)pWAVE->_loopStartSample;
             _loopEndSample = _numSamples;
-            //_preserveLoopState = true;
 
             if (_blockLen <= 0)
             {
@@ -128,21 +129,18 @@ namespace BrawlLib.Wii.Audio
                     _lastBlockSamples = _samplesPerBlock;
             }
             _lastBlockSize = _lastBlockSamples.Align(14) / 14 * 8;
-            //Init();
+            
             _blockStates = new ADPCMState[_numChannels, _numBlocks];
-            //info = &pWAVE->_adpcInfo;
-            //coefs = info->Coefs;
 
-            //_blockStates = new ADPCMState[1, 1];
-            //_currentStates = new ADPCMState[1];
-            //_loopStates = new ADPCMState[1];
-
-            byte* sPtr = (byte*)dataAddr + (_loopStartSample / 14 * 8);
+            loopBlock = _loopStartSample / _samplesPerBlock;
+            loopChunk = (_loopStartSample - (loopBlock * _samplesPerBlock)).Align(14) / 14;
+            sPtr = (byte*)dataAddr + (loopBlock * _blockLen) + (loopChunk * 8);
 
             //Get channel info
             for (int i = 0; i < _numChannels; i++)
             {
-                info = &pWAVE->Info[i];
+                //sPtr = (byte*)dataAddr + pWAVE->GetChannelInfo(i)->_channelDataOffset + loopStart;
+                info = pWAVE->GetADPCMInfo(i);
                 //Get channel coefs
                 coefs[i] = info->Coefs;
                 //Fill loop state
@@ -156,19 +154,18 @@ namespace BrawlLib.Wii.Audio
             for (int sIndex = 0, bIndex = 0; sIndex < _numSamples; sIndex += _samplesPerBlock, bIndex++)
                 for (int cIndex = 0; cIndex < _numChannels; cIndex++)
                 {
+                    //sPtr = (byte*)dataAddr + pWAVE->GetChannelInfo(cIndex)->_channelDataOffset;
+                    ADPCMInfo* i = pWAVE->GetADPCMInfo(cIndex);
                     if (bIndex > 0) //yn values will be zero if first block
                     {
-                        yn1 = (short)&pWAVE->Info[cIndex]._lyn1;
-                        yn2 = (short)&pWAVE->Info[cIndex]._lyn2;
+                        yn1 = (short)i->_yn1;
+                        yn2 = (short)i->_yn2;
                     }
                     //Get block state
-                    _blockStates[cIndex, bIndex] = new ADPCMState(sPtr, *sPtr, yn1, yn2, coefs[cIndex]); //Use ps from data stream
+                        _blockStates[cIndex, bIndex] = new ADPCMState(sPtr, i->_ps, i->_yn1, i->_yn2, coefs[cIndex]); //Use ps from data stream
                     //Advance address
                     sPtr += (bIndex == _numBlocks - 1) ? _lastBlockSize : _blockLen;
                 }
-
-            //_loopStates[0] = new ADPCMState((byte*)dataAddr + (_loopStartSample / 14 * 8), info->_lps, info->_lyn1, info->_lyn2, coefs);
-            //_currentStates[0] = _blockStates[0, 0] = new ADPCMState((byte*)dataAddr, info->_ps, info->_yn1, info->_yn2, coefs);
         }
         
         private void RefreshStates()

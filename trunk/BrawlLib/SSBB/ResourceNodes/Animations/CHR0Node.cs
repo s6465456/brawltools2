@@ -234,29 +234,29 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             KeyframeEntry kfe;
 
-            int oldCount = FrameCount;
+            int origIntCount = FrameCount;
             FrameCount += external.FrameCount;
 
-            foreach (CHR0EntryNode _target in external.Children)
+            foreach (CHR0EntryNode _extEntry in external.Children)
             {
-                CHR0EntryNode node = null;
-                if ((node = (CHR0EntryNode)FindChild(_target.Name, false)) == null)
+                CHR0EntryNode _intEntry = null;
+                if ((_intEntry = (CHR0EntryNode)FindChild(_extEntry.Name, false)) == null)
                 {
-                    CHR0EntryNode newNode = new CHR0EntryNode() { Name = _target.Name };
-                    newNode._numFrames = _target.FrameCount + oldCount;
-                    for (int x = 0; x < _target.FrameCount; x++)
+                    CHR0EntryNode newIntEntry = new CHR0EntryNode() { Name = _extEntry.Name };
+                    newIntEntry._numFrames = _extEntry.FrameCount + origIntCount;
+                    for (int x = 0; x < _extEntry.FrameCount; x++)
                         for (int i = 0x10; i < 0x19; i++)
-                            if ((kfe = _target.GetKeyframe((KeyFrameMode)i, x)) != null)
-                                newNode.Keyframes.SetFrameValue((KeyFrameMode)i, x, kfe._value)._tangent = kfe._tangent;
-                    AddChild(newNode);
+                            if ((kfe = _extEntry.GetKeyframe((KeyFrameMode)i, x)) != null)
+                                newIntEntry.Keyframes.SetFrameValue((KeyFrameMode)i, x + origIntCount, kfe._value)._tangent = kfe._tangent;
+                    AddChild(newIntEntry);
                 }
                 else
                 {
-                    node._numFrames += oldCount;
-                    for (int x = 0; x < _target.FrameCount; x++)
+                    _intEntry._numFrames += origIntCount;
+                    for (int x = 0; x < _extEntry.FrameCount; x++)
                         for (int i = 0x10; i < 0x19; i++)
-                            if ((kfe = _target.GetKeyframe((KeyFrameMode)i, x)) != null)
-                                node.Keyframes.SetFrameValue((KeyFrameMode)i, x, kfe._value)._tangent = kfe._tangent;
+                            if ((kfe = _extEntry.GetKeyframe((KeyFrameMode)i, x)) != null)
+                                _intEntry.Keyframes.SetFrameValue((KeyFrameMode)i, x + origIntCount, kfe._value)._tangent = kfe._tangent;
                 }
             }
         }

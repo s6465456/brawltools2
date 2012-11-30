@@ -18,10 +18,10 @@ namespace BrawlLib.SSBBTypes
         public uint _tag; //Same as header
         public bint _dataLength; //Size of second REFF block. (file size - 0x18)
         public bint _dataOffset; //Offset from itself. Begins first entry
-        public bint _unk1; //0
-        public bint _unk2; //0
+        public bint _linkPrev; //0
+        public bint _linkNext; //0
         public bshort _stringLen;
-        public bshort _unk3; //0
+        public bshort _padding; //0
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 
@@ -136,19 +136,19 @@ namespace BrawlLib.SSBBTypes
         [Flags]
         public enum EmitterCommonFlag : uint
         {
-            SYNCLIFE = 0x1,
-            INVISIBLE = 0x2,
-            MAXLIFE = 0x4,
-            INHERIT_PTCL_SCALE = 0x20,
-            INHERIT_PTCL_ROTATE = 0x40,
-            INHERIT_CHILD_E_SCALE = 0x80,
-            INHERIT_CHILD_E_ROTATE = 0x100,
-            DISABLE_CALC = 0x200,
-            INHERIT_PTCL_PIVOT = 0x400,
-            INHERIT_CHILD_PIVOT = 0x800,
-            INHERIT_CHILD_P_SCALE = 0x1000,
-            INHERIT_CHILD_P_ROTATE = 0x2000,
-            RELOCATE_COMPLETE = 0x80000000,
+            SyncLife = 0x1,
+            Invisible = 0x2,
+            MaxLife = 0x4,
+            InheritPtclScale = 0x20,
+            InheritPtclRotate = 0x40,
+            InheritChildEScale = 0x80,
+            InheritChildERotate = 0x100,
+            DisableCalc = 0x200,
+            InheritPtclPivot = 0x400,
+            InheritChildPivot = 0x800,
+            InheritChildPScale = 0x1000,
+            InheritChildPRotate = 0x2000,
+            RelocateComplete = 0x80000000,
         }
 
         public enum EmitFormType
@@ -168,40 +168,41 @@ namespace BrawlLib.SSBBTypes
         public bushort ptclLife;
         public sbyte ptclLifeRandom;
         public sbyte inheritChildPtclTranslate;
-
         public sbyte emitEmitIntervalRandom;
         public sbyte emitEmitRandom;
+        //0x10
         public bfloat emitEmit;
         public bushort emitEmitStart;
         public bushort emitEmitPast;
         public bushort emitEmitInterval;
-
         public sbyte inheritPtclTranslate;
         public sbyte inheritChildEmitTranslate;
-
         public bfloat commonParam1;
+        //0x20
         public bfloat commonParam2;
         public bfloat commonParam3;
         public bfloat commonParam4;
         public bfloat commonParam5;
+        //0x30
         public bfloat commonParam6;
         public bushort emitEmitDiv;
-
         public sbyte velInitVelocityRandom;
         public sbyte velMomentumRandom;
         public bfloat velPowerRadiationDir;
         public bfloat velPowerYAxis;
+        //0x40
         public bfloat velPowerRandomDir;
         public bfloat velPowerNormalDir;
         public bfloat velDiffusionEmitterNormal;
         public bfloat velPowerSpecDir;
+        //0x50
         public bfloat velDiffusionSpecDir;
         public BVec3 velSpecDir;
-
+        //0x60
         public BVec3 scale;
         public BVec3 rotate;
         public BVec3 translate;
-
+        //0x84
         public byte lodNear;
         public byte lodFar;
         public byte lodMinEmit;
@@ -210,65 +211,64 @@ namespace BrawlLib.SSBBTypes
         public buint randomSeed;
 
         public fixed byte userdata[8];
-
+        //0x94
         public EmitterDrawSetting drawSetting;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct EmitterDrawSetting
     {
-        [Flags]
-        public enum DrawFlag
-        {
-            DRAWFLAG_ZCOMPARE_ENABLE = 0x0001, // 0x0001
-            DRAWFLAG_ZUPDATE = 0x0002, // 0x0002
-            DRAWFLAG_ZCOMPARE_BEFORETEX = 0x0004, // 0x0004
-            DRAWFLAG_CLIPING_DISABLE = 0x0008, // 0x0008
-            DRAWFLAG_USE_TEXTURE1 = 0x0010, // 0x0010
-            DRAWFLAG_USE_TEXTURE2 = 0x0020, // 0x0020
-            DRAWFLAG_USE_INDIRECT = 0x0040, // 0x0040
-            DRAWFLAG_PROJ_TEXTURE1 = 0x0080, // 0x0080
-            DRAWFLAG_PROJ_TEXTURE2 = 0x0100, // 0x0100
-            DRAWFLAG_PROJ_INDIRECT = 0x0200, // 0x0200
-            DRAWFLAG_INVISIBLE = 0x0400, // 0x0400 1: Does not render
-            DRAWFLAG_DRAWORDER_DESC = 0x0800, // 0x0800 0: normal order, 1: reverse order
-            DRAWFLAG_FOG_ENABLE = 0x1000, // 0x1000
-            DRAWFLAG_XYLINKSIZE = 0x2000, // 0x2000
-            DRAWFLAG_XYLINKSCALE = 0x4000  // 0x4000
-        }
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
+        [Flags]
+        public enum DrawFlag : ushort
+        {
+            ZCompEnable = 0x0001, // 0x0001
+            ZUpdate = 0x0002, // 0x0002
+            ZCompBeforeTex = 0x0004, // 0x0004
+            ClippingDisable = 0x0008, // 0x0008
+            UseTex1 = 0x0010, // 0x0010
+            UseTex2 = 0x0020, // 0x0020
+            UseTexInd = 0x0040, // 0x0040
+            ProjTex1 = 0x0080, // 0x0080
+            ProjTex2 = 0x0100, // 0x0100
+            ProjTexInd = 0x0200, // 0x0200
+            Invisible = 0x0400, // 0x0400 1: Does not render
+            DrawOrder = 0x0800, // 0x0800 0: normal order, 1: reverse order
+            FogEnable = 0x1000, // 0x1000
+            XYLinkSize = 0x2000, // 0x2000
+            XYLinkScale = 0x4000  // 0x4000
+        }
         public bushort mFlags;     // DrawFlag
 
         public byte mACmpComp0;
         public byte mACmpComp1;
         public byte mACmpOp;
 
-        public byte mNumTevs;   // TEV uses stages 1 through NW4R_EF_MAXTEV
+        public byte mNumTevs;   // TEV uses stages 1 through 4
         public byte mFlagClamp; // Obsolete
 
         [Flags]
         public enum IndirectTargetStage
         {
-            IND_TARGET_STAGE0 = 1,
-            IND_TARGET_STAGE1 = 2,
-            IND_TARGET_STAGE2 = 4,
-            IND_TARGET_STAGE3 = 8
+            None = 0,
+            Stage0 = 1,
+            Stage1 = 2,
+            Stage2 = 4,
+            Stage3 = 8
         }
         public byte mIndirectTargetStage;
+        //0x8
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct TevStageColor
         {
-            public byte mA;         // GXTevColorArg
-            public byte mB;         // GXTevColorArg
-            public byte mC;         // GXTevColorArg
-            public byte mD;         // GXTevColorArg
-        }
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct TevStageAlpha
-        {
-            public byte mA;         // GXTevAlphaArg
-            public byte mB;         // GXTevAlphaArg
-            public byte mC;         // GXTevAlphaArg
-            public byte mD;         // GXTevAlphaArg
+            public byte mA;         // GXTevColorArg / GXTevAlphaArg
+            public byte mB;         // GXTevColorArg / GXTevAlphaArg
+            public byte mC;         // GXTevColorArg / GXTevAlphaArg
+            public byte mD;         // GXTevColorArg / GXTevAlphaArg
+
+            public VoidPtr Address { get { fixed (void* p = &this)return p; } }
         }
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct TevStageColorOp
@@ -278,9 +278,15 @@ namespace BrawlLib.SSBBTypes
             public byte mScale;     // GXTevScale
             public byte mClamp;     // GXBool
             public byte mOutReg;    // GXTevRegID
+
+            public VoidPtr Address { get { fixed (void* p = &this)return p; } }
         }
-        public fixed byte mTevTexture[4];
-        public TevStageColor mTevColor1;        
+
+        public byte mTevTexture1;
+        public byte mTevTexture2;
+        public byte mTevTexture3;
+        public byte mTevTexture4;
+        public TevStageColor mTevColor1;
         public TevStageColor mTevColor2;
         public TevStageColor mTevColor3;
         public TevStageColor mTevColor4;
@@ -288,17 +294,28 @@ namespace BrawlLib.SSBBTypes
         public TevStageColorOp mTevColorOp2;
         public TevStageColorOp mTevColorOp3;
         public TevStageColorOp mTevColorOp4;
-        public TevStageAlpha mTevAlpha1;
-        public TevStageAlpha mTevAlpha2;
-        public TevStageAlpha mTevAlpha3;
-        public TevStageAlpha mTevAlpha4;
+        public TevStageColor mTevAlpha1;
+        public TevStageColor mTevAlpha2;
+        public TevStageColor mTevAlpha3;
+        public TevStageColor mTevAlpha4;
         public TevStageColorOp mTevAlphaOp1;
         public TevStageColorOp mTevAlphaOp2;
         public TevStageColorOp mTevAlphaOp3;
         public TevStageColorOp mTevAlphaOp4;
 
-        public fixed byte mTevKColorSel[4];  // Constant register selector: GXTevKColorSel
-        public fixed byte mTevKAlphaSel[4];  // Constant register selector: GXTevKAlphaSel
+        // Constant register selector: GXTevKColorSel
+        public byte mTevKColorSel1;
+        public byte mTevKColorSel2;
+        public byte mTevKColorSel3;
+        public byte mTevKColorSel4;
+
+        // Constant register selector: GXTevKAlphaSel
+        public byte mTevKAlphaSel1;
+        public byte mTevKAlphaSel2;
+        public byte mTevKAlphaSel3;
+        public byte mTevKAlphaSel4;
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct BlendMode
         {
             public byte mType;                      // GXBlendMode
@@ -306,72 +323,87 @@ namespace BrawlLib.SSBBTypes
             public byte mDstFactor;                 // GXBlendFactor
             public byte mOp;                        // GXLogicOp
         }
-        BlendMode mBlendMode;
+        public BlendMode mBlendMode;
+
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct ColorInput
         {
             public enum RasColor
             {
-                RASCOLOR_NULL = 0,      // No request
-                RASCOLOR_LIGHTING = 1   // Color lit by lighting
+                Null = 0,      // No request
+                Lighting = 1   // Color lit by lighting
             }
             public enum TevColor
             {
-                TEVCOLOR_NULL = 0,      // No request
-                TEVCOLOR1_1 = 1,        // Layer 1 primary color
-                TEVCOLOR1_2 = 2,        // Layer 1 Secondary Color
-                TEVCOLOR2_1 = 3,        // Layer 2 primary color
-                TEVCOLOR2_2 = 4,        // Layer 2 Secondary Color
-                TEVCOLOR1_MULT = 5,     // Layer 1 primary color x secondary color
-                TEVCOLOR2_MULT = 6      // Layer 2 primary color x secondary color
+                Null = 0,            // No request
+                Layer1Primary = 1,   // Layer 1 primary color
+                Layer1Secondary = 2, // Layer 1 Secondary Color
+                Layer2Primary = 3,   // Layer 2 primary color
+                Layer2Secondary = 4, // Layer 2 Secondary Color
+                Layer1Multi = 5,     // Layer 1 primary color x secondary color
+                Layer2Multi = 6      // Layer 2 primary color x secondary color
             }
 
-            public byte mRasColor;                  // Rasterize color (only channel 0): RasColor
-            public fixed byte mTevColor[3];               // TEV register TevColor
-            public fixed byte mTevKColor[4];              // Constant register TevColor
+            public byte mRasColor; //Rasterize color (only channel 0): RasColor
+
+            //TEV register: TevColor
+            public byte mTevColor1;
+            public byte mTevColor2;
+            public byte mTevColor3;
+              
+            //Constant register: TevColor
+            public byte mTevKColor1;
+            public byte mTevKColor2;
+            public byte mTevKColor3;
+            public byte mTevKColor4;
         }
-        ColorInput mColorInput;
-        ColorInput mAlphaInput;
+        public ColorInput mColorInput;
+        public ColorInput mAlphaInput;
+
+        //Length below is 0x48
 
         public byte mZCompareFunc;          // GXCompare
 
         // Alpha Swing
-        public enum AlphaFlickType
+        public enum AlphaFlickType : byte
         {
-            ALPHAFLICK_NONE = 0,
-            ALPHAFLICK_TRIANGLE,
-            ALPHAFLICK_SAWTOOTH1,
-            ALPHAFLICK_SAWTOOTH2,
-            ALPHAFLICK_SQUARE,
-            ALPHAFLICK_SINE
+            None = 0,
+            Triangle,
+            SawTooth1,
+            SawTooth2,
+            Square,
+            Sine
         }
         public byte mAlphaFlickType;        // AlphaFlickType
+
         public bushort mAlphaFlickCycle;
         public byte mAlphaFlickRandom;
         public byte mAlphaFlickAmplitude;
+
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct Lighting
         {
             public enum Mode
             {
-                LIGHTING_MODE_OFF = 0,
-                LIGHTING_MODE_SIMPLE,
-                LIGHTING_MODE_HARDWARE
+                Off = 0,
+                Simple,
+                Hardware
             }
             public enum Type
             {
-                LIGHTING_TYPE_NONE = 0,
-                LIGHTING_TYPE_AMBIENT,
-                LIGHTING_TYPE_POINT
+                None = 0,
+                Ambient,
+                Point
             }
             public byte mMode;                  // Mode
             public byte mType;                  // Type
+
             public RGBAPixel mAmbient;
             public RGBAPixel mDiffuse;
             public bfloat mRadius;
             public BVec3 mPosition;
         }
-        Lighting mLighting;
+        public Lighting mLighting;
 
         public fixed float mIndTexOffsetMtx[6]; //2x3 Matrix
         public sbyte mIndTexScaleExp;
@@ -385,14 +417,13 @@ namespace BrawlLib.SSBBTypes
         // Stored in ptcltype member.
         public enum Type
         {
-            TYPE_POINT = 0,
-            TYPE_LINE,
-            TYPE_FREE,
-            TYPE_BILLBOARD,
-            TYPE_DIRECTIONAL,
-            TYPE_STRIPE,
-            TYPE_SMOOTH_STRIPE,
-            NUM_OF_TYPE
+            Point = 0,
+            Line,
+            Free,
+            Billboard,
+            Directional,
+            Stripe,
+            SmoothStripe
         }
 
         // Expression assistance -- everything except billboards
@@ -400,9 +431,8 @@ namespace BrawlLib.SSBBTypes
         // Stored in typeOption member.
         public enum Assist
         {
-            ASSIST_NORMAL = 0,              // Render single Quad to Face surface
-            ASSIST_CROSS,                   // Add Quads so they are orthogonal to Normals.
-            NUM_OF_ASSIST
+            Normal = 0, // Render single Quad to Face surface
+            Cross       // Add Quads so they are orthogonal to Normals.
         }
 
         // Expression assistance -- billboards
@@ -410,21 +440,19 @@ namespace BrawlLib.SSBBTypes
         // Stored in typeOption member.
         public enum BillboardAssist
         {
-            BILLBOARD_ASSIST_NORMAL = 0,        // Normal
-            BILLBOARD_ASSIST_Y,                 // Y-axis billboard
-            BILLBOARD_ASSIST_DIRECTIONAL,       // Billboard using the movement direction as its axis
-            BILLBOARD_ASSIST_NORMAL_WO_ROLL,    // Normal (no roll)
-            NUM_OF_BILLBOARD_ASSIST
+            Normal = 0,     // Normal
+            Y,              // Y-axis billboard
+            Directional,    // Billboard using the movement direction as its axis
+            NormalNoRoll    // Normal (no roll)
         }
 
         // Expression assistance -- stripes
         public enum StripeAssist
         {
-            STRIPE_ASSIST_NORMAL = 0,           // Normal.
-            STRIPE_ASSIST_CROSS,                // Add a surface orthogonal to the Normal.
-            STRIPE_ASSIST_BILLBOARD,            // Always faces the screen.
-            STRIPE_ASSIST_TUBE,                 // Expression of a tube shape.
-            NUM_OF_STRIPE_ASSIST
+            Normal = 0,          // Normal.
+            Cross,               // Add a surface orthogonal to the Normal.
+            Billboard,           // Always faces the screen.
+            Tube                 // Expression of a tube shape.
         }
 
         // Movement direction (Y-axis) -- everything except billboard
@@ -440,7 +468,6 @@ namespace BrawlLib.SSBBTypes
             AHEAD_NO_DESIGN,                    // Unspecified
             AHEAD_PARTICLE_BOTH,                // Difference in position with both neighboring particles
             AHEAD_NO_DESIGN2,                   // Unspecified (initialized as the world Y-axis)
-            NUM_OF_AHEAD
         }
 
         // Movement direction (Y-axis) -- billboards
@@ -453,7 +480,6 @@ namespace BrawlLib.SSBBTypes
             BILLBOARD_AHEAD_EMITTER_DESIGN,         // Emitter specified direction
             BILLBOARD_AHEAD_PARTICLE,               // Difference in location from the previous particle
             BILLBOARD_AHEAD_PARTICLE_BOTH,          // Difference in position with both neighboring particles
-            NUM_OF_BILLBOARD_AHEAD
         }
 
         // Rotational axis to take into account when rendering
@@ -465,7 +491,6 @@ namespace BrawlLib.SSBBTypes
             ROTATE_AXIS_Y,              // Y-axis rotation only
             ROTATE_AXIS_Z,              // Z-axis rotation only
             ROTATE_AXIS_XYZ,            // 3-axis rotation
-            NUM_OF_ROTATE_AXIS
         }
 
         // Base surface (polygon render surface)
@@ -473,44 +498,41 @@ namespace BrawlLib.SSBBTypes
         // Stored in typeReference.
         public enum Face
         {
-            FACE_XY = 0,
-            FACE_XZ,
-            NUM_OF_FACE
+            XY = 0,
+            XZ,
         }
 
         // Stripe terminal connections
         //
-        // Stored in typeOption2.
+        // Stored in typeOption2. >> 0 & 7
         public enum StripeConnect
         {
-            STRIPE_CONNECT_NONE = 0,    // Does not connect
-            STRIPE_CONNECT_RING,        // Both ends connected
-            STRIPE_CONNECT_EMITTER,     // Connect between the newest particle and the emitter
-            STRIPE_CONNECT__MASK = 0x07 // StripeConnect mask
+            None = 0,    // Does not connect
+            Ring,        // Both ends connected
+            Emitter,     // Connect between the newest particle and the emitter
+            //Mask = 0x07 // StripeConnect mask
         }
 
         // Initial value of the reference axis for stripes
         //
-        // Stored in typeOption2.
-        [Flags]
+        // Stored in typeOption2. >> 3 & 7
         public enum StripeInitialPrevAxis
         {
-            STRIPE_INITIAL_PREV_AXIS_EMITTER_AXIS_X = 1 << 3,   // X-axis of the emitter
-            STRIPE_INITIAL_PREV_AXIS_EMITTER_AXIS_Y = 0 << 3,   // Y-axis of the emitter (assigned to 0 for compatibility)
-            STRIPE_INITIAL_PREV_AXIS_EMITTER_AXIS_Z = 2 << 3,   // Z-axis of the emitter
-            STRIPE_INITIAL_PREV_AXIS_EMITTER_XYZ = 3 << 3,      // Direction in emitter coordinates (1, 1, 1)
-            STRIPE_INITIAL_PREV_AXIS__MASK = 0x07 << 3          // Bitmask
+            XAxis = 1,   // X-axis of the emitter
+            YAxis = 0,   // Y-axis of the emitter (assigned to 0 for compatibility)
+            ZAxis = 2,   // Z-axis of the emitter
+            XYZ = 3,      // Direction in emitter coordinates (1, 1, 1)
+            //STRIPE_INITIAL_PREV_AXIS__MASK = 0x07 << 3          // Bitmask
         }
 
         // Method of applying texture to stripes
         //
-        // Stored in typeOption2.
-        [Flags]
+        // Stored in typeOption2. >> 6 & 3
         public enum StripeTexmapType
         {
-            STRIPE_TEXMAP_TYPE_STRETCH = 0 << 6,    // Stretch the texture along the stripe's entire length.
-            STRIPE_TEXMAP_TYPE_REPEAT = 1 << 6,     // Repeats the texture for each segment.
-            STRIPE_TEXMAP_TYPE__MASK = 0x03 << 6
+            Stretch = 0,    // Stretch the texture along the stripe's entire length.
+            Repeat = 1,     // Repeats the texture for each segment.
+            //STRIPE_TEXMAP_TYPE__MASK = 0x03 << 6
         }
 
         // Directional axis processing
@@ -519,9 +541,9 @@ namespace BrawlLib.SSBBTypes
         [Flags]
         public enum DirectionalPivot
         {
-            DIRECTIONAL_PIVOT_NOP = 0 << 0,         // No processing
-            DIRECTIONAL_PIVOT_BILLBOARD = 1 << 0,   // Convert into a billboard, with the movement direction as its axis
-            DIRECTIONAL_PIVOT__MASK = 0x03 << 0
+            NoProcessing = 0 << 0,         // No processing
+            Billboard = 1 << 0,   // Convert into a billboard, with the movement direction as its axis
+            //DIRECTIONAL_PIVOT__MASK = 0x03 << 0
         }
 
         public byte ptcltype;                   // enum Type
@@ -541,7 +563,7 @@ namespace BrawlLib.SSBBTypes
         //   enum BillboardAhead
 
         public byte typeAxis;                   // enum RotateAxis
-
+        
         public byte typeOption0;                // Various types of parameters corresponding to the particle shapes
         // Directional:
         //   Change vertical (Y) based on speed : 0=off, 1=on
@@ -627,78 +649,155 @@ namespace BrawlLib.SSBBTypes
         public byte reserved1;
         public bfloat lod_bias;
     }
+
+    public enum AnimCurveTargetByteFloat //curve flag = 0, 3
+    {
+        //Updates: ParticleParam
+        Color0Primary = 0,
+        Alpha0Primary = 3,
+        Color0Secondary = 4,
+        Alpha0Secondary = 7,
+        Color1Primary = 8,
+        Alpha1Primary = 11,
+        Color1Secondary = 12,
+        Alpha1Secondary = 15,
+        Size = 16,
+        Scale = 24,
+        ACMPref0 = 119,
+        ACMPref1 = 120,
+        Tex1Scale = 44,
+        Tex1Rot = 68,
+        Tex1Trans = 80,
+        Tex2Scale = 52,
+        Tex2Rot = 72,
+        Tex2Trans = 88,
+        TexIndScale = 60,
+        TexIndRot = 76,
+        TexIndTrans = 96,
+    }
+
+    public enum AnimCurveTargetRotateFloat //curve flag = 6, 3 when baking
+    {
+        //Updates: ParticleParam
+        Rotate = 32
+    }
+
+    public enum AnimCurveTargetPtclTex //curve flag = 4
+    {
+        //Updates: ParticleParam
+        Tex1 = 104,
+        Tex2 = 108,
+        TexInd = 112,
+    }
+    public enum AnimCurveTargetChild //curve flag = 5
+    {
+        //Updates: child
+        Child = 0
+    }
+
+    public enum AnimCurveTargetField //curve flag = 7
+    {
+        //Updates: Field
+        Gravity = 0,
+        Speed = 1,
+        Magnet = 2,
+        Newton = 3,
+        Vortex = 4,
+        Spin = 6,
+        Random = 7,
+        Tail = 8,
+    }
+
+    public enum AnimCurveTargetPostField //curve flag = 2
+    {
+        //Updates: PostFieldInfo.AnimatableParams
+        Size = 0,
+        Rotate = 12,
+        Translate = 24,
+    }
+    public enum AnimCurveTargetEmitterFloat //curve flag = 11
+    {
+        //Updates: EmitterParam
+        CommonParam = 44,
+        Scale = 124,
+        Rotate = 136,
+        Translate = 112,
+        SpeedOrig = 72,
+        SpeedYAxis = 76,
+        SpeedRandom = 80,
+        SpeedNormal = 84,
+        SpeedSpecDir = 92,
+        Emission = 8
+    }
+
     public enum AnimCurveTarget
     {
-        //1111 0000 0000 0000   Secondary Flag (F when unused)
-        //0000 1111 0000 0000   Primary Flag
-        //0000 0000 1111 1111   Enum
-
         /* Update target: ParticleParam*/
         // curveFlag = 0(u8) or 3(f32)
-        Color0Primary = 0x0300,
-        Alpha0Primary = 0x0303,
-        Color0Secondary = 0x0304,
-        Alpha0Secondary = 0x0307,
-        Color1Primary = 0x0308,
-        Alpha1Primary = 0x030B,
-        Color1Secondary = 0x030C,
-        Alpha1Secondary = 0x030F,
-        Size = 0x0310,
-        Scale = 0x0318,
-        ACMPref0 = 0x0377,
-        ACMPref1 = 0x0378,
-        Tex1Scale = 0x032C,
-        Tex1Rotate = 0x0344,
-        Tex1Translate = 0x0350,
-        Tex2Scale = 0x0334,
-        Tex2Rotate = 0x0348,
-        Tex2Translate = 0x0358,
-        TexIndirectScale = 0x033C,
-        TexIndirectRotate = 0x034C,
-        TexIndirectTranslate = 0x0360,
-        
+        AC_TARGET_COLOR0PRI = 0,
+        AC_TARGET_ALPHA0PRI = 3,
+        AC_TARGET_COLOR0SEC = 4,
+        AC_TARGET_ALPHA0SEC = 7,
+        AC_TARGET_COLOR1PRI = 8,
+        AC_TARGET_ALPHA1PRI = 11,
+        AC_TARGET_COLOR1SEC = 12,
+        AC_TARGET_ALPHA1SEC = 15,
+        AC_TARGET_SIZE = 16,
+        AC_TARGET_SCALE = 24,
+        AC_TARGET_ACMPREF0 = 119,
+        AC_TARGET_ACMPREF1 = 120,
+        AC_TARGET_TEXTURE1SCALE = 44,
+        AC_TARGET_TEXTURE1ROTATE = 68,
+        AC_TARGET_TEXTURE1TRANSLATE = 80,
+        AC_TARGET_TEXTURE2SCALE = 52,
+        AC_TARGET_TEXTURE2ROTATE = 72,
+        AC_TARGET_TEXTURE2TRANSLATE = 88,
+        AC_TARGET_TEXTUREINDSCALE = 60,
+        AC_TARGET_TEXTUREINDROTATE = 76,
+        AC_TARGET_TEXTUREINDTRANSLATE = 96,
+
         // curveFlag = 6 (3 when baking)
-        Rotate = 0xF320,
+        AC_TARGET_ROTATE = 32,
 
         //curveFlag = 4
-        Texture1 = 0xF468,
-        Texture2 = 0xF46C,
-        TextureIndirect = 0xF470,
-        
+        AC_TARGET_TEXTURE1 = 104,
+        AC_TARGET_TEXTURE2 = 108,
+        AC_TARGET_TEXTUREIND = 112,
+
         /* Update target: child*/
         //curveFlag = 5
-        Child = 0xF500,
+        AC_TARGET_CHILD = 0,
 
         /* Update target: Field*/
         //curveFlag = 7
-        FieldGravity = 0xF700,
-        FieldSpeed = 0xF701,
-        FieldMagnet = 0xF702,
-        FieldNewton = 0xF703,
-        FieldVortex = 0xF704,
-        FieldSpin = 0xF706,
-        FieldRandom = 0xF707,
-        FieldTail = 0xF708,
+        AC_TARGET_FIELD_GRAVITY = 0,
+        AC_TARGET_FIELD_SPEED = 1,
+        AC_TARGET_FIELD_MAGNET = 2,
+        AC_TARGET_FIELD_NEWTON = 3,
+        AC_TARGET_FIELD_VORTEX = 4,
+        AC_TARGET_FIELD_SPIN = 6,
+        AC_TARGET_FIELD_RANDOM = 7,
+        AC_TARGET_FIELD_TAIL = 8,
 
         /* Update target: PostFieldInfo::AnimatableParams*/
         //curveFlag = 2
-        PostfieldSize = 0xF200,
-        PostfieldRotate = 0xF20C,
-        PostfieldTranslate = 0xF218,
+        AC_TARGET_POSTFIELD_SIZE = 0,
+        AC_TARGET_POSTFIELD_ROTATE = 12,
+        AC_TARGET_POSTFIELD_TRANSLATE = 24,
 
         /* Update target: EmitterParam*/
         //curveFlag = 11 (all f32)
-        EmitCommonParam = 0xFB2C,
-        EmitScale = 0xFB7C,
-        EmitRotate = 0xFB88,
-        EmitTranslate = 0xFB70,
-        EmitSpeedOrig = 0xFB48,
-        EmitSpeedYAxis = 0xFB4C,
-        EmitSpeedRandom = 0xFB50,
-        EmitSpeedNormal = 0xFB54,
-        EmitSpeedSpecDir = 0xFB5C,
-        EmitEmission = 0xFB08
-    }
+        AC_TARGET_EMIT_COMMONPARAM = 44,
+        AC_TARGET_EMIT_SCALE = 124,
+        AC_TARGET_EMIT_ROTATE = 136,
+        AC_TARGET_EMIT_TRANSLATE = 112,
+        AC_TARGET_EMIT_SPEED_ORIG = 72,
+        AC_TARGET_EMIT_SPEED_YAXIS = 76,
+        AC_TARGET_EMIT_SPEED_RANDOM = 80,
+        AC_TARGET_EMIT_SPEED_NORMAL = 84,
+        AC_TARGET_EMIT_SPEED_SPECDIR = 92,
+        AC_TARGET_EMIT_EMISSION = 8
+    };
 
     public enum AnimCurveType
     {

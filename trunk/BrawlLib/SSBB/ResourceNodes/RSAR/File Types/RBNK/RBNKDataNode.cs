@@ -6,72 +6,309 @@ using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class RBNKDataNode : RBNKEntryNode
+    public unsafe class RBNKDataInstParamNode : RBNKDataEntryNode
     {
-        internal RBNK_DATAEntry* Header { get { return (RBNK_DATAEntry*)WorkingUncompressed.Address; } }
+        internal RBNKInstParam* Header { get { return (RBNKInstParam*)WorkingUncompressed.Address; } }
 
-        private RWSD_WSDEntry part1;
-        //RWSD_DATAEntryPart2 part2;
-        //RWSD_DATAEntryPart3 part3;
+        public RBNKInstParam hdr = new RBNKInstParam();
 
-        private List<RWSD_NoteEvent> _part2 = new List<RWSD_NoteEvent>();
-        private List<RWSD_NoteInfo> _part3 = new List<RWSD_NoteInfo>();
+        ResourceNode _soundNode;
+        [Browsable(false)]
+        public ResourceNode Sound
+        {
+            get { return _soundNode; }
+            set
+            {
+                if (_soundNode != value)
+                    _soundNode = value;
+            }
+        }
+        [Category("Bank Data Entry"), Browsable(true), TypeConverter(typeof(DropDownListRBNKSounds))]
+        public string Wave
+        {
+            get { return _soundNode == null ? null : _soundNode._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                    Sound = null;
+                else
+                {
+                    ResourceNode node = null;
+                    int t = 0;
+                    foreach (ResourceNode r in Parent.Parent.Children[1].Children)
+                    {
+                        if (r.Name == value) { node = r; break; }
+                        t++;
+                    }
+                    if (node != null)
+                    {
+                        Sound = node;
+                        hdr._waveIndex = t;
+                        SignalPropertyChange();
+                    }
+                }
+            }
+        }
 
-        public string offset { get { return ((uint)Header - (uint)((RBNKNode)Parent.Parent).Header).ToString("X"); } }
-
-        internal int _soundIndex;
-
-        //[Category("Data Part1")]
-        //public float Unknown1 { get { return part1._unk1; } set { part1._unk1 = value; } }
-        //[Category("Data Part1")]
-        //public float Unknown2 { get { return part1._unk2; } set { part1._unk2 = value; } }
-        //[Category("Data Part1")]
-        //public short Unknown3 { get { return part1._unk3; } set { part1._unk3 = value; } }
-        //[Category("Data Part1")]
-        //public short Unknown4 { get { return part1._unk4; } set { part1._unk4 = value; } }
-        //[Category("Data Part1")]
-        //public int Unknown5 { get { return part1._unk5; } set { part1._unk5 = value; } }
-        //[Category("Data Part1")]
-        //public int Unknown6 { get { return part1._unk6; } set { part1._unk6 = value; } }
-        //[Category("Data Part1")]
-        //public int Unknown7 { get { return part1._unk7; } set { part1._unk7 = value; } }
-        //[Category("Data Part1")]
-        //public int Unknown8 { get { return part1._unk8; } set { part1._unk8 = value; } }
-        //[Category("Data Part1")]
-        //public int Unknown9 { get { return part1._unk9; } set { part1._unk9 = value; } }
-
-        [Category("Data Part2")]
-        public List<RWSD_NoteEvent> Part2 { get { return _part2; } }
-        [Category("Data Part3")]
-        public List<RWSD_NoteInfo> Part3 { get { return _part3; } }
-
+        //[Category("Bank Data Entry")]
+        //public int WaveIndex { get { return hdr._waveIndex; } set { hdr._waveIndex = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte Attack { get { return hdr._attack; } set { hdr._attack = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte Decay { get { return hdr._decay; } set { hdr._decay = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte Sustain { get { return hdr._sustain; } set { hdr._sustain = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte Release { get { return hdr._release; } set { hdr._release = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte Hold { get { return hdr._hold; } set { hdr._hold = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public WaveDataLocation WaveDataLocationType { get { return (WaveDataLocation)hdr._waveDataLocationType; } set { hdr._waveDataLocationType = (byte)value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public NoteOffType NoteOffType { get { return (NoteOffType)hdr._noteOffType; } set { hdr._noteOffType = (byte)value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte AlternateAssign { get { return hdr._alternateAssign; } set { hdr._alternateAssign = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte OriginalKey { get { return hdr._originalKey; } set { hdr._originalKey = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte Volume { get { return hdr._volume; } set { hdr._volume = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte Pan { get { return hdr._pan; } set { hdr._pan = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public byte SurroundPan { get { return hdr._surroundPan; } set { hdr._surroundPan = value; SignalPropertyChange(); } }
+        [Category("Bank Data Entry")]
+        public float Pitch { get { return hdr._pitch; } set { hdr._pitch = value; SignalPropertyChange(); } }
+        
         protected override bool OnInitialize()
         {
-            //RWSDHeader* rwsd = ((RWSDNode)_parent).Header;
-            //VoidPtr offset = &rwsd->Data->_list;
-            RuintList* list;
-            int count;
-
-            //part1 = *Header->GetPart1(_offset);
-
-            //list = Header->GetPart2(_offset);
-            //count = list->_numEntries;
-            //if (count > 1)
-            //    MessageBox.Show("RWSD pt2 - " + _parent.Name + " - " + Name + " " + count);
-            //for (int i = 0; i < count; i++)
-            //    _part2.Add(*(RWSD_DATAEntryPart2*)list->Get(_offset, i));
-
-            //list = Header->GetPart3(_offset);
-            //count = list->_numEntries;
-            //if (count > 1)
-            //    MessageBox.Show("RWSD pt3 - " + _parent.Name + " - " + Name + " " + count);
-            //for (int i = 0; i < count; i++)
-            //    _part3.Add(*(RWSD_DATAEntryPart3*)list->Get(_offset, i));
+            hdr = *Header;
 
             if (_name == null)
-                _name = String.Format("Sound[{0:X2}]", Index);
+                _name = String.Format("InstParams[{0}]", Index);
+
+            SetSizeInternal(0x30);
+
+            if (hdr._waveIndex < RBNKNode.Children[1].Children.Count)
+                _soundNode = RBNKNode.Children[1].Children[hdr._waveIndex];
 
             return false;
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            return RBNKInstParam.Size;
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            *(RBNKInstParam*)address = hdr;
+        }
+    }
+
+    public unsafe class RBNKDataRangeTableNode : RBNKTableNode
+    {
+        internal RangeTable* Header { get { return (RangeTable*)WorkingUncompressed.Address; } }
+        
+        protected override bool OnInitialize()
+        {
+            if (_name == null)
+                _name = String.Format("Group[{0}]", Index);
+
+            _keys = new byte[Header->_tableCount];
+
+            SetSizeInternal((1 + _keys.Length).Align(4) + _keys.Length * 8);
+            for (int i = 0; i < _keys.Length; i++)
+                _keys[i] = Header->GetKey(i);
+            return _keys.Length > 0;
+        }
+
+        protected override void OnPopulate()
+        {
+            RuintCollection* c = Header->Collection;
+            for (int i = 0; i < _keys.Length; i++)
+            {
+                VoidPtr addr = _offset + c->Entries[i];
+                RBNKEntryNode e = null;
+                switch (c->Entries[i]._dataType) //RegionTableType
+                {
+                    default:
+                        e = new RBNKNullNode();
+                        (e as RBNKDataEntryNode)._key = _keys[i];
+                        break;
+                    case 1: //InstParam
+                        e = new RBNKDataInstParamNode();
+                        (e as RBNKDataEntryNode)._key = _keys[i];
+                        break;
+                    case 2: //RangeTable
+                        e = new RBNKDataRangeTableNode();
+                        break;
+                    case 3: //IndexTable
+                        e = new RBNKDataIndexTableNode();
+                        break;
+                }
+                if (e != null)
+                    e.Initialize(this, addr, 0);
+            }
+        }
+    }
+
+    public unsafe class RBNKDataIndexTableNode : RBNKTableNode
+    {
+        internal IndexTable* Header { get { return (IndexTable*)WorkingUncompressed.Address; } }
+
+        IndexTable hdr = new IndexTable();
+
+        [Browsable(false)]
+        public byte Min { get { return hdr._min; } set { hdr._min = value; SignalPropertyChange(); } }
+        [Browsable(false)]
+        public byte Max { get { return hdr._max; } set { hdr._max = value; SignalPropertyChange(); } }
+        
+        protected override bool OnInitialize()
+        {
+            hdr = *Header;
+
+            if (_name == null)
+                _name = String.Format("Group[{0}]", Index);
+
+            SetSizeInternal(4 + (Min - Max + 1) * 8);
+
+            return Max > Min;
+        }
+
+        protected override void OnPopulate()
+        {
+            for (byte i = Min; i <= Max; i++)
+            {
+                VoidPtr addr = _offset + Header->_collection.Entries[i - Min];
+                RBNKEntryNode e = null;
+                switch (Header->_collection.Entries[i - Min]._dataType) //RegionTableType
+                {
+                    default:
+                        e = new RBNKNullNode();
+                        (e as RBNKNullNode)._key = i;
+                        break;
+                    case 1: //InstParam
+                        e = new RBNKDataInstParamNode();
+                        (e as RBNKDataInstParamNode)._key = i;
+                        break;
+                    case 2: //RangeTable
+                        e = new RBNKDataRangeTableNode();
+                        break;
+                    case 3: //IndexTable
+                        e = new RBNKDataIndexTableNode();
+                        break;
+                }
+                if (e != null)
+                    e.Initialize(this, addr, 0);
+            }
+        }
+    }
+
+    public class RBNKDataEntryNode : RBNKEntryNode
+    {
+        public byte _key;
+        public byte Key { get { return _key; } set { _key = value; SignalPropertyChange(); } }
+    }
+
+    public unsafe class RBNKTableNode : RBNKEntryNode
+    {
+        [Browsable(false)]
+        public byte[] Keys { get { return _keys; } }
+        public byte[] _keys = new byte[0];
+
+        VoidPtr _rebuildBase;
+        bool _rebuildType = false; //true is range, false is index
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            byte* addr = (byte*)address;
+            RuintCollection* collection;
+            if (_rebuildType)
+            {
+                *addr = (byte)_keys.Length;
+                for (int i = 0; i < _keys.Length; i++)
+                    addr[i + 1] = (byte)_keys[i];
+                addr += (1 + _keys.Length).Align(4);
+                collection = (RuintCollection*)addr;
+            }
+            else
+            {
+                IndexTable* table = (IndexTable*)addr;
+                table->_min = _keys[0];
+                table->_max = _keys[_keys.Length - 1];
+                table->_reserved = 0;
+                collection = (RuintCollection*)table->_collection.Address;
+            }
+            addr = (byte*)collection + 8 * Children.Count;
+            foreach (RBNKDataEntryNode e in Children)
+            {
+                collection->Entries[e.Index] = (uint)((VoidPtr)addr - _rebuildBase);
+                if (e is RBNKNullNode)
+                    collection->Entries[e.Index]._dataType = 4;
+                else
+                {
+                    collection->Entries[e.Index]._dataType = 1;
+                    
+                    e.Rebuild(addr, e._calcSize, true);
+                    addr += e._calcSize;
+                }
+            }
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            int size = 0;
+
+            //Determine whether to use a RangeTable or IndexTable
+            _keys = new byte[Children.Count];
+            int prevKey = 0, currKey;
+            foreach (RBNKDataEntryNode e in Children)
+            {
+                _keys[e.Index] = e._key;
+
+                if (e.Index == 0)
+                {
+                    prevKey = e._key;
+                    continue; 
+                }
+
+                currKey = e._key;
+
+                if (currKey != prevKey + 1)
+                    _rebuildType = true;
+
+                prevKey = e._key; 
+            }
+
+            if (_rebuildType)
+                size = (1 + _keys.Length).Align(4) + _keys.Length * 8;
+            else
+                size = Children.Count * 8;
+
+            foreach (RBNKEntryNode e in Children)
+                size += e.CalculateSize(true);
+
+            return size.Align(0x20);
+        }
+    }
+
+    public unsafe class RBNKNullNode : RBNKDataEntryNode
+    {
+        protected override bool OnInitialize()
+        {
+            SetSizeInternal(0);
+            _name = "Null[" + Index + "]";
+            return false;
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            return 0;
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            
         }
     }
 }

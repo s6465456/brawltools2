@@ -28,7 +28,7 @@ namespace BrawlLib.Wii.Animations
         public bool hasTy;
         public bool hasTz;
 
-        public void SetBools(int index, bool val)
+        public void SetBool(int index, bool val)
         {
             switch (index)
             {
@@ -51,6 +51,31 @@ namespace BrawlLib.Wii.Animations
                 case 0x18:
                     hasTz = val; break;
             }
+        }
+        public bool GetBool(int index)
+        {
+            switch (index)
+            {
+                case 0x10:
+                    return hasSx; 
+                case 0x11:
+                    return hasSy; 
+                case 0x12:
+                    return hasSz; 
+                case 0x13:
+                    return hasRx; 
+                case 0x14:
+                    return hasRy; 
+                case 0x15:
+                    return hasRz; 
+                case 0x16:
+                    return hasTx; 
+                case 0x17:
+                    return hasTy; 
+                case 0x18:
+                    return hasTz; 
+            }
+            return false;
         }
 
         public void ResetBools()

@@ -63,7 +63,12 @@ namespace BrawlLib.SSBBTypes
         }
 
         public byte _refType;
-        public byte _dataType;
+
+        public byte _dataType; 
+        //Specifies which struct to get, ex
+        //DataRef<T, T1, T2, T3>
+        //if dataType == 2, return T2 struct at address
+
         public bushort _reserved;
         public bint _data;
 
@@ -79,11 +84,15 @@ namespace BrawlLib.SSBBTypes
 
         public static implicit operator ruint(int r) { return new ruint() { _refType = 1, _data = r }; }
         public static implicit operator int(ruint r) { return r._data; }
+        public static implicit operator ruint(uint r) { return new ruint() { _refType = 1, _data = (int)r }; }
+        public static implicit operator uint(ruint r) { return (uint)r._data; }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct RuintList
     {
+        //This address is the base of all ruint entry offsets
+
         public bint _numEntries;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
@@ -148,7 +157,7 @@ namespace BrawlLib.SSBBTypes
             _numEntries = numEntries;
             _first = new ResourceEntry(0xFFFF, 0, 0, 0, 0);
         }
-
+        
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public ResourceEntry* First { get { return (ResourceEntry*)(Address + 0x18); } }
         public VoidPtr EndAddress { get { return Address + _totalSize; } }
@@ -219,12 +228,8 @@ namespace BrawlLib.SSBBTypes
         public int CharIndex { get { return _id >> 3; } set { _id = (ushort)((value << 3) | (_id & 0x7)); } }
         public int CharShift { get { return _id & 0x7; } set { _id = (ushort)((value & 0x7) | (_id & 0xFFF8)); } }
 
-        public ResourceEntry(int id, int left, int right)
-            : this(id, left, right, 0, 0) { }
-
-        public ResourceEntry(int id, int left, int right, int dataOffset)
-            : this(id, left, right, dataOffset, 0){ }
-
+        public ResourceEntry(int id, int left, int right) : this(id, left, right, 0, 0) { }
+        public ResourceEntry(int id, int left, int right, int dataOffset) : this(id, left, right, dataOffset, 0){ }
         public ResourceEntry(int id, int left, int right, int dataOffset, int stringOffset)
         {
             _id = (ushort)id;
@@ -332,7 +337,7 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    struct AudioFormatInfo
+    public struct AudioFormatInfo
     {
         public byte _encoding;
         public byte _looped;
@@ -346,17 +351,17 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct ADPCMInfo
     {
-        public const int Size = 0x2E;
+        public const int Size = 0x30;
 
         public fixed short _coefs[16];
 
         public bushort _gain;
-        public bshort _ps;
-        public bshort _yn1;
-        public bshort _yn2;
-        public bshort _lps;
-        public bshort _lyn1;
-        public bshort _lyn2;
+        public bshort _ps; //Predictor and scale. This will be initialized to the predictor and scale value of the sample's first frame.
+        public bshort _yn1; //History data; used to maintain decoder state during sample playback.
+        public bshort _yn2; //History data; used to maintain decoder state during sample playback.
+        public bshort _lps; //Predictor/scale for the loop point frame. If the sample does not loop, this value is zero.
+        public bshort _lyn1; //History data for the loop point. If the sample does not loop, this value is zero.
+        public bshort _lyn2; //History data for the loop point. If the sample does not loop, this value is zero.
 
         public short[] Coefs
         {

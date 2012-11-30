@@ -5,6 +5,7 @@ using System.Drawing;
 using OpenTK.Platform;
 using OpenTK.Graphics.OpenGL;
 using BrawlLib.SSBB.ResourceNodes;
+using System.Drawing.Imaging;
 
 namespace BrawlLib.OpenGL
 {
@@ -94,6 +95,8 @@ namespace BrawlLib.OpenGL
                 {
                     _ctx.Capture();
 
+                    RenderBG();
+
                     //Set projection
                     if (_projectionChanged)
                     {
@@ -154,6 +157,21 @@ namespace BrawlLib.OpenGL
             v._w = 1.0f;
 
             return (Vector3)(_camera._matrixInverse * _projectionInverse * v);
+        }
+
+        public Vector3 Project(Vector3 point) { return Project(point._x, point._y, point._z); }
+        public Vector3 Project(float x, float y, float z)
+        {
+            if (_camera == null)
+                return new Vector3();
+
+            Vector4 v;
+            v._x = (Width + 1) * x / 2;
+            v._y = (Height + y) / 2 * Height + 1;
+            v._z = (z + 1) / 2;
+            v._w = 1.0f;
+
+            return (Vector3)(_camera._matrix * _projectionMatrix * v);
         }
 
         public Vector3 TraceZ(Vector3 point, float z)
@@ -221,6 +239,9 @@ namespace BrawlLib.OpenGL
 
         internal protected virtual void OnResized()
         {
+            if (_ctx == null)
+                return;
+
             _ctx.Update();
 
             _aspect = (float)Width / Height;
@@ -231,6 +252,64 @@ namespace BrawlLib.OpenGL
 
             fixed (Matrix* p = &_projectionMatrix)
                 GL.LoadMatrix((float*)p);
+        }
+
+        public Image BGImage;
+        public void RenderBG()
+        {
+            if (BGImage != null)
+            {
+                GL.Viewport(0, 0, Width, Height);
+
+                GLTexture tex = new GLTexture(BGImage.Width, BGImage.Height);
+
+                int w = Width;
+                int h = Height;
+
+                GL.Disable(EnableCap.DepthTest);
+
+                GL.MatrixMode(MatrixMode.Projection);
+                GL.LoadIdentity();
+                GL.Ortho(0.0f, w, h, 0.0f, 0.0f, 1.0f);
+                GL.MatrixMode(MatrixMode.Modelview);
+                GL.LoadIdentity();
+
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (float)TextureMinFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (float)TextureMinFilter.Linear);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (float)TextureWrapMode.Clamp);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (float)TextureWrapMode.Clamp);
+
+                Bitmap bmp = BGImage as Bitmap;
+
+                BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Four, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, (IntPtr)data.Scan0);
+                bmp.UnlockBits(data);
+
+                tex.Bind();
+
+                GL.Enable(EnableCap.Texture2D);
+
+                GL.Begin(BeginMode.Quads);
+                GL.TexCoord2(0, 0);
+                GL.Vertex2(0, 0);
+
+                GL.TexCoord2(1, 0);
+                GL.Vertex2(1, 0);
+
+                GL.TexCoord2(1, 1);
+                GL.Vertex2(1, 1);
+
+                GL.TexCoord2(0, 1);
+                GL.Vertex2(0, 1);
+                GL.End();
+
+                GL.Disable(EnableCap.Texture2D);
+
+                GL.Clear(ClearBufferMask.DepthBufferBit);
+                GL.Enable(EnableCap.DepthTest);
+
+                _projectionChanged = true;
+            }
         }
 
         internal protected virtual void OnRender(TKContext ctx, SCN0Node scn)

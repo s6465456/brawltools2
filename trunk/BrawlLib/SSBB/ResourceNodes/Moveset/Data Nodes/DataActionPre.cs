@@ -60,10 +60,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Action Pre"), Browsable(true), TypeConverter(typeof(DropDownListExtNodesMDef))]
         public string ExternalNode
         {
-            get
-            {
-                return _extNode != null ? _extNode.Name : null;
-            }
+            get { return _extNode != null ? _extNode.Name : null; }
             set
             {
                 if (_extNode != null)

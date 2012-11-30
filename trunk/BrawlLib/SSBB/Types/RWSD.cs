@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace BrawlLib.SSBBTypes
 {
@@ -29,7 +30,7 @@ namespace BrawlLib.SSBBTypes
 
         public uint _tag;
         public bint _length;
-        public RuintList _list;
+        public RuintList _list; //control = 0x0100
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
@@ -37,20 +38,26 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct RWSD_DATAEntry
     {
+        //Base of these offsets is the address of _list in the main data header
+
+        public const int Size = 24;
+
         public ruint _wsdInfo;
         public ruint _trackTable;
         public ruint _noteTable;
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-
-        public RWSD_WSDEntry* GetPart1(VoidPtr offset) { return (RWSD_WSDEntry*)_wsdInfo.Offset(offset); }
-        public RuintList* GetPart2(VoidPtr offset) { return (RuintList*)_trackTable.Offset(offset); }
-        public RuintList* GetPart3(VoidPtr offset) { return (RuintList*)_noteTable.Offset(offset); }
+        
+        public RWSD_WSDEntry* GetWsdInfo(VoidPtr offset) { return (RWSD_WSDEntry*)_wsdInfo.Offset(offset); }
+        public RuintList* GetTrackTable(VoidPtr offset) { return (RuintList*)_trackTable.Offset(offset); }
+        public RuintList* GetNoteTable(VoidPtr offset) { return (RuintList*)_noteTable.Offset(offset); }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct RWSD_WSDEntry
+    public unsafe struct RWSD_WSDEntry
     {
+        public const int Size = 0x20;
+
         public bfloat _pitch;
         public byte _pan;
         public byte _surroundPan;
@@ -69,6 +76,8 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct RWSD_NoteEvent
     {
+        public const int Size = 0x10;
+
         public bfloat position;
         public bfloat length;
         public buint noteIndex;
@@ -79,6 +88,8 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct RWSD_NoteInfo
     {
+        public const int Size = 0x30;
+
         public bint _waveIndex;
         public byte _attack;
         public byte _decay;
@@ -105,25 +116,25 @@ namespace BrawlLib.SSBBTypes
         public const uint Tag = 0x45564157;
 
         public buint _tag;
-        public buint _length;
-        public bint _entries;
+        public bint _length;
+        public bint _numEntries;
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public bint* Entries { get { return (bint*)(Address + 12); } }
 
-        public RWSD_WAVEEntry* GetEntry(int index) { return (RWSD_WAVEEntry*)(Address + Entries[index]); }
+        public WaveInfo* GetEntry(int index) { return (WaveInfo*)(Address + Entries[index]); }
     }
 
     enum WaveDataLocationType
     {
-        WAVE_DATA_LOCATION_OFFSET = 0,
-        WAVE_DATA_LOCATION_ADDRESS = 1
+        Offset = 0,
+        Address = 1
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct RWSD_WAVEEntry
+    public unsafe struct WaveInfo
     {
-        public const int Size = 0x3C + 0x2E;
+        public const int Size = 0x1C;
 
         public AudioFormatInfo _format;
 
@@ -132,24 +143,31 @@ namespace BrawlLib.SSBBTypes
         public byte _pad;
         public buint _loopStartSample;
         public bint _nibbles; //Includes ALL data, not just samples
-        public bint _channelInfoTableOffset; //0x1C
-        public bint _offset; //Data offset from beginning of sample block
+        public buint _channelInfoTableOffset; //0x1C, offset to bint offset array for each channel
+        public buint _dataLocation;
+        public buint _reserved; //0
+
+        public buint* OffsetTable { get { return (buint*)(Address + _channelInfoTableOffset); } }
+        public ChannelInfo* GetChannelInfo(int index) { return (ChannelInfo*)(Address + OffsetTable[index]); }
+        public ADPCMInfo* GetADPCMInfo(int index) { return (ADPCMInfo*)(Address + GetChannelInfo(index)->_adpcmInfoOffset); }
+        
+        public int NumSamples { get { return (_nibbles / 16 * 14) + ((_nibbles % 16) - 2); } }
+        private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct ChannelInfo
+    {
+        public const int Size = 0x1C;
+
+        public bint _channelDataOffset; //offset to samples to read
+        public bint _adpcmInfoOffset; //offset to ADPCMInfo from start of WaveInfo struct
+        public int _volFrontLeft; //1
+        public int _volFrontRight; //1
+        public int _volBackLeft; //1
+        public int _volBackRight; //1
         public bint _reserved; //0
 
-        public bint _unk6; //0x20
-        public bint _unk7; //0
-        public bint _unk8; //0x3C
-        public int _unk9; //1
-        public int _unk10; //1
-        public int _unk11; //1
-        public int _unk12; //1
-        public int _unk13; //0
-
-        public ADPCMInfo _adpcInfo;
-
-        public ADPCMInfo* Info { get { return (ADPCMInfo*)(Address + 0x3C); } }
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-
-        public int NumSamples { get { return (_nibbles / 16 * 14) + ((_nibbles % 16) - 2); } }
     }
 }

@@ -7,6 +7,7 @@ using BrawlLib.SSBB.ResourceNodes;
 using System.Windows.Forms;
 using BrawlLib.Wii.Models;
 using OpenTK.Graphics.OpenGL;
+using BrawlLib.Imaging;
 
 namespace BrawlLib.Modeling
 {
@@ -543,6 +544,9 @@ namespace BrawlLib.Modeling
                 else
                     mr.Name = "Diffuse: [R] " + (m.DiffuseColor[0]*255) + " [G] " + (m.DiffuseColor[1]*255) + " [B] " + (m.DiffuseColor[2]*255);
                 
+                mn._chan1._matColor = new RGBAPixel((byte)(m.DiffuseColor[0] * 255), (byte)(m.DiffuseColor[1] * 255), (byte)(m.DiffuseColor[2] * 255), 255);
+                mn._chan1.ColorMaterialSource = GXColorSrc.Register;
+
                 mr._parent = mn;
                 mn._children.Add(mr);
                 mn._parent = model._matGroup;
@@ -646,7 +650,7 @@ namespace BrawlLib.Modeling
             Header.ModelName = model.Name;
 
             //To do: Add the ability to change the comment
-            Header.Comment = "PMD model written by Brawlbox v0.65.";
+            Header.Comment = "MDL0 model converted to PMD by Brawlbox.";
 
             foreach (MDL0MaterialNode m in model._matList)
             {

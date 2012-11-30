@@ -77,7 +77,8 @@ namespace BrawlBox
                 return "PAC Archive (*.pac)|*.pac|" +
                     "Compressed PAC Archive (*.pcs)|*.pcs|" +
                     "Archive Pair (*.pair)|*.pair|" +
-                    "Multiple Resource Group (*.mrg)|*.mrg";
+                    "Multiple Resource Group (*.mrg)|*.mrg|" +
+                    "Compressed MRG (*.mrgc)|*.mrgc";
             }
         }
 

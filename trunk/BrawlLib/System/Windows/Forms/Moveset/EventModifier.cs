@@ -489,13 +489,13 @@ namespace System.Windows.Forms
             offsetPanel.Visible = false;
 
             ActionEventInfo info = null;
-            if (eventData.Root.EventDictionary.ContainsKey(eventData._event))
-                info = eventData.Root.EventDictionary[eventData._event];
+            if (MoveDefNode.EventDictionary.ContainsKey(eventData._event))
+                info = MoveDefNode.EventDictionary[eventData._event];
 
             if (info != null)
                 lblEventName.Text = info._name;
 
-            lblEventId.Text = MParams.Hex8(eventData._event);
+            lblEventId.Text = Helpers.Hex8(eventData._event);
 
             foreach (MoveDefEventParameterNode n in eventData.Children)
                 if (!String.IsNullOrEmpty(n.Name))

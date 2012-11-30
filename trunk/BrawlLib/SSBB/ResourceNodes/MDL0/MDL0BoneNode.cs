@@ -42,7 +42,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.MDL0Bone; } }
 
-        public BoneFlags _flags1;
+        public BoneFlags _flags1 = (BoneFlags)0x100;
         public BillboardFlags _flags2;
         public uint _bbNodeId;
         
@@ -52,11 +52,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0PolygonNode[] Objects { get { return _manPolys.ToArray(); } }
         [Category("Bone")]
         public MDL0PolygonNode[] InfluencedObjects { get { return _infPolys.ToArray(); } }
-        
-        internal FrameState _bindState;
-        public Matrix _bindMatrix, _inverseBindMatrix;
-        internal FrameState _frameState;
-        public Matrix _frameMatrix, _inverseFrameMatrix;
+
+        internal FrameState _bindState = FrameState.Neutral;
+        public Matrix _bindMatrix = Matrix.Identity, _inverseBindMatrix = Matrix.Identity;
+        internal FrameState _frameState = FrameState.Neutral;
+        public Matrix _frameMatrix = Matrix.Identity, _inverseFrameMatrix = Matrix.Identity;
 
         private Vector3 _bMin, _bMax;
         internal int _nodeIndex, _weightCount, _refCount, _headerLen, _mdl0Offset, _stringOffset;
@@ -81,11 +81,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public BoneWeight[] Weights { get { return _weightRef == null ? _weightRef = new BoneWeight[] { new BoneWeight(this, 1.0f) } : _weightRef; } }
 
-        [Category("Bone"), Browsable(true)]
+        [Category("Bone"), Browsable(false)]
         public int HeaderLen { get { return _headerLen; } }
-        [Category("Bone"), Browsable(true)]
+        [Category("Bone"), Browsable(false)]
         public int MDL0Offset { get { return _mdl0Offset; } }
-        [Category("Bone"), Browsable(true)]
+        [Category("Bone"), Browsable(false)]
         public int StringOffset { get { return _stringOffset; } }
 
         [Category("Bone")]
@@ -192,7 +192,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _flags1 &= ~BoneFlags.ScaleEqual;
 
                 RecalcBindState();
-                Model.CalcBindMatrices();
+                //Model.CalcBindMatrices();
                 
                 if (Parent is MDL0BoneNode)
                 {
@@ -227,7 +227,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _flags1 &= ~BoneFlags.FixedRotation;
 
                 RecalcBindState();
-                Model.CalcBindMatrices();
+                //Model.CalcBindMatrices();
 
                 if (Parent is MDL0BoneNode)
                 {
@@ -258,7 +258,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _flags1 &= ~BoneFlags.FixedTranslation;
 
                 RecalcBindState();
-                Model.CalcBindMatrices();
+                //Model.CalcBindMatrices();
 
                 if (Parent is MDL0BoneNode)
                 {
@@ -616,22 +616,38 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal void GetBindState()
-        {
-            if (_parent is MDL0BoneNode)
-            {
-                _bindState._transform = _bindMatrix / ((MDL0BoneNode)_parent)._bindMatrix;
-                _bindState._iTransform = _inverseBindMatrix / ((MDL0BoneNode)_parent)._inverseBindMatrix;
-            }
-            else
-            {
-                _bindState._transform = _bindMatrix;
-                _bindState._iTransform = _inverseBindMatrix;
-            }
+        //internal void GetBindState()
+        //{
+        //    if (_parent is MDL0BoneNode)
+        //    {
+        //        _bindState._transform = _bindMatrix / ((MDL0BoneNode)_parent)._bindMatrix;
+        //        _bindState._iTransform = _inverseBindMatrix / ((MDL0BoneNode)_parent)._inverseBindMatrix;
+        //    }
+        //    else
+        //    {
+        //        _bindState._transform = _bindMatrix;
+        //        _bindState._iTransform = _inverseBindMatrix;
+        //    }
 
-            foreach (MDL0BoneNode bone in Children)
-                bone.GetBindState();
-        }
+        //    foreach (MDL0BoneNode bone in Children)
+        //        bone.GetBindState();
+        //}
+
+        //public Vector3 WorldPosition { get { return _frameMatrix * new Vector3(); } }
+        //public FrameState LocalState
+        //{
+        //    get 
+        //    {
+        //        return Parent is MDL0BoneNode ? (((MDL0BoneNode)Parent)._inverseFrameMatrix * _frameMatrix).Derive() : _frameState;
+        //    }
+        //}
+        //public FrameState WorldState
+        //{
+        //    get
+        //    {
+        //        return Parent is MDL0BoneNode ? (((MDL0BoneNode)Parent)._frameMatrix * _inverseFrameMatrix).Derive() : _frameState;
+        //    }
+        //}
 
         //Change has been made to bind state, need to recalculate matrices
         internal void RecalcBindState()

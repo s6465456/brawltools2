@@ -466,7 +466,7 @@ namespace System.Windows.Forms
             // 
             // tmrUpdate
             // 
-            this.tmrUpdate.Interval = 1000 / 60;
+            this.tmrUpdate.Interval = 17;
             this.tmrUpdate.Tick += new System.EventHandler(this.tmrUpdate_Tick);
             // 
             // btnFFwd
@@ -551,6 +551,7 @@ namespace System.Windows.Forms
         public BrstmConverterDialog()
         {
             InitializeComponent();
+            tmrUpdate.Interval = 1000 / 60;
             dlgOpen.Filter = "PCM Audio (*.wav)|*.wav";
         }
 
@@ -558,13 +559,16 @@ namespace System.Windows.Forms
         {
             _audioData = null;
             DialogResult = DialogResult.Cancel;
-            try { return base.ShowDialog(owner); }
-            catch (Exception x)
-            {
-                DisposeProvider();
-                MessageBox.Show(x.ToString());
-                return DialogResult.Cancel;
-            }
+            //try 
+            //{ 
+                return base.ShowDialog(owner); 
+            //}
+            //catch (Exception x)
+            //{
+            //    DisposeProvider();  
+            //    MessageBox.Show(x.ToString());
+            //    return DialogResult.Cancel;
+            //}
         }
 
         protected override void OnShown(EventArgs e)
@@ -669,7 +673,9 @@ namespace System.Windows.Forms
             pnlLoopEnd.Width = 0;
 
             btnOkay.Enabled = true;
-            chkLoopEnable.Checked = true;
+
+            if (!RSAR)
+                chkLoopEnable.Checked = true;
 
             UpdateTimeDisplay();
 
@@ -793,12 +799,15 @@ namespace System.Windows.Forms
         }
 
         private void btnCancel_Click(object sender, EventArgs e) { Close(); }
-
+        public bool RSAR = false;
         private void btnOkay_Click(object sender, EventArgs e)
         {
             Stop();
             using(ProgressWindow progress = new ProgressWindow(this, "Brstm Converter", "Encoding, please wait...", false))
-            _audioData = RSTMConverter.Encode(_sourceStream, progress);
+            if (RSAR)
+                _audioData = RSARWaveConverter.Encode(_sourceStream, progress);
+            else
+                _audioData = RSTMConverter.Encode(_sourceStream, progress);
             DialogResult = DialogResult.OK;
             Close();
         }

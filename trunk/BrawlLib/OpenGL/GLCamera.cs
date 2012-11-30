@@ -21,7 +21,8 @@ namespace BrawlLib.OpenGL
             _matrix = Matrix.TranslationMatrix(-x, -y, -z) * _matrix;
             _matrixInverse.Translate(x, y, z);
         }
-        public void Rotate(float x, float y)
+
+        public void Rotate(float x, float y, float z)
         {
             //Grab vertex from matrix
             Vector3 point = _matrixInverse.Multiply(new Vector3());
@@ -29,10 +30,16 @@ namespace BrawlLib.OpenGL
             //Increment rotations
             _rotation._x += x;
             _rotation._y += y;
+            _rotation._z += z;
 
             //Reset matrices, using new rotations
             _matrix = Matrix.ReverseTransformMatrix(new Vector3(1.0f), _rotation, point);
             _matrixInverse = Matrix.TransformMatrix(new Vector3(1.0f), _rotation, point);
+        }
+
+        public void Rotate(float x, float y)
+        {
+            Rotate(x, y, 0);
         }
 
         public void Pivot(float radius, float x, float y)

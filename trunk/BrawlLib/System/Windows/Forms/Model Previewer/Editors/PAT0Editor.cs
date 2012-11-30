@@ -32,8 +32,8 @@ namespace System.Windows.Forms
             // 
             // texBox
             // 
-            this.texBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.texBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.texBox.FormattingEnabled = true;
             this.texBox.Location = new System.Drawing.Point(108, 20);
             this.texBox.Name = "texBox";
@@ -43,8 +43,9 @@ namespace System.Windows.Forms
             // 
             // pltBox
             // 
-            this.pltBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.pltBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pltBox.BackColor = System.Drawing.SystemColors.Window;
             this.pltBox.FormattingEnabled = true;
             this.pltBox.Location = new System.Drawing.Point(108, 47);
             this.pltBox.Name = "pltBox";

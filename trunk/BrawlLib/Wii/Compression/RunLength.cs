@@ -260,7 +260,7 @@ namespace BrawlLib.Wii.Compression
         public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen)
         {
             if ((header->Algorithm != CompressionType.RunLength) || (header->Parameter != 0))
-                throw new InvalidCompressionException("Compression header does not match LZ77 format.");
+                throw new InvalidCompressionException("Compression header does not match RunLength format.");
 
             byte control = 0, bit = 0;
             byte* srcPtr = (byte*)header->Data, dstPtr = (byte*)dstAddress, ceiling = dstPtr + dstLen;

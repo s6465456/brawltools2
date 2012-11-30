@@ -34,9 +34,19 @@ namespace BrawlLib.IO
         public static FileMap FromFile(string path, FileMapProtect prot) { return FromFile(path, prot, 0, 0); }
         public static FileMap FromFile(string path, FileMapProtect prot, int offset, int length)
         {
-            FileStream stream = new FileStream(path, FileMode.Open, (prot == FileMapProtect.ReadWrite) ? FileAccess.ReadWrite : FileAccess.Read, FileShare.Read, 8, FileOptions.RandomAccess);
-            try { return FromStreamInternal(stream, prot, offset, length); }
+            FileStream stream;
+            FileMap map;
+            try { stream = new FileStream(path, FileMode.Open, (prot == FileMapProtect.ReadWrite) ? FileAccess.ReadWrite : FileAccess.Read, FileShare.Read, 8, FileOptions.RandomAccess); }
+            catch //File is currently in use, but we can copy it to a temp location and read that
+            {
+                string tempPath = Path.GetTempFileName();
+                File.Copy(path, tempPath, true);
+                stream = new FileStream(tempPath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read, 8, FileOptions.RandomAccess | FileOptions.DeleteOnClose);
+            }
+            try { map = FromStreamInternal(stream, prot, offset, length); }
             catch (Exception x) { stream.Dispose(); throw x; }
+            map._path = path; //In case we're using a temp file
+            return map;
         }
         public static FileMap FromTempFile(int length)
         {

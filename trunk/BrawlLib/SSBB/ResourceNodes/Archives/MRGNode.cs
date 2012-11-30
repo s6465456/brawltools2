@@ -122,6 +122,51 @@ namespace BrawlLib.SSBB.ResourceNodes
                 base.Export(outPath);
         }
 
-        //MRG has no tag...
+        internal static ResourceNode TryParse(DataSource source) 
+        {
+            buint* addr = (buint*)source.Address;
+
+            //if (addr[0] >= source.Length)
+            //    return null;
+
+            for (int i = 0; i < 7; i++)
+                if (addr[i + 1] != 0)
+                    return null;
+
+            uint headerSize = 0x20 + 0x20 * addr[0];
+            //if (headerSize >= source.Length)
+            //    return null;
+
+            uint prevOff = headerSize;
+            uint prevSize = 0;
+
+            //if (prevSize >= source.Length)
+            //    return null;
+
+            uint count = addr[0];
+            for (int i = 0; i < 2; i++)
+            {
+                int file = i * 8 + 8;
+
+                uint c = addr[file];
+                uint l = (prevOff + prevSize) + (uint)(i == 0 ? 0 : 0x20);
+
+                if (/*c >= source.Length || */c != l)
+                    return null;
+
+                prevOff = addr[file];
+                prevSize = addr[file + 1];
+
+                for (int x = 0; x < 6; x++)
+                    if (addr[x + 2] != 0)
+                        return null;
+
+                //if (i == count - 1)
+                //    if (prevOff + prevSize != source.Length)
+                //        return null;
+            }
+
+            return new MRGNode();
+        }
     }
 }

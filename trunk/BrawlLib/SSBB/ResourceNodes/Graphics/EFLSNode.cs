@@ -128,10 +128,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         rEntry++;
                         re3dSize += 0x10 + rNode.Name.Length + 1 + rNode.Effect.Length + 1;
                     }
-
                     re3dSize += 0x10;
                 }
-
                 entry++;
             }
         }

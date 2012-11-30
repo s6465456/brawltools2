@@ -13,12 +13,12 @@ namespace BrawlLib.Wii.Graphics
         {
             Reg = (byte)(enabled ? 0x61 : 0);
             Mem = BPMemory.BPMEM_GENMODE;
-            Data = (Int24)0;
+            Data = (UInt24)0;
         }
 
         public byte Reg; //0x61
         public BPMemory Mem;
-        public Int24 Data;
+        public UInt24 Data;
     }
     
     //Not reversed, can be used directly
@@ -111,16 +111,16 @@ namespace BrawlLib.Wii.Graphics
         public ColorEnv(byte dat0, byte dat1, byte dat2)
         { _dat0 = dat0; _dat1 = dat1; _dat2 = dat2; }
 
-        public ColorEnv(int value)
+        public ColorEnv(uint value)
         {
             _dat2 = (byte)((value) & 0xFF);
             _dat1 = (byte)((value >> 8) & 0xFF);
             _dat0 = (byte)((value >> 16) & 0xFF);
         }
 
-        public static int Shiftv(int seld, int selc, int selb, int sela, int bias, int sub, int clamp, int shift, int dest)
+        public static uint Shiftv(int seld, int selc, int selb, int sela, int bias, int sub, int clamp, int shift, int dest)
         {
-            return (seld) |
+            return (uint)((seld) |
             ((selc) << 4) |
             ((selb) << 8) |
             ((sela) << 12) |
@@ -128,7 +128,7 @@ namespace BrawlLib.Wii.Graphics
             ((sub) << 18) |
             ((clamp) << 19) |
             ((shift) << 20) |
-            ((dest) << 22);
+            ((dest) << 22));
         }
     }
 
@@ -164,16 +164,16 @@ namespace BrawlLib.Wii.Graphics
         public AlphaEnv(byte dat0, byte dat1, byte dat2)
         { _dat0 = dat0; _dat1 = dat1; _dat2 = dat2; }
 
-        public AlphaEnv(int value)
+        public AlphaEnv(uint value)
         {
             _dat2 = (byte)((value) & 0xFF);
             _dat1 = (byte)((value >> 8) & 0xFF);
             _dat0 = (byte)((value >> 16) & 0xFF);
         }
 
-        public static int Shiftv(int rswap, int tswap, int seld, int selc, int selb, int sela, int bias, int sub, int clamp, int shift, int dest)
+        public static uint Shiftv(int rswap, int tswap, int seld, int selc, int selb, int sela, int bias, int sub, int clamp, int shift, int dest)
         {
-            return (rswap) |
+            return (uint)((rswap) |
             ((tswap) << 2) |
             ((seld) << 4) |
             ((selc )<< 7) |
@@ -183,7 +183,7 @@ namespace BrawlLib.Wii.Graphics
             ((sub) << 18) |
             ((clamp) << 19) |
             ((shift) << 20) |
-            ((dest) << 22);
+            ((dest) << 22));
         }
     }
 
@@ -199,7 +199,7 @@ namespace BrawlLib.Wii.Graphics
         //0001 1100 0000 0000 0000 0000   BI3
         //1110 0000 0000 0000 0000 0000   BC3
 
-        public Int24 data;
+        public UInt24 data;
         
         public int TexMap0 { get { return (int)data & 7; } }
         public int TexCoord0 { get { return ((int)data >> 3) & 7; } }
@@ -211,19 +211,19 @@ namespace BrawlLib.Wii.Graphics
         public int TexCoord3 { get { return ((int)data >> 21) & 7; } }
         
         public RAS1_IRef(byte dat0, byte dat1, byte dat2) { data._dat0 = dat0; data._dat1 = dat1; data._dat2 = dat2; }
-        public RAS1_IRef(int value) { data = (Int24)value; }
-        public RAS1_IRef(Int24 value) { data = value; }
+        public RAS1_IRef(uint value) { data = (UInt24)value; }
+        public RAS1_IRef(UInt24 value) { data = value; }
         
-        public static int Shift(int bi0, int bc0, int bi1, int bc1, int bi2, int bc2, int bi3, int bc3)
+        public static uint Shift(int bi0, int bc0, int bi1, int bc1, int bi2, int bc2, int bi3, int bc3)
         {
-            return (bi0) |
+            return (uint)((bi0) |
             ((bc0) << 3) |
             ((bi1) << 6) |
             ((bc1) << 9) |
             ((bi2) << 12) |
             ((bc2) << 15) |
             ((bi3) << 18) |
-            ((bc3) << 21);
+            ((bc3) << 21));
         }
     }
 
@@ -257,23 +257,23 @@ namespace BrawlLib.Wii.Graphics
         public RAS1_TRef(byte dat0, byte dat1, byte dat2)
         { _dat0 = dat0; _dat1 = dat1; _dat2 = dat2; }
 
-        public RAS1_TRef(int value)
+        public RAS1_TRef(uint value)
         {
             _dat2 = (byte)((value) & 0xFF);
             _dat1 = (byte)((value >> 8) & 0xFF);
             _dat0 = (byte)((value >> 16) & 0xFF);
         }
 
-        public static int Shift(int ti0, int tc0, int te0, int cc0, int ti1, int tc1, int te1, int cc1)
+        public static uint Shift(int ti0, int tc0, int te0, int cc0, int ti1, int tc1, int te1, int cc1)
         {
-            return (ti0) |
+            return (uint)((ti0) |
             ((tc0) << 3) |
             ((te0) << 6) |
             ((cc0) << 7) |
             ((ti1) << 12) |
             ((tc1) << 15) |
             ((te1) << 18) |
-            ((cc1) << 19);
+            ((cc1) << 19));
         }
     }
 
@@ -301,20 +301,20 @@ namespace BrawlLib.Wii.Graphics
         public KSel(byte dat0, byte dat1, byte dat2)
         { _dat0 = dat0; _dat1 = dat1; _dat2 = dat2; }
 
-        public KSel(int value)
+        public KSel(uint value)
         {
             _dat2 = (byte)((value) & 0xFF);
             _dat1 = (byte)((value >> 8) & 0xFF);
             _dat0 = (byte)((value >> 16) & 0xFF);
         }
         
-        public static int Shift(int xrb, int xga, int kcsel0, int kasel0, int kcsel1, int kasel1)
+        public static uint Shift(int xrb, int xga, int kcsel0, int kasel0, int kcsel1, int kasel1)
         {
-            return (xrb) | (xga << 2) | 
+            return (uint)((xrb) | (xga << 2) | 
                 (kcsel0 << 4) |
                 (kasel0 << 9) |
                 (kcsel1 << 14) |
-                (kasel1 << 19);
+                (kasel1 << 19));
         }
     }
 
@@ -348,16 +348,16 @@ namespace BrawlLib.Wii.Graphics
         public CMD(byte dat0, byte dat1, byte dat2)
         { _dat0 = dat0; _dat1 = dat1; _dat2 = dat2; }
 
-        public CMD(int value)
+        public CMD(uint value)
         {
             _dat2 = (byte)((value) & 0xFF);
             _dat1 = (byte)((value >> 8) & 0xFF);
             _dat0 = (byte)((value >> 16) & 0xFF);
         }
 
-        public static int Shift(int bt, int fmt, int bias, int bs, int m, int sw, int tw, int lb, int fb)
+        public static uint Shift(int bt, int fmt, int bias, int bs, int m, int sw, int tw, int lb, int fb)
         {
-            return (bt) |
+            return (uint)((bt) |
             ((fmt) << 2) |
             ((bias) << 4) |
             ((bs) << 7) |
@@ -365,7 +365,7 @@ namespace BrawlLib.Wii.Graphics
             ((sw) << 13) |
             ((tw) << 16) |
             ((lb) << 19) |
-            ((fb) << 20);
+            ((fb) << 20));
         }
     }
 

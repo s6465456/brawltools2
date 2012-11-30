@@ -167,7 +167,7 @@ namespace System.Windows.Forms
             if (AttributeArray[index]._name != name)
             {
                 AttributeArray[index]._name = TargetNode.Root.AttributeArray[index]._name = name;
-                _targetNode.Root._dictionaryChanged = true;
+                MoveDefNode._dictionaryChanged = true;
                 return;
             }
 
@@ -240,7 +240,7 @@ namespace System.Windows.Forms
             if (index >= 0)
             {
                 AttributeArray[index]._description = TargetNode.Root.AttributeArray[index]._description = description.Text;
-                TargetNode.Root._dictionaryChanged = true;
+                MoveDefNode._dictionaryChanged = true;
             }
         }
     }

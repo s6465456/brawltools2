@@ -194,14 +194,25 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        public static void DecodeFrames(KeyframeArray kf, void* dataAddr)
+        public static void DecodeFrames(KeyframeArray kf, VoidPtr dataAddr)
         {
             SCN0KeyframesHeader* header = (SCN0KeyframesHeader*)dataAddr;
-            int fCount = header->_numFrames;
+            SCN0KeyframeStruct* entry = header->Data;
+            for (int i = 0; i < header->_numFrames; i++, entry++)
+                kf.SetFrameValue((int)entry->_index, entry->_value)._tangent = entry->_tangent;
+        }
+
+        public static void EncodeFrames(KeyframeArray kf, ref VoidPtr dataAddr)
+        {
+            SCN0KeyframesHeader* header = (SCN0KeyframesHeader*)dataAddr;
+            *header = new SCN0KeyframesHeader(kf._keyCount);
+            KeyframeEntry frame, root = kf._keyRoot;
 
             SCN0KeyframeStruct* entry = header->Data;
-            for (int i = 0; i < fCount; i++, entry++)
-                kf.SetFrameValue((int)entry->_index, entry->_value)._tangent = entry->_tangent;
+            for (frame = root._next; frame._index != -1; frame = frame._next)
+                *entry++ = new SCN0KeyframeStruct(frame._tangent, frame._index, frame._value);
+
+            dataAddr = (VoidPtr)entry;
         }
     }
 }

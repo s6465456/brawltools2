@@ -17,11 +17,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal REFT* Header { get { return (REFT*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.REFT; } }
 
+        private int _version;
+
         private int _unk1, _unk2, _unk3, _dataLen, _dataOff;
         private int _TableLen;
         private short _TableEntries;
         private short _TableUnk1;
 
+        [Category("REFF Data")]
+        public int Version { get { return _version; } }
         [Category("REFT Data")]
         public int DataLength { get { return _dataLen; } }
         [Category("REFT Data")]
@@ -46,6 +50,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             REFT* header = Header;
 
+            _version = header->_header._version;
             _name = header->IdString;
             _dataLen = header->_dataLength;
             _dataOff = header->_dataOffset;
@@ -182,16 +187,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region IColorSource Members
 
+        public bool HasPrimary(int id) { return false; }
+        public ARGBPixel GetPrimaryColor(int id) { return new ARGBPixel(); }
+        public void SetPrimaryColor(int id, ARGBPixel color) { }
         [Browsable(false)]
-        public bool HasPrimary { get { return false; } }
+        public string PrimaryColorName(int id) { return null; }
         [Browsable(false)]
-        public ARGBPixel PrimaryColor { get { return new ARGBPixel(); } set { } }
-        [Browsable(false)]
-        public string PrimaryColorName { get { return null; } }
-        [Browsable(false)]
-        public int ColorCount { get { return Palette != null ? Palette.Entries.Length : 0; } }
-        public ARGBPixel GetColor(int index) { return Palette != null ? (ARGBPixel)Palette.Entries[index] : new ARGBPixel(); }
-        public void SetColor(int index, ARGBPixel color) { if (Palette != null) { Palette.Entries[index] = (Color)color; SignalPropertyChange(); } }
+        public int ColorCount(int id) { return Palette != null ? Palette.Entries.Length : 0; }
+        public ARGBPixel GetColor(int index, int id) { return Palette != null ? (ARGBPixel)Palette.Entries[index] : new ARGBPixel(); }
+        public void SetColor(int index, int id, ARGBPixel color) { if (Palette != null) { Palette.Entries[index] = (Color)color; SignalPropertyChange(); } }
 
         #endregion
 

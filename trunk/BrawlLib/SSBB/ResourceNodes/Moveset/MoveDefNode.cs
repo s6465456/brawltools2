@@ -10,6 +10,7 @@ using BrawlLib.Wii.Animations;
 using BrawlLib.SSBB.ResourceNodes;
 using System.Windows.Forms;
 using BrawlLib.Wii.Compression;
+using System.Runtime.InteropServices;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -80,7 +81,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 FileStream stream = new FileStream(Path.GetTempFileName(), FileMode.Open, FileAccess.ReadWrite, FileShare.None, 0x8, FileOptions.DeleteOnClose | FileOptions.SequentialScan);
                 try
                 {
-                    Compressor.Compact(_compression, _entryOffset, _entryLength, stream);
+                    Compressor.Compact(_compression, _entryOffset, _entryLength, stream, this);
                     _replSrc = new DataSource(FileMap.FromStreamInternal(stream, FileMapProtect.Read, 0, (int)stream.Length), _compression);
                 }
                 catch (Exception x) { stream.Dispose(); throw x; }
@@ -113,6 +114,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             //if (Index <= 30)
             //    Root._paths[_offset] = TreePath;
+            if (!MoveDefNode.nodeDictionary.ContainsKey(_offset))
+                MoveDefNode.nodeDictionary.Add(_offset, this);
             if (Size == 0)
             {
                 int size = Root.GetSize(_offset);
@@ -124,11 +127,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public ActionEventInfo GetEventInfo(long id)
         {
-            if (Root.EventDictionary == null)
-                Root.LoadEventDictionary();
+            if (MoveDefNode.EventDictionary == null)
+                MoveDefNode.LoadEventDictionary();
 
-            if (Root.EventDictionary.ContainsKey(id))
-                return Root.EventDictionary[id];
+            if (MoveDefNode.EventDictionary.ContainsKey(id))
+                return MoveDefNode.EventDictionary[id];
 
             return new ActionEventInfo(id, id.ToString("X"), "No Description Available.", null, null);
         }
@@ -204,12 +207,28 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal FDefHeader* Header { get { return (FDefHeader*)WorkingUncompressed.Address; } }
         internal int dataSize, lookupOffset, numLookupEntries, numDataTable, numExternalSubRoutine;
 
-        public SortedDictionary<long, ActionEventInfo> EventDictionary = null;
+        //internal static ResourceNode TryParse(DataSource source) 
+        //{
+        //    VoidPtr addr = source.Address;
+        //    FDefHeader* header = (FDefHeader*)addr;
 
-        public bool _dictionaryChanged = false;
+        //    if (header->_pad1 != 0 || header->_pad2 != 0 || header->_pad3 != 0)
+        //        return null;
+
+        //    if (header->_fileSize > source.Length || header->_lookupOffset > source.Length)
+        //        return null;
+
+
+
+        //    return new MoveDefNode();
+        //}
+
+        public static SortedDictionary<long, ActionEventInfo> EventDictionary = new SortedDictionary<long, ActionEventInfo>();
+        
+        public static bool _dictionaryChanged = false;
 
         #region Event Dictionary
-        public void LoadEventDictionary()
+        public static void LoadEventDictionary()
         {
             EventDictionary = new SortedDictionary<long, ActionEventInfo>();
             EventDictionary.Add(0x00010100, new ActionEventInfo(0x00010100, "Synchronous Timer",
@@ -2501,10 +2520,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Moveset Definition")]
         public string DataSize { get { return "0x" + dataSize.ToString("X"); } }
 
+        public SortedDictionary<int, MoveDefEntryNode> NodeDictionary { get { return nodeDictionary; } }
+
+        public static SortedDictionary<int, MoveDefEntryNode> nodeDictionary = new SortedDictionary<int, MoveDefEntryNode>();
+
         protected override bool OnInitialize()
         {
             if (_name == null)
                 _name = "MoveDef_" + Parent.Name;
+
+            nodeDictionary = new SortedDictionary<int, MoveDefEntryNode>();
 
             dataSize = Header->_fileSize;
             lookupOffset = Header->_lookupOffset;
@@ -3323,7 +3348,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public List<MoveDefEntryNode> _postProcessNodes;
         public VoidPtr _rebuildBase;
-        public LookupManager _lookupOffsets;
+        public static LookupManager _lookupOffsets;
         public int lookupCount = 0, lookupLen = 0;
         protected override int OnCalculateSize(bool force)
         {
@@ -3534,13 +3559,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             foreach (MoveDefExternalNode e in references.Children)
-            {
                 if (e._refs.Count > 0)
                 {
                     *values++ = (int)e._refs[0]._entryOffset - (int)_rebuildBase;
                     *values++ = (int)refTable[e.Name] - (int)refTableAddr;
                 }
-            }
+            
             //Some nodes handle rebuilding their own children, 
             //so if one of those children has changed, the node will stay dirty and may rebuild over itself.
             //Manually set IsDirty to false to avoid that.

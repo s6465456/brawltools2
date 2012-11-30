@@ -61,6 +61,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public abstract class ResourceNode : IDisposable
     {
+        public Form _mainForm;
+
         //Need to modulate these sources, create a new class.
         internal protected DataSource _origSource, _uncompSource;
         internal protected DataSource _replSrc, _replUncompSrc;
@@ -68,7 +70,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal protected bool _changed, _merged, _disposed = false;
         internal protected CompressionType _compression;
 
-        internal protected string _name, _origPath;
+        public string _name, _origPath;
         internal protected ResourceNode _parent;
         internal protected List<ResourceNode> _children = new List<ResourceNode>();
 
@@ -576,7 +578,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             
             //Get uncompressed size
             int size = OnCalculateSize(force);
-
+            
             //Create temp map
             FileMap uncompMap = FileMap.FromTempFile(size);
 
@@ -591,7 +593,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 FileStream stream = new FileStream(Path.GetTempFileName(), FileMode.Open, FileAccess.ReadWrite, FileShare.None, 0x8, FileOptions.DeleteOnClose | FileOptions.SequentialScan);
                 try
                 {
-                    Compressor.Compact(_compression, uncompMap.Address, uncompMap.Length, stream);
+                    Compressor.Compact(_compression, uncompMap.Address, uncompMap.Length, stream, this);
                     _replSrc = new DataSource(FileMap.FromStreamInternal(stream, FileMapProtect.Read, 0, (int)stream.Length), _compression);
                 }
                 catch (Exception x) { stream.Dispose(); throw x; }
@@ -820,6 +822,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public ResourceNode FindChild(string path, bool searchChildren)
         {
             ResourceNode node = null;
+            if (path == null)
+                return null;
             if (path.Contains("/"))
             {
                 string next = path.Substring(0, path.IndexOf('/'));

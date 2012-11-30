@@ -25,6 +25,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override int DataAlign { get { return 0x20; } }
 
+        #region Variables and Attributes
+
         //Changing the version will change the conversion.
         internal int _version;
         internal int _scalingRule, _texMtxMode, _origPathOffset;
@@ -38,6 +40,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public UserDataClass[] Part2Entries { get { return _part2Entries.ToArray(); } set { if (Version > 9) { _part2Entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } else MessageBox.Show("Versions lower than 10 do not support user data entries."); } }
         internal List<UserDataClass> _part2Entries = new List<UserDataClass>();
+       
+        internal InfluenceManager _influences = new InfluenceManager();
+        public List<string> _errors = new List<string>();
+        //public TextureManager _textures = new TextureManager();
 
         public string _originPath;
         public List<MDL0BoneNode> _billboardBones = new List<MDL0BoneNode>();
@@ -90,8 +96,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("MDL0 Definition")]
         public MDLEnvelopeMatrixMode EnvelopeMatrixMode { get { return (MDLEnvelopeMatrixMode)_envMtxMode; } set { _envMtxMode = (byte)value; SignalPropertyChange(); } }
 
+        #endregion
+
         #region Immediate accessors
-        
+
         public MDL0GroupNode _boneGroup, _matGroup, _shadGroup, _polyGroup, _texGroup, _pltGroup, _vertGroup, _normGroup, _uvGroup, _defGroup, _colorGroup;
         
         public List<ResourceNode> _boneList, _matList, _shadList, _polyList, _texList, _pltList, _vertList, _normList, _uvList, _defList, _colorList;
@@ -143,9 +151,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<ResourceNode> PaletteList { get { return _pltList; } }
         #endregion
 
-        public List<string> _errors = new List<string>();
+        #region Functions
 
-        //public TextureManager _textures = new TextureManager();
+        public void CheckTextures()
+        {
+            foreach (MDL0TextureNode t in _texList)
+            {
+                for (int i = 0; i < t._references.Count; i++)
+                    if (t._references[i].Parent == null)
+                        t._references.RemoveAt(i--);
+                if (t._references.Count == 0)
+                    t.Remove();
+            }
+        }
 
         public List<ResourceNode> GetUsedShaders()
         {
@@ -210,9 +228,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     }
                                 }
 
-                                node._chan1._flags = 63;
-                                node.C1MaterialColor = new RGBAPixel(128, 128, 128, 255);
-                                node.C1AmbientColor = new RGBAPixel(255, 255, 255, 255);
+                                node._chan1 = new LightChannel(63, new RGBAPixel(128, 128, 128, 255), new RGBAPixel(255, 255, 255, 255), 0, 0);
                                 node.C1ColorEnabled = true;
                                 node.C1ColorDiffuseFunction = GXDiffuseFn.Clamped;
                                 node.C1ColorAttenuation = GXAttnFn.Spotlight;
@@ -220,8 +236,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 node.C1AlphaDiffuseFunction = GXDiffuseFn.Clamped;
                                 node.C1AlphaAttenuation = GXAttnFn.Spotlight;
 
-                                node._chan2._flags = 63;
-                                node.C2MaterialColor = new RGBAPixel(255, 255, 255, 255);
+                                node._chan2 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(), 0, 0);
                                 node.C2ColorEnabled = true;
                                 node.C2ColorDiffuseFunction = GXDiffuseFn.Disabled;
                                 node.C2ColorAttenuation = GXAttnFn.Specular;
@@ -234,7 +249,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                                 node._cull = n._cull;
                                 node._numLights = 2;
-                                node.EnableAlphaFunction = false;
+                                node.ZCompareLoc = false;
                                 node._normMapRefLight1 =
                                 node._normMapRefLight2 =
                                 node._normMapRefLight3 =
@@ -413,6 +428,15 @@ namespace BrawlLib.SSBB.ResourceNodes
             base.AddChild(child, change);
         }
 
+        public override void RemoveChild(ResourceNode child)
+        {
+            if (child is MDL0GroupNode)
+                UnlinkGroup(child as MDL0GroupNode);
+            base.RemoveChild(child);
+        }
+
+        #endregion
+
         #region Linking
         public void LinkGroup(MDL0GroupNode group)
         {
@@ -534,12 +558,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         #endregion
 
-        public override void RemoveChild(ResourceNode child)
-        {
-            if (child is MDL0GroupNode)
-                UnlinkGroup(child as MDL0GroupNode);
-            base.RemoveChild(child);
-        }
+        #region Parsing
 
         protected override bool OnInitialize()
         {
@@ -672,33 +691,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal InfluenceManager _influences = new InfluenceManager();
-
-        internal override void GetStrings(StringTable table)
-        {
-            table.Add(Name);
-            foreach (MDL0GroupNode n in Children)
-                n.GetStrings(table);
-
-            _hasOpa = _hasXlu = false;
-
-            if (_matList != null)
-            foreach (MDL0MaterialNode n in _matList)
-                if (n.XLUMaterial)
-                    _hasXlu = true;
-                else
-                    _hasOpa = true;
-
-            //Add def names
-            if (_hasTree) table.Add("NodeTree");
-            if (_hasMix) table.Add("NodeMix");
-            if (_hasOpa) table.Add("DrawOpa");
-            if (_hasXlu) table.Add("DrawXlu");
-
-            foreach (UserDataClass s in _part2Entries)
-                table.Add(s._name);
-        }
-
         public static MDL0Node FromFile(string path)
         {
             //string ext = Path.GetExtension(path);
@@ -718,7 +710,33 @@ namespace BrawlLib.SSBB.ResourceNodes
             throw new NotSupportedException("The file extension specified is not of a supported model type.");
         }
 
+        #endregion
+
         #region Saving
+        internal override void GetStrings(StringTable table)
+        {
+            table.Add(Name);
+            foreach (MDL0GroupNode n in Children)
+                n.GetStrings(table);
+
+            _hasOpa = _hasXlu = false;
+
+            if (_matList != null)
+                foreach (MDL0MaterialNode n in _matList)
+                    if (n.XLUMaterial)
+                        _hasXlu = true;
+                    else
+                        _hasOpa = true;
+
+            //Add def names
+            if (_hasTree) table.Add("NodeTree");
+            if (_hasMix) table.Add("NodeMix");
+            if (_hasOpa) table.Add("DrawOpa");
+            if (_hasXlu) table.Add("DrawXlu");
+
+            foreach (UserDataClass s in _part2Entries)
+                table.Add(s._name);
+        }
         public override unsafe void Export(string outPath)
         {
             if (outPath.ToUpper().EndsWith(".DAE"))
@@ -943,14 +961,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
-                //Draw objects in the prioritized order of materials
-                if (_matList != null)
-                    foreach (MDL0MaterialNode m in _matList)
-                        m.Render(ctx);
+                try
+                {
+                    //Draw objects in the prioritized order of materials
+                    if (_matList != null)
+                        foreach (MDL0MaterialNode m in _matList)
+                            m.Render(ctx);
+                }
+                catch 
+                {
+                    Console.WriteLine();
+                }
             }
 
             //Turn off the last bound shader program.
-            if (ctx._canUseShaders) GL.UseProgram(0);
+            if (ctx._canUseShaders) { GL.UseProgram(0); GL.ClientActiveTexture(TextureUnit.Texture0); }
             
             if (_renderBones)
             {
@@ -1047,6 +1072,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                     m.ApplySRT0(node, index);
         }
 
+        internal void ApplyCLR(CLR0Node node, int index)
+        {
+            //Apply color changes
+            if (_matList != null)
+                foreach (MDL0MaterialNode m in _matList)
+                    m.ApplyCLR0(node, index);
+        }
+
         internal void ApplyPAT(PAT0Node node, int index)
         {
             //Change textures
@@ -1068,6 +1101,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                         else
                             ((MDL0PolygonNode)_polyList[indices[i]])._render = node._flags.HasFlag(VIS0Flags.Enabled);
             }
+        }
+
+        internal unsafe void SetSCN0(SCN0Node node)
+        {
+            if (_matList != null)
+                foreach (MDL0MaterialNode mat in _matList)
+                    mat.SetSCN0(node);
+        }
+        internal unsafe void SetSCN0Frame(int frame)
+        {
+            if (_matList != null)
+                foreach (MDL0MaterialNode mat in _matList)
+                    mat.SetSCN0Frame(frame);
         }
 
         SHP0Node currentSHP = null;
@@ -1100,10 +1146,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                             {
                                 //Morph vertices of this object to this vertex set
 
-                                float percent = v.Keyframes.GetFrameValue(KeyFrameMode.ScaleX, index - 1);
-
-                                //Clamp percentage from 0 to 1
-                                percent = percent < 0 ? 0 : percent > 1 ? 1 : percent;
+                                //Get morph percentage and clamp from 0 - 1 in case of interpolation
+                                float percent = v.Keyframes.GetFrameValue(index - 1).Clamp(0, 1);
 
                                 if (poly.Weighted)
                                 {
@@ -1163,29 +1207,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             Saves[_saveIndex].redo = true;
             Saves[_saveIndex].undo = false;
             _canUndo = true;
-        }
-
-        public Vector4 findPlane(Vector3 v0, Vector3 v1, Vector3 v2)
-        {
-            Vector4 plane = new Vector4();
-            Vector3 vec0, vec1;
-
-            //Need 2 vectors to find cross product.
-            vec0._x = v1._x - v0._x;
-            vec0._y = v1._y - v0._y;
-            vec0._z = v1._z - v0._z;
-
-            vec1._x = v2._x - v0._x;
-            vec1._y = v2._y - v0._y;
-            vec1._z = v2._y - v0._z;
-
-            //Find cross product to get A, B, and C of plane equation
-            plane._x = vec0._y * vec1._z - vec0._z * vec1._y;
-            plane._y = -(vec0._x * vec1._z - vec0._z * vec1._x);
-            plane._z = vec0._x * vec1._y - vec0._y * vec1._x;
-
-            plane._w = -(plane._x * v0._x + plane._y * v0._y + plane._z * v0._z);
-            return plane;
         }
 
         public Matrix shadowMatrix(Vector4 groundplane, Vector4 lightpos)

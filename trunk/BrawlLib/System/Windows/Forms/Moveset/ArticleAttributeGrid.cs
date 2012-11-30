@@ -159,7 +159,7 @@ namespace System.Windows.Forms
             if (AttributeArray[index]._name != name && TargetNode.Root.Params.ContainsKey(TargetNode.OldName))
             {
                 AttributeArray[index]._name = _targetNode._info[index]._name = TargetNode.Root.Params[TargetNode.OldName].Attributes[index]._name = name;
-                _targetNode.Root._dictionaryChanged = true;
+                MoveDefNode._dictionaryChanged = true;
                 return;
             }
 
@@ -235,7 +235,7 @@ namespace System.Windows.Forms
                 if (TargetNode.Root.Params.ContainsKey(TargetNode.OldName))
                 {
                     TargetNode.Root.Params[TargetNode.OldName].Attributes[index]._description = AttributeArray[index]._description;
-                    TargetNode.Root._dictionaryChanged = true;
+                    MoveDefNode._dictionaryChanged = true;
                 }
             }
         }

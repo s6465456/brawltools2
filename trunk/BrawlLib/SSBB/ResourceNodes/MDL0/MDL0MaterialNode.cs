@@ -13,9 +13,34 @@ using BrawlLib.Wii.Models;
 using System.Windows.Forms;
 using BrawlLib.IO;
 using OpenTK.Graphics.OpenGL;
+using System.Runtime.InteropServices;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
+    [Serializable, StructLayout(LayoutKind.Sequential)]
+    public struct PSBlock
+    {
+        Vector4 ColorReg0;
+        Vector4 ColorReg1;
+        Vector4 ColorReg2;
+        Vector4 KonstReg0;
+        Vector4 KonstReg1;
+        Vector4 KonstReg2;
+        Vector4 KonstReg3;
+
+        public void Set(MDL0MaterialNode m)
+        {
+            ColorReg0 = new Vector4(m.CReg0Color.R * GXColorS10.ColorFactor, m.CReg0Color.G * GXColorS10.ColorFactor, m.CReg0Color.B * GXColorS10.ColorFactor, m.CReg0Color.A * GXColorS10.ColorFactor);
+            ColorReg1 = new Vector4(m.CReg1Color.R * GXColorS10.ColorFactor, m.CReg1Color.G * GXColorS10.ColorFactor, m.CReg1Color.B * GXColorS10.ColorFactor, m.CReg1Color.A * GXColorS10.ColorFactor);
+            ColorReg2 = new Vector4(m.CReg2Color.R * GXColorS10.ColorFactor, m.CReg2Color.G * GXColorS10.ColorFactor, m.CReg2Color.B * GXColorS10.ColorFactor, m.CReg2Color.A * GXColorS10.ColorFactor);
+
+            KonstReg0 = new Vector4(m.KReg0Color.R * GXColorS10.ColorFactor, m.KReg0Color.G * GXColorS10.ColorFactor, m.KReg0Color.B * GXColorS10.ColorFactor, m.KReg0Color.A * GXColorS10.ColorFactor);
+            KonstReg1 = new Vector4(m.KReg1Color.R * GXColorS10.ColorFactor, m.KReg1Color.G * GXColorS10.ColorFactor, m.KReg1Color.B * GXColorS10.ColorFactor, m.KReg1Color.A * GXColorS10.ColorFactor);
+            KonstReg2 = new Vector4(m.KReg2Color.R * GXColorS10.ColorFactor, m.KReg2Color.G * GXColorS10.ColorFactor, m.KReg2Color.B * GXColorS10.ColorFactor, m.KReg2Color.A * GXColorS10.ColorFactor);
+            KonstReg3 = new Vector4(m.KReg3Color.R * GXColorS10.ColorFactor, m.KReg3Color.G * GXColorS10.ColorFactor, m.KReg3Color.B * GXColorS10.ColorFactor, m.KReg3Color.A * GXColorS10.ColorFactor);
+        }
+    }
+
     public unsafe class MDL0MaterialNode : MDL0EntryNode
     {
         internal MDL0Material* Header { get { return (MDL0Material*)WorkingUncompressed.Address; } }
@@ -24,12 +49,16 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Variables
 
+        //Use these for streaming values into the shader
+        public RGBAPixel amb1, amb2, clr1, clr2;
+        public GXColorS10 k1, k2, k3, k4, c1, c2, c3;
+
         MatModeBlock* mode;
 
         public UserDataClass[] UserEntries { get { return _part2Entries.ToArray(); } set { _part2Entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } }
         internal List<UserDataClass> _part2Entries = new List<UserDataClass>();
 
-        internal int _dataLen, _index, _matRefOffset = 1044, _part2Offset = 0, _dlOffset, _mdl0Offset, _stringOffset;
+        internal int _dataLen, _matRefOffset = 1044, _part2Offset = 0, _dlOffset, _mdl0Offset, _stringOffset;
         internal byte _numTextures, _numLights, _indirectMethod1, _indirectMethod2, _indirectMethod3, _indirectMethod4;
         public sbyte _normMapRefLight1, _normMapRefLight2, _normMapRefLight3, _normMapRefLight4, _lSet, _fSet;
         internal int _furDataOffset;
@@ -69,17 +98,33 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal List<XFData> XFCmds = new List<XFData>();
 
         [Category("TEV Konstant Block"), TypeConverter(typeof(GXColorS10StringConverter))]
-        public GXColorS10 KReg0Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg0Lo.RB, A = _tevKonstBlock.TevReg0Lo.AG, B = _tevKonstBlock.TevReg0Hi.RB, G = _tevKonstBlock.TevReg0Hi.AG }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg0Lo.RB = value.R; _tevKonstBlock.TevReg0Lo.AG = value.A; _tevKonstBlock.TevReg0Hi.RB = value.B; _tevKonstBlock.TevReg0Hi.AG = value.G; } } }
+        public GXColorS10 KReg0Color 
+        { 
+            get { return new GXColorS10() { R = _tevKonstBlock.TevReg0Lo.RB, A = _tevKonstBlock.TevReg0Lo.AG, B = _tevKonstBlock.TevReg0Hi.RB, G = _tevKonstBlock.TevReg0Hi.AG }; }
+            set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg0Lo.RB = value.R; _tevKonstBlock.TevReg0Lo.AG = value.A; _tevKonstBlock.TevReg0Hi.RB = value.B; _tevKonstBlock.TevReg0Hi.AG = value.G; k1 = value; } } 
+        }
         [Category("TEV Konstant Block"), TypeConverter(typeof(GXColorS10StringConverter))]
-        public GXColorS10 KReg1Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg1Lo.RB, A = _tevKonstBlock.TevReg1Lo.AG, B = _tevKonstBlock.TevReg1Hi.RB, G = _tevKonstBlock.TevReg1Hi.AG }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg1Lo.RB = value.R; _tevKonstBlock.TevReg1Lo.AG = value.A; _tevKonstBlock.TevReg1Hi.RB = value.B; _tevKonstBlock.TevReg1Hi.AG = value.G; } } }
+        public GXColorS10 KReg1Color 
+        { 
+            get { return new GXColorS10() { R = _tevKonstBlock.TevReg1Lo.RB, A = _tevKonstBlock.TevReg1Lo.AG, B = _tevKonstBlock.TevReg1Hi.RB, G = _tevKonstBlock.TevReg1Hi.AG }; }
+            set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg1Lo.RB = value.R; _tevKonstBlock.TevReg1Lo.AG = value.A; _tevKonstBlock.TevReg1Hi.RB = value.B; _tevKonstBlock.TevReg1Hi.AG = value.G; k2 = value; } } 
+        }
         [Category("TEV Konstant Block"), TypeConverter(typeof(GXColorS10StringConverter))]
-        public GXColorS10 KReg2Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg2Lo.RB, A = _tevKonstBlock.TevReg2Lo.AG, B = _tevKonstBlock.TevReg2Hi.RB, G = _tevKonstBlock.TevReg2Hi.AG }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg2Lo.RB = value.R; _tevKonstBlock.TevReg2Lo.AG = value.A; _tevKonstBlock.TevReg2Hi.RB = value.B; _tevKonstBlock.TevReg2Hi.AG = value.G; } } }
+        public GXColorS10 KReg2Color 
+        { 
+            get { return new GXColorS10() { R = _tevKonstBlock.TevReg2Lo.RB, A = _tevKonstBlock.TevReg2Lo.AG, B = _tevKonstBlock.TevReg2Hi.RB, G = _tevKonstBlock.TevReg2Hi.AG }; }
+            set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg2Lo.RB = value.R; _tevKonstBlock.TevReg2Lo.AG = value.A; _tevKonstBlock.TevReg2Hi.RB = value.B; _tevKonstBlock.TevReg2Hi.AG = value.G; k3 = value; } } 
+        }
         [Category("TEV Konstant Block"), TypeConverter(typeof(GXColorS10StringConverter))]
-        public GXColorS10 KReg3Color { get { return new GXColorS10() { R = _tevKonstBlock.TevReg3Lo.RB, A = _tevKonstBlock.TevReg3Lo.AG, B = _tevKonstBlock.TevReg3Hi.RB, G = _tevKonstBlock.TevReg3Hi.AG }; } set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg3Lo.RB = value.R; _tevKonstBlock.TevReg3Lo.AG = value.A; _tevKonstBlock.TevReg3Hi.RB = value.B; _tevKonstBlock.TevReg3Hi.AG = value.G; } } }
+        public GXColorS10 KReg3Color 
+        { 
+            get { return new GXColorS10() { R = _tevKonstBlock.TevReg3Lo.RB, A = _tevKonstBlock.TevReg3Lo.AG, B = _tevKonstBlock.TevReg3Hi.RB, G = _tevKonstBlock.TevReg3Hi.AG }; }
+            set { if (!CheckIfMetal()) { _tevKonstBlock.TevReg3Lo.RB = value.R; _tevKonstBlock.TevReg3Lo.AG = value.A; _tevKonstBlock.TevReg3Hi.RB = value.B; _tevKonstBlock.TevReg3Hi.AG = value.G; k4 = value; } } 
+        }
 
         [Category("TEV Color Block"), TypeConverter(typeof(GXColorS10StringConverter))]
         public GXColorS10 CReg0Color 
-        { 
+        {
             get { return new GXColorS10() { R = _tevColorBlock.TevReg1Lo.RB, A = _tevColorBlock.TevReg1Lo.AG, B = _tevColorBlock.TevReg1Hi0.RB, G = _tevColorBlock.TevReg1Hi0.AG }; }
             set
             {
@@ -95,12 +140,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _tevColorBlock.TevReg1Hi0.AG =
                     _tevColorBlock.TevReg1Hi1.AG =
                     _tevColorBlock.TevReg1Hi2.AG = value.G;
+
+                    c1 = value;
                 }
-            } 
+            }
         }
         [Category("TEV Color Block"), TypeConverter(typeof(GXColorS10StringConverter))]
         public GXColorS10 CReg1Color 
-        { 
+        {
             get { return new GXColorS10() { R = _tevColorBlock.TevReg2Lo.RB, A = _tevColorBlock.TevReg2Lo.AG, B = _tevColorBlock.TevReg2Hi0.RB, G = _tevColorBlock.TevReg2Hi0.AG }; }
             set
             {
@@ -116,17 +163,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _tevColorBlock.TevReg2Hi0.AG =
                     _tevColorBlock.TevReg2Hi1.AG =
                     _tevColorBlock.TevReg2Hi2.AG = value.G;
+
+                    c2 = value;
                 }
-            } 
+            }
         }
         [Category("TEV Color Block"), TypeConverter(typeof(GXColorS10StringConverter))]
         public GXColorS10 CReg2Color 
-        { 
+        {
             get { return new GXColorS10() { R = _tevColorBlock.TevReg3Lo.RB, A = _tevColorBlock.TevReg3Lo.AG, B = _tevColorBlock.TevReg3Hi0.RB, G = _tevColorBlock.TevReg3Hi0.AG }; } 
-            set 
-            { 
+            set
+            {
                 if (!CheckIfMetal()) 
-                { 
+                {
+
                     _tevColorBlock.TevReg3Lo.RB = value.R; 
                     _tevColorBlock.TevReg3Lo.AG = value.A; 
 
@@ -136,9 +186,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _tevColorBlock.TevReg3Hi2.RB = value.B; 
                     _tevColorBlock.TevReg3Hi0.AG =
                     _tevColorBlock.TevReg3Hi1.AG =
-                    _tevColorBlock.TevReg3Hi2.AG = value.G; 
-                } 
-            } 
+                    _tevColorBlock.TevReg3Hi2.AG = value.G;
+
+                    c3 = value;
+                }
+            }
         }
 
         //[Category("TEV Color Block")]
@@ -253,14 +305,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Constant Alpha")]
         public byte Value { get { return _constantAlpha.Value; } set { if (!CheckIfMetal()) _constantAlpha.Value = value; } }
 
-        [Category("Material"), Browsable(true)]
+        [Category("Material"), Browsable(false)]
         public int TotalLen { get { return _dataLen; } }
-        [Category("Material"), Browsable(true)]
+        [Category("Material"), Browsable(false)]
         public int MDL0Offset { get { return _mdl0Offset; } }
-        [Category("Material"), Browsable(true)]
+        [Category("Material"), Browsable(false)]
         public int StringOffset { get { return _stringOffset; } }
         [Category("Material")]
-        public int ID { get { return _index; } }
+        public int ID { get { return Index; } }
 
         [Category("Indirect Texture Scale"), Browsable(true)]
         public IndTexScale IndirectTex0ScaleS { get { return (IndTexScale)_indMtx.SS0val.S_Scale0; } set { if (!CheckIfMetal()) _indMtx.SS0val.S_Scale0 = value; } }
@@ -291,9 +343,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Lighting Channel 1")]
         public LightingChannelFlags C1Flags { get { return _chan1.Flags; } set { if (!CheckIfMetal()) _chan1.Flags = value; } }
         [Category("Lighting Channel 1"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel C1MaterialColor { get { return _chan1.MaterialColor; } set { if (!CheckIfMetal()) _chan1.MaterialColor = value; } }
+        public RGBAPixel C1MaterialColor { get { return _chan1.MaterialColor; } set { if (!CheckIfMetal()) clr1 = _chan1.MaterialColor = value; } }
         [Category("Lighting Channel 1"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel C1AmbientColor { get { return _chan1.AmbientColor; } set { if (!CheckIfMetal()) _chan1.AmbientColor = value; } }
+        public RGBAPixel C1AmbientColor { get { return _chan1.AmbientColor; } set { if (!CheckIfMetal()) amb1 = _chan1.AmbientColor = value; } }
 
         [Category("Lighting Channel 1")]
         public GXColorSrc C1ColorMaterialSource
@@ -372,9 +424,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Lighting Channel 2")]
         public LightingChannelFlags C2Flags { get { return _chan2.Flags; } set { if (!CheckIfMetal()) _chan2.Flags = value; } }
         [Category("Lighting Channel 2"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel C2MaterialColor { get { return _chan2.MaterialColor; } set { if (!CheckIfMetal()) _chan2.MaterialColor = value; } }
+        public RGBAPixel C2MaterialColor { get { return _chan2.MaterialColor; } set { if (!CheckIfMetal()) clr2 = _chan2.MaterialColor = value; } }
         [Category("Lighting Channel 2"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel C2AmbientColor { get { return _chan2.AmbientColor; } set { if (!CheckIfMetal()) _chan2.AmbientColor = value; } }
+        public RGBAPixel C2AmbientColor { get { return _chan2.AmbientColor; } set { if (!CheckIfMetal()) amb2 = _chan2.AmbientColor = value; } }
 
         [Category("Lighting Channel 2")]
         public GXColorSrc C2ColorMaterialSource
@@ -458,22 +510,22 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("Material")]
         //public byte Texgens { get { return _numTextures; } }//set { if (!CheckIfMetal()) _numTextures = value;  } }
         [Category("Material")]
-        public byte LightChannels { get { return _numLights; } set { if (!CheckIfMetal()) _numLights = (value > 2 ? (byte)2 : value < 0 ? (byte)0 : value); } }
+        public byte LightChannels { get { return _numLights; } set { if (!CheckIfMetal()) _numLights = value.Clamp(0, 2); } }
         [Category("Material")]
         public byte ActiveShaderStages { get { return _ssc; } set { if (!CheckIfMetal()) _ssc = (value > ShaderNode.stages ? (byte)ShaderNode.stages : value < 1 ? (byte)1 : value); } }
         [Category("Material")]
-        public byte IndirectTextures { get { return _clip; } set { if (!CheckIfMetal()) _clip = (value > 4 ? (byte)4 : value < 0 ? (byte)0 : value); } }
+        public byte IndirectShaderStages { get { return _clip; } set { if (!CheckIfMetal()) _clip = (value > 4 ? (byte)4 : value < 0 ? (byte)0 : value); } }
         [Category("Material")]
         public CullMode CullMode { get { return _cull; } set { if (!CheckIfMetal()) _cull = value;  } }
         [Category("Material")]
-        public bool EnableAlphaFunction { get { return _transp != 1; } set { if (!CheckIfMetal()) _transp = (byte)(value ? 0 : 1); } }
+        public bool ZCompareLoc { get { return _transp != 1; } set { if (!CheckIfMetal()) _transp = (byte)(value ? 0 : 1); } }
         [Category("SCN0 References")]
-        public sbyte LightSet { get { return _lSet; } set { if (!CheckIfMetal()) { _lSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
+        public sbyte LightSetIndex { get { return _lSet; } set { if (!CheckIfMetal()) { _lSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
         [Category("SCN0 References")]
-        public sbyte FogSet { get { return _fSet; } set { if (!CheckIfMetal()) { _fSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
+        public sbyte FogIndex { get { return _fSet; } set { if (!CheckIfMetal()) { _fSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
         //[Category("Material")]
         //public byte Pad { get { return _unk1; } }//set { if (!CheckIfMetal()) { _unk1 = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
-
+        
         public enum IndirectMethod
         {
             Warp = 0,
@@ -529,7 +581,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             updating = true;
             if (ShaderNode != null && ShaderNode._autoMetal && ShaderNode.texCount == Children.Count)
-            { 
+            {
                 //ShaderNode.DefaultAsMetal(Children.Count); 
             }
             else
@@ -626,9 +678,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         mr.getTexMtxVal();
                     }
 
-                    _chan1._flags = 63;
-                    C1MaterialColor = new RGBAPixel(128, 128, 128, 255);
-                    C1AmbientColor = new RGBAPixel(255, 255, 255, 255);
+                    _chan1 = new LightChannel(63, new RGBAPixel(128, 128, 128, 255), new RGBAPixel(255, 255, 255, 255), 0, 0);
                     C1ColorEnabled = true;
                     C1ColorDiffuseFunction = GXDiffuseFn.Clamped;
                     C1ColorAttenuation = GXAttnFn.Spotlight;
@@ -636,8 +686,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     C1AlphaDiffuseFunction = GXDiffuseFn.Clamped;
                     C1AlphaAttenuation = GXAttnFn.Spotlight;
 
-                    _chan2._flags = 63;
-                    C2MaterialColor = new RGBAPixel(255, 255, 255, 255);
+                    _chan2 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(), 0, 0);
                     C2ColorEnabled = true;
                     C2ColorDiffuseFunction = GXDiffuseFn.Disabled;
                     C2ColorAttenuation = GXAttnFn.Specular;
@@ -650,7 +699,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     _cull = MetalMaterial._cull;
                     _numLights = 2;
-                    EnableAlphaFunction = false;
+                    ZCompareLoc = false;
                     _normMapRefLight1 =
                     _normMapRefLight2 =
                     _normMapRefLight3 =
@@ -692,16 +741,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     if (!isMetal)
                     {
-                        if (t.Name.StartsWith(Name) && t.isMetal)
+                        if (t.Name.StartsWith(Name) && t.isMetal && (Name.Length + 7 == t.Name.Length))
                             return t;
                     }
-                    else if (Name.StartsWith(t.Name) && !t.isMetal) return t;
+                    else if (Name.StartsWith(t.Name) && !t.isMetal && (t.Name.Length + 7 == Name.Length)) return t;
                 }
                 return null;
             }
         }
 
-#endregion
+        #endregion
 
         #region Reading & Writing
 
@@ -736,7 +785,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             _stringOffset = header->_stringOffset;
 
             _dataLen = header->_dataLen;
-            _index = header->_index;
             _numTextures = header->_numTexGens;
             _numLights = header->_numLightChans;
             _usageFlags = header->_usageFlags;
@@ -801,6 +849,21 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _chan1 = Light->Channel1;
             _chan2 = Light->Channel2;
+
+            c1 = CReg2Color;
+            c2 = CReg2Color;
+            c3 = CReg2Color;
+
+            k1 = KReg0Color;
+            k2 = KReg1Color;
+            k3 = KReg2Color;
+            k3 = KReg3Color;
+
+            clr1 = C1MaterialColor;
+            clr2 = C2MaterialColor;
+
+            amb1 = C1AmbientColor;
+            amb2 = C2AmbientColor;
 
             UserData* part2 = header->UserData(Model._version);
             if (part2 != null)
@@ -1021,9 +1084,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _cull = CullMode.Cull_Inside;
                     _numLights = 1;
 
-                    _chan1._flags = 63;
-                    C1MaterialColor = new RGBAPixel(255, 255, 255, 255);
-                    C1AmbientColor = new RGBAPixel(255, 255, 255, 255);
+                    _chan1 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(255, 255, 255, 255), 0, 0);
+
                     C1ColorEnabled = true;
                     C1AlphaMaterialSource = GXColorSrc.Vertex;
                     C1ColorMaterialSource = GXColorSrc.Vertex;
@@ -1033,8 +1095,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     C1AlphaDiffuseFunction = GXDiffuseFn.Clamped;
                     C1AlphaAttenuation = GXAttnFn.Spotlight;
 
-                    _chan2._flags = 15;
-                    C2MaterialColor = new RGBAPixel(0, 0, 0, 255);
+                    _chan2 = new LightChannel(15, new RGBAPixel(0, 0, 0, 255), new RGBAPixel(), 0, 0);
+
                     C2ColorDiffuseFunction = GXDiffuseFn.Disabled;
                     C2ColorAttenuation = GXAttnFn.None;
                     C2AlphaDiffuseFunction = GXDiffuseFn.Disabled;
@@ -1051,14 +1113,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _ssc = 1;
                     _cull = CullMode.Cull_Inside;
                     _numLights = 1;
-
-                    _chan1._flags = 63;
-                    C1MaterialColor = new RGBAPixel(255, 255, 255, 255);
-                    C1AmbientColor = new RGBAPixel(255, 255, 255, 255);
-                    //e01 = 3; e03 = 1;
-                    //e00 = e02 = 7;
-                    _chan2._flags = 15;
-                    C2MaterialColor = new RGBAPixel(0, 0, 0, 255);
+                    
+                    _chan1 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(255, 255, 255, 255), 7, 3);
+                    _chan1 = new LightChannel(15, new RGBAPixel(0, 0, 0, 255), new RGBAPixel(), 7, 1);
                 }
 
                 //Set default texgen flags
@@ -1102,7 +1159,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Set header values
             header->_numTextures = Children.Count;
             header->_numTexGens = _numTextures = (byte)Children.Count;
-            header->_index = _index = Index;
+            header->_index = Index;
             header->_numLightChans = _numLights;
             header->_activeTEVStages = (byte)_ssc;
             header->_numIndTexStages = _clip;
@@ -1249,7 +1306,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 n.PostProcess(mdlAddress, first++, stringTable);
         }
         
-#endregion
+        #endregion
 
         #region Rendering
 
@@ -1260,57 +1317,94 @@ namespace BrawlLib.SSBB.ResourceNodes
             base.SignalPropertyChange();
         }
 
+        /*
+            w("{0}vec4 " + I_COLORS + "[4];\n", WriteLocation(ctx));
+		    w("{0}vec4 " + I_KCOLORS + "[4];\n", WriteLocation(ctx));
+		    w("{0}vec4 " + I_ALPHA + "[1];\n", WriteLocation(ctx));
+		    w("{0}vec4 " + I_TEXDIMS + "[8];\n", WriteLocation(ctx));
+		    w("{0}vec4 " + I_ZBIAS + "[2];\n", WriteLocation(ctx));
+		    w("{0}vec4 " + I_INDTEXSCALE + "[2];\n", WriteLocation(ctx));
+		    w("{0}vec4 " + I_INDTEXMTX + "[6];\n", WriteLocation(ctx));
+		    w("{0}vec4 " + I_FOG + "[3];\n", WriteLocation(ctx));
+         */
+
         public void SetUniforms(int programHandle)
         {
             int currUniform = -1;
             currUniform = GL.GetUniformLocation(programHandle, I_COLORS);
             if (currUniform > -1) GL.Uniform4(currUniform, 3, new float[] 
             {
-                CReg0Color.R * GXColorS10.ColorFactor, CReg0Color.G * GXColorS10.ColorFactor, CReg0Color.B * GXColorS10.ColorFactor, CReg0Color.A * GXColorS10.ColorFactor,
-                CReg1Color.R * GXColorS10.ColorFactor, CReg1Color.G * GXColorS10.ColorFactor, CReg1Color.B * GXColorS10.ColorFactor, CReg1Color.A * GXColorS10.ColorFactor,
-                CReg2Color.R * GXColorS10.ColorFactor, CReg2Color.G * GXColorS10.ColorFactor, CReg2Color.B * GXColorS10.ColorFactor, CReg2Color.A * GXColorS10.ColorFactor,
+                c1.R * GXColorS10.ColorFactor, c1.G * GXColorS10.ColorFactor, c1.B * GXColorS10.ColorFactor, c1.A * GXColorS10.ColorFactor,
+                c2.R * GXColorS10.ColorFactor, c2.G * GXColorS10.ColorFactor, c2.B * GXColorS10.ColorFactor, c2.A * GXColorS10.ColorFactor,
+                c3.R * GXColorS10.ColorFactor, c3.G * GXColorS10.ColorFactor, c3.B * GXColorS10.ColorFactor, c3.A * GXColorS10.ColorFactor,
             });
             currUniform = GL.GetUniformLocation(programHandle, I_KCOLORS);
             if (currUniform > -1) GL.Uniform4(currUniform, 4, new float[] 
             {
-                KReg0Color.R * GXColorS10.ColorFactor, KReg0Color.G * GXColorS10.ColorFactor, KReg0Color.B * GXColorS10.ColorFactor, KReg0Color.A * GXColorS10.ColorFactor,
-                KReg1Color.R * GXColorS10.ColorFactor, KReg1Color.G * GXColorS10.ColorFactor, KReg1Color.B * GXColorS10.ColorFactor, KReg1Color.A * GXColorS10.ColorFactor,
-                KReg2Color.R * GXColorS10.ColorFactor, KReg2Color.G * GXColorS10.ColorFactor, KReg2Color.B * GXColorS10.ColorFactor, KReg2Color.A * GXColorS10.ColorFactor,
-                KReg3Color.R * GXColorS10.ColorFactor, KReg3Color.G * GXColorS10.ColorFactor, KReg3Color.B * GXColorS10.ColorFactor, KReg3Color.A * GXColorS10.ColorFactor,
+                k1.R * GXColorS10.ColorFactor, k1.G * GXColorS10.ColorFactor, k1.B * GXColorS10.ColorFactor, k1.A * GXColorS10.ColorFactor,
+                k2.R * GXColorS10.ColorFactor, k2.G * GXColorS10.ColorFactor, k2.B * GXColorS10.ColorFactor, k2.A * GXColorS10.ColorFactor,
+                k3.R * GXColorS10.ColorFactor, k3.G * GXColorS10.ColorFactor, k3.B * GXColorS10.ColorFactor, k3.A * GXColorS10.ColorFactor,
+                k4.R * GXColorS10.ColorFactor, k4.G * GXColorS10.ColorFactor, k4.B * GXColorS10.ColorFactor, k4.A * GXColorS10.ColorFactor,
+            });
+            currUniform = GL.GetUniformLocation(programHandle, I_ALPHA);
+            if (currUniform > -1) GL.Uniform4(currUniform, 1, new float[] 
+            {
+                _alphaFunc.ref0 * RGBAPixel.ColorFactor,
+                _alphaFunc.ref1 * RGBAPixel.ColorFactor,
+                0,
+                _constantAlpha.Value * RGBAPixel.ColorFactor,
+            });
+            //currUniform = GL.GetUniformLocation(programHandle, I_TEXDIMS);
+            //if (currUniform > -1) GL.Uniform4(currUniform, 8, new float[] 
+            //{
+                
+            //});
+            currUniform = GL.GetUniformLocation(programHandle, I_ZBIAS);
+            if (currUniform > -1) GL.Uniform4(currUniform, 2, new float[] 
+            {
+                
+            });
+            currUniform = GL.GetUniformLocation(programHandle, I_INDTEXSCALE);
+            if (currUniform > -1) GL.Uniform4(currUniform, 2, new float[] 
+            {
+                
+            });
+            currUniform = GL.GetUniformLocation(programHandle, I_INDTEXMTX);
+            if (currUniform > -1) GL.Uniform4(currUniform, 6, new float[] 
+            {
+                
             });
             currUniform = GL.GetUniformLocation(programHandle, I_FOG);
-            if (currUniform > -1) GL.Uniform4(currUniform, 3, new float[] 
+            if (currUniform > -1)
             {
-
-            });
+                List<float> values = new List<float>();
+                if (_fog != null && _animFrame < _fog._colors.Count)
+                {
+                    values.Add(_fog._colors[_animFrame].R * RGBAPixel.ColorFactor);
+                    values.Add(_fog._colors[_animFrame].G * RGBAPixel.ColorFactor);
+                    values.Add(_fog._colors[_animFrame].B * RGBAPixel.ColorFactor);
+                    values.Add(_fog._colors[_animFrame].A * RGBAPixel.ColorFactor);
+                }
+                else 
+                {
+                    values.Add(0);
+                    values.Add(0);
+                    values.Add(0);
+                    values.Add(0);
+                }
+                GL.Uniform4(currUniform, 3, values.ToArray());
+            }
         }
 
-        public void GenFragShader()
+        public enum PSGRENDER_MODE
         {
-            CreateGLSLShader();
+            PSGRENDER_NORMAL, // Render normally, without destination alpha
+            PSGRENDER_DSTALPHA_ALPHA_PASS, // Render normally first, then render again for alpha
+            PSGRENDER_DSTALPHA_DUAL_SOURCE_BLEND, // Use dual-source blending
+            PSGRENDER_ZCOMPLOCK //Render to Depth Channel only with no depth dextures enabled
+        };
 
-            //if (!written)
-            //{
-            //    Console.WriteLine(fragmentShaderSource);
-            //    written = true;
-            //}
-
-            //            fragmentShaderSource = @"uniform sampler2D samp0, samp1, samp2;
-            //                void main(void) 
-            //                {
-            //                    vec4 s1 = texture2D(samp0, gl_TexCoord[0].st);
-            //                    gl_FragColor = s1;
-            //                }";
-
-            fragmentShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
-
-            GL.ShaderSource(fragmentShaderHandle, fragmentShaderSource);
-            GL.CompileShader(fragmentShaderHandle);
-
-            _renderUpdate = ShaderNode._renderUpdate = false;
-        }
-
-        enum AlphaPretest
+        public enum AlphaPretest
         {
             Undefined,
             AlwaysPass,
@@ -1319,11 +1413,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region GLSL
 
-        private void CreateGLSLShader()
-        {
-            MDL0ShaderNode s = ShaderNode;
+        #region Shader Helpers
 
-            //Pretest the alpha function.
+        public AlphaPretest PretestAlpha()
+        {
             AlphaPretest preTest = AlphaPretest.Undefined;
             switch (_alphaFunc.Logic)
             {
@@ -1348,342 +1441,417 @@ namespace BrawlLib.SSBB.ResourceNodes
                         preTest = AlphaPretest.AlwaysPass;
                     break;
             }
-
-            int numStages = s.Children.Count;
-            int numTexgens = Children.Count;
-
-            string shader = "uniform sampler2D";
-
-            for (int i = 0; i < Children.Count; i++)
-                shader += String.Format(" samp{0}", i + (i == Children.Count - 1 ? "" : ","));
-
-            shader += ";\n\n";
-
-            shader += "uniform vec4 " + I_COLORS + "[4];\n";
-            shader += "uniform vec4 " + I_KCOLORS + "[4];\n";
-            //shader += "uniform vec4 " + I_ALPHA + ";\n";
-            //shader += "uniform vec4 " + I_TEXDIMS + "[8];\n";
-            //shader += "uniform vec4 " + I_ZBIAS + "[2];\n";
-            //shader += "uniform vec4 " + I_INDTEXSCALE + "[2];\n";
-            //shader += "uniform vec4 " + I_INDTEXMTX + "[6];\n";
-            shader += "uniform vec4 " + I_FOG + "[3];\n";
-
-            shader += "\n";
-
-            shader += "vec4 c0 = " + I_COLORS + "[1],\n" +
-            "  c1 = " + I_COLORS + "[2],\n" +
-            "  c2 = " + I_COLORS + "[3],\n" +
-            "  prev = vec4(0.0f, 0.0f, 0.0f, 0.0f),\n" +
-            "  textemp = vec4(0.0f, 0.0f, 0.0f, 0.0f),\n" +
-            "  rastemp = vec4(0.0f, 0.0f, 0.0f, 0.0f),\n" +
-            "  konsttemp = vec4(0.0f, 0.0f, 0.0f, 0.0f);\n" +
-            "vec3 comp16 = vec3(1.0f, 255.0f, 0.0f),\n" +
-            "  comp24 = vec3(1.0f, 255.0f, 255.0f*255.0f);\n" +
-            "vec4 alphabump=vec4(0.0f,0.0f,0.0f,0.0f);\n" +
-            "vec3 tevcoord=vec3(0.0f, 0.0f, 0.0f);\n" +
-            "vec2 wrappedcoord=vec2(0.0f,0.0f),\n" +
-            "  tempcoord=vec2(0.0f,0.0f);\n" +
-            "vec4 cc0=vec4(0.0f,0.0f,0.0f,0.0f),\n" +
-            "  cc1=vec4(0.0f,0.0f,0.0f,0.0f);\n" +
-            "vec4 cc2=vec4(0.0f,0.0f,0.0f,0.0f),\n" +
-            "  cprev=vec4(0.0f,0.0f,0.0f,0.0f);\n" +
-            "vec4 crastemp=vec4(0.0f,0.0f,0.0f,0.0f),\n" +
-            "  ckonsttemp=vec4(0.0f,0.0f,0.0f,0.0f);\n\n";
-
-            shader += "void main(out vec4 ocol0, in vec4 rawpos)\n{\n";
-
-            //// compute window position if needed because binding semantic WPOS is not widely supported
-            //if (m.Children.Count < 7)
-            //{
-            //    for (int i = 0; i < m.Children.Count; ++i)
-            //        shader += String.Format(",\n  in vec3 uv{0} : TEXCOORD{0}", i);
-            //    shader += String.Format(",\n  in vec4 clipPos : TEXCOORD{0}", m.Children.Count);
-            //    //if(g_ActiveConfig.bEnablePixelLighting && g_ActiveConfig.backend_info.bSupportsPixelLighting)
-            //        shader += String.Format(",\n  in vec4 Normal : TEXCOORD{0}", m.Children.Count + 1);
-            //}
-            //else
-            //{
-            //    // wpos is in w of first 4 texcoords
-            //    //if(g_ActiveConfig.bEnablePixelLighting && g_ActiveConfig.backend_info.bSupportsPixelLighting)
-            //    //{
-            //        for (int i = 0; i < 8; ++i)
-            //            shader += String.Format(",\n  in vec4 uv{0} : TEXCOORD{0}", i);
-            //    //}
-            //    //else
-            //    //{
-            //    //    for (unsigned int i = 0; i < xfregs.numTexGen.numTexGens; ++i)
-            //    //        shader += String.Format(",\n  in float%d uv%d : TEXCOORD%d", i < 4 ? 4 : 3 , i, i);
-            //    //}
-            //}
-
-            if ((_fog != null && _fog.Type != FogType.None))
-            {
-                //The screen space depth value = far z + (clip z / clip w) * z range
-                if (numTexgens < 7)
-                    shader += "float zCoord = " + I_ZBIAS + "[1].x + (clipPos.z / clipPos.w) * " + I_ZBIAS + "[1].y;\n";
-                else
-                    shader += "float zCoord = " + I_ZBIAS + "[1].x + (uv2.w / uv3.w) * " + I_ZBIAS + "[1].y;\n";
-            }
-
-            int active = ActiveShaderStages > s.stages ? s.stages : ActiveShaderStages;
-
-            //Write stages to shader code
-            foreach (TEVStage t in s.Children)
-                if (t.Index < active)
-                    shader += t.Write(this);
-
-            shader += String.Format("prev.rgb = {0};\n", tevCOutputTable[(int)((TEVStage)s.Children[active - 1]).ColorRegister]);
-            shader += String.Format("prev.a = {0};\n", tevAOutputTable[(int)((TEVStage)s.Children[active - 1]).AlphaRegister]);
-
-            shader += "prev = frac(4.0f + prev * (255.0f/256.0f)) * (256.0f/255.0f);\n";
-
-            WriteFog(ref shader);
-            shader += "ocol0 = prev;\n";
-
-            WriteAlphaTest(ref shader);
-
-            shader += "gl_FragColor = prev;";
-
-            //if (dstAlphaMode == DSTALPHA_ALPHA_PASS)
-            //    shader += String.Format("  ocol0 = vec4(prev.rgb, "I_ALPHA"[0].a);\n");
-            //else
-            //{
-            //    WriteFog(p);
-            //    shader += "  ocol0 = prev;\n";
-            //}
-
-            // On D3D11, use dual-source color blending to perform dst alpha in a
-            // single pass
-            //if (dstAlphaMode == DSTALPHA_DUAL_SOURCE_BLEND)
-            //{
-            //    // Colors will be blended against the alpha from ocol1...
-            //    shader += String.Format("  ocol1 = ocol0;\n");
-            //    // ...and the alpha from ocol0 will be written to the framebuffer.
-            //shader += "  ocol0.a = "+I_ALPHA+"[0].a;\n";
-            //}
-
-            #region LayerRendering
-            /*
-
-            //Write struct variables
-            shader += "struct VS_OUTPUT {\n";
-            shader += "  vec4 pos : POSITION;\n";
-            shader += "  vec4 colors_0 : COLOR0;\n";
-            shader += "  vec4 colors_1 : COLOR1;\n";
-
-            if (Children.Count < 7)
-            {
-                for (int i = 0; i < Children.Count; ++i)
-                    shader += String.Format("  vec3 tex{0} : TEXCOORD{0};\n", i);
-                shader += String.Format("  vec4 clipPos : TEXCOORD{0};\n", Children.Count);
-                //if(g_ActiveConfig.bEnablePixelLighting && g_ActiveConfig.backend_info.bSupportsPixelLighting)
-                shader += String.Format("  vec4 Normal : TEXCOORD{0};\n", Children.Count + 1);
-            }
-            else
-            {
-                // clip position is in w of first 4 texcoords
-                //if(g_ActiveConfig.bEnablePixelLighting && g_ActiveConfig.backend_info.bSupportsPixelLighting)
-                {
-                    for (int i = 0; i < 8; ++i)
-                        shader += String.Format("  vec4 tex{0} : TEXCOORD{1};\n", i, i);
-                }
-                //else
-                //{
-                //    for (int i = 0; i < Children.Count; ++i)
-                //        shader += String.Format("  float{0} tex{1} : TEXCOORD{2};\n", i < 4 ? 4 : 3 , i, i);
-                //}
-            }
-            shader += "};\n";
-
-            //Write code
-            for (int i = 0; i < Children.Count; i++)
-            {
-                MDL0MaterialRefNode mr = Children[i] as MDL0MaterialRefNode;
-                XFTexMtxInfo texinfo = mr.TexMtxFlags;
-
-                shader += "{\n";
-                shader += "coord = vec4(0.0f, 0.0f, 1.0f, 1.0f);\n";
-                switch (texinfo.SourceRow)
-                {
-                    case TexSourceRow.Geometry:
-                        if (texinfo.InputForm == TexInputForm.ABC1)
-                            shader += "coord = rawpos;\n"; // pos.w is 1
-                        break;
-                    case TexSourceRow.Normals:
-                        if (texinfo.InputForm == TexInputForm.ABC1)
-                            shader += "coord = vec4(rawnorm0.xyz, 1.0f);\n";
-                        break;
-                    case TexSourceRow.Colors:
-                        if (texinfo.TexGenType == TexTexgenType.Color0 || texinfo.TexGenType == TexTexgenType.Color1) ;
-                        break;
-                    case TexSourceRow.BinormalsT:
-                        if (texinfo.InputForm == TexInputForm.ABC1)
-                            shader += "coord = vec4(rawnorm1.xyz, 1.0f);\n";
-                        break;
-                    case TexSourceRow.BinormalsB:
-                        if (texinfo.InputForm == TexInputForm.ABC1)
-                            shader += "coord = vec4(rawnorm2.xyz, 1.0f);\n";
-                        break;
-                    default:
-                        if (texinfo.SourceRow <= TexSourceRow.TexCoord7)
-                            shader += String.Format("coord = vec4(tex{0}.x, tex{0}.y, 1.0f, 1.0f);\n", texinfo.SourceRow - TexSourceRow.TexCoord0);
-                        break;
-                }
-
-                // first transformation
-                switch (texinfo.TexGenType)
-                {
-                    case TexTexgenType.EmbossMap: //Calculate tex coords into bump map
-
-                        //No BT support yet
-                        //if (components & (VB_HAS_NRM1|VB_HAS_NRM2))
-                        //{
-                        // transform the light dir into tangent space
-                        //shader += "ldir = normalize("I_LIGHTS".lights[%d].pos.xyz - pos.xyz);\n", texinfo.embosslightshift);
-                        //shader += "o.tex%d.xyz = o.tex%d.xyz + vec3(dot(ldir, _norm1), dot(ldir, _norm2), 0.0f);\n", i, texinfo.embosssourceshift);
-                        //}
-                        //else
-                        //{
-                        //if (0); // should have normals
-                        shader += String.Format("o.tex{0}.xyz = o.tex{1}.xyz;\n", i, texinfo.EmbossSource);
-                        //}
-
-                        break;
-                    case TexTexgenType.Color0:
-                        if (texinfo.SourceRow == TexSourceRow.Colors)
-                            shader += String.Format("o.tex{0}.xyz = vec3(o.colors_0.x, o.colors_0.y, 1);\n", i);
-                        break;
-                    case TexTexgenType.Color1:
-                        if (texinfo.SourceRow == TexSourceRow.Colors)
-                            shader += String.Format("o.tex{0}.xyz = vec3(o.colors_1.x, o.colors_1.y, 1);\n", i);
-                        break;
-                    case TexTexgenType.Regular:
-                    default:
-                        if (mr.HasTextureMatrix)
-                        {
-                            if (texinfo.Projection == TexProjection.STQ)
-                                shader += String.Format("o.tex{0}.xyz = vec3(dot(coord, " + I_TRANSFORMMATRICES + ".T[tex{0}.z].t), dot(coord, " + I_TRANSFORMMATRICES + ".T[tex{0}.z+1].t), dot(coord, " + I_TRANSFORMMATRICES + ".T[tex{0}.z+2].t));\n", i);
-                            else
-                                shader += String.Format("o.tex{0}.xyz = vec3(dot(coord, " + I_TRANSFORMMATRICES + ".T[tex{0}.z].t), dot(coord, " + I_TRANSFORMMATRICES + ".T[tex{0}.z+1].t), 1);\n", i);
-                        }
-                        else
-                        {
-                            if (texinfo.Projection == TexProjection.STQ)
-                                shader += String.Format("o.tex{0}.xyz = vec3(dot(coord, " + I_TEXMATRICES + ".T[{1}].t), dot(coord, " + I_TEXMATRICES + ".T[{2}].t), dot(coord, " + I_TEXMATRICES + ".T[{3}].t));\n", i, 3 * i, 3 * i + 1, 3 * i + 2);
-                            else
-                                shader += String.Format("o.tex{0}.xyz = vec3(dot(coord, " + I_TEXMATRICES + ".T[{1}].t), dot(coord, " + I_TEXMATRICES + ".T[{2}].t), 1);\n", i, 3 * i, 3 * i + 1);
-                        }
-                        break;
-                }
-
-                //if (mr.DualTexFlags.NormalEnable == 1 && texinfo.TexGenType == TexTexgenType.Regular) { // only works for regular tex gen types?
-                //    const PostMtxInfo& postInfo = xfregs.postMtxInfo[i];
-
-                //    int postidx = postInfo.index;
-                //    shader += "vec4 P0 = "I_POSTTRANSFORMMATRICES".T[%d].t;\n"
-                //        "vec4 P1 = "I_POSTTRANSFORMMATRICES".T[%d].t;\n"
-                //        "vec4 P2 = "I_POSTTRANSFORMMATRICES".T[%d].t;\n",
-                //        postidx&0x3f, (postidx+1)&0x3f, (postidx+2)&0x3f);
-
-                //    //if (texGenSpecialCase) {
-                //    //    // no normalization
-                //    //    // q of input is 1
-                //    //    // q of output is unknown
-
-                //    //    // multiply by postmatrix
-                //    //    shader += "o.tex%d.xyz = vec3(dot(P0.xy, o.tex%d.xy) + P0.z + P0.w, dot(P1.xy, o.tex%d.xy) + P1.z + P1.w, 0.0f);\n", i, i, i);
-                //    }
-                //    else
-                //    {
-                //        if (postInfo.normalize)
-                //            shader += "o.tex%d.xyz = normalize(o.tex%d.xyz);\n", i, i);
-
-                //        // multiply by postmatrix
-                //        shader += "o.tex%d.xyz = vec3(dot(P0.xyz, o.tex%d.xyz) + P0.w, dot(P1.xyz, o.tex%d.xyz) + P1.w, dot(P2.xyz, o.tex%d.xyz) + P2.w);\n", i, i, i, i);
-                //    }
-                //}
-
-                shader += "}\n";
-            }
-
-            */
-
-            #endregion
-
-            shader += "}\n";
-
-            fragmentShaderSource = shader;
+            return preTest;
         }
 
-        public void WriteFog(ref string shader)
+        public string tempShader;
+        public int tabs = 0;
+        [Browsable(false)]
+        public string Tabs { get { string t = ""; for (int i = 0; i < tabs; i++) t += "\t"; return t; } }
+        public void w(string str, params object[] args)
+        {
+            if (args.Length == 0)
+                tabs -= Helpers.FindCount(str, 0, '}');
+            bool s = false;
+            int r = str.LastIndexOf("\n");
+            if (r == str.Length - 1)
+            {
+                str = str.Substring(0, str.Length - 1);
+                s = true;
+            }
+            str = str.Replace("\n", "\n" + Tabs);
+            if (s) str += "\n";
+            tempShader += Tabs + (args != null && args.Length > 0 ? String.Format(str, args) : str);
+            if (args.Length == 0)
+                tabs += Helpers.FindCount(str, 0, '{');
+        }
+
+        public static string WriteRegister(string prefix, uint num)
+        {
+            return "";
+        }
+
+        public static string WriteBinding(uint num, TKContext ctx)
+        {
+            if (!ctx.bSupportsGLSLBinding)
+                return "";
+            return String.Format("layout(binding = {0}) ", num);
+        }
+
+        public void _assert_(bool arg)
+        {
+            if (arg != true)
+                Console.WriteLine();
+        }
+
+        #endregion
+
+        public bool DepthTextureEnable;
+
+        public string GeneratePixelShaderCode(MDL0PolygonNode Object, PSGRENDER_MODE PSGRenderMode, TKContext ctx)
+        {
+            /*
+            * gl_LightSource[] is a built-in array for all lights.
+            struct gl_LightSourceParameters 
+            {   
+               vec4 ambient;              // Aclarri   
+               vec4 diffuse;              // Dcli   
+               vec4 specular;             // Scli   
+               vec4 position;             // Ppli   
+               vec4 halfVector;           // Derived: Hi   
+               vec3 spotDirection;        // Sdli   
+               float spotExponent;        // Srli   
+               float spotCutoff;          // Crli                              
+                                          // (range: [0.0,90.0], 180.0)   
+               float spotCosCutoff;       // Derived: cos(Crli)                 
+                                          // (range: [1.0,0.0],-1.0)   
+               float constantAttenuation; // K0   
+               float linearAttenuation;   // K1   
+               float quadraticAttenuation;// K2  
+            };    
+            uniform gl_LightSourceParameters gl_LightSource[gl_MaxLights];
+            *
+            * access the values set with glMaterial using the GLSL built-in variables gl_FrontMateral and gl_BackMaterial.
+            struct gl_MaterialParameters  
+            {   
+               vec4 emission;    // Ecm   
+               vec4 ambient;     // Acm   
+               vec4 diffuse;     // Dcm   
+               vec4 specular;    // Scm   
+               float shininess;  // Srm  
+            };  
+            uniform gl_MaterialParameters gl_FrontMaterial;  
+            uniform gl_MaterialParameters gl_BackMaterial; 
+            */
+
+            tempShader = "";
+
+            int numStages = ShaderNode.Children.Count;
+            int numTexgen = Children.Count;
+
+	        w("//Pixel Shader for TEV stages\n");
+            w("//{0} TEV stages, {1} texgens, {2} IND stages\n", numStages, numTexgen, IndirectShaderStages);
+
+	        int nIndirectStagesUsed = 0;
+	        if (IndirectShaderStages > 0)
+		        for (int i = 0; i < numStages; ++i)
+		        {
+                    TEVStage stage = ShaderNode.Children[i] as TEVStage;
+			        if (stage.IndirectActive && stage.bt < IndirectShaderStages)
+				        nIndirectStagesUsed |= 1 << stage.bt;
+		        }
+
+	        DepthTextureEnable = (/*bpmem.ztex2.op != ZTEXTURE_DISABLE && */!ZCompareLoc && EnableDepthTest && EnableDepthUpdate)/* || g_ActiveConfig.bEnablePerPixelDepth*/;
+
+			//A few required defines and ones that will make our lives a lot easier
+			if (ctx.bSupportsGLSLBinding || ctx.bSupportsGLSLUBO)
+			{
+				w("#version 330 compatibility\n");
+				if (ctx.bSupportsGLSLBinding)
+					w("#extension GL_ARB_shading_language_420pack : enable\n");
+                //if (ctx.bSupportsGLSLUBO)
+                //    w("#extension GL_ARB_uniform_buffer_object : enable\n");
+			}
+			else
+				w("#version 120\n");
+
+			if (ctx.bSupportsGLSLATTRBind)
+				w("#extension GL_ARB_explicit_attrib_location : enable\n");
+
+			w("#define saturate(x) clamp(x, 0.0f, 1.0f)\n");
+			w("#define lerp(x, y, z) mix(x, y, z)\n");
+
+			w("float fmod(float x, float y)\n");
+			w("{\n");
+			w("float z = fract(abs(x / y)) * abs(y);\n");
+			w("return (x < 0) ? -z : z;\n");
+			w("}\n");
+
+		    for (uint i = 0; i < 8; i++)
+			    w("{0}uniform sampler2D samp{1};\n", WriteBinding(i, ctx), i);
+
+	        w("\n");
+
+		    w("uniform vec4 " + I_COLORS + "[4];\n");
+		    w("uniform vec4 " + I_KCOLORS + "[4];\n");
+		    w("uniform vec4 " + I_ALPHA + ";\n");
+		    w("uniform vec4 " + I_TEXDIMS + "[8];\n");
+		    w("uniform vec4 " + I_ZBIAS + "[2];\n");
+		    w("uniform vec4 " + I_INDTEXSCALE + "[2];\n");
+		    w("uniform vec4 " + I_INDTEXMTX + "[6];\n");
+		    w("uniform vec4 " + I_FOG + "[3];\n");
+
+		    // Compiler will optimize these out by itself.
+		    w("uniform vec4 " + I_PLIGHTS + "[40];\n");
+		    w("uniform vec4 " + I_PMATERIALS + "[4];\n");
+
+			w("vec4 ocol0;\n");
+		        
+		    if (DepthTextureEnable)
+				w("float depth;\n");
+
+		    w("vec4 rawpos = gl_FragCoord;\n");
+
+		    w("vec4 colors_0 = gl_Color;\n");
+		    w("vec4 colors_1 = gl_SecondaryColor;\n");
+
+		    if (numTexgen < 7)
+		    {
+			    for (int i = 0; i < numTexgen; i++)
+					w("vec3 uv{0} = gl_TexCoord[{0}].xyz;\n", i);
+			    w("vec4 clipPos = gl_TexCoord[{0}];\n", numTexgen);
+		        w("vec4 Normal = gl_TexCoord[{0}];\n", numTexgen + 1);
+		    }
+		    else
+				for (int i = 0; i < 8; ++i)
+					w("vec4 uv{0} = gl_TexCoord[{0}];\n", i);
+		    
+		    w("void main()\n{\n");
+
+	        AlphaPretest Pretest = PretestAlpha();
+            //if (PSGRenderMode == PSGRENDER_MODE.PSGRENDER_DSTALPHA_ALPHA_PASS && !DepthTextureEnable && Pretest >= 0)
+            //{
+            //    if (Pretest == AlphaPretest.AlwaysFail)
+            //    {
+            //        w("ocol0 = vec4(0);\n");
+            //        w("discard;\n");
+
+            //        if(PSGRenderMode != PSGRENDER_MODE.PSGRENDER_DSTALPHA_DUAL_SOURCE_BLEND)
+            //            w("gl_FragColor = ocol0;\n");
+
+            //        w("return;\n");
+            //    }
+            //    else
+            //        w("ocol0 = " + I_ALPHA + ".aaaa;\n");
+
+            //    w("}\n");
+
+            //    return tempShader;
+            //}
+
+	        w("vec4 c0 = " + I_COLORS + "[1], c1 = " + I_COLORS + "[2], c2 = " + I_COLORS + "[3], prev = vec4(0.0f, 0.0f, 0.0f, 0.0f), textemp = vec4(0.0f, 0.0f, 0.0f, 0.0f), rastemp = vec4(0.0f, 0.0f, 0.0f, 0.0f), konsttemp = vec4(0.0f, 0.0f, 0.0f, 0.0f);\n");
+			w("vec3 comp16 = vec3(1.0f, 255.0f, 0.0f), comp24 = vec3(1.0f, 255.0f, 255.0f*255.0f);\n");
+			w("vec4 alphabump = vec4(0.0f,0.0f,0.0f,0.0f);\n");
+			w("vec3 tevcoord = vec3(0.0f, 0.0f, 0.0f);\n");
+			w("vec2 wrappedcoord=vec2(0.0f,0.0f), tempcoord=vec2(0.0f,0.0f);\n");
+			w("vec4 cc0 = vec4(0.0f,0.0f,0.0f,0.0f), cc1 = vec4(0.0f,0.0f,0.0f,0.0f);\n");
+			w("vec4 cc2 = vec4(0.0f,0.0f,0.0f,0.0f), cprev = vec4(0.0f,0.0f,0.0f,0.0f);\n");
+            w("vec4 crastemp=vec4(0.0f,0.0f,0.0f,0.0f), ckonsttemp = vec4(0.0f,0.0f,0.0f,0.0f);\n\n");
+
+		    if (Children.Count < 7)
+		    {
+			    w("vec3 _norm0 = normalize(Normal.xyz);\n\n");
+			    w("vec3 pos = vec3(clipPos.x,clipPos.y,Normal.w);\n");
+		    }
+		    else
+		    {
+			    w("vec3 _norm0 = normalize(vec3(uv4.w,uv5.w,uv6.w));\n\n");
+			    w("vec3 pos = vec3(uv0.w,uv1.w,uv7.w);\n");
+		    }
+
+		    w("vec4 mat, lacc;\nvec3 ldir, h;\nfloat dist, dist2, attn;\n");
+
+            Object.tabs = tabs;
+            tempShader += Object.GenerateLightingShader(I_PMATERIALS, I_PLIGHTS, "colors_", "colors_");
+            
+            //if (numTexgen < 7)
+            //    w("clipPos = vec4(rawpos.x, rawpos.y, clipPos.z, clipPos.w);\n");
+            //else
+            //    w("vec4 clipPos = vec4(rawpos.x, rawpos.y, uv2.w, uv3.w);\n");
+
+	        // HACK to handle cases where the tex gen is not enabled
+	        if (numTexgen == 0)
+		        w("vec3 uv0 = vec3(0.0f, 0.0f, 0.0f);\n");
+	        else
+	        {
+		        for (int i = 0; i < numTexgen; ++i)
+		        {
+			        // optional perspective divides
+			        if (((MDL0MaterialRefNode)Children[i]).Projection == TexProjection.STQ)
+			        {
+				        w("if (uv{0}.z != 0.0f)\n", i);
+				        w("    uv{0}.xy = uv{0}.xy / uv{0}.z;\n", i);
+			        }
+
+			        //w("uv{0}.xy = uv{0}.xy * "+I_TEXDIMS+"[{0}].zw;\n", i);
+		        }
+	        }
+
+	        for (int i = 0; i < IndirectShaderStages; i++)
+	        {
+		        if ((nIndirectStagesUsed & (1 << i)) != 0)
+		        {
+			        uint texcoord = (ShaderNode._swapBlock._Value16.Value >> ((i + 1) * 3) & 7);
+
+			        if (texcoord < numTexgen)
+				        w("tempcoord = uv{0}.xy * " + I_INDTEXSCALE + "[{1}].{2};\n", texcoord, i / 2, (i & 1) != 0 ? "zw" : "xy");
+			        else
+				        w("tempcoord = vec2(0.0f, 0.0f);\n");
+
+                    SampleTexture(String.Format("vec3 indtex{0}", i), "tempcoord", "abg", (ShaderNode._swapBlock._Value16.Value >> (i * 3) & 7));
+		        }
+	        }
+
+	        foreach (TEVStage stage in ShaderNode.Children)
+                if (stage.Index < ActiveShaderStages)
+		            w(stage.Write(this));
+                else break;
+
+	        if (numStages > 0)
+	        {
+		        w("prev.rgb = {0};\n",tevCOutputTable[(int)((TEVStage)ShaderNode.Children[numStages - 1]).ColorRegister]);
+		        w("prev.a = {0};\n",tevAOutputTable[(int)((TEVStage)ShaderNode.Children[numStages - 1]).AlphaRegister]);
+	        }
+
+	        // emulation of unsigned 8 overflow when casting
+	        //w("prev = fract(4.0f + prev * (255.0f/256.0f)) * (256.0f/255.0f);\n");
+
+            if (Pretest == AlphaPretest.AlwaysFail)
+	        {
+                w("ocol0 = vec4(0.0f);\n");
+
+                //if (DepthTextureEnable)
+                //    w("depth = 1.0f;\n");
+
+                //if (PSGRenderMode == PSGRENDER_MODE.PSGRENDER_DSTALPHA_DUAL_SOURCE_BLEND)
+                //    w("ocol1 = vec4(0.0f);\n");
+                //else
+                    w("gl_FragColor = ocol0;\n");
+
+                if (DepthTextureEnable)
+                    w("gl_FragDepth = depth;\n");
+                
+                w("discard;\n");
+                
+                w("return;\n");
+	        }
+	        else
+	        {
+                if (Pretest != AlphaPretest.AlwaysPass)
+                    WriteAlphaTest(PSGRenderMode);
+
+                //if (_fog != null && (_fog.Type != 0) || DepthTextureEnable)
+                //{
+                //    // the screen space depth value = far z + (clip z / clip w) * z range
+                //    w("float zCoord = " + I_ZBIAS + "[1].x + (clipPos.z / clipPos.w) * " + I_ZBIAS + "[1].y;\n");
+                //}
+
+                //if (DepthTextureEnable)
+                //{
+                //    // use the texture input of the last texture stage (textemp), hopefully this has been read and is in correct format...
+                //    if (/*bpmem.ztex2.op != ZTEXTURE_DISABLE && */!ZCompLoc && EnableDepthTest && EnableDepthUpdate)
+                //    {
+                //        //if (bpmem.ztex2.op == ZTEXTURE_ADD)
+                //        //    Write("zCoord = dot("+I_ZBIAS+"[0].xyzw, textemp.xyzw) + "+I_ZBIAS+"[1].w + zCoord;\n");
+                //        //else
+                //            w("zCoord = dot(" + I_ZBIAS + "[0].xyzw, textemp.xyzw) + " + I_ZBIAS + "[1].w;\n");
+
+                //        // scale to make result from frac correct
+                //        w("zCoord = zCoord * (16777215.0f/16777216.0f);\n");
+                //        w("zCoord = fract(zCoord);\n");
+                //        w("zCoord = zCoord * (16777216.0f/16777215.0f);\n");
+                //    }
+                //    w("depth = zCoord;\n");
+                //}
+
+                //if (PSGRenderMode == PSGRENDER_MODE.PSGRENDER_DSTALPHA_ALPHA_PASS)
+                //    w("ocol0 = vec4(prev.rgb, " + I_ALPHA + ".a);\n");
+                //else
+		        {
+			        WriteFog();
+			        w("ocol0 = prev;\n");
+		        }
+
+                //if (PSGRenderMode == PSGRENDER_MODE.PSGRENDER_DSTALPHA_DUAL_SOURCE_BLEND)
+                //{
+                //    w("ocol1 = ocol0;\n");
+                //    w("ocol0.a = " + I_ALPHA + ".a;\n");
+                //}
+
+                //if (DepthTextureEnable)
+                //    w("gl_FragDepth = depth;\n");
+			    //if (PSGRenderMode != PSGRENDER_MODE.PSGRENDER_DSTALPHA_DUAL_SOURCE_BLEND)
+				    w("gl_FragColor = ocol0;\n");
+                
+	        }
+	        w("}\n");
+
+            return tempShader;
+        }
+
+        public void SampleTexture(string destination, string texcoords, string texswap, uint texmap)
+        {
+            tempShader += String.Format("{0}=texture2D(samp{1},{2}.xy"/* + " * " + I_TEXDIMS + "[{3}].xy" */+ ").{4};\n", destination, texmap, texcoords, texmap, texswap);
+        }
+
+        public void WriteFog()
         {
             if (_fog == null || _fog.Type == FogType.None) return; //no Fog
 
-            if ((int)_fog.Type < 8)
-            {
-                // perspective
-                // ze = A/(B - (Zs >> B_SHF)
-                shader += "  float ze = " + I_FOG + "[1].x / (" + I_FOG + "[1].y - (zCoord / " + I_FOG + "[1].w));\n";
-            }
-            else
-            {
-                // orthographic
-                // ze = a*Zs    (here, no B_SHF)
-                shader += "  float ze = " + I_FOG + "[1].x * zCoord;\n";
-            }
+            if ((int)_fog.Type < 8) // perspective ze = A/(B - (Zs >> B_SHF)
+                w("float ze = " + I_FOG + "[1].x / (" + I_FOG + "[1].y - (zCoord / " + I_FOG + "[1].w));\n");
+            else // orthographic ze = a*Zs    (here, no B_SHF)
+                w("float ze = " + I_FOG + "[1].x * zCoord;\n");
 
             // x_adjust = sqrt((x-center)^2 + k^2)/k
             // ze *= x_adjust
             //this is completely theorical as the real hardware seems to use a table instead of calculate the values.
             //if(bpmem.fogRange.Base.Enabled)
             //{
-            shader += "  float x_adjust = (2.0f * (clipPos.x / " + I_FOG + "[2].y)) - 1.0f - " + I_FOG + "[2].x;\n";
-            shader += "  x_adjust = sqrt(x_adjust * x_adjust + " + I_FOG + "[2].z * " + I_FOG + "[2].z) / " + I_FOG + "[2].z;\n";
-            shader += "  ze *= x_adjust;\n";
+            w("float x_adjust = (2.0f * (clipPos.x / " + I_FOG + "[2].y)) - 1.0f - " + I_FOG + "[2].x;\n");
+            w("x_adjust = sqrt(x_adjust * x_adjust + " + I_FOG + "[2].z * " + I_FOG + "[2].z) / " + I_FOG + "[2].z;\n");
+            w("ze *= x_adjust;\n");
             //}
 
-            shader += "  float fog = saturate(ze - " + I_FOG + "[1].z);\n";
+            w("float fog = saturate(ze - " + I_FOG + "[1].z);\n");
 
             if ((int)_fog.Type > 3)
-                shader += tevFogFuncsTable[(int)_fog.Type];
+                w(tevFogFuncsTable[(int)_fog.Type]);
             else
             {
                 //if ((int)_fog.Type != 2)
                 //WARN_LOG(VIDEO, "Unknown Fog Type! %08x", bpmem.fog.c_proj_fsel.fsel);
             }
-
-            shader += "  prev.rgb = lerp(prev.rgb, " + I_FOG + "[0].rgb, fog);\n";
+            
+            w("prev.rgb = lerp(prev.rgb, " + I_FOG + "[0].rgb, fog);\n");
         }
 
-        public void WriteAlphaTest(ref string shader)
+        public void WriteAlphaTest(PSGRENDER_MODE mode)
         {
             // using discard then return works the same in cg and dx9 but not in dx11
-            shader += "if(!( ";
+            w("if(!(");
 
-            int compindex = (int)_alphaFunc.Comp0 % 8;
+            int comp0index = (int)_alphaFunc.Comp0 % 8;
+            int comp1index = (int)_alphaFunc.Comp1 % 8;
 
-            // Lookup the first component from the alpha function table
-            shader += String.Format((EnableAlphaFunction ? tevAlphaFuncsTableZCompLoc[compindex] : tevAlphaFuncsTable[compindex]), alphaRef[0]);
+            w(tevAlphaFuncsTable[comp0index] + "{1}" + tevAlphaFuncsTable[comp1index].Replace("{0}", "{2}"), alphaRef[0], tevAlphaFunclogicTable[(int)_alphaFunc.Logic % 4], alphaRef[1]);//lookup the first component from the alpha function table
+            w("))\n{\n");
 
-            shader += tevAlphaFunclogicTable[(int)_alphaFunc.Logic % 4]; //lookup the logic op
+            w("ocol0 = vec4(0.0, 0.0, 0.0, 0.0);\n");
+            if (mode == PSGRENDER_MODE.PSGRENDER_DSTALPHA_DUAL_SOURCE_BLEND)
+                w("ocol1 = vec4(0.0, 0.0, 0.0, 0.0);\n");
+            if (DepthTextureEnable)
+                w("depth = 1.f;\n");
 
-            compindex = (int)_alphaFunc.Comp1 % 8;
-
-            // Lookup the second component from the alpha function table
-            shader += String.Format((EnableAlphaFunction ? tevAlphaFuncsTableZCompLoc[compindex] : tevAlphaFuncsTable[compindex]), alphaRef[1]);
-
-            shader += ")) {\n";
-
-            // ZCompLoc is a way to control whether depth test is done before
+            // HAXX: zcomploc is a way to control whether depth test is done before
             // or after texturing and alpha test. PC GPU does depth test before texturing ONLY if depth value is
             // not updated during shader execution.
-            // 1 - if ZCompLoc is enabled make a first pass, with color channel write disabled updating only
+            // We implement "depth test before texturing" by discarding the fragment
+            // when the alpha test fail. This is not a correct implementation because
+            // even if the depth test fails the fragment could be alpha blended.
+            // this implemnetation is a trick to  keep speed.
+            // the correct, but slow, way to implement a correct zComploc is :
+            // 1 - if zcomplock is enebled make a first pass, with color channel write disabled updating only
             // depth channel.
             // 2 - in the next pass disable depth chanel update, but proccess the color data normally
-            // this way is the only CORRECT way to emulate perfectly the ZCompLoc behaviour
-            shader += "discard;\n";
-            shader += "return;\n";
-            shader += "}\n";
+            // this way is the only CORRECT way to emulate perfectly the zcomplock behaviour
+            if (!(ZCompareLoc && EnableDepthUpdate))
+            {
+                w("discard;\n");
+                w("return;\n");
+            }
+
+            w("}\n");
         }
 
         #region Table Variables
@@ -1725,8 +1893,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public static readonly string[] alphaRef =
         {
-            I_ALPHA + "[0].r",
-            I_ALPHA + "[0].g"
+            I_ALPHA + ".r",
+            I_ALPHA + ".g"
         };
 
         public static string[] tevFogFuncsTable =
@@ -1744,7 +1912,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public const string I_COLORS = "color";
         public const string I_KCOLORS = "kclr";
         public const string I_ALPHA = "alphaRef";
-        public const string I_TEXDIMS = "texdim";
+        public const string I_TEXDIMS = "texdim"; // width | height << 16 | wrap_s << 28 | wrap_t << 30
         public const string I_ZBIAS = "czbias";
         public const string I_INDTEXSCALE = "cindscale";
         public const string I_INDTEXMTX = "cindmtx";
@@ -1767,27 +1935,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public const int C_PENVCONST_END = 74;
         public const int PIXELSHADERUID_MAX_VALUES = 70;
         public const int PIXELSHADERUID_MAX_VALUES_SAFE = 120;
-
-        public const string I_POSNORMALMATRIX = "cpnmtx";
-        public const string I_PROJECTION = "cproj";
-        public const string I_MATERIALS = "cmtrl";
-        public const string I_LIGHTS = "clights";
-        public const string I_TEXMATRICES = "ctexmtx";
-        public const string I_TRANSFORMMATRICES = "ctrmtx";
-        public const string I_NORMALMATRICES = "cnmtx";
-        public const string I_POSTTRANSFORMMATRICES = "cpostmtx";
-        public const string I_DEPTHPARAMS = "cDepth";
-
-        public const int C_POSNORMALMATRIX = 0;
-        public const int C_PROJECTION = (C_POSNORMALMATRIX + 6);
-        public const int C_MATERIALS = (C_PROJECTION + 4);
-        public const int C_LIGHTS = (C_MATERIALS + 4);
-        public const int C_TEXMATRICES = (C_LIGHTS + 40);
-        public const int C_TRANSFORMMATRICES = (C_TEXMATRICES + 24);
-        public const int C_NORMALMATRICES = (C_TRANSFORMMATRICES + 64);
-        public const int C_POSTTRANSFORMMATRICES = (C_NORMALMATRICES + 32);
-        public const int C_DEPTHPARAMS = (C_POSTTRANSFORMMATRICES + 64);
-        public const int C_VENVCONST_END = (C_DEPTHPARAMS + 4);
 
         public static readonly string[] tevKSelTableC = // KCSEL
         {
@@ -1901,7 +2048,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        "(konsttemp.rgb)",          // KONST
 	        "vec3(0.0f, 0.0f, 0.0f)", // ZERO
 
-	        ///added extra values to map clamped values
+	        //added extra values to map clamped values
 	        "(cprev.rgb)",               // CPREV,
 	        "(cprev.aaa)",               // APREV,
 	        "(cc0.rgb)",                 // C0,
@@ -1932,7 +2079,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        "rastemp",         // RASA,
 	        "konsttemp",       // KONST,  (hw1 had quarter)
 	        "vec4(0.0f, 0.0f, 0.0f, 0.0f)", // ZERO
-	        ///aded extra values to map clamped values
+	        ///added extra values to map clamped values
 	        "cprev",            // APREV,
 	        "cc0",              // A0,
 	        "cc1",              // A1,
@@ -1973,8 +2120,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #endregion
 
-        public string fragmentShaderSource;
-        public int fragmentShaderHandle;
         public bool written = false;
 
         public SCN0FogNode _fog;
@@ -2062,9 +2207,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             foreach (MDL0MaterialRefNode m in Children) 
                 m.Unbind();
-
-            if (fragmentShaderHandle != 0)
-                GL.DeleteShader(fragmentShaderHandle);
         }
 
         internal void ApplySRT0(SRT0Node node, int index)
@@ -2084,6 +2226,31 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (MDL0MaterialRefNode r in Children)
                     r.ApplySRT0Texture(null, 0);
         }
+        
+        internal void ApplyCLR0(CLR0Node node, int index)
+        {
+            if (node == null) return;
+            CLR0MaterialNode mat = node.FindChild(Name, false) as CLR0MaterialNode;
+            if (mat != null)
+                foreach (CLR0MaterialEntryNode e in mat.Children)
+                {
+                    ARGBPixel p = e.Colors.Count > index ? e.Colors[index] : new ARGBPixel();
+                    switch (e.Target)
+                    {
+                        case EntryTarget.Ambient0: amb1 = (RGBAPixel)p; break;
+                        case EntryTarget.Ambient1: amb2 = (RGBAPixel)p; break;
+                        case EntryTarget.Color0: clr1 = (RGBAPixel)p; break;
+                        case EntryTarget.Color1: clr2 = (RGBAPixel)p; break;
+                        case EntryTarget.TevColorReg0: c1 = (GXColorS10)p; break;
+                        case EntryTarget.TevColorReg1: c2 = (GXColorS10)p; break;
+                        case EntryTarget.TevColorReg2: c3 = (GXColorS10)p; break;
+                        case EntryTarget.TevKonstReg0: k1 = (GXColorS10)p; break;
+                        case EntryTarget.TevKonstReg1: k2 = (GXColorS10)p; break;
+                        case EntryTarget.TevKonstReg2: k3 = (GXColorS10)p; break;
+                        case EntryTarget.TevKonstReg3: k4 = (GXColorS10)p; break;
+                    }
+                }
+        }
 
         internal unsafe void ApplyPAT0(PAT0Node node, int index)
         {
@@ -2102,13 +2269,26 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (MDL0MaterialRefNode r in Children)
                     r.ApplyPAT0Texture(null, 0);
         }
-
+        public int renderFrame = 0;
         internal unsafe void SetSCN0(SCN0Node node)
         {
-            SCN0GroupNode g = node.GetFolder<SCN0LightSetNode>();
-            _lightSet = LightSet < g.Children.Count && LightSet >= 0 ? g.Children[LightSet] as SCN0LightSetNode : null;
-            g = node.GetFolder<SCN0FogNode>();
-            _fog = FogSet < g.Children.Count && FogSet >= 0 ? g.Children[FogSet] as SCN0FogNode : null;
+            if (node == null)
+            {
+                _lightSet = null;
+                _fog = null;
+            }
+            else
+            {
+                SCN0GroupNode g = node.GetFolder<SCN0LightSetNode>();
+                _lightSet = LightSetIndex < g.Children.Count && LightSetIndex >= 0 ? g.Children[LightSetIndex] as SCN0LightSetNode : null;
+                g = node.GetFolder<SCN0FogNode>();
+                _fog = FogIndex < g.Children.Count && FogIndex >= 0 ? g.Children[FogIndex] as SCN0FogNode : null;
+            }
+        }
+
+        public void SetSCN0Frame(int frame)
+        {
+            renderFrame = frame;
         }
 
         internal unsafe void ApplySCN0(int index)
@@ -2116,7 +2296,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             
         }
 
-#endregion
+        #endregion
+
+        public override unsafe void Replace(string fileName)
+        {
+            base.Replace(fileName);
+
+            Model.CheckTextures();
+        }
 
         public override void Remove()
         {
@@ -2131,6 +2318,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!updating && Model._autoMetal && MetalMaterial != null && !this.isMetal)
                 MetalMaterial.UpdateAsMetal();
         }
+
         public override unsafe void Export(string outPath)
         {
             StringTable table = new StringTable();
@@ -2150,10 +2338,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
     }
+
     public class LightChannel
     {
         public LightChannel(uint flags, RGBAPixel mat, RGBAPixel amb, uint color, uint alpha) 
-        { 
+        {
             _flags = flags;
             _matColor = mat;
             _ambColor = amb;
@@ -2206,7 +2395,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return _color.Lights; }
             set { _color.Lights = value; }
         }
-
         [Category("Lighting Channel")]
         public GXColorSrc AlphaMaterialSource
         {

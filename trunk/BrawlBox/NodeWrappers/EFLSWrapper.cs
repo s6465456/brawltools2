@@ -104,6 +104,6 @@ namespace BrawlBox
 
         public EFLSEntryWrapper() { ContextMenuStrip = _menu; }
 
-        public override string ExportFilter { get { return ExportFilters.RAW; } }
+        public override string ExportFilter { get { return ExportFilters.Raw; } }
     }
 }
