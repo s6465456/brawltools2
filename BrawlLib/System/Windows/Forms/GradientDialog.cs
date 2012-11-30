@@ -231,7 +231,7 @@ namespace System.Windows.Forms
             pnlPreview.Invalidate();
         }
 
-        private void numStart_ValueChanged(object sender, EventArgs e) {}// _startIndex = (int)numStart.Value; }
+        private void numStart_ValueChanged(object sender, EventArgs e) { } // _startIndex = (int)numStart.Value; }
         private void lblStartText_Click(object sender, EventArgs e)
         {
             _dlgColor.Color = _startColor;
@@ -242,7 +242,7 @@ namespace System.Windows.Forms
             }
         }
 
-        private void numEnd_ValueChanged(object sender, EventArgs e) {}// _endIndex = (int)numEnd.Value; }
+        private void numEnd_ValueChanged(object sender, EventArgs e) { } // _endIndex = (int)numEnd.Value; }
         private void lblEndText_Click(object sender, EventArgs e)
         {
             _dlgColor.Color = _endColor;

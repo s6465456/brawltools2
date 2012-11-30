@@ -19,5 +19,9 @@ namespace System
                     count++;
             return count;
         }
+        public static byte Clamp(this byte value, byte min, byte max)
+        {
+            return value <= min ? min : value >= max ? max : value;
+        }
     }
 }

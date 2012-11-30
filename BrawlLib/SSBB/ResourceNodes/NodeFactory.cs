@@ -15,7 +15,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     //Factory is for initializing root node, and unknown child nodes.
     public static class NodeFactory
     {
-        private const int CompressBufferLen = 0x40;
+        private const int CompressBufferLen = 0x60;
 
         private static List<ResourceParser> _parsers = new List<ResourceParser>();
         static NodeFactory()
@@ -34,26 +34,27 @@ namespace BrawlLib.SSBB.ResourceNodes
             FileMap map = FileMap.FromFile(path, FileMapProtect.Read);
             try 
             {
-                if (String.Equals(Path.GetExtension(path), ".mrg", StringComparison.OrdinalIgnoreCase) || String.Equals(Path.GetExtension(path), ".mrgc", StringComparison.OrdinalIgnoreCase))
-                {
-                    node = new MRGNode();
-                    DataSource source = new DataSource(map);
-                    if (Compressor.IsDataCompressed(source.Address, source.Length))
-                    {
-                        CompressionHeader* cmpr = (CompressionHeader*)source.Address;
-                        try
-                        {
-                            //Expand the whole resource and initialize
-                            FileMap map2 = FileMap.FromTempFile(cmpr->ExpandedSize);
-                            Compressor.Expand(cmpr, map2.Address, map2.Length);
-                            source.Compression = cmpr->Algorithm;
-                            node.Initialize(parent, source, new DataSource(map2));
-                        }
-                        catch (InvalidCompressionException) { }
-                    }
-                    else node.Initialize(parent, map);
-                }
-                else if (String.Equals(Path.GetExtension(path), ".rel", StringComparison.OrdinalIgnoreCase))
+                //if (String.Equals(Path.GetExtension(path), ".mrg", StringComparison.OrdinalIgnoreCase) || String.Equals(Path.GetExtension(path), ".mrgc", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    node = new MRGNode();
+                //    DataSource source = new DataSource(map);
+                //    if (Compressor.IsDataCompressed(source.Address, source.Length))
+                //    {
+                //        CompressionHeader* cmpr = (CompressionHeader*)source.Address;
+                //        try
+                //        {
+                //            //Expand the whole resource and initialize
+                //            FileMap map2 = FileMap.FromTempFile(cmpr->ExpandedSize);
+                //            Compressor.Expand(cmpr, map2.Address, map2.Length);
+                //            source.Compression = cmpr->Algorithm;
+                //            node.Initialize(parent, source, new DataSource(map2));
+                //        }
+                //        catch (InvalidCompressionException) { }
+                //    }
+                //    else node.Initialize(parent, map);
+                //}
+                //else
+                    if (String.Equals(Path.GetExtension(path), ".rel", StringComparison.OrdinalIgnoreCase))
                 {
                     node = new RELNode();
                     node.Initialize(parent, map);

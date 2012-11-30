@@ -1,26 +1,28 @@
 ﻿using System;
 using BrawlLib.SSBBTypes;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class RSARGroupNode : RSAREntryNode
     {
         internal INFOGroupHeader* Header { get { return (INFOGroupHeader*)WorkingUncompressed.Address; } }
-        internal override int StringId { get { return Header->_id; } }
+        
+        [Browsable(false)]
+        internal override int StringId { get { return Header->_stringId; } }
 
         public override ResourceType ResourceType { get { return ResourceType.RSARGroup; } }
 
         internal List<RSARFileNode> _files = new List<RSARFileNode>();
 
-        private int _id;
-        private int _magic;
-        private int _unk1, _unk2;
+        private int _entryNo;
+        private int _extFilePathRef;
 
-        public int Id { get { return _id; } }
-        public int Magic { get { return _magic; } }
-        public int Unknown1 { get { return _unk1; } }
-        public int Unknown2 { get { return _unk2; } }
+        [Category("Group")]
+        public int EntryNumber { get { return _entryNo; } }
+        [Category("Group")]
+        public int ExtFilePathRef { get { return _extFilePathRef; } }
 
         public List<RSARFileNode> Files { get { return _files; } }
 
@@ -28,33 +30,61 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
 
-            _id = Header->_id;
-            _magic = Header->_magic;
-            _unk1 = Header->_unk1;
-            _unk2 = Header->_unk2;
+            _entryNo = Header->_entryNum;
+            _extFilePathRef = Header->_extFilePathRef;
 
             //Get file references
             RSARNode rsar = RSARNode;
             VoidPtr offset = &rsar.Header->INFOBlock->_collection;
-            //ResourceNode parent = rsar.Children[1];
             RuintList* list = Header->GetCollection(offset);
             int count = list->_numEntries;
             for (int i = 0; i < count; i++)
             {
                 INFOGroupEntry* entry = (INFOGroupEntry*)list->Get(offset, i);
                 int id = entry->_fileId;
-                foreach (RSARFileNode node in rsar.Files)
-                {
-                    if (id == node._fileIndex)
-                    {
-                        _files.Add(node);
-                        break;
-                    }
-                }
-                //_files.Add(rsar.Files[id] as RSARFileNode);
+                _files.Add(rsar.Files[id] as RSARFileNode);
+                rsar.Files[id]._groups.Add(this);
             }
 
+            SetSizeInternal(INFOGroupHeader.Size + 4 + _files.Count * (8 + INFOGroupEntry.Size));
+
             return false;
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            return INFOGroupHeader.Size + 4 + _files.Count * (8 + INFOGroupEntry.Size);
+        }
+
+        internal INFOGroupHeader* _rebuildAddr;
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            INFOGroupHeader* header = (INFOGroupHeader*)address;
+            _rebuildAddr = header;
+            RuintList* list = (RuintList*)(address + INFOGroupHeader.Size);
+            INFOGroupEntry* entries = (INFOGroupEntry*)((VoidPtr)list + 4 + _files.Count * 8);
+            
+            header->_entryNum = -1;
+            header->_stringId = _rebuildStringId;
+            //header->_extFilePathRef = 0;
+            //header->_extFilePathRef._dataType = 0;
+            //header->_headerLength = 0;
+            //header->_headerOffset = 0;
+            //header->_waveDataLength = 0;
+            //header->_waveDataOffset = 0;
+            header->_listOffset = (uint)((VoidPtr)list - _rebuildBase);
+
+            list->_numEntries = _files.Count;
+            int i = 0;
+            foreach (RSARFileNode file in _files)
+            {
+                list->Entries[i] = (uint)((VoidPtr)(&entries[i]) - _rebuildBase);
+                entries[i++]._fileId = file._fileIndex;
+                //entries[i]._dataLength = 0;
+                //entries[i]._dataOffset = 0;
+                //entries[i]._headerLength = 0;
+                //entries[i]._headerOffset = 0;
+            }
         }
     }
 }

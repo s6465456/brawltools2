@@ -255,6 +255,8 @@ namespace System.Windows.Forms
         {
             if (numFrameIndex.Value > numFrameIndex.Minimum)
                 numFrameIndex.Value--;
+            else
+                numFrameIndex.Value = numFrameIndex.Maximum;
         }
 
         public void btnFirst_Click(object sender, EventArgs e)

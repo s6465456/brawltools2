@@ -17,9 +17,7 @@ namespace System
         }
         public static Int32 Clamp(this Int32 value, int min, int max)
         {
-            if (value <= min) return min;
-            if (value >= max) return max;
-            return value;
+            return value <= min ? min : value >= max ? max : value;
         }
     }
 }

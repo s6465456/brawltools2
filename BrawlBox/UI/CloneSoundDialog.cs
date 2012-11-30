@@ -126,7 +126,6 @@ namespace BrawlBox
 
             treeResource.EndUpdate();
 
-
             try { return base.ShowDialog(owner); }
             finally { _parentNode = null; treeResource.Clear(); }
         }

@@ -138,7 +138,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //context.glDisable((uint)GLEnableCap.DepthTest);
 
             foreach (CollisionObject obj in _objects)
-                obj.Render();
+                obj.Render(ctx);
         }
         #endregion
 
@@ -246,7 +246,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         }
 
-        internal unsafe void Render()
+        internal unsafe void Render(TKContext ctx)
         {
             if (!_render)
                 return;
@@ -259,7 +259,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (CollisionPlane p in _planes)
                 p.DrawPlanes();
             foreach (CollisionLink l in _points)
-                l.Render();
+                l.Render(ctx);
 
             //context.glPopMatrix();
         }
@@ -415,17 +415,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _parent._points.Remove(this);
         }
 
-        internal void Render()
+        internal void Render(TKContext ctx)
         {
             if (_highlight)
                 GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
             else
                 GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
-            Console.WriteLine();
-            //ctx.DrawBox(
-            //    new Vector3(_value._x - BoxRadius, _value._y - BoxRadius, LineWidth),
-            //    new Vector3(_value._x + BoxRadius, _value._y + BoxRadius, -LineWidth));
+            ctx.DrawBox(
+                new Vector3(_value._x - BoxRadius, _value._y - BoxRadius, LineWidth),
+                new Vector3(_value._x + BoxRadius, _value._y + BoxRadius, -LineWidth));
         }
     }
 

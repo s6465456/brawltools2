@@ -16,8 +16,7 @@ namespace System.Windows.Forms
         public string Caption { get { return label1.Text; } set { label1.Text = value; } }
 
         public ProgressWindow() { InitializeComponent(); }
-        public ProgressWindow(Form owner, string title, string caption, bool canCancel)
-            : this()
+        public ProgressWindow(Form owner, string title, string caption, bool canCancel) : this()
         {
             Owner = owner;
             Text = title; 

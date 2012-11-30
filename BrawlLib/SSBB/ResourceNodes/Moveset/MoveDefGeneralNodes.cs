@@ -7,10 +7,31 @@ using BrawlLib.SSBBTypes;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public class MoveDefActionListNode : MoveDefEntryNode
+    public unsafe class MoveDefActionListNode : MoveDefEntryNode
     {
         public override ResourceType ResourceType { get { return ResourceType.MDefActionList; } }
         public List<List<int>> ActionOffsets = new List<List<int>>();
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            bint* addr = (bint*)address;
+            int count = 0;
+            if (Children.Count > 0) count = Children[0].Children.Count;
+            for (int i = 0; i < count; i++)
+                foreach (MoveDefEntryNode g in Children)
+                {
+                    MoveDefActionNode a = (MoveDefActionNode)g.Children[i];
+                    addr[g.Index + Children.Count * count] = a._rebuildOffset;
+                }
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            int s = 0;
+            foreach (MoveDefEntryNode g in Children)
+                s += g.Children.Count * 4;
+            return s;
+        }
     }
     public class MoveDefSubRoutineListNode : MoveDefEntryNode
     {

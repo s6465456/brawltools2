@@ -173,9 +173,9 @@ namespace BrawlLib.SSBBTypes
     
     public enum TexMatrixMode
     {
-        Matrix_Maya = 0,
-        Matrix_XSI = 1,
-        Matrix_3dsMax = 2
+        MatrixMaya = 0,
+        MatrixXSI = 1,
+        Matrix3dsMax = 2
     }
 
     //Calculation method for the normal matrix and texture matrix that makes up an envelope
@@ -831,175 +831,6 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct Bin32 //For reading flags
-    {
-        public uint data;
-
-        public Bin32(uint val) { data = val; }
-
-        public override string ToString()
-        {
-            int i = 0;
-            string val = "";
-            while (i++ < 32)
-            {
-                val += (data >> (32 - i)) & 1;
-                if (i % 4 == 0 && i != 32)
-                    val += " ";
-            }
-            return val;
-        }
-
-        public bool this[int index]
-        {
-            get { return (data >> index & 1) != 0; }
-            set
-            {
-                if (value)
-                    data |= (uint)(1 << index);
-                else
-                    data &= ~(uint)(1 << index);
-            }
-        }
-
-        //public uint this[int shift, int mask]
-        //{
-        //    get { return (uint)(data >> shift & mask); }
-        //    set { data = (uint)((data & ~(mask << shift)) | ((value & mask) << shift)); }
-        //}
-
-        public uint this[int shift, int bitCount]
-        {
-            get
-            {
-                int mask = 0;
-                for (int i = 0; i < bitCount; i++)
-                    mask |= 1 << i;
-                return (uint)((data >> shift) & mask);
-            }
-            set
-            {
-                int mask = 0;
-                for (int i = 0; i < bitCount; i++)
-                    mask |= 1 << i;
-                data = (uint)((data & ~(mask << shift)) | ((value & mask) << shift));
-            }
-        }
-    }
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct Bin16 //For reading flags
-    {
-        public ushort data;
-
-        public Bin16(ushort val) { data = val; }
-
-        public override string ToString()
-        {
-            int i = 0;
-            string val = "";
-            while (i++ < 16)
-            {
-                val += (data >> (16 - i)) & 1;
-                if (i % 4 == 0 && i != 16)
-                    val += " ";
-            }
-            return val;
-        }
-
-        public bool this[int index]
-        {
-            get { return (data >> index & 1) != 0; } 
-            set 
-            {
-                if (value)
-                    data |= (ushort)(1 << index);
-                else
-                    data &= (ushort)~(1 << index);
-            }
-        }
-
-        //public ushort this[int shift, int mask]
-        //{
-        //    get { return (ushort)(data >> shift & mask); }
-        //    set { data = (ushort)((data & ~(mask << shift)) | ((value & mask) << shift)); }
-        //}
-
-        public ushort this[int shift, int bitCount]
-        {
-            get
-            {
-                int mask = 0;
-                for (int i = 0; i < bitCount; i++)
-                    mask |= 1 << i;
-                return (ushort)((data >> shift) & mask); 
-            }
-            set
-            {
-                int mask = 0;
-                for (int i = 0; i < bitCount; i++)
-                    mask |= 1 << i;
-                data = (ushort)((data & ~(mask << shift)) | ((value & mask) << shift)); 
-            }
-        }
-    }
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct Bin8 //For reading flags
-    {
-        public byte data;
-
-        public Bin8(byte val) { data = val; }
-
-        public override string ToString()
-        {
-            int i = 0;
-            string val = "";
-            while (i++ < 8)
-            {
-                val += (data >> (8 - i)) & 1;
-                if (i % 4 == 0 && i != 8)
-                    val += " ";
-            }
-            return val;
-        }
-
-        public bool this[int index]
-        {
-            get { return (data >> index & 1) != 0; }
-            set
-            {
-                if (value)
-                    data |= (byte)(1 << index);
-                else
-                    data &= (byte)~(1 << index);
-            }
-        }
-
-        //public byte this[int shift, int mask]
-        //{
-        //    get { return (byte)(data >> shift & mask); }
-        //    set { data = (byte)((data & ~(mask << shift)) | ((value & mask) << shift)); }
-        //}
-
-        public byte this[int shift, int bitCount]
-        {
-            get
-            {
-                int mask = 0;
-                for (int i = 0; i < bitCount; i++)
-                    mask |= 1 << i;
-                return (byte)((data >> shift) & mask);
-            }
-            set
-            {
-                int mask = 0;
-                for (int i = 0; i < bitCount; i++)
-                    mask |= 1 << i;
-                data = (byte)((data & ~(mask << shift)) | ((value & mask) << shift));
-            }
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct MDL0Material
     {
         public bint _dataLen;
@@ -1008,7 +839,7 @@ namespace BrawlLib.SSBBTypes
         public bint _index;
         public buint _usageFlags;
 
-        //DO_NOT_SEND_XXX is not set as long as a user/programmer does not set it at runtime.
+        //DO_NOT_SEND_XXX is not set as long as it is not set at runtime.
         //Specifying it will forcibly omit sending the display list(s) held by this material (even if this material is animated).
         public enum MatUsageFlags : uint
         {
@@ -1349,44 +1180,44 @@ namespace BrawlLib.SSBBTypes
             Reg16 = 0x61,
 
             Mem00 = (BPMemory)0xFE,
-            _Value00 = new Int24(0xF),
+            _Value00 = new UInt24(0xF),
             Mem01 = (BPMemory)0xF6,
             _Value01 = new KSel(0x4),
             Mem02 = (BPMemory)0xFE,
-            _Value02 = new Int24(0xF),
+            _Value02 = new UInt24(0xF),
             Mem03 = (BPMemory)0xF7,
             _Value03 = new KSel(0xE),
             Mem04 = (BPMemory)0xFE,
-            _Value04 = new Int24(0xF),
+            _Value04 = new UInt24(0xF),
             Mem05 = (BPMemory)0xF8,
             _Value05 = new KSel(0x0),
             Mem06 = (BPMemory)0xFE,
-            _Value06 = new Int24(0xF),
+            _Value06 = new UInt24(0xF),
             Mem07 = (BPMemory)0xF9,
             _Value07 = new KSel(0xC),
             Mem08 = (BPMemory)0xFE,
-            _Value08 = new Int24(0xF),
+            _Value08 = new UInt24(0xF),
             Mem09 = (BPMemory)0xFA,
             _Value09 = new KSel(0x5),
             Mem10 = (BPMemory)0xFE,
-            _Value10 = new Int24(0xF),
+            _Value10 = new UInt24(0xF),
             Mem11 = (BPMemory)0xFB,
             _Value11 = new KSel(0xD),
             Mem12 = (BPMemory)0xFE,
-            _Value12 = new Int24(0xF),
+            _Value12 = new UInt24(0xF),
             Mem13 = (BPMemory)0xFC,
             _Value13 = new KSel(0xA),
             Mem14 = (BPMemory)0xFE,
-            _Value14 = new Int24(0xF),
+            _Value14 = new UInt24(0xF),
             Mem15 = (BPMemory)0xFD,
             _Value15 = new KSel(0xE),
             Mem16 = (BPMemory)0x27,
-            _Value16 = new Int24(0xFF, 0xFF, 0xFF),
+            _Value16 = new UInt24(0xFF, 0xFF, 0xFF),
         };
 
         public byte Reg00; //0x61
         public BPMemory Mem00;
-        public Int24 _Value00; //KSel Mask - Swap Mode
+        public UInt24 _Value00; //KSel Mask - Swap Mode
         
         public byte Reg01; //0x61
         public BPMemory Mem01;
@@ -1394,7 +1225,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg02; //0x61
         public BPMemory Mem02;
-        public Int24 _Value02; //KSel Mask - Swap Mode
+        public UInt24 _Value02; //KSel Mask - Swap Mode
 
         public byte Reg03; //0x61
         public BPMemory Mem03;
@@ -1402,7 +1233,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg04; //0x61
         public BPMemory Mem04;
-        public Int24 _Value04; //KSel Mask - Swap Mode
+        public UInt24 _Value04; //KSel Mask - Swap Mode
 
         public byte Reg05; //0x61
         public BPMemory Mem05;
@@ -1410,7 +1241,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg06; //0x61
         public BPMemory Mem06;
-        public Int24 _Value06; //KSel Mask - Swap Mode
+        public UInt24 _Value06; //KSel Mask - Swap Mode
 
         public byte Reg07; //0x61
         public BPMemory Mem07;
@@ -1418,7 +1249,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg08; //0x61
         public BPMemory Mem08;
-        public Int24 _Value08; //KSel Mask - Swap Mode
+        public UInt24 _Value08; //KSel Mask - Swap Mode
 
         public byte Reg09; //0x61
         public BPMemory Mem09;
@@ -1426,7 +1257,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg10; //0x61
         public BPMemory Mem10;
-        public Int24 _Value10; //KSel Mask - Swap Mode
+        public UInt24 _Value10; //KSel Mask - Swap Mode
 
         public byte Reg11; //0x61
         public BPMemory Mem11;
@@ -1434,7 +1265,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg12; //0x61
         public BPMemory Mem12;
-        public Int24 _Value12; //KSel Mask - Swap Mode
+        public UInt24 _Value12; //KSel Mask - Swap Mode
 
         public byte Reg13; //0x61
         public BPMemory Mem13;
@@ -1442,15 +1273,15 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg14; //0x61
         public BPMemory Mem14;
-        public Int24 _Value14; //KSel Mask - Swap Mode
-
+        public UInt24 _Value14; //KSel Mask - Swap Mode
+        
         public byte Reg15; //0x61
         public BPMemory Mem15;
         public KSel _Value15; //KSel 7 - BA
         
         public byte Reg16; //0x61
         public BPMemory Mem16; //IREF
-        public Int24 _Value16; 
+        public UInt24 _Value16; 
 
         private fixed byte _pad[11];
     }
@@ -1476,7 +1307,7 @@ namespace BrawlLib.SSBBTypes
 
         public static readonly StageGroup Default = new StageGroup()
         {
-            mask = new BPCommand(true) { Mem = BPMemory.BPMEM_BP_MASK, Data = new Int24(0xFFFFF0) },
+            mask = new BPCommand(true) { Mem = BPMemory.BPMEM_BP_MASK, Data = new UInt24(0xFFFFF0) },
             ksel = new BPCommand(true) { Mem = BPMemory.BPMEM_TEV_KSEL0 },
             tref = new BPCommand(true) { Mem = BPMemory.BPMEM_TREF0 },
             eClrEnv = new BPCommand(true) { Mem = BPMemory.BPMEM_TEV_COLOR_ENV_0 },
@@ -1621,8 +1452,7 @@ namespace BrawlLib.SSBBTypes
         
         public KSelSwapBlock* SwapBlock { get { return (KSelSwapBlock*)(Address + Size); } }
 
-        //There are 8 structures max following the display list, each 0x30 in length.
-        //Each structure has 9 commands.
+        //There are 8 groups max following the display list, each 0x30 in length.
         public StageGroup* First { get { return (StageGroup*)(Address + 0x80); } }
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }

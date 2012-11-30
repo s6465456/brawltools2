@@ -45,8 +45,6 @@ namespace BrawlBox
             _menu.Items.Add(new ToolStripMenuItem("Preview All Models", null, PreviewAllAction));
             _menu.Items.Add(new ToolStripMenuItem("Export All", null, ExportAllAction));
             _menu.Items.Add(new ToolStripMenuItem("Replace All", null, ReplaceAllAction));
-            _menu.Items.Add(new ToolStripMenuItem("Rename All", null, RenameAllAction));
-            //_menu.Items.Add(new ToolStripMenuItem("Scale All", null, ScaleAllAction));
             _menu.Items.Add(new ToolStripMenuItem("Edit All", null, EditAllAction));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("&Export", null, ExportAction, Keys.Control | Keys.E));
@@ -82,23 +80,21 @@ namespace BrawlBox
         protected static void ExportAllAction(object sender, EventArgs e) { GetInstance<BRESWrapper>().ExportAll(); }
         protected static void ImportFolderAction(object sender, EventArgs e) { GetInstance<BRESWrapper>().ImportFolder(); }
         protected static void ReplaceAllAction(object sender, EventArgs e) { GetInstance<BRESWrapper>().ReplaceAll(); }
-        protected static void RenameAllAction(object sender, EventArgs e) { GetInstance<BRESWrapper>().RenameAll(); }
-        protected static void ScaleAllAction(object sender, EventArgs e) { GetInstance<BRESWrapper>().ScaleAll(); }
         protected static void EditAllAction(object sender, EventArgs e) { GetInstance<BRESWrapper>().EditAll(); }
         protected static void PreviewAllAction(object sender, EventArgs e) { GetInstance<BRESWrapper>().PreviewAll(); }
         
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            _menu.Items[10].Enabled = _menu.Items[11].Enabled = _menu.Items[13].Enabled = _menu.Items[14].Enabled = _menu.Items[16].Enabled = true;
+            _menu.Items[9].Enabled = _menu.Items[10].Enabled = _menu.Items[12].Enabled = _menu.Items[13].Enabled = _menu.Items[15].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             BRESWrapper w = GetInstance<BRESWrapper>();
 
-            _menu.Items[10].Enabled = _menu.Items[16].Enabled = w.Parent != null;
-            _menu.Items[11].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
-            _menu.Items[13].Enabled = w.PrevNode != null;
-            _menu.Items[14].Enabled = w.NextNode != null;
+            _menu.Items[9].Enabled = _menu.Items[15].Enabled = w.Parent != null;
+            _menu.Items[10].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
+            _menu.Items[12].Enabled = w.PrevNode != null;
+            _menu.Items[13].Enabled = w.NextNode != null;
         }
 
         #endregion
@@ -347,21 +343,9 @@ namespace BrawlBox
                 ((BRESNode)_resource).ExportToFolder(path, dialog.SelectedExtension);
         }
 
-        public void RenameAll()
-        {
-            ChangeToDialog ctd = new ChangeToDialog();
-            ctd.ShowDialog(_owner, _resource, true);
-        }
-        
-        public void ScaleAll()
-        {
-            ChangeToDialog ctd = new ChangeToDialog();
-            ctd.ShowDialog(_owner, _resource, false);
-        }
-
         public void EditAll()
         {
-            ChangeToDialog2 ctd = new ChangeToDialog2();
+            EditAllDialog ctd = new EditAllDialog();
             ctd.ShowDialog(_owner, _resource);
         }
 
@@ -392,8 +376,10 @@ namespace BrawlBox
             switch (node.ResourceType)
             {
                 case ResourceType.ARC:
+                case ResourceType.U8:
                 case ResourceType.MRG:
                 case ResourceType.BRES:
+                case ResourceType.U8Folder:
                 case ResourceType.BRESGroup:
                     foreach (ResourceNode n in node.Children)
                         LoadModels(n, models);

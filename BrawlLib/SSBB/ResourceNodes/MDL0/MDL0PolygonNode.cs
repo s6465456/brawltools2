@@ -974,15 +974,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 //Indices are written in reverse for each triangle, 
                                 //so they need to be set to a triangle in reverse
 
-                                Tri.z = _facepoints[*indices++];
-                                Tri.y = _facepoints[*indices++];
-                                Tri.x = _facepoints[*indices++];
+                                Tri.z = _facepoints[indices[t + 0]];
+                                Tri.y = _facepoints[indices[t + 1]];
+                                Tri.x = _facepoints[indices[t + 2]];
                             }
                             else
                             {
-                                Tri.x = _facepoints[*indices++];
-                                Tri.y = _facepoints[*indices++];
-                                Tri.z = _facepoints[*indices++];
+                                Tri.x = _facepoints[indices[t + 0]];
+                                Tri.y = _facepoints[indices[t + 1]];
+                                Tri.z = _facepoints[indices[t + 2]];
                             }
 
                             Triangles.Add(Tri);
@@ -1039,263 +1039,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     }
                 }
 
-                //#region Tristripper
-                //bool forceNone = false;
-                //    Begin:
-                //        //Groups faces as tristrips based on shared sides (not fully working)
-                //        if (//Model._importOptions._useTristrips && 
-                //            !forceNone)
-                //        {
-                        
-                //        Start:
-                //            Tristrip tri = new Tristrip();
-                //            List<Triangle> grouped = new List<Triangle>();
-                //            for (int i = 0; i < Triangles.Count; i++)
-                //            {
-                //                Triangle t = Triangles[i];
-
-                //                if (!t.grouped)
-                //                {
-                //                    Triangle prev = t;
-
-                //                    for (int x = i + 1; x < Triangles.Count; x++)
-                //                    {
-                //                        Triangle next = Triangles[x];
-                //                        if (next.grouped == false)
-                //                        {
-                //                            if (prev.TwoPointsMatch(next))
-                //                            {
-                //                                //Collection will be modified; needs to be copied
-                //                                Facepoint[] v1 = new Facepoint[3];
-                //                                prev.values.CopyTo(v1, 0);
-                //                                Facepoint[] v2 = new Facepoint[3];
-                //                                next.values.CopyTo(v2, 0);
-                                                
-                //                                //Edit triangles to match tristrip order
-                //                                if (prev == t)
-                //                                {
-                //                                    prev.x = v1[prev.remaining];
-                //                                    prev.y = v1[prev.p1];
-                //                                    prev.z = v1[prev.p2];
-
-                //                                    grouped.Add(prev);
-                //                                    prev.grouped = true;
-                //                                }
-
-                //                                next.x = v2[next.index1];
-                //                                next.y = v2[next.index2];
-                //                                next.z = v2[next.remainingIndex];
-
-                //                                grouped.Add(next);
-                //                                next.grouped = true;
-
-                //                                prev = next;
-                //                            }
-                //                            else continue;
-                //                        }
-                //                        else continue;
-                //                    }
-
-                //                    bool first = true;
-                //                    foreach (Triangle g in grouped)
-                //                    {
-                //                        if (first)
-                //                        {
-                //                            tri.points.Add(g.x);
-                //                            tri.points.Add(g.y);
-                //                            tri.points.Add(g.z);
-                //                            first = false;
-                //                        }
-                //                        else
-                //                            tri.points.Add(g.z);
-                //                    }
-                //                    if (tri.points.Count != 0)
-                //                        Tristrips.Add(tri);
-                //                    else
-                //                        break;
-                //                    if (i != Triangles.Count)
-                //                        goto Start;
-                //                }
-                //            }
-
-                //            List<Triangle> notStripped = new List<Triangle>();
-                //            foreach (Triangle t in Triangles)
-                //                if (!t.grouped) notStripped.Add(t);
-
-                //            triCount = notStripped.Count * 3;
-                //            foreach (Tristrip j in Tristrips)
-                //                stripCount += j.points.Count;
-
-                //            if (triCount > stripCount)
-                //            {
-                //                //Group triangles to groups first, then try to add tristrips
-
-                //                bool NewGroup = true;
-                //                PrimitiveGroup grp = new PrimitiveGroup();
-                //                for (int i = 0; i < notStripped.Count; i++)
-                //                {
-                //                Top:
-                //                    if (NewGroup) //Create a new group of triangles and node ids
-                //                    {
-                //                        grp = new PrimitiveGroup();
-                //                        NewGroup = false;
-                //                    }
-                //                    if (!(grp.CanAdd(notStripped[i]))) //Will add automatically if true
-                //                    {
-                //                        groups.Add(grp);
-                //                        NewGroup = true;
-                //                        goto Top;
-                //                    }
-                //                    if (i == notStripped.Count - 1) //Last triangle
-                //                        groups.Add(grp);
-                //                }
-
-                //                NewGroup = false;
-                //                Tristrip notAdded = null;
-                //                for (int v = 0; v < Tristrips.Count; v++)
-                //                {
-                //                    Tristrip current = Tristrips[v];
-                //                Top:
-                //                    if (NewGroup) //Create a new group of triangles and node ids
-                //                    {
-                //                        grp = new PrimitiveGroup();
-                //                        NewGroup = false;
-                //                        if ((notAdded = grp.CanAdd(current)) != null)
-                //                        {
-                //                            current = notAdded;
-                //                            groups.Add(grp);
-                //                            NewGroup = true;
-                //                            goto Top;
-                //                        }
-                //                        else
-                //                            groups.Add(grp);
-                //                    }
-
-                //                    bool added = false;
-                //                    for (int a = 0; a < groups.Count; a++)
-                //                    {
-                //                        if ((notAdded = groups[a].CanAdd(current)) != null)
-                //                            current = notAdded;
-                //                        else
-                //                        {
-                //                            added = true;
-                //                            break;
-                //                        }
-                //                    }
-                //                    if (!added)
-                //                    {
-                //                        NewGroup = true;
-                //                        goto Top;
-                //                    }
-                //                }
-                //            }
-                //            else
-                //            {
-                //                //Group tristrips to groups first, then try to add triangles
-
-                //                if (Tristrips.Count == 0)
-                //                {
-                //                    forceNone = true;
-                //                    goto Begin;
-                //                }
-
-                //                Tristrip notAdded = null;
-                //                PrimitiveGroup grp = new PrimitiveGroup();
-                //                bool NewGroup = true;
-                //                for (int v = 0; v < Tristrips.Count; v++)
-                //                {
-                //                    Tristrip current = Tristrips[v];
-                //                Top:
-                //                    if (NewGroup)
-                //                    {
-                //                        grp = new PrimitiveGroup();
-                //                        NewGroup = false;
-                //                    }
-
-                //                    if ((notAdded = grp.CanAdd(current)) != null)
-                //                    {
-                //                        current = notAdded;
-                //                        groups.Add(grp);
-                //                        NewGroup = true;
-                //                        goto Top;
-                //                    }
-
-                //                    if (v == Tristrips.Count - 1) //Last tristrip
-                //                        groups.Add(grp);
-                //                }
-
-                //                NewGroup = false;
-                //                for (int i = 0; i < notStripped.Count; i++)
-                //                {
-                //                Top:
-                //                    if (NewGroup) //Create a new group of triangles and node ids
-                //                    {
-                //                        grp = new PrimitiveGroup();
-                //                        NewGroup = false;
-                //                        if ((grp.CanAdd(notStripped[i])))
-                //                            groups.Add(grp);
-                //                        else
-                //                        {
-                //                            Console.WriteLine("Error");
-                //                        }
-                //                    }
-
-                //                    bool added = false;
-                //                    for (int a = 0; a < groups.Count; a++)
-                //                    {
-                //                        if ((groups[a].CanAdd(notStripped[i])))
-                //                        {
-                //                            added = true;
-                //                            break;
-                //                        }
-                //                    }
-                //                    if (!added)
-                //                    {
-                //                        NewGroup = true;
-                //                        goto Top;
-                //                    }
-                //                }
-                //            }
-                //        }
-                //        else
-                //        {
-                //            //Groups as triangles (working)
-                //            bool NewGroup = true;
-                //            PrimitiveGroup grp = new PrimitiveGroup();
-                //            for (int i = 0; i < Triangles.Count; i++)
-                //            {
-                //            Top:
-                //                if (NewGroup) //Create a new group of triangles and node ids
-                //                {
-                //                    grp = new PrimitiveGroup();
-                //                    NewGroup = false;
-                //                }
-                //                if (!(grp.CanAdd(Triangles[i]))) //Will add automatically if true
-                //                {
-                //                    groups.Add(grp);
-                //                    NewGroup = true;
-                //                    goto Top;
-                //                }
-                //                if (i == Triangles.Count - 1) //Last triangle
-                //                    groups.Add(grp);
-                //            }
-
-                //            triCount = Triangles.Count * 3;
-                //            goto Build;
-                //        }
-                //    }
-                //}
-                //
-                //for (int i1 = 0; i1 < groups.Count; i1++)
-                //    for (int i2 = 0; i2 < groups.Count; i2++)
-                //        if (groups[i1] != groups[i2] && groups[i1].tryMerge(groups[i2]))
-                //        {
-                //            groups.RemoveAt(i2--);
-                //            i1 = 0;
-                //        }
-                //#endregion
-
-            //Build:
                 //Build display list
                 foreach (PrimitiveGroup g in groups)
                 {
@@ -1500,34 +1243,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Rendering
         internal bool _render = true;
-        public void EvalAlphaFunc(out double near, out double far)
-        {
-            near = 0;
-            far = 1;
-
-            GXAlphaFunction func = MaterialNode._alphaFunc;
-            //Simplify the alpha equation.
-            switch (func.Logic)
-            {
-                case AlphaOp.And: //&&
-                    if (func.ref0 > func.ref1)
-                    {
-
-                    }
-                    
-                    break;
-                case AlphaOp.Or: //||
-
-                    break; //==
-                case AlphaOp.InverseExclusiveOr:
-
-                    break; //!=
-                case AlphaOp.ExclusiveOr:
-                    
-                    break;
-            }
-        }
-
         public void PreRender()
         {
             if (_singleBind != null)
@@ -1642,6 +1357,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     GL.Disable(EnableCap.Blend);
 
+                if (_material.EnableBlendLogic)
+                {
+                    GL.Enable(EnableCap.ColorLogicOp);
+                    GL.LogicOp((LogicOp)((int)LogicOp.Clear + (int)_material.BlendLogicOp));
+                }
+                else 
+                    GL.Disable(EnableCap.ColorLogicOp);
+
                 //if (_material.EnableAlphaFunction)
                 //{
                 //    GL.Enable(EnableCap.AlphaTest);
@@ -1649,7 +1372,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //    double near = 0.0f, far = 1.0f;
                 //    EvalAlphaFunc(out near, out far);
                 //    GL.DepthRange(near, far);
-                    
+
                 //    AlphaFunction alpha = AlphaFunction.Greater;
                 //    switch (_material._alphaFunc.Comp0)
                 //    {
@@ -1697,55 +1420,54 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        public string GenVertexShader()
-        {
-            string shader = "";
-            for (int i = 0; i < 12; i++)
-                if (_manager._faceData[i] != null)
-                    switch (i)
-                    {
-                        case 0:
-                            shader += "in vec3 poscoords;\n";
-                            break;
-                        case 1:
-                            shader += "in vec3 normcoords;\n";
-                            break;
-                        case 2:
-                        case 3:
-                            shader += String.Format("in vec3 rascolor{0};\n", i);
-                            break;
-                        default:
-                            shader += String.Format("in vec2 texcoord{0};\n", i);
-                            break;
-                    }
-            shader += "void main(void)\n{";
-            shader += "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;";
-            shader += "\n}";
-            return shader;
-        }
+        public const int SHADER_POSMTX_ATTRIB = 1;
+        public const int SHADER_NORM1_ATTRIB = 6;
+        public const int SHADER_NORM2_ATTRIB = 7;
 
-        public string GenerateVSOutputStruct()
+        public const string I_POSNORMALMATRIX = "cpnmtx";
+        public const string I_PROJECTION = "cproj";
+        public const string I_MATERIALS = "cmtrl";
+        public const string I_LIGHTS = "clights";
+        public const string I_TEXMATRICES = "ctexmtx";
+        public const string I_TRANSFORMMATRICES = "ctrmtx";
+        public const string I_NORMALMATRICES = "cnmtx";
+        public const string I_POSTTRANSFORMMATRICES = "cpostmtx";
+        public const string I_DEPTHPARAMS = "cDepth";
+
+        public const int C_POSNORMALMATRIX = 0;
+        public const int C_PROJECTION = (C_POSNORMALMATRIX + 6);
+        public const int C_MATERIALS = (C_PROJECTION + 4);
+        public const int C_LIGHTS = (C_MATERIALS + 4);
+        public const int C_TEXMATRICES = (C_LIGHTS + 40);
+        public const int C_TRANSFORMMATRICES = (C_TEXMATRICES + 24);
+        public const int C_NORMALMATRICES = (C_TRANSFORMMATRICES + 64);
+        public const int C_POSTTRANSFORMMATRICES = (C_NORMALMATRICES + 32);
+        public const int C_DEPTHPARAMS = (C_POSTTRANSFORMMATRICES + 64);
+        public const int C_VENVCONST_END = (C_DEPTHPARAMS + 4);
+
+        #region Vertex Shader
+
+        public void GenerateVSOutputStruct()
         {
-            string s = "";
-            s += String.Format("struct VS_OUTPUT\n{\n");
-            s += String.Format("  vec4 pos : POSITION;\n");
-            s += String.Format("  vec4 colors_0 : COLOR0;\n");
-            s += String.Format("  vec4 colors_1 : COLOR1;\n");
+            w("struct VS_OUTPUT\n{\n");
+            w("vec4 pos;\n");
+            w("vec4 colors_0;\n");
+            w("vec4 colors_1;\n");
 
             if (MaterialNode.Children.Count < 7)
             {
-                for (uint i = 0; i < MaterialNode.Children.Count; ++i)
-                    s += String.Format("  vec3 tex{0} : TEXCOORD{0};\n", i);
-                s += String.Format("  vec4 clipPos : TEXCOORD{0};\n", MaterialNode.Children.Count);
-                s += String.Format("  vec4 Normal : TEXCOORD{0};\n", MaterialNode.Children.Count + 1);
+                for (uint i = 0; i < MaterialNode.Children.Count; i++)
+                    w("vec3 tex{0};\n", i);
+                w("vec4 clipPos;\n");
+                w("vec4 Normal;\n");
             }
             else
             {
                 // clip position is in w of first 4 texcoords
-                //if(g_ActiveConfig.bEnablePixelLighting && g_ActiveConfig.backend_info.bSupportsPixelLighting)
+                //if(g_ActiveConfig.bEnablePixelLighting && ctx.bSupportsPixelLighting)
                 //{
-                    for (int i = 0; i < 8; ++i)
-                        s += String.Format("  vec4 tex{0} : TEXCOORD{0};\n", i);
+                    for (int i = 0; i < 8; i++)
+                        w("vec4 tex{0};\n", i);
                 //}
                 //else
                 //{
@@ -1753,8 +1475,439 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //        s += String.Format("  float{0} tex{1} : TEXCOORD{1};\n", i < 4 ? 4 : 3, i);
                 //}
             }      
-            s += String.Format("};\n");
-            return s;
+            w("};\n");
+        }
+
+        #region Shader Helpers
+        public string tempShader;
+        public int tabs = 0;
+        [Browsable(false)]
+        public string Tabs { get { string t = ""; for (int i = 0; i < tabs; i++) t += "\t"; return t; } }
+        public void w(string str, params object[] args)
+        {
+            if (args.Length == 0)
+                tabs -= Helpers.FindCount(str, 0, '}');
+            bool s = false;
+            if (str.LastIndexOf("\n") == str.Length - 1)
+            {
+                str = str.Substring(0, str.Length - 1);
+                s = true;
+            }
+            str = str.Replace("\n", "\n" + Tabs);
+            if (s) str += "\n";
+            tempShader += Tabs + (args != null && args.Length > 0 ? String.Format(str, args) : str);
+            if (args.Length == 0)
+                tabs += Helpers.FindCount(str, 0, '{');
+        }
+
+        public static string WriteRegister(string prefix, uint num)
+        {
+            return "";
+        }
+
+        public static string WriteBinding(uint num, TKContext ctx)
+        {
+            if (!ctx.bSupportsGLSLBinding)
+                return "";
+            return String.Format("layout(binding = {0}) ", num);
+        }
+
+        public static string WriteLocation(TKContext ctx)
+        {
+            //if (ctx.bSupportsGLSLUBO)
+            //    return "";
+            return "uniform ";
+        }
+
+        public void _assert_(bool arg)
+        {
+            if (arg != true)
+                Console.WriteLine();
+        }
+
+        #endregion
+
+        public string GenerateVertexShaderCode(TKContext ctx)
+        {
+            tempShader = "";
+            tabs = 0;
+
+            uint lightMask = 0;
+            if (MaterialNode.LightChannels > 0)
+                lightMask |= (uint)MaterialNode._chan1._color.Lights | (uint)MaterialNode._chan1._alpha.Lights;
+            if (MaterialNode.LightChannels > 1)
+                lightMask |= (uint)MaterialNode._chan2._color.Lights | (uint)MaterialNode._chan2._alpha.Lights;
+
+	        w("//Vertex Shader\n");
+
+            // A few required defines and ones that will make our lives a lot easier
+		    if (ctx.bSupportsGLSLBinding || ctx.bSupportsGLSLUBO)
+		    {
+			    w("#version 330 compatibility\n");
+			    if (ctx.bSupportsGLSLBinding)
+				    w("#extension GL_ARB_shading_language_420pack : enable\n");
+                //if (ctx.bSupportsGLSLUBO)
+                //    w("#extension GL_ARB_uniform_buffer_object : enable\n");
+		    }
+		    else
+			    w("#version 120\n");
+		    
+		    if (ctx.bSupportsGLSLATTRBind)
+			    w("#extension GL_ARB_explicit_attrib_location : enable\n");
+
+		    // Silly differences
+		    w("#define float2 vec2\n");
+		    w("#define float3 vec3\n");
+		    w("#define float4 vec4\n");
+
+		    // cg to glsl function translation
+		    w("#define frac(x) fract(x)\n");
+		    w("#define saturate(x) clamp(x, 0.0f, 1.0f)\n");
+		    w("#define lerp(x, y, z) mix(x, y, z)\n");
+	        
+            //// uniforms
+            //if (ctx.bSupportsGLSLUBO)
+            //    w("layout(std140) uniform VSBlock\n{\n");
+
+            //w("{0}float4 " + I_POSNORMALMATRIX + "[6];\n", WriteLocation(ctx));
+            //w("{0}float4 " + I_PROJECTION + "[4];\n", WriteLocation(ctx));
+            w("{0}float4 " + I_MATERIALS + "[4];\n", WriteLocation(ctx));
+            w("{0}float4 " + I_LIGHTS + "[40];\n", WriteLocation(ctx));
+
+            //Tex effect matrices
+            w("{0}float4 " + I_TEXMATRICES + "[24];\n", WriteLocation(ctx)); // also using tex matrices
+            
+            w("{0}float4 " + I_TRANSFORMMATRICES + "[64];\n", WriteLocation(ctx));
+            //w("{0}float4 " + I_NORMALMATRICES + "[32];\n", WriteLocation(ctx));
+            //w("{0}float4 " + I_POSTTRANSFORMMATRICES + "[64];\n", WriteLocation(ctx));
+	        //w("{0}float4 " + I_DEPTHPARAMS + ";\n", WriteLocation(ctx));
+
+            //if (ctx.bSupportsGLSLUBO) w("};\n");
+
+	        GenerateVSOutputStruct();
+
+            if (_normalNode != null)
+                w("float3 rawnorm0 = gl_Normal;\n");
+
+            //if (ctx.bSupportsGLSLATTRBind)
+            //{
+            //    if (_vertexFormat.HasPosMatrix)
+            //        Write("layout(location = {0}) ATTRIN float fposmtx;\n", SHADER_POSMTX_ATTRIB);
+            //    //if (components & VB_HAS_NRM1)
+            //    //    Write("layout(location = {0}) ATTRIN float3 rawnorm1;\n", SHADER_NORM1_ATTRIB);
+            //    //if (components & VB_HAS_NRM2)
+            //    //    Write("layout(location = {0}) ATTRIN float3 rawnorm2;\n", SHADER_NORM2_ATTRIB);
+            //}
+            //else
+            //{
+            //    if (_vertexFormat.HasPosMatrix)
+            //        Write("ATTRIN float fposmtx; // ATTR{0},\n", SHADER_POSMTX_ATTRIB);
+            //    //if (components & VB_HAS_NRM1)
+            //    //    Write("ATTRIN float3 rawnorm1; // ATTR%d,\n", SHADER_NORM1_ATTRIB);
+            //    //if (components & VB_HAS_NRM2)
+            //    //    Write("ATTRIN float3 rawnorm2; // ATTR%d,\n", SHADER_NORM2_ATTRIB);
+            //}
+
+		    if (_colorSet[0] != null)
+                w("float4 color0 = gl_Color;\n");
+		    if (_colorSet[1] != null)
+                w("float4 color1 = gl_SecondaryColor;\n");
+
+            for (int i = 0; i < 8; i++)
+            {
+                bool hastexmtx = _vertexFormat.GetHasTexMatrix(i);
+                if (_uvSet[i] != null || hastexmtx)
+                    w("float{1} tex{0} = gl_MultiTexCoord{0}.xy{2};\n", i, hastexmtx ? 3 : 2, hastexmtx ? "z" : "");
+            }
+
+            w("float4 rawpos = gl_Vertex;\n");
+		    w("void main()\n{\n");
+	        w("VS_OUTPUT o;\n");
+
+            // transforms
+            //if (_vertexFormat.HasPosMatrix)
+            //{
+            //    w("int posmtx = int(fposmtx);\n");
+
+            //    w("float4 pos = float4(dot(" + I_TRANSFORMMATRICES + "[posmtx], rawpos), dot(" + I_TRANSFORMMATRICES + "[posmtx+1], rawpos), dot(" + I_TRANSFORMMATRICES + "[posmtx+2], rawpos), 1);\n");
+
+            //    if (_normalNode != null)
+            //    {
+            //        w("int normidx = posmtx >= 32 ? (posmtx-32) : posmtx;\n");
+            //        w("float3 N0 = " + I_NORMALMATRICES + "[normidx].xyz, N1 = " + I_NORMALMATRICES + "[normidx+1].xyz, N2 = " + I_NORMALMATRICES + "[normidx+2].xyz;\n");
+            //    }
+
+            //    if (_normalNode != null)
+            //        w("float3 _norm0 = normalize(float3(dot(N0, rawnorm0), dot(N1, rawnorm0), dot(N2, rawnorm0)));\n");
+            //    //if (components & VB_HAS_NRM1)
+            //    //    w("float3 _norm1 = float3(dot(N0, rawnorm1), dot(N1, rawnorm1), dot(N2, rawnorm1));\n");
+            //    //if (components & VB_HAS_NRM2)
+            //    //    w("float3 _norm2 = float3(dot(N0, rawnorm2), dot(N1, rawnorm2), dot(N2, rawnorm2));\n");
+            //}
+            //else
+            //{
+            //    w("float4 pos = float4(dot(" + I_POSNORMALMATRIX + "[0], rawpos), dot(" + I_POSNORMALMATRIX + "[1], rawpos), dot(" + I_POSNORMALMATRIX + "[2], rawpos), 1.0f);\n");
+            //    if (_normalNode != null)
+            //        w("float3 _norm0 = normalize(float3(dot(" + I_POSNORMALMATRIX + "[3].xyz, rawnorm0), dot(" + I_POSNORMALMATRIX + "[4].xyz, rawnorm0), dot(" + I_POSNORMALMATRIX + "[5].xyz, rawnorm0)));\n");
+            //    //if (components & VB_HAS_NRM1)
+            //    //    w("float3 _norm1 = float3(dot("+I_POSNORMALMATRIX+"[3].xyz, rawnorm1), dot("+I_POSNORMALMATRIX+"[4].xyz, rawnorm1), dot("+I_POSNORMALMATRIX+"[5].xyz, rawnorm1));\n");
+            //    //if (components & VB_HAS_NRM2)
+            //    //    w("float3 _norm2 = float3(dot("+I_POSNORMALMATRIX+"[3].xyz, rawnorm2), dot("+I_POSNORMALMATRIX+"[4].xyz, rawnorm2), dot("+I_POSNORMALMATRIX+"[5].xyz, rawnorm2));\n");
+            //}
+
+            w("float4 pos = gl_ModelViewProjectionMatrix * rawpos;\n");
+            if (_normalNode != null)
+                w("float3 _norm0 = rawnorm0;\n");
+
+	        if (_normalNode == null)
+		        w("float3 _norm0 = float3(0.0f, 0.0f, 0.0f);\n");
+
+            w("o.pos = pos;\n");//float4(dot("+I_PROJECTION+"[0], pos), dot("+I_PROJECTION+"[1], pos), dot("+I_PROJECTION+"[2], pos), dot("+I_PROJECTION+"[3], pos));\n");
+
+	        w("float4 mat, lacc;\nfloat3 ldir, h;\nfloat dist, dist2, attn;\n");
+
+            if (MaterialNode.LightChannels == 0)
+            {
+                if (_colorSet[0] != null)
+                    w("o.colors_0 = color0;\n");
+                else
+                    w("o.colors_0 = float4(1.0f, 1.0f, 1.0f, 1.0f);\n");
+            }
+
+	        // TODO: This probably isn't necessary if pixel lighting is enabled.
+	        tempShader += GenerateLightingShader(I_MATERIALS, I_LIGHTS, "color", "o.colors_");
+
+            if (MaterialNode.LightChannels < 2)
+            {
+                if (_colorSet[1] != null)
+                    w("o.colors_1 = color1;\n");
+                else
+                    w("o.colors_1 = o.colors_0;\n");
+            }
+
+	        // transform texcoords
+	        w("float4 coord = float4(0.0f, 0.0f, 1.0f, 1.0f);\n");
+	        for (int i = 0; i < MaterialNode.Children.Count; i++) 
+            {
+		        MDL0MaterialRefNode texgen = MaterialNode.Children[i] as MDL0MaterialRefNode;
+
+                w("{\n");
+                w("//Texgen " + i + "\n");
+		        switch (texgen.Coordinates) 
+                {
+		            case TexSourceRow.Geometry:
+			            _assert_(texgen.InputForm == TexInputForm.AB11);
+			            w("coord = rawpos;\n"); // pos.w is 1
+			            break;
+		            case TexSourceRow.Normals:
+			            if (_normalNode != null) 
+                        {
+			                _assert_(texgen.InputForm == TexInputForm.ABC1);
+                            w("coord = float4(rawnorm0.xyz, 1.0f);\n");
+			            }
+			            break;
+		            case TexSourceRow.Colors:
+			            _assert_(texgen.Type == TexTexgenType.Color0 || texgen.Type == TexTexgenType.Color1);
+			            break;
+		            case TexSourceRow.BinormalsT:
+                        //if (components & VB_HAS_NRM1)
+                        //{
+                        //      _assert_(texgen.InputForm == TexInputForm.ABC1);
+                        //    Write("coord = float4(rawnorm1.xyz, 1.0f);\n");
+                        //}
+			            //break;
+		            case TexSourceRow.BinormalsB:
+                        //if (components & VB_HAS_NRM2)
+                        //{
+                        //    _assert_(texgen.InputForm == TexInputForm.ABC1);
+                        //    Write("coord = float4(rawnorm2.xyz, 1.0f);\n");
+                        //}
+			            //break;
+		            default:
+			            _assert_(texgen.Coordinates <= TexSourceRow.TexCoord7);
+                        int c = texgen.Coordinates - TexSourceRow.TexCoord0;
+			            if (_uvSet[c] != null)
+                            w("coord = float4(tex{0}.x, tex{0}.y, 1.0f, 1.0f);\n", c);
+			            break;
+		        }
+
+		        // first transformation
+		        switch (texgen.Type) 
+                {
+			        case TexTexgenType.EmbossMap: // calculate tex coords into bump map
+                        //if (components & (VB_HAS_NRM1|VB_HAS_NRM2)) 
+                        //{
+                        //    // transform the light dir into tangent space
+                        //    Write("ldir = normalize("+I_LIGHTS+"[{0} + 3].xyz - pos.xyz);\n", texgen.EmbossLight);
+                        //    Write("o.tex{0}.xyz = o.tex{1}.xyz + float3(dot(ldir, _norm1), dot(ldir, _norm2), 0.0f);\n", i, texgen.EmbossSource);
+                        //}
+                        //else
+                        //{
+                        //    //_assert_(0); // should have normals
+                        //    Write("o.tex{0}.xyz = o.tex{1}.xyz;\n", i, texgen.EmbossSource);
+                        //}
+
+				        break;
+			        case TexTexgenType.Color0:
+			        case TexTexgenType.Color1:
+				        _assert_(texgen.Coordinates == TexSourceRow.Colors);
+				        w("o.tex{0}.xyz = float3(o.colors_{1}.x, o.colors_{1}.y, 1);\n", i, ((int)texgen.Type - (int)TexTexgenType.Color0).ToString());
+				        break;
+			        case TexTexgenType.Regular:
+			        default:
+				        if (_vertexFormat.GetHasTexMatrix(i))
+				        {
+					        w("int tmp = int(tex{0}.z);\n", i);
+                            if (texgen.Projection == TexProjection.STQ)
+                                w("o.tex{0}.xyz = float3(dot(coord, " + I_TRANSFORMMATRICES + "[tmp]), dot(coord, " + I_TRANSFORMMATRICES + "[tmp+1]), dot(coord, " + I_TRANSFORMMATRICES + "[tmp+2]));\n", i);
+                            else
+                            {
+                                w("o.tex{0}.xyz = float3(dot(coord, " + I_TRANSFORMMATRICES + "[tmp]), dot(coord, " + I_TRANSFORMMATRICES + "[tmp+1]), 1);\n", i);
+                                w("o.tex{0}.z = 1.0f", 1);
+                            }
+                        }
+				        else
+                        {
+                            if (texgen.Projection == TexProjection.STQ)
+						        w("o.tex{0}.xyz = float3(dot(coord, " + I_TEXMATRICES + "[{1}]), dot(coord, " + I_TEXMATRICES + "[{2}]), dot(coord, "+I_TEXMATRICES+"[{3}]));\n", i, 3*i, 3*i+1, 3*i+2);
+					        else
+						        w("o.tex{0}.xyz = float3(dot(coord, " + I_TEXMATRICES + "[{1}]), dot(coord, " + I_TEXMATRICES + "[{2}]), 1);\n", i, 3*i, 3*i+1);
+				        }
+				        break;
+		        }
+
+                //Dual tex trans always enabled?
+		        if (texgen.Type == TexTexgenType.Regular)
+                {
+                    // only works for regular tex gen types?
+                    //int postidx = texgen.DualTexFlags.DualMtx;
+                    //w("float4 P0 = " + I_POSTTRANSFORMMATRICES + "[{0}];\n"+
+                    //  "float4 P1 = " + I_POSTTRANSFORMMATRICES + "[{1}];\n"+
+                    //  "float4 P2 = " + I_POSTTRANSFORMMATRICES + "[{2}];\n",
+                    //  postidx&0x3f, (postidx+1)&0x3f, (postidx+2)&0x3f);
+
+                    if (texgen.Normalize)
+					    w("o.tex{0}.xyz = normalize(o.tex{0}.xyz);\n", i);
+
+				    // multiply by postmatrix
+				    //w("o.tex{0}.xyz = float3(dot(P0.xyz, o.tex{0}.xyz) + P0.w, dot(P1.xyz, o.tex{0}.xyz) + P1.w, dot(P2.xyz, o.tex{0}.xyz) + P2.w);\n", i);
+		        }
+
+		        w("}\n");
+	        }
+
+	        // clipPos/w needs to be done in pixel shader, not here
+	        if (MaterialNode.Children.Count < 7) 
+		        w("o.clipPos = float4(pos.x,pos.y,o.pos.z,o.pos.w);\n");
+            else 
+            {
+		        w("o.tex0.w = pos.x;\n");
+		        w("o.tex1.w = pos.y;\n");
+		        w("o.tex2.w = o.pos.z;\n");
+		        w("o.tex3.w = o.pos.w;\n");
+	        }
+
+            //if(g_ActiveConfig.bEnablePixelLighting && ctx.bSupportsPixelLighting)
+            //{
+                if (MaterialNode.Children.Count < 7) 
+			        w("o.Normal = float4(_norm0.x,_norm0.y,_norm0.z,pos.z);\n");
+                else 
+                {
+			        w("o.tex4.w = _norm0.x;\n");
+			        w("o.tex5.w = _norm0.y;\n");
+			        w("o.tex6.w = _norm0.z;\n");
+			        if (MaterialNode.Children.Count < 8)
+				        w("o.tex7 = pos.xyzz;\n");
+			        else
+				        w("o.tex7.w = pos.z;\n");
+		        }
+		        if (_colorSet[0] != null)
+			        w("o.colors_0 = color0;\n");
+
+                if (_colorSet[1] != null)
+			        w("o.colors_1 = color1;\n");
+            //}
+
+	        //write the true depth value, if the game uses depth textures pixel shaders will override with the correct values
+	        //if not early z culling will improve speed
+
+	        // this results in a scale from -1..0 to -1..1 after perspective
+	        // divide
+	        //w("o.pos.z = o.pos.w + o.pos.z * 2.0f;\n");
+
+	        // Sonic Unleashed puts its final rendering at the near or
+	        // far plane of the viewing frustrum(actually box, they use
+	        // orthogonal projection for that), and we end up putting it
+	        // just beyond, and the rendering gets clipped away. (The
+	        // primitive gets dropped)
+	        //w("o.pos.z = o.pos.z * 1048575.0f/1048576.0f;\n");
+
+	        // the next steps of the OGL pipeline are:
+	        // (x_c,y_c,z_c,w_c) = o.pos  //switch to OGL spec terminology
+	        // clipping to -w_c <= (x_c,y_c,z_c) <= w_c
+	        // (x_d,y_d,z_d) = (x_c,y_c,z_c)/w_c//perspective divide
+	        // z_w = (f-n)/2*z_d + (n+f)/2
+	        // z_w now contains the value to go to the 0..1 depth buffer
+
+	        //trying to get the correct semantic while not using glDepthRange
+	        //seems to get rather complicated
+	        
+		    // Bit ugly here
+		    // Will look better when we bind uniforms in GLSL 1.3
+		    // clipPos/w needs to be done in pixel shader, not here
+
+		    if (MaterialNode.Children.Count < 7) 
+            {
+			    for (uint i = 0; i < MaterialNode.Children.Count; i++)
+				    w("gl_TexCoord[{0}].xyz = o.tex{0};\n", i);
+			    w("gl_TexCoord[{0}] = o.clipPos;\n", MaterialNode.Children.Count);
+			    //if(g_ActiveConfig.bEnablePixelLighting && ctx.bSupportsPixelLighting)
+				    w("gl_TexCoord[{0}] = o.Normal;\n", MaterialNode.Children.Count + 1);
+		    } 
+            else 
+            {
+			    // clip position is in w of first 4 texcoords
+                //if (g_ActiveConfig.bEnablePixelLighting && ctx.bSupportsPixelLighting)
+                //{
+				    for (int i = 0; i < 8; i++)
+					    w("gl_TexCoord[{0}] = o.tex{0};\n", i);
+                //}
+                //else
+                //{
+                //    for (unsigned int i = 0; i < xfregs.numTexGen.numTexGens; ++i)
+                //        Write("  gl_TexCoord[%d]%s = o.tex%d;\n", i, i < 4 ? ".xyzw" : ".xyz" , i);
+                //}
+            }
+            w("gl_FrontColor = o.colors_0;\n");
+            w("gl_FrontSecondaryColor = o.colors_1;\n");
+		    w("gl_Position = o.pos;\n");
+		    w("}\n");
+
+            return tempShader;
+        }
+
+        #endregion
+
+        #region Light Shader
+        public int temptabs = 0;
+        [Browsable(false)]
+        public string TempTabs { get { string t = ""; for (int i = 0; i < temptabs; i++) t += "\t"; return t; } }
+        public void w(ref string output, string str, params object[] args)
+        {
+            temptabs = tabs;
+            if (args.Length == 0)
+                temptabs -= Helpers.FindCount(str, 0, '}');
+            bool s = false;
+            if (str.LastIndexOf("\n") == str.Length - 1)
+            {
+                str = str.Substring(0, str.Length - 1);
+                s = true;
+            }
+            str = str.Replace("\n", "\n" + TempTabs);
+            if (s) str += "\n";
+            output += Tabs + TempTabs + (args != null && args.Length > 0 ? String.Format(str, args) : str);
+            if (args.Length == 0)
+                temptabs += Helpers.FindCount(str, 0, '{');
         }
 
         // coloralpha - 1 if color, 2 if alpha
@@ -1772,15 +1925,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 switch (chan.DiffuseFunction) 
                 {
                     case GXDiffuseFn.Disabled:
-                        s += String.Format("lacc.{0} += {1}.lights[{2}].col.{0};\n", swizzle, lightsName, index);
+                        w(ref s, "lacc.{0} += {1}[{2}].{3};\n", swizzle, lightsName, index * 5, swizzle);
                         break;
                     case GXDiffuseFn.Enabled:
                     case GXDiffuseFn.Clamped:
-                        s += String.Format("ldir = normalize({0}.lights[{1}].pos.xyz - pos.xyz);\n", lightsName, index);
-                        s += String.Format("lacc.{0} += {1}dot(ldir, _norm0)) * {2}.lights[{3}].col.{4};\n",
-                            swizzle, chan.DiffuseFunction != GXDiffuseFn.Enabled ? "max(0.0f," :"(", lightsName, index, swizzle);
+                        w(ref s, "ldir = normalize({0}[{1} + 3].xyz - pos.xyz);\n", lightsName, index * 5);
+                        w(ref s, "lacc.{0} += {1}dot(ldir, _norm0)) * {2}[{3}].{4};\n", swizzle, chan.DiffuseFunction != GXDiffuseFn.Enabled ? "max(0.0f," : "(", lightsName, index * 5, swizzle);
                         break;
-                    //default: _assert_(0);
                 }
             }
             else
@@ -1789,39 +1940,38 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (chan.Attenuation == GXAttnFn.Spotlight)
                 {
                     // spot
-                    s += String.Format("ldir = {0}.lights[{1}].pos.xyz - pos.xyz;\n", lightsName, index);
-                    s += String.Format("dist2 = dot(ldir, ldir);\n" + 
-                            "dist = sqrt(dist2);\n" + 
-                            "ldir = ldir / dist;\n" + 
-                            "attn = max(0.0f, dot(ldir, {0}.lights[{1}].dir.xyz));\n", lightsName, index);
-                    s += String.Format("attn = max(0.0f, dot({0}.lights[{1}].cosatt.xyz, vec3(1.0f, attn, attn*attn))) / dot({2}.lights[{3}].distatt.xyz, vec3(1.0f,dist,dist2));\n", lightsName, index, lightsName, index);
+                    w(ref s, "ldir = {0}[{1} + 3].xyz - pos.xyz;\n", lightsName, index * 5);
+                    w(ref s, "dist2 = dot(ldir, ldir);\n" +
+                            "dist = sqrt(dist2);\n" +
+                            "ldir = ldir / dist;\n" +
+                            "attn = max(0.0f, dot(ldir, {0}[{1} + 4].xyz));\n", lightsName, index * 5);
+                    w(ref s, "attn = max(0.0f, dot({0}[{1} + 1].xyz, float3(1.0f, attn, attn*attn))) / dot({2}[{3} + 2].xyz, float3(1.0f,dist,dist2));\n", lightsName, index * 5, lightsName, index * 5);
                 }
                 if (chan.Attenuation == GXAttnFn.Specular)
                 {
                     // specular
-                    s += String.Format("ldir = normalize({0}.lights[{1}].pos.xyz);\n", lightsName, index);
-                    s += String.Format("attn = (dot(_norm0,ldir) >= 0.0f) ? max(0.0f, dot(_norm0, {0}.lights[{1}].dir.xyz)) : 0.0f;\n", lightsName, index);
-                    s += String.Format("attn = max(0.0f, dot({0}.lights[{1}].cosatt.xyz, vec3(1,attn,attn*attn))) / dot({2}.lights[{3}].distatt.xyz, vec3(1,attn,attn*attn));\n", lightsName, index, lightsName, index);
+                    w(ref s, "ldir = normalize({0}[{1} + 3].xyz);\n", lightsName, index * 5);
+                    w(ref s, "attn = (dot(_norm0, ldir) >= 0.0f) ? max(0.0f, dot(_norm0, {0}[{1} + 4].xyz)) : 0.0f;\n", lightsName, index * 5);
+                    w(ref s, "attn = max(0.0f, dot({0}[{1} + 1].xyz, float3(1,attn,attn*attn))) / dot({2}[{3} + 2].xyz, float3(1,attn,attn*attn));\n", lightsName, index * 5, lightsName, index * 5);
                 }
 
                 switch (chan.DiffuseFunction)
                 {
                     case GXDiffuseFn.Disabled:
-                        s += String.Format("lacc.{0} += attn * {1}.lights[{2}].col.{3};\n", swizzle, lightsName, index, swizzle);
+                        w(ref s, "lacc.{0} += attn * {1}[{2}].{3};\n", swizzle, lightsName, index * 5, swizzle);
                         break;
                     case GXDiffuseFn.Enabled:
                     case GXDiffuseFn.Clamped:
-                        s += String.Format("lacc.{0} += attn * {1}dot(ldir, _norm0)) * {2}.lights[{3}].col.{4};\n",
-                            swizzle,
-                            chan.DiffuseFunction != GXDiffuseFn.Enabled ? "max(0.0f," : "(",
-                            lightsName,
-                            index,
-                            swizzle);
+                        w(ref s, "lacc.{0} += attn * {1}dot(ldir, _norm0)) * {2}[{3}].{4};\n",
+                        swizzle,
+                        chan.DiffuseFunction != GXDiffuseFn.Enabled ? "max(0.0f," : "(",
+                        lightsName,
+                        index * 5,
+                        swizzle);
                         break;
-                    //default: _assert_(0);
                 }
             }
-            s += "\n";
+            w(ref s, "\n");
             return s;
         }
 
@@ -1832,115 +1982,326 @@ namespace BrawlLib.SSBB.ResourceNodes
         // dest is o.colors_ in vs and colors_ in ps
         public string GenerateLightingShader(string materialsName, string lightsName, string inColorName, string dest)
         {
-            string s = "{\n";
+            string s = Tabs + "{\n";
+            w(ref s, "//Lighting Section\n");
             for (uint j = 0; j < MaterialNode.LightChannels; j++)
             {
                 LightChannelControl color = j == 0 ? MaterialNode._chan1._color : MaterialNode._chan2._color;
                 LightChannelControl alpha = j == 0 ? MaterialNode._chan1._alpha : MaterialNode._chan2._alpha;
 
                 if (color.MaterialSource == GXColorSrc.Vertex) 
-                {
-                    // from vertex
                     if (_colorSet[j] != null)
-                        s += String.Format("mat = {0}{1};\n", inColorName, j);
+                        w(ref s, "mat = {0}{1};\n", inColorName, j);
                     else if (_colorSet[0] != null)
-                        s += String.Format("mat = {0}0;\n", inColorName);
+                        w(ref s, "mat = {0}0;\n", inColorName);
                     else
-                        s += String.Format("mat = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n");
-                }
-                else // from color
-                    s += String.Format("mat = {0}.C{1};\n", materialsName, j + 2);
+                        w(ref s, "mat = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n");
+                else
+                    w(ref s, "mat = {0}[{1}];\n", materialsName, j + 2);
 
                 if (color.Enabled) 
-                {
                     if (color.AmbientSource == GXColorSrc.Vertex) 
-                    {
-                        // from vertex
                         if (_colorSet[j] != null)
-                            s += String.Format("lacc = {0}{1};\n", inColorName, j);
+                            w(ref s, "lacc = {0}{1};\n", inColorName, j);
                         else if (_colorSet[0] != null)
-                            s += String.Format("lacc = {0}0;\n", inColorName);
+                            w(ref s, "lacc = {0}0;\n", inColorName);
                         else
-                            s += String.Format("lacc = vec4(0.0f, 0.0f, 0.0f, 0.0f);\n");
-                    }
-                    else // from color
-                        s += String.Format("lacc = {0}.C{1};\n", materialsName, j);
-                }
+                            w(ref s, "lacc = vec4(0.0f, 0.0f, 0.0f, 0.0f);\n");
+                    else 
+                        w(ref s, "lacc = {0}[{1}];\n", materialsName, j);
                 else
-                    s += "lacc = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n";
+                    w(ref s, "lacc = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n");
 
                 // check if alpha is different
                 if (alpha.MaterialSource != color.MaterialSource) 
-                {
                     if (alpha.MaterialSource == GXColorSrc.Vertex) 
-                    {
-                        // from vertex
                         if (_colorSet[j] != null)
-                            s += String.Format("mat.w = {0}{1}.w;\n", inColorName, j);
+                            w(ref s, "mat.w = {0}{1}.w;\n", inColorName, j);
                         else if (_colorSet[0] != null)
-                            s += String.Format("mat.w = {0}0.w;\n", inColorName);
+                            w(ref s, "mat.w = {0}0.w;\n", inColorName);
                         else
-                            s += String.Format("mat.w = 1.0f;\n");
-                    }
-                    else // from color
-                        s += String.Format("mat.w = {0}.C{1}.w;\n", materialsName, j+2);
-                }
-
+                            w(ref s, "mat.w = 1.0f;\n");
+                    else 
+                        w(ref s, "mat.w = {0}[{1}].w;\n", materialsName, j + 2);
+                
                 if (alpha.Enabled)
-                {
                     if (alpha.AmbientSource == GXColorSrc.Vertex) 
-                    {
-                        // from vertex
                         if (_colorSet[j] != null)
-                            s += String.Format("lacc.w = {0}{1}.w;\n", inColorName, j);
+                            w(ref s, "lacc.w = {0}{1}.w;\n", inColorName, j);
                         else if (_colorSet[0] != null)
-                            s += String.Format("lacc.w = {0}0.w;\n", inColorName);
+                            w(ref s, "lacc.w = {0}0.w;\n", inColorName);
                         else
-                            s += String.Format("lacc.w = 0.0f;\n");
-                    }
-                    else // from color
-                        s += String.Format("lacc.w = {0}.C{1}.w;\n", materialsName, j);
-                }
+                            w(ref s, "lacc.w = 0.0f;\n");
+                    else
+                        w(ref s, "lacc.w = {0}[{1}].w;\n", materialsName, j);
                 else
-                    s += "lacc.w = 1.0f;\n";
+                    w(ref s, "lacc.w = 1.0f;\n");
 
                 if (color.Enabled && alpha.Enabled)
                 {
-                    // both have lighting, test if they use the same lights
+                    //Both have lighting, test if they use the same lights
                     int mask = 0;
                     if (color.Lights == alpha.Lights)
                     {
                         mask = (int)color.Lights & (int)alpha.Lights;
                         if (mask != 0)
+                        {
                             for (int i = 0; i < 8; i++)
                                 if ((mask & (1 << i)) != 0)
-                                    s += GenerateLightShader(i, color, lightsName, 3);
+                                    w(ref s, GenerateLightShader(i, color, lightsName, 3));
+                        }
                     }
 
-                    // no shared lights
+                    //No shared lights
                     for (int i = 0; i < 8; i++)
                     {
                         if (((mask & (1 << i)) == 0) && ((int)color.Lights & (1 << i)) != 0)
-                            s += GenerateLightShader(i, color, lightsName, 1);
+                            w(ref s, GenerateLightShader(i, color, lightsName, 1));
                         if (((mask & (1 << i)) == 0) && ((int)alpha.Lights & (1 << i)) != 0)
-                            s += GenerateLightShader(i, alpha, lightsName, 2);
+                            w(ref s, GenerateLightShader(i, alpha, lightsName, 2));
                     }
                 }
                 else if (color.Enabled || alpha.Enabled)
                 {
-                    // lights are disabled on one channel so process only the active ones
+                    //Lights are disabled on one channel so process only the active ones
                     LightChannelControl workingchannel = color.Enabled ? color : alpha;
                     int coloralpha = color.Enabled ? 1 : 2;
                     for (int i = 0; i < 8; i++)
                         if (((int)workingchannel.Lights & (1 << i)) != 0)
-                            s += GenerateLightShader(i, workingchannel, lightsName, coloralpha);
+                            w(ref s, GenerateLightShader(i, workingchannel, lightsName, coloralpha));
                 }
-                s += String.Format("{0}{1} = mat * saturate(lacc);\n}\n", dest, j);
+                w(ref s, "{0}{1} = mat * saturate(lacc);\n", dest, j);
             }
+            w(ref s, "}\n");
             return s;
         }
+
+        #endregion
         
+        //public int _vsBlockLoc = 0, BufferUBO = 0, BufferIndex = 0;
+        //public void SetVSBlock()
+        //{
+        //    GL.GenBuffers(1, out BufferUBO); // Generate the buffer
+        //    GL.BindBuffer(BufferTarget.UniformBuffer, BufferUBO); // Bind the buffer for writing
+        //    GL.BufferData(BufferTarget.UniformBuffer, (IntPtr)(sizeof(float) * 8), (IntPtr)(null), BufferUsageHint.DynamicDraw); // Request the memory to be allocated
+        //    GL.BindBufferRange(BufferTarget.UniformBuffer, BufferIndex, BufferUBO, (IntPtr)0, (IntPtr)(sizeof(float) * 8)); // Bind the created Uniform Buffer to the Buffer Index
+        //    _vsBlockLoc = GL.GetUniformBlockIndex(shaderProgramHandle, "VSBlock");
+        //    GL.UniformBlockBinding(shaderProgramHandle, _vsBlockLoc, BufferIndex);
+        //    GL.BindBuffer(BufferTarget.UniformBuffer, BufferUBO);
+        //    GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)0, (IntPtr)(sizeof(float) * 8), ref vsData);
+        //    GL.BindBuffer(BufferTarget.UniformBuffer, 0);
+        //}
+        
+        public void SetMultiPSConstant4fv(uint offset, float* f, uint count)
+        {
+	        GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)(offset * sizeof(float) * 4), (IntPtr)(count * sizeof(float) * 4), (IntPtr)f);
+        }
+
+        public void SetMultiVSConstant4fv(uint offset, float* f, uint count)
+        {
+            GL.BufferSubData(BufferTarget.UniformBuffer, (IntPtr)(offset * sizeof(float) * 4), (IntPtr)(count * sizeof(float) * 4), (IntPtr)f);
+        }
+
+        public int[] UniformLocations = new int[UniformNames.Length];
+        public static readonly string[] UniformNames =
+        {
+	        // SAMPLERS
+	        "samp0","samp1","samp2","samp3","samp4","samp5","samp6","samp7",
+	        // PIXEL SHADER UNIFORMS
+	        MDL0MaterialNode.I_COLORS,
+	        MDL0MaterialNode.I_KCOLORS,
+	        MDL0MaterialNode.I_ALPHA,
+	        MDL0MaterialNode.I_TEXDIMS,
+	        MDL0MaterialNode.I_ZBIAS,
+	        MDL0MaterialNode.I_INDTEXSCALE,
+	        MDL0MaterialNode.I_INDTEXMTX,
+	        MDL0MaterialNode.I_FOG,
+	        MDL0MaterialNode.I_PLIGHTS,
+	        MDL0MaterialNode.I_PMATERIALS,
+	        // VERTEX SHADER UNIFORMS
+	        I_POSNORMALMATRIX,
+	        I_PROJECTION,
+	        I_MATERIALS,
+	        I_LIGHTS,
+	        I_TEXMATRICES,
+	        I_TRANSFORMMATRICES,
+	        I_NORMALMATRICES,
+	        I_POSTTRANSFORMMATRICES,
+	        I_DEPTHPARAMS,
+        };
+
+        public void SetProgramVariables(TKContext ctx)
+        {
+            if (ctx.bSupportsGLSLUBO)
+            {
+                GL.UniformBlockBinding(shaderProgramHandle, 0, 1);
+                if (vertexShaderHandle != 0)
+                    GL.UniformBlockBinding(shaderProgramHandle, 1, 2);
+            }
+
+            if (!ctx.bSupportsGLSLUBO)
+                for (int a = 8; a < UniformNames.Length; a++)
+                    UniformLocations[a] = GL.GetUniformLocation(shaderProgramHandle, UniformNames[a]);
+
+            if (!ctx.bSupportsGLSLBinding)
+                for (int a = 0; a < 8; a++)
+                    if ((UniformLocations[a] = GL.GetUniformLocation(shaderProgramHandle, UniformNames[a])) != -1)
+                        GL.Uniform1(UniformLocations[a], a);
+
+            // Need to get some attribute locations
+            if (vertexShaderHandle != 0 && !ctx.bSupportsGLSLATTRBind)
+            {
+                // We have no vertex Shader
+                GL.BindAttribLocation(shaderProgramHandle, SHADER_NORM1_ATTRIB, "rawnorm1");
+                GL.BindAttribLocation(shaderProgramHandle, SHADER_NORM2_ATTRIB, "rawnorm2");
+                GL.BindAttribLocation(shaderProgramHandle, SHADER_POSMTX_ATTRIB, "fposmtx");
+            }
+        }
+
+        public string fragmentShaderSource;
+        public int fragmentShaderHandle;
         public int shaderProgramHandle = 0;
+        /*
+            w("{0}float4 " + I_POSNORMALMATRIX + "[6];\n", WriteLocation(ctx));
+            w("{0}float4 " + I_PROJECTION + "[4];\n", WriteLocation(ctx));
+            w("{0}float4 " + I_MATERIALS + "[4];\n", WriteLocation(ctx));
+            w("{0}float4 " + I_LIGHTS + "[40];\n", WriteLocation(ctx));
+
+            //Tex effect matrices
+            w("{0}float4 " + I_TEXMATRICES + "[24];\n", WriteLocation(ctx)); // also using tex matrices
+            
+            w("{0}float4 " + I_TRANSFORMMATRICES + "[64];\n", WriteLocation(ctx));
+            w("{0}float4 " + I_NORMALMATRICES + "[32];\n", WriteLocation(ctx));
+            w("{0}float4 " + I_POSTTRANSFORMMATRICES + "[64];\n", WriteLocation(ctx));
+	        w("{0}float4 " + I_DEPTHPARAMS + ";\n", WriteLocation(ctx));
+         * 
+            //24
+            //16
+            //16
+            //160
+            //96
+            //256
+            //128
+            //256
+            //4
+        */
+        public void SetLightUniforms(int programHandle)
+        {
+            int currUniform = GL.GetUniformLocation(programHandle, I_LIGHTS);
+            if (currUniform > -1)
+            {
+                int frame = MaterialNode.renderFrame;
+                List<float> values = new List<float>();
+                foreach (SCN0LightNode l in MaterialNode._lightSet._lights)
+                {
+                    //float4 col; float4 cosatt; float4 distatt; float4 pos; float4 dir;
+
+                    RGBAPixel p = (RGBAPixel)l.GetColor(frame, 0);
+                    values.Add((float)p.R * RGBAPixel.ColorFactor);
+                    values.Add((float)p.G * RGBAPixel.ColorFactor);
+                    values.Add((float)p.B * RGBAPixel.ColorFactor);
+                    values.Add((float)p.A * RGBAPixel.ColorFactor);
+                    Vector3 v = l.GetLightSpot(frame);
+                    values.Add(v._x);
+                    values.Add(v._y);
+                    values.Add(v._z);
+                    values.Add(1.0f);
+                    v = l.GetLightDistAttn(frame);
+                    values.Add(v._x);
+                    values.Add(v._y);
+                    values.Add(v._z);
+                    values.Add(1.0f);
+                    v = l.GetStart(frame);
+                    values.Add(v._x);
+                    values.Add(v._y);
+                    values.Add(v._z);
+                    values.Add(1.0f);
+                    Vector3 v2 = l.GetEnd(frame);
+                    Vector3 dir = Matrix.AxisAngleMatrix(v, v2).GetAngles();
+                    values.Add(dir._x);
+                    values.Add(dir._y);
+                    values.Add(dir._z);
+                    values.Add(1.0f);
+                }
+                
+                GL.Uniform4(currUniform, 40, values.ToArray());
+            }
+        }
+        public void SetUniforms(int programHandle)
+        {
+            int currUniform = -1;
+
+            //currUniform = GL.GetUniformLocation(programHandle, I_POSNORMALMATRIX);
+            //if (currUniform > -1) GL.Uniform4(currUniform, 6, new float[] 
+            //{
+                
+            //});
+            //currUniform = GL.GetUniformLocation(programHandle, I_PROJECTION);
+            //if (currUniform > -1) GL.Uniform4(currUniform, 4, new float[] 
+            //{
+                
+            //});
+            currUniform = GL.GetUniformLocation(programHandle, I_MATERIALS);
+            if (currUniform > -1) GL.Uniform4(currUniform, 4, new float[] 
+            {
+                MaterialNode.C1AmbientColor.R * RGBAPixel.ColorFactor,
+                MaterialNode.C1AmbientColor.G * RGBAPixel.ColorFactor,
+                MaterialNode.C1AmbientColor.B * RGBAPixel.ColorFactor,
+                MaterialNode.C1AmbientColor.A * RGBAPixel.ColorFactor,
+
+                MaterialNode.C2AmbientColor.R * RGBAPixel.ColorFactor,
+                MaterialNode.C2AmbientColor.G * RGBAPixel.ColorFactor,
+                MaterialNode.C2AmbientColor.B * RGBAPixel.ColorFactor,
+                MaterialNode.C2AmbientColor.A * RGBAPixel.ColorFactor,
+
+                MaterialNode.C1MaterialColor.R * RGBAPixel.ColorFactor,
+                MaterialNode.C1MaterialColor.G * RGBAPixel.ColorFactor,
+                MaterialNode.C1MaterialColor.B * RGBAPixel.ColorFactor,
+                MaterialNode.C1MaterialColor.A * RGBAPixel.ColorFactor,
+
+                MaterialNode.C2MaterialColor.R * RGBAPixel.ColorFactor,
+                MaterialNode.C2MaterialColor.G * RGBAPixel.ColorFactor,
+                MaterialNode.C2MaterialColor.B * RGBAPixel.ColorFactor,
+                MaterialNode.C2MaterialColor.A * RGBAPixel.ColorFactor,
+            });
+            currUniform = GL.GetUniformLocation(programHandle, I_TEXMATRICES);
+            if (currUniform > -1)
+            {
+                List<float> mtxValues = new List<float>();
+                int i = 0;
+                foreach (MDL0MaterialRefNode m in MaterialNode.Children)
+                {
+                    for (int x = 0; x < 12; x++)
+                        mtxValues.Add(m.EffectMatrix[x]);
+                    i++;
+                }
+                while (i < 8)
+                {
+                    for (int x = 0; x < 12; x++)
+                        mtxValues.Add(Matrix43.Identity[x]);
+                    i++;
+                }
+                if (mtxValues.Count != 96)
+                    Console.WriteLine();
+                GL.Uniform4(currUniform, 24, mtxValues.ToArray());
+            }
+            currUniform = GL.GetUniformLocation(programHandle, I_TRANSFORMMATRICES);
+            if (currUniform > -1) GL.Uniform4(currUniform, 64, new float[] 
+            {
+                
+            });
+            //currUniform = GL.GetUniformLocation(programHandle, I_NORMALMATRICES);
+            //if (currUniform > -1) GL.Uniform4(currUniform, 32, new float[] 
+            //{
+                
+            //});
+            //currUniform = GL.GetUniformLocation(programHandle, I_DEPTHPARAMS);
+            //if (currUniform > -1) GL.Uniform4(currUniform, 1, new float[] 
+            //{
+
+            //});
+
+        }
         internal void Render(TKContext ctx)
         {
             if (!_render)
@@ -1948,30 +2309,76 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (ctx._canUseShaders)
             {
+                bool temp = false;
+
+                //_renderUpdate = MaterialNode._renderUpdate = MaterialNode.ShaderNode._renderUpdate = true;
+
                 bool updateProgram = _renderUpdate || MaterialNode._renderUpdate || MaterialNode.ShaderNode._renderUpdate;
                 if (updateProgram)
                 {
+                    temp = true;
+
                     if (shaderProgramHandle > 0)
                         GL.DeleteProgram(shaderProgramHandle);
 
                     shaderProgramHandle = GL.CreateProgram();
 
+                    int status_code;
+                    string info;
+
                     if (_renderUpdate)
                     {
-                        vertexShaderSource = GenVertexShader();
+                        vertexShaderSource = GenerateVertexShaderCode(ctx);
+
                         GL.ShaderSource(vertexShaderHandle, vertexShaderSource);
                         GL.CompileShader(vertexShaderHandle);
-                        GL.AttachShader(shaderProgramHandle, vertexShaderHandle);
+
+                        GL.GetShaderInfoLog(vertexShaderHandle, out info);
+                        GL.GetShader(vertexShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
+                        //Console.WriteLine(info + "\n\n" + vertexShaderSource + "\n\n");
+                        if (status_code != 1)
+                        {
+                            //MessageBox.Show(info);
+                            Console.WriteLine(info + "\n\n" + vertexShaderSource + "\n\n");
+                        }
+                        else
+                            GL.AttachShader(shaderProgramHandle, vertexShaderHandle);
                     }
-                    if (MaterialNode._renderUpdate || MaterialNode.ShaderNode._renderUpdate)
+                    if (_renderUpdate || MaterialNode._renderUpdate || MaterialNode.ShaderNode._renderUpdate)
                     {
-                        MaterialNode.GenFragShader();
-                        GL.AttachShader(shaderProgramHandle, MaterialNode.fragmentShaderHandle);
-                        MaterialNode.SetUniforms(shaderProgramHandle);
+                        fragmentShaderSource = MaterialNode.GeneratePixelShaderCode(this, MDL0MaterialNode.PSGRENDER_MODE.PSGRENDER_NORMAL, ctx);
+
+                        GL.ShaderSource(fragmentShaderHandle, fragmentShaderSource);
+                        GL.CompileShader(fragmentShaderHandle);
+
+                        GL.GetShaderInfoLog(fragmentShaderHandle, out info);
+                        GL.GetShader(fragmentShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
+                        //Console.WriteLine(info + "\n\n" + fragmentShaderSource + "\n\n");
+                        if (status_code != 1)
+                        {
+                            //MessageBox.Show(info);
+                            Console.WriteLine(info + "\n\n" + fragmentShaderSource + "\n\n");
+                        }
+                        else
+                            GL.AttachShader(shaderProgramHandle, fragmentShaderHandle);
+
+                        MaterialNode._renderUpdate = MaterialNode.ShaderNode._renderUpdate = false;
                     }
+
+                    _renderUpdate = false;
+
                     GL.LinkProgram(shaderProgramHandle);
                 }
+
                 GL.UseProgram(shaderProgramHandle);
+
+                if (temp)
+                {
+                    SetUniforms(shaderProgramHandle);
+                    MaterialNode.SetUniforms(shaderProgramHandle);
+                }
+                if (MaterialNode._lightSet != null)
+                    SetLightUniforms(shaderProgramHandle);
             }
 
             _manager.PrepareStream();
@@ -1985,7 +2392,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
                         continue;
 
+                    //if (ctx._canUseShaders)
+                        //GL.ClientActiveTexture(TextureUnit.Texture0 + mr.Index);
+                        //GL.ActiveTexture(TextureUnit.Texture0 + mr.Index);
+
                     GL.MatrixMode(MatrixMode.Texture);
+
                     GL.PushMatrix();
 
                     //Add bind transform
@@ -2004,7 +2416,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     
                     _manager.RenderTexture(mr);
 
-                    switch ((int)mr.VWrapMode)
+                    switch ((int)mr.UWrapMode)
                     {
                         case 0: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge); break;
                         case 1: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat); break;
@@ -2046,6 +2458,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _render = (_bone != null ? _bone._flags1.HasFlag(BoneFlags.Visible) ? true : false : true);
 
             vertexShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.VertexShader);
+            fragmentShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
 
             _renderUpdate = true;
         }
@@ -2055,6 +2468,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (vertexShaderHandle != 0)
                 GL.DeleteShader(vertexShaderHandle);
+
+            if (fragmentShaderHandle != 0)
+                GL.DeleteShader(fragmentShaderHandle);
 
             if (shaderProgramHandle != 0)
                 GL.DeleteProgram(shaderProgramHandle);

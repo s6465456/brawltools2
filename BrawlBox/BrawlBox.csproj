@@ -88,6 +88,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NodeWrappers\RWSDSoundGroupWrapper.cs" />
+    <Compile Include="NodeWrappers\U8FolderWrapper.cs" />
+    <Compile Include="NodeWrappers\U8Wrapper.cs" />
     <Compile Include="NodeWrappers\RSARSoundWrapper.cs" />
     <Compile Include="NodeWrappers\SCN0Wrapper.cs" />
     <Compile Include="NodeWrappers\Animations\SRT0Wrapper.cs" />

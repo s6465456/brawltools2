@@ -47,8 +47,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public float Rotation { get { return _texFlags.TexRotation; } set { if (!CheckIfMetal()) { _texFlags.TexRotation = value; _bindState._rotate = new Vector3(value, 0, 0); } } }
         [Category("Texture Coordinates"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 Translation { get { return _texFlags.TexTranslation; } set { if (!CheckIfMetal()) { _texFlags.TexTranslation = value; _bindState._translate = new Vector3(value._x, value._y, 0); } } }
-        //[Category("Texture Coordinates")]
-        //public TexFlags Flags { get { return _flags; } }
+
         public TexFlags _flags;
 
         public enum MappingMethod
@@ -445,13 +444,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal void Bind(TKContext ctx, int prog)
         {
             if (_texture != null)
-                _texture.Prepare(this, prog, ctx);
+                _texture.Prepare(this, prog);
 
-            if (PAT0Texture != null)
+            if (!String.IsNullOrEmpty(PAT0Texture))
             {
                 if (!PAT0Textures.ContainsKey(PAT0Texture))
                     PAT0Textures[PAT0Texture] = new MDL0TextureNode(PAT0Texture) { Source = null, palette = PAT0Palette != null ? RootNode.FindChildByType(PAT0Palette, true, ResourceNodes.ResourceType.PLT0) as PLT0Node : null };
-                PAT0Textures[PAT0Texture].Prepare(this, prog, ctx);
+                MDL0TextureNode t = PAT0Textures[PAT0Texture];
+                t.Bind(ctx);
+                t.Prepare(this, prog);
             }
         }
 
@@ -584,6 +585,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             _index1 = _index2 = index;
 
             return true;
+        }
+
+        public override unsafe void Replace(string fileName)
+        {
+            base.Replace(fileName);
+
+            Model.CheckTextures();
         }
 
         public override unsafe void Export(string outPath)

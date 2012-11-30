@@ -33,7 +33,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Browsable(false)]
-        public ActionEventInfo EventInfo { get { if (Root.EventDictionary == null) Root.LoadEventDictionary(); if (Root.EventDictionary.ContainsKey(_event)) return Root.EventDictionary[_event]; else return null; } }
+        public ActionEventInfo EventInfo { get { if (MoveDefNode.EventDictionary == null) MoveDefNode.LoadEventDictionary(); if (MoveDefNode.EventDictionary.ContainsKey(_event)) return MoveDefNode.EventDictionary[_event]; else return null; } }
         public uint _event;
 
         [Browsable(false)]
@@ -43,13 +43,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             set 
             {
                 _event = value;
-                string ev = MParams.Hex8(_event);
+                string ev = Helpers.Hex8(_event);
                 nameSpace = byte.Parse(ev.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
                 id = byte.Parse(ev.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
                 numArguments = byte.Parse(ev.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
                 unk1 = byte.Parse(ev.Substring(6, 2), System.Globalization.NumberStyles.HexNumber);
-                if (Root.EventDictionary.ContainsKey(_event))
-                    Name = Root.EventDictionary[_event]._name;
+                if (MoveDefNode.EventDictionary.ContainsKey(_event))
+                    Name = MoveDefNode.EventDictionary[_event]._name;
                 else
                     Name = ev;
             } 
@@ -77,7 +77,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string Serialize()
         {
             string s = "";
-            s += MParams.Hex8(EventID) + "|";
+            s += Helpers.Hex8(EventID) + "|";
             foreach (MoveDefEventParameterNode p in Children)
             {
                 s += ((int)p._type).ToString() + "\\";
@@ -229,20 +229,20 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             //Merge values to create ID and match with events to get name
             _event = uint.Parse(String.Format("{0:X02}{1:X02}{2:X02}{3:X02}", nameSpace, id, numArguments, unk1), System.Globalization.NumberStyles.HexNumber);
-            if (Root.EventDictionary.ContainsKey(_event))
-                _name = Root.EventDictionary[_event]._name;
+            if (MoveDefNode.EventDictionary.ContainsKey(_event))
+                _name = MoveDefNode.EventDictionary[_event]._name;
             else
             {
                 if (unk1 > 0)
                 {
                     uint temp = uint.Parse(String.Format("{0:X02}{1:X02}{2:X02}{3:X02}", nameSpace, id, numArguments, 0), System.Globalization.NumberStyles.HexNumber);
-                    if (Root.EventDictionary.ContainsKey(temp))
+                    if (MoveDefNode.EventDictionary.ContainsKey(temp))
                     {
-                        _name = Root.EventDictionary[temp]._name + " (Unknown == " + unk1 + ")";
+                        _name = MoveDefNode.EventDictionary[temp]._name + " (Unknown == " + unk1 + ")";
                         _event = temp;
                     }
                 }
-                else _name = MParams.Hex8(_event);
+                else _name = Helpers.Hex8(_event);
             }
 
             _extOverride = Index == 0;
@@ -384,7 +384,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public SpecialHitboxFlagsNode specialFlags;
 
         #region Offensive Collision
-        public unsafe void RenderOffensiveCollision(ResourceNode[] bl, TKContext c, Vector3 cam, MParams.DrawStyle style)
+        public unsafe void RenderOffensiveCollision(ResourceNode[] bl, TKContext c, Vector3 cam, Helpers.DrawStyle style)
         {
             //Coded by Toomai
             //Modified for release v0.67
@@ -424,7 +424,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             MDL0BoneNode b;
             b = bl[boneindex] as MDL0BoneNode;
             Vector3 bonepos = b._frameMatrix.GetPoint();
-            Vector3 pos = new Vector3(MParams.UnScalar(e.parameters[6]._data), MParams.UnScalar(e.parameters[7]._data), MParams.UnScalar(e.parameters[8]._data));
+            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data));
             Vector3 bonerot = b._frameMatrix.GetAngles();
             Matrix r = b._frameMatrix.GetRotationMatrix();
             Vector3 bonescl = b.RecursiveScale();
@@ -434,13 +434,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             Vector3 globpos = r.Multiply(pos);
             Matrix m = Matrix.TransformMatrix(new Vector3(1), bonerot, globpos + bonepos);
             Vector3 resultpos = new Vector3(m[12], m[13], m[14]);
-            m = Matrix.TransformMatrix(new Vector3(MParams.UnScalar(size)), new Vector3(), resultpos);
+            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultpos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16;
             double drawangle = 360.0 / res;
             // bubble
-            if (style == MParams.DrawStyle.SSB64)
+            if (style == Helpers.DrawStyle.SSB64)
             {
                 GL.Color4(1.0f, 1.0f, 1.0f, 0.25f);
                 c.DrawInvertedCube(new Vector3(0, 0, 0), 1.025f);
@@ -449,21 +449,21 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else
             {
-                if (style == MParams.DrawStyle.Melee)
+                if (style == Helpers.DrawStyle.Melee)
                     GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
                 else
                 {
-                    Vector3 typecolour = MParams.getTypeColour(flags.Type);
+                    Vector3 typecolour = Helpers.getTypeColour(flags.Type);
                     GL.Color4((typecolour._x / 255.0f), (typecolour._y / 225.0f), (typecolour._z / 255.0f), 0.5f);
                 }
                 GLDisplayList spheres = c.GetSphereList();
                 spheres.Call();
             }
-            if (style == MParams.DrawStyle.Brawl)
+            if (style == Helpers.DrawStyle.Brawl)
             {
                 // angle indicator
                 double rangle = angle / 180.0 * Math.PI;
-                Vector3 effectcolour = MParams.getEffectColour(flags.Effect);
+                Vector3 effectcolour = Helpers.getEffectColour(flags.Effect);
                 GL.Color4((effectcolour._x / 255.0f), (effectcolour._y / 225.0f), (effectcolour._z / 255.0f), 0.75f);
                 GL.PushMatrix();
                 if (angle == 361)
@@ -554,7 +554,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Special Offensive Collision
-        public unsafe void RenderSpecialOffensiveCollision(ResourceNode[] bl, TKContext c, Vector3 cam, MParams.DrawStyle style)
+        public unsafe void RenderSpecialOffensiveCollision(ResourceNode[] bl, TKContext c, Vector3 cam, Helpers.DrawStyle style)
         {
             //Coded by Toomai
             //Modified for release v0.67
@@ -594,7 +594,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             MDL0BoneNode b;
             b = bl[boneindex] as MDL0BoneNode;
             Vector3 bonepos = b._frameMatrix.GetPoint();
-            Vector3 pos = new Vector3(MParams.UnScalar(e.parameters[6]._data), MParams.UnScalar(e.parameters[7]._data), MParams.UnScalar(e.parameters[8]._data));
+            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data));
             Vector3 bonerot = b._frameMatrix.GetAngles();
             Matrix r = b._frameMatrix.GetRotationMatrix();
             Vector3 bonescl = b.RecursiveScale();
@@ -604,13 +604,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             Vector3 globpos = r.Multiply(pos);
             Matrix m = Matrix.TransformMatrix(new Vector3(1), bonerot, globpos + bonepos);
             Vector3 resultpos = new Vector3(m[12], m[13], m[14]);
-            m = Matrix.TransformMatrix(new Vector3(MParams.UnScalar(size)), new Vector3(), resultpos);
+            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultpos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16, stretchres = 10;
             double drawangle = 360.0 / res;
             // bubble
-            if (style == MParams.DrawStyle.SSB64)
+            if (style == Helpers.DrawStyle.SSB64)
             {
                 GL.Color4(1.0f, 1.0f, 1.0f, 0.25f);
                 c.DrawInvertedCube(new Vector3(0, 0, 0), 1.025f);
@@ -618,7 +618,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 c.DrawCube(new Vector3(0, 0, 0), 0.975f);
                 if (specialFlags.Stretches)
                 {
-                    Vector3 reversepos = new Vector3(-globpos._x / MParams.UnScalar(size), -globpos._y / MParams.UnScalar(size), -globpos._z / MParams.UnScalar(size));
+                    Vector3 reversepos = new Vector3(-globpos._x / Helpers.UnScalar(size), -globpos._y / Helpers.UnScalar(size), -globpos._z / Helpers.UnScalar(size));
                     GL.Translate(reversepos._x, reversepos._y, reversepos._z);
                     GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
                     GL.Begin(BeginMode.Lines);
@@ -666,11 +666,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else
             {
-                if (style == MParams.DrawStyle.Melee)
+                if (style == Helpers.DrawStyle.Melee)
                     GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
                 else
                 {
-                    Vector3 typecolour = MParams.getTypeColour(flags.Type);
+                    Vector3 typecolour = Helpers.getTypeColour(flags.Type);
                     GL.Color4((typecolour._x / 255.0f), (typecolour._y / 225.0f), (typecolour._z / 255.0f), 0.5f);
                 }
                 GLDisplayList spheres = c.GetSphereList();
@@ -680,12 +680,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     GL.PushMatrix();
                     m = Matrix.TransformMatrix(new Vector3(1), bonerot, new Vector3());
                     GL.MultMatrix((float*)&m);
-                    Vector3 reversepos = new Vector3(-pos._x / MParams.UnScalar(size), -pos._y / MParams.UnScalar(size), -pos._z / MParams.UnScalar(size));
-                    if (style == MParams.DrawStyle.Melee)
+                    Vector3 reversepos = new Vector3(-pos._x / Helpers.UnScalar(size), -pos._y / Helpers.UnScalar(size), -pos._z / Helpers.UnScalar(size));
+                    if (style == Helpers.DrawStyle.Melee)
                         GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
                     else
                     {
-                        Vector3 effectcolour = MParams.getEffectColour(flags.Effect);
+                        Vector3 effectcolour = Helpers.getEffectColour(flags.Effect);
                         GL.Color4((effectcolour._x / 255.0f), (effectcolour._y / 225.0f), (effectcolour._z / 255.0f), 0.5f);
                     }
                     GL.Translate(reversepos._x, reversepos._y, reversepos._z);
@@ -703,11 +703,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                     GL.Vertex3(0, 0, -1);
                     GL.Vertex3(0 - reversepos._x, 0 - reversepos._y, -1 - reversepos._z);
                     GL.End();
-                    if (style == MParams.DrawStyle.Melee)
+                    if (style == Helpers.DrawStyle.Melee)
                         GL.Color4(1.0f, 0.0f, 0.0f, 0.25f);
                     else
                     {
-                        Vector3 typecolour = MParams.getTypeColour(flags.Type);
+                        Vector3 typecolour = Helpers.getTypeColour(flags.Type);
                         GL.Color4((typecolour._x / 255.0f), (typecolour._y / 225.0f), (typecolour._z / 255.0f), 0.25f);
                     }
                     spheres.Call(); // root sphere
@@ -715,11 +715,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                     GL.PopMatrix();
                 }
             }
-            if (style == MParams.DrawStyle.Brawl)
+            if (style == Helpers.DrawStyle.Brawl)
             {
                 // angle indicator
                 double rangle = angle / 180.0 * Math.PI;
-                Vector3 effectcolour = MParams.getEffectColour(flags.Effect);
+                Vector3 effectcolour = Helpers.getEffectColour(flags.Effect);
                 GL.Color4((effectcolour._x / 255.0f), (effectcolour._y / 225.0f), (effectcolour._z / 255.0f), 0.75f);
                 GL.PushMatrix();
                 if (angle == 361)
@@ -809,7 +809,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Catch Collision
-        public unsafe void RenderCatchCollision(ResourceNode[] bl, TKContext c, Vector3 cam, MParams.DrawStyle style)
+        public unsafe void RenderCatchCollision(ResourceNode[] bl, TKContext c, Vector3 cam, Helpers.DrawStyle style)
         {
             //Coded by Toomai
             //Modified for release v0.67
@@ -845,7 +845,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             MDL0BoneNode b = bl[boneindex] as MDL0BoneNode;
             Vector3 bonepos = b._frameMatrix.GetPoint();
-            Vector3 pos = new Vector3(MParams.UnScalar(e.parameters[3]._data), MParams.UnScalar(e.parameters[4]._data), MParams.UnScalar(e.parameters[5]._data));
+            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[3]._data), Helpers.UnScalar(e.parameters[4]._data), Helpers.UnScalar(e.parameters[5]._data));
             Vector3 bonerot = b._frameMatrix.GetAngles();
             Matrix r = b._frameMatrix.GetRotationMatrix();
             Vector3 bonescl = b.RecursiveScale();
@@ -855,13 +855,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             Vector3 globpos = r.Multiply(pos);
             Matrix m = Matrix.TransformMatrix(new Vector3(1), bonerot, globpos + bonepos);
             Vector3 resultpos = new Vector3(m[12], m[13], m[14]);
-            m = Matrix.TransformMatrix(new Vector3(MParams.UnScalar(size)), new Vector3(), resultpos);
+            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultpos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16;
             double drawangle = 360.0 / res;
             // bubble
-            if (style == MParams.DrawStyle.SSB64)
+            if (style == Helpers.DrawStyle.SSB64)
             {
                 GL.Color4(1.0f, 1.0f, 1.0f, 0.25f);
                 c.DrawInvertedCube(new Vector3(0, 0, 0), 1.025f);
@@ -870,7 +870,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else
             {
-                Vector3 typecolour = MParams.getTypeColour(MParams.HitboxType.Throwing);
+                Vector3 typecolour = Helpers.getTypeColour(Helpers.HitboxType.Throwing);
                 GL.Color4((typecolour._x / 255.0f), (typecolour._y / 225.0f), (typecolour._z / 255.0f), 0.375f);
                 GLDisplayList spheres = c.GetSphereList();
                 spheres.Call();

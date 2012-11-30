@@ -94,7 +94,7 @@ namespace BrawlLib
             "Object (*.obj)|*.obj|" +
             "Raw Data File (*.*)|*.*";
 
-        public static string RAW =
+        public static string Raw =
             "Raw Data File (*.*)|*.*";
 
         public static string MDef =

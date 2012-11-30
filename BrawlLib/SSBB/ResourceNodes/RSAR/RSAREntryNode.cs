@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BrawlLib.Wii.Audio;
+using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -18,6 +19,16 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         internal virtual int StringId { get { return 0; } }
+
+        public int InfoIndex { get { return _infoIndex; } }
+        public int _infoIndex;
+        internal VoidPtr Data { get { return (VoidPtr)WorkingUncompressed.Address; } }
+
+        [Category("Data"), Browsable(true)]
+        public string Offset { get { if (RSARNode != null) return ((uint)(Data - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
+
+        public VoidPtr _rebuildBase;
+        public int _rebuildIndex, _rebuildStringId;
 
         protected override bool OnInitialize()
         {

@@ -111,7 +111,7 @@ namespace BrawlLib.SSBBTypes
                 *p++ = 0;
         }
 
-        public HEADPart1* Part1 { get { return (HEADPart1*)_entries[0]; } } //Audio info
+        public StrmDataInfo* Part1 { get { return (StrmDataInfo*)_entries[0]; } } //Audio info
         public RuintList* Part2 { get { return (RuintList*)_entries[1]; } } //ADPC block flags?
         public RuintList* Part3 { get { return (RuintList*)_entries[2]; } } //ADPCMInfo array, one for each channel?
 
@@ -136,11 +136,11 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct HEADPart1
+    unsafe struct StrmDataInfo
     {
         public AudioFormatInfo _format;
         public bushort _sampleRate; //0x7D00
-        public ushort _unk1;
+        public bushort _blockHeaderOffset;
         public bint _loopStartSample;
         public bint _numSamples;
         public bint _dataOffset;
@@ -150,7 +150,7 @@ namespace BrawlLib.SSBBTypes
         public bint _lastBlockSize; //Without padding
         public bint _lastBlockSamples;
         public bint _lastBlockTotal; //Includes padding
-        public bint _unk8; //0x3800
+        public bint _dataInterval; //0x3800
         public bint _bitsPerSample;
 
         //public void Set(int sampleRate, int loopStart, int numSamples, int channels, int dataOffset)

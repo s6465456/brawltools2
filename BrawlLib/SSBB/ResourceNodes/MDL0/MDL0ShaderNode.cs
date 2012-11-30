@@ -20,7 +20,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.MDL0Shader; } }
 
         //Konstant Alpha Selection Swap table
-        KSelSwapBlock _swapBlock = KSelSwapBlock.Default;
+        public KSelSwapBlock _swapBlock = KSelSwapBlock.Default;
 
         [Category("Swap Mode Table"), Browsable(true)]
         public ColorChannel Swap0Red { get { return (ColorChannel)_swapBlock._Value01.XRB; } set { _swapBlock._Value01.XRB = (int)value; SignalPropertyChange(); } }
@@ -127,7 +127,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         private void getRawIRef()
         {
-            _swapBlock._Value16 = (Int24)RAS1_IRef.Shift(bi0, bc0, bi1, bc1, bi2, bc2, bi3, bc3);
+            _swapBlock._Value16 = (UInt24)RAS1_IRef.Shift(bi0, bc0, bi1, bc1, bi2, bc2, bi3, bc3);
             SignalPropertyChange();
         }
         public void getIRefValues()
@@ -333,9 +333,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override void OnPopulate()
         {
             StageGroup* grp = Header->First;
-            int offset = 0x80; //There are 8 groups max
-            for (int r = 0; r < 8; r++, grp = grp->Next, offset += 0x30)
-                if (((byte*)Header)[offset] == 0x61)
+            for (int r = 0; r < 8; r++, grp = grp->Next)
+                if (grp->mask.Reg == 0x61)
                 {
                     TEVStage s0 = new TEVStage(r * 2);
 
@@ -513,7 +512,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override int OnCalculateSize(bool force)
         {
-            return 512; //Shaders are always 0x200 in length!
+            return 512;
         }
 
         internal override void Bind(TKContext ctx)

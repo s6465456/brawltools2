@@ -266,7 +266,9 @@ namespace PowerPcAssembly
                 //return data.Formal(0) + "," + data.Formal(2);
                 return data.Formal(0) + " = " + data.Formal(2);
 
-            return base.FormOps();
+            return data.Formal(0) + " = " + data.Formal(1) + " + " + data.Formal(2);
+
+            //return base.FormOps();
         }
     }
 

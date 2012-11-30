@@ -389,7 +389,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 
                 arg->_data = (int)action._entryOffset - (int)action._rebuildBase;
                 if (arg->_data > 0)
-                    Root._lookupOffsets.Add((int)arg->_data.Address - (int)_rebuildBase);
+                    MoveDefNode._lookupOffsets.Add((int)arg->_data.Address - (int)_rebuildBase);
             }
             else
             {
@@ -611,11 +611,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int effect, unk1, sound, unk2, ground, air, unk3, type, clang, unk4, direct, unk5;
 
         [Category("MoveDef Hitbox Flags")]
-        public MParams.HitboxEffect Effect { get { return (MParams.HitboxEffect)val.Effect; } set { effect = (int)value; CalcFlags(); } }
+        public Helpers.HitboxEffect Effect { get { return (Helpers.HitboxEffect)val.Effect; } set { effect = (int)value; CalcFlags(); } }
         [Category("MoveDef Hitbox Flags")]
         public bool Unk1 { get { return val.Unk1 != 0; } set { unk1 = value ? 1 : 0; CalcFlags(); } }
         [Category("MoveDef Hitbox Flags")]
-        public MParams.HitboxSFX Sound { get { return (MParams.HitboxSFX)val.Sound; } set { sound = (int)value; CalcFlags(); } }
+        public Helpers.HitboxSFX Sound { get { return (Helpers.HitboxSFX)val.Sound; } set { sound = (int)value; CalcFlags(); } }
         [Category("MoveDef Hitbox Flags")]
         public int Unk2 { get { return val.Unk2; } set { unk2 = (int)value; CalcFlags(); } }
         [Category("MoveDef Hitbox Flags")]
@@ -625,7 +625,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("MoveDef Hitbox Flags")]
         public int Unk3 { get { return val.Unk3; } set { unk3 = (int)value; CalcFlags(); } }
         [Category("MoveDef Hitbox Flags")]
-        public MParams.HitboxType Type { get { return (MParams.HitboxType)val.Type; } set { type = (int)value; CalcFlags(); } }
+        public Helpers.HitboxType Type { get { return (Helpers.HitboxType)val.Type; } set { type = (int)value; CalcFlags(); } }
         [Category("MoveDef Hitbox Flags")]
         public bool Clang { get { return val.Clang != 0; } set { clang = value ? 1 : 0; CalcFlags(); } }
         [Category("MoveDef Hitbox Flags")]

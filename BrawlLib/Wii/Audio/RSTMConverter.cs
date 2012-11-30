@@ -83,10 +83,10 @@ namespace BrawlLib.Wii.Audio
             data->Set(dataSize);
 
             //Set HEAD data
-            HEADPart1* part1 = head->Part1;
+            StrmDataInfo* part1 = head->Part1;
             part1->_format = new AudioFormatInfo(2, (byte)(looped ? 1 : 0), (byte)channels, 0);
             part1->_sampleRate = (ushort)sampleRate;
-            part1->_unk1 = 0;
+            part1->_blockHeaderOffset = 0;
             part1->_loopStartSample = loopStart;
             part1->_numSamples = totalSamples;
             part1->_dataOffset = rstmSize + headSize + adpcSize + 0x20;
@@ -96,7 +96,7 @@ namespace BrawlLib.Wii.Audio
             part1->_lastBlockSize = lbSize;
             part1->_lastBlockSamples = lbSamples;
             part1->_lastBlockTotal = lbTotal;
-            part1->_unk8 = 0x3800;
+            part1->_dataInterval = 0x3800;
             part1->_bitsPerSample = 4;
             
             //Create one ADPCMInfo for each channel

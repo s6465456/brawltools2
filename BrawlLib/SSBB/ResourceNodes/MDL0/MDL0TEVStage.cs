@@ -16,12 +16,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.TEVStage; } }
 
         [Category("c TEV Color Env"), Browsable(true)]
-        public string ColorOutput { get { return "(d " + (ColorSubtract ? "-" : "+") + " ((1 - c) * a + c * b) + " + ((int)ColorBias == 1 ? "0.5" : (int)ColorBias == 2 ? "-0.5" : "0") + ") * " + ((int)ColorScale == 3 ? "0.5" : (int)ColorScale == 0 ? "1" : ((int)ColorScale * 2).ToString()) + (ColorClamp ? ", clamped from 0 - 255" : ""); } }
+        public string ColorOutput { get { return (ColorClamp ? "clamp(" : "") + "(d " + (ColorSubtract ? "-" : "+") + " ((1 - c) * a + c * b)" + ((int)ColorBias == 1 ? " + 0.5" : (int)ColorBias == 2 ? " - 0.5" : "") + ") * " + ((int)ColorScale == 3 ? "0.5" : (int)ColorScale == 0 ? "1" : ((int)ColorScale * 2).ToString()) + (ColorClamp ? ");" : ";"); } }
         [Category("d TEV Alpha Env"), Browsable(true)]
-        public string AlphaOutput { get { return "(d " + (AlphaSubtract ? "-" : "+") + " ((1 - c) * a + c * b) + " + ((int)AlphaBias == 1 ? "0.5" : (int)AlphaBias == 2 ? "-0.5" : "0") + ") * " + ((int)AlphaScale == 3 ? "0.5" : (int)AlphaScale == 0 ? "1" : ((int)AlphaScale * 2).ToString()) + (AlphaClamp ? ", clamped from 0 - 255" : ""); } }
+        public string AlphaOutput { get { return (AlphaClamp ? "clamp(" : "") + "(d " + (AlphaSubtract ? "-" : "+") + " ((1 - c) * a + c * b)" + ((int)AlphaBias == 1 ? " + 0.5" : (int)AlphaBias == 2 ? " - 0.5" : "") + ") * " + ((int)AlphaScale == 3 ? "0.5" : (int)AlphaScale == 0 ? "1" : ((int)AlphaScale * 2).ToString()) + (AlphaClamp ? ");" : ";"); } }
 
         //Raw values. KSel and TRef control two stages, so they can't be stored here.
-        public int rawColEnv, rawAlphaEnv, rawCMD;
+        public uint rawColEnv, rawAlphaEnv, rawCMD;
 
         //KSel Values
         public int kcsel, kasel;
@@ -288,10 +288,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             base.Remove();
         }
 
-        internal override void GetStrings(StringTable table)
-        {
-            //We DO NOT want to add the name to the string table!
-        }
+        internal override void GetStrings(StringTable table) { }
+
+        [Browsable(false)]
+        public bool IndirectActive { get { return (rawCMD & 0x17FE00) != 0; } }
 
         internal string Write(MDL0MaterialNode mat)
         {
@@ -313,7 +313,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //SW max
             //M max
             //0001 0111 1111 1110 0000 0000 = 0x17FE00
-	        bool bHasIndStage = (rawCMD & 0x17FE00) != 0 && bt < mat.IndirectTextures;
+            bool bHasIndStage = IndirectActive && bt < mat.IndirectShaderStages;
 
 	        // HACK to handle cases where the tex gen is not enabled
 	        if (!bHasTexCoord)
@@ -401,7 +401,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        {
 		        string rasswap = shader.swapModeTable[rswap];
                 stage += String.Format("rastemp = {0}.{1};\n", MDL0MaterialNode.tevRasTable[(int)ColorChannel], rasswap);
-		        stage += String.Format("crastemp = frac(rastemp * (255.0f/256.0f)) * (256.0f/255.0f);\n");
+		        stage += String.Format("crastemp = fract(rastemp * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 	        }
 
 	        if (TextureEnabled)
@@ -415,7 +415,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 string texswap = shader.swapModeTable[tswap];
                 int texmap = (int)TextureMapID;
 
-                stage += String.Format("{0} = tex2D(samp{1}, {2}.xy * " + MDL0MaterialNode.I_TEXDIMS + "[{3}].xy).{4};\n", "textemp", texmap, "tevcoord", texmap, texswap);
+                stage += String.Format("{0} = texture2D(samp{1}, {2}.xy"/* + " * " + MDL0MaterialNode.I_TEXDIMS + "[{3}].xy" */+ ").{4};\n", "textemp", texmap, "tevcoord", texmap, texswap);
 	        }
 	        else
 		        stage += String.Format("textemp = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n");
@@ -436,7 +436,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 stage += String.Format("konsttemp = vec4({0}, {1});\n", MDL0MaterialNode.tevKSelTableC[kc], MDL0MaterialNode.tevKSelTableA[ka]);
 		        
                 if(kc > 7 || ka > 7)
-			        stage += String.Format("ckonsttemp = frac(konsttemp * (255.0f/256.0f)) * (256.0f/255.0f);\n");
+			        stage += String.Format("ckonsttemp = fract(konsttemp * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 		        else
 			        stage += String.Format("ckonsttemp = konsttemp;\n");
 	        }
@@ -445,25 +445,25 @@ namespace BrawlLib.SSBB.ResourceNodes
              || ColorSelectionB == ColorArg.PreviousColor || ColorSelectionB == ColorArg.PreviousAlpha
              || ColorSelectionC == ColorArg.PreviousColor || ColorSelectionC == ColorArg.PreviousAlpha
              || AlphaSelectionA == AlphaArg.PreviousAlpha || AlphaSelectionB == AlphaArg.PreviousAlpha || AlphaSelectionC == AlphaArg.PreviousAlpha)
-		        stage += String.Format("cprev = frac(prev * (255.0f/256.0f)) * (256.0f/255.0f);\n");
+		        stage += String.Format("cprev = fract(prev * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 
 	        if (ColorSelectionA == ColorArg.Color0 || ColorSelectionA == ColorArg.Alpha0
 	         || ColorSelectionB == ColorArg.Color0 || ColorSelectionB == ColorArg.Alpha0
 	         || ColorSelectionC == ColorArg.Color0 || ColorSelectionC == ColorArg.Alpha0
 	         || AlphaSelectionA == AlphaArg.Alpha0 || AlphaSelectionB == AlphaArg.Alpha0 || AlphaSelectionC == AlphaArg.Alpha0)
-		        stage += String.Format("cc0 = frac(c0 * (255.0f/256.0f)) * (256.0f/255.0f);\n");
+		        stage += String.Format("cc0 = fract(c0 * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 
 	        if (ColorSelectionA == ColorArg.Color1 || ColorSelectionA == ColorArg.Alpha1
 	         || ColorSelectionB == ColorArg.Color1 || ColorSelectionB == ColorArg.Alpha1
 	         || ColorSelectionC == ColorArg.Color1 || ColorSelectionC == ColorArg.Alpha1
 	         || AlphaSelectionA == AlphaArg.Alpha1 || AlphaSelectionB == AlphaArg.Alpha1 || AlphaSelectionC == AlphaArg.Alpha1)
-		        stage += String.Format("cc1 = frac(c1 * (255.0f/256.0f)) * (256.0f/255.0f);\n");
+		        stage += String.Format("cc1 = fract(c1 * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 
 	        if (ColorSelectionA == ColorArg.Color2 || ColorSelectionA == ColorArg.Alpha2
 	         || ColorSelectionB == ColorArg.Color2 || ColorSelectionB == ColorArg.Alpha2
 	         || ColorSelectionC == ColorArg.Color2 || ColorSelectionC == ColorArg.Alpha2
 	         || AlphaSelectionA == AlphaArg.Alpha2 || AlphaSelectionB == AlphaArg.Alpha2 || AlphaSelectionC == AlphaArg.Alpha2)
-			    stage += String.Format("cc2 = frac(c2 * (255.0f/256.0f)) * (256.0f/255.0f);\n");
+			    stage += String.Format("cc2 = fract(c2 * (255.0f/256.0f)) * (256.0f/255.0f);\n");
 
             #region Color Channel
 

@@ -198,8 +198,8 @@ namespace BrawlLib.SSBBTypes
     public enum SCN0AmbLightFlags
     {
         None = 0,
-        HasColor = 1,
-        HasAlpha = 2
+        ColorEnabled = 1,
+        AlphaEnabled = 2
     }
 
     [Flags]
@@ -232,10 +232,10 @@ namespace BrawlLib.SSBBTypes
     [Flags]
     public enum UsageFlags : ushort
     {
-        Enabled = 0x1, //Unused by Program
-        HasSpecular = 0x2, //Use NonSpecLightId, SpecularColor, Brightness
-        HasColor = 0x4,
-        HasAlpha = 0x8,
+        //Enabled = 0x1,
+        SpecularEnabled = 0x2, //Use NonSpecLightId, SpecularColor, Brightness
+        ColorEnabled = 0x4,
+        AlphaEnabled = 0x8,
     }
 
     [Flags]
@@ -305,7 +305,7 @@ namespace BrawlLib.SSBBTypes
         public SCN0CommonHeader _header;
         
         public byte _flags;
-        public Int24 _pad;
+        public UInt24 _pad;
         public bint _type;
 
         public bfloat _start;

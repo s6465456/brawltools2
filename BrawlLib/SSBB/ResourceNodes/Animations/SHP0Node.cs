@@ -78,13 +78,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             FrameCount++;
             foreach (SHP0EntryNode e in Children)
                 foreach (SHP0VertexSetNode c in e.Children)
-                    c.Keyframes.Insert(KeyFrameMode.All, index);
+                    c.Keyframes.Insert(index);
         }
         public void DeleteKeyframe(int index)
         {
             foreach (SHP0EntryNode e in Children)
                 foreach (SHP0VertexSetNode c in e.Children)
-                    c.Keyframes.Delete(KeyFrameMode.All, index);
+                    c.Keyframes.Delete(index);
             FrameCount--;
         }
 
@@ -290,7 +290,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                 {
                     SHP0VertexSetNode n = new SHP0VertexSetNode(_indices[i] < ((SHP0Node)Parent)._strings.Count ? ((SHP0Node)Parent)._strings[_indices[i]] : "Unknown") { isFixed = true };
-                    n.Keyframes[KeyFrameMode.ScaleX, 0] = ((bfloat*)Header->EntryOffset)[i];
+                    n.Keyframes[0] = ((bfloat*)Header->EntryOffset)[i];
                     n._numFrames = ((SHP0Node)Parent).FrameCount;
                     //n.Parent = this;
                     AddChild(n, false);
@@ -333,7 +333,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (p.isFixed)
                 {
                     KeyframeEntry kf; float value = 0;
-                    if ((kf = p.Keyframes.GetKeyframe(KeyFrameMode.ScaleX, 0)) != null)
+                    if ((kf = p.Keyframes.GetKeyframe(0)) != null)
                         value = kf._value;
                     ((bfloat*)header->EntryOffset)[p.Index] = value;
                     fixedflags = (uint)(fixedflags & ((uint)0xFFFFFFFF - (uint)(1 << p.Index))) | (uint)(1 << p.Index);
@@ -385,21 +385,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public int FrameCount { get { return _numFrames; } }
 
-        internal KeyframeCollection _keyframes;
+        internal KeyframeArray _keyframes;
         [Browsable(false)]
-        public KeyframeCollection Keyframes
+        public KeyframeArray Keyframes
         {
             get
             {
                 if (_keyframes == null)
                 {
-                    _keyframes = new KeyframeCollection(_numFrames);
+                    _keyframes = new KeyframeArray(_numFrames);
                     if (Header != null)
                     {
                         int fCount = Header->_numEntries;
                         BVec3* entry = Header->Entries;
                         for (int i = 0; i < fCount; i++, entry++)
-                            Keyframes.SetFrameValue(KeyFrameMode.ScaleX, (int)entry->_y, entry->_z)._tangent = entry->_x;
+                            Keyframes.SetFrameValue((int)entry->_y, entry->_z)._tangent = entry->_x;
                     }
                 }
                 return _keyframes;
@@ -421,27 +421,27 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override int OnCalculateSize(bool force)
         {
-            return _dataLen = ((isFixed = Keyframes._keyCounts[0] <= 1) ? 0 : Keyframes._keyCounts[0] * 12 + 8);
+            return _dataLen = ((isFixed = Keyframes._keyCount <= 1) ? 0 : Keyframes._keyCount * 12 + 8);
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             SHP0KeyframeEntries* header = (SHP0KeyframeEntries*)address;
-            header->_numEntries = (short)Keyframes._keyCounts[0];
+            header->_numEntries = (short)Keyframes._keyCount;
             header->_unk1 = 0;
 
             BVec3* entry = header->Entries;
-            KeyframeEntry frame, root = Keyframes._keyRoots[0];
+            KeyframeEntry frame, root = Keyframes._keyRoot;
             for (frame = root._next; frame._index != -1; frame = frame._next)
                 *entry++ = new Vector3(frame._tangent, frame._index, frame._value);
         }
 
         #region Keyframe Management
 
-        public KeyframeEntry GetKeyframe(int index) { return Keyframes.GetKeyframe(KeyFrameMode.ScaleX, index); }
+        public KeyframeEntry GetKeyframe(int index) { return Keyframes.GetKeyframe(index); }
         public void SetKeyframe(int index, float value)
         {
-            KeyframeEntry k = Keyframes.SetFrameValue(KeyFrameMode.ScaleX, index, value);
+            KeyframeEntry k = Keyframes.SetFrameValue(index, value);
             k.GenerateTangent();
             k._prev.GenerateTangent();
             k._next.GenerateTangent();
@@ -450,17 +450,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         public void RemoveKeyframe(int index)
         {
-            KeyframeEntry k = Keyframes.Remove(KeyFrameMode.ScaleX, index);
+            KeyframeEntry k = Keyframes.Remove(index);
             if (k != null)
             {
                 k._prev.GenerateTangent();
                 k._next.GenerateTangent();
                 SignalPropertyChange();
             }
-        }
-        public AnimationFrame GetAnimFrame(int index)
-        {
-            return Keyframes.GetFullFrame(index);
         }
 
         #endregion

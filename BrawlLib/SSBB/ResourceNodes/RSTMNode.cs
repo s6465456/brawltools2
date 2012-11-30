@@ -23,6 +23,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         int _blockSize;
         int _bps;
 
+        [Browsable(false)]
+        public int volume { get { return -1; } set {  } }
+        [Browsable(false)]
+        public int pan { get { return -1; } set { } }
+
         [Category("Audio Stream")]
         public int Channels { get { return _channels; } }
         [Category("Audio Stream")]
@@ -54,7 +59,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if ((_name == null) && (_origPath != null))
                 _name = Path.GetFileNameWithoutExtension(_origPath);
 
-            HEADPart1* part1 = Header->HEADData->Part1;
+            StrmDataInfo* part1 = Header->HEADData->Part1;
 
             _channels = part1->_format._channels;
             _looped = part1->_format._looped != 0;

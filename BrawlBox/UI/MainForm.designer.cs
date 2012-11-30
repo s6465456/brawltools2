@@ -52,6 +52,9 @@ namespace BrawlBox
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
+            this.scN0FogEditControl1 = new System.Windows.Forms.SCN0FogEditControl();
+            this.scN0LightEditControl1 = new System.Windows.Forms.SCN0LightEditControl();
+            this.scN0CameraEditControl1 = new System.Windows.Forms.SCN0CameraEditControl();
             this.animEditControl = new System.Windows.Forms.AnimEditControl();
             this.relDisassembler1 = new PowerPcAssembly.RelDisassembler();
             this.offsetEditor1 = new System.Windows.Forms.OffsetEditor();
@@ -68,6 +71,7 @@ namespace BrawlBox
             this.msBinEditor1 = new System.Windows.Forms.MSBinEditor();
             this.previewPanel1 = new System.Windows.Forms.GoodPictureBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.u8FileArchiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -143,7 +147,8 @@ namespace BrawlBox
             this.newToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aRCArchiveToolStripMenuItem,
             this.brresPackToolStripMenuItem,
-            this.bRStmAudioToolStripMenuItem});
+            this.bRStmAudioToolStripMenuItem,
+            this.u8FileArchiveToolStripMenuItem});
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
             this.newToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
             this.newToolStripMenuItem.Text = "&New";
@@ -233,7 +238,7 @@ namespace BrawlBox
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.settingsToolStripMenuItem.Text = "&Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click_1);
             // 
@@ -265,6 +270,9 @@ namespace BrawlBox
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.scN0FogEditControl1);
+            this.splitContainer2.Panel2.Controls.Add(this.scN0LightEditControl1);
+            this.splitContainer2.Panel2.Controls.Add(this.scN0CameraEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.animEditControl);
             this.splitContainer2.Panel2.Controls.Add(this.relDisassembler1);
             this.splitContainer2.Panel2.Controls.Add(this.offsetEditor1);
@@ -295,6 +303,30 @@ namespace BrawlBox
             this.propertyGrid1.TabIndex = 2;
             this.propertyGrid1.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.propertyGrid1_SelectedGridItemChanged);
             // 
+            // scN0FogEditControl1
+            // 
+            this.scN0FogEditControl1.Location = new System.Drawing.Point(-111, -119);
+            this.scN0FogEditControl1.Name = "scN0FogEditControl1";
+            this.scN0FogEditControl1.Size = new System.Drawing.Size(293, 276);
+            this.scN0FogEditControl1.TabIndex = 13;
+            this.scN0FogEditControl1.Visible = false;
+            // 
+            // scN0LightEditControl1
+            // 
+            this.scN0LightEditControl1.Location = new System.Drawing.Point(139, -190);
+            this.scN0LightEditControl1.Name = "scN0LightEditControl1";
+            this.scN0LightEditControl1.Size = new System.Drawing.Size(293, 276);
+            this.scN0LightEditControl1.TabIndex = 12;
+            this.scN0LightEditControl1.Visible = false;
+            // 
+            // scN0CameraEditControl1
+            // 
+            this.scN0CameraEditControl1.Location = new System.Drawing.Point(104, -191);
+            this.scN0CameraEditControl1.Name = "scN0CameraEditControl1";
+            this.scN0CameraEditControl1.Size = new System.Drawing.Size(286, 276);
+            this.scN0CameraEditControl1.TabIndex = 11;
+            this.scN0CameraEditControl1.Visible = false;
+            // 
             // animEditControl
             // 
             this.animEditControl.Location = new System.Drawing.Point(0, 0);
@@ -310,6 +342,7 @@ namespace BrawlBox
             this.relDisassembler1.Index = 0;
             this.relDisassembler1.Location = new System.Drawing.Point(0, 0);
             this.relDisassembler1.Name = "relDisassembler1";
+            this.relDisassembler1.Section = null;
             this.relDisassembler1.Size = new System.Drawing.Size(384, 169);
             this.relDisassembler1.Source = null;
             this.relDisassembler1.TabIndex = 10;
@@ -424,6 +457,13 @@ namespace BrawlBox
             this.previewPanel1.Size = new System.Drawing.Size(98, 86);
             this.previewPanel1.TabIndex = 0;
             // 
+            // u8FileArchiveToolStripMenuItem
+            // 
+            this.u8FileArchiveToolStripMenuItem.Name = "u8FileArchiveToolStripMenuItem";
+            this.u8FileArchiveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.u8FileArchiveToolStripMenuItem.Text = "U8 File Archive";
+            this.u8FileArchiveToolStripMenuItem.Click += new System.EventHandler(this.u8FileArchiveToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AllowDrop = true;
@@ -490,6 +530,10 @@ namespace BrawlBox
         private OffsetEditor offsetEditor1;
         private ArticleAttributeGrid articleAttributeGrid;
         private PowerPcAssembly.RelDisassembler relDisassembler1;
+        private SCN0LightEditControl scN0LightEditControl1;
+        private SCN0CameraEditControl scN0CameraEditControl1;
+        private SCN0FogEditControl scN0FogEditControl1;
+        private ToolStripMenuItem u8FileArchiveToolStripMenuItem;
     }
 }
 

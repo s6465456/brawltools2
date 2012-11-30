@@ -106,6 +106,7 @@ namespace System.Windows.Forms
             this.lstBones.Size = new System.Drawing.Size(372, 374);
             this.lstBones.TabIndex = 8;
             this.lstBones.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.lstBones_ItemCheck_1);
+            this.lstBones.SelectedIndexChanged += new System.EventHandler(this.lstBones_SelectedIndexChanged);
             this.lstBones.SelectedValueChanged += new System.EventHandler(this.lstBones_SelectedValueChanged_1);
             this.lstBones.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lstBones_KeyDown_1);
             this.lstBones.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lstBones_MouseDown);
@@ -268,7 +269,10 @@ namespace System.Windows.Forms
                     //else
                     //    TargetModel = null;
                 lstBones.SelectedItem = TargetBone;
-                _mainWindow.chr0Editor.UpdatePropDisplay(); 
+                _mainWindow.chr0Editor.UpdatePropDisplay();
+
+                if (_mainWindow._chr0 != null && TargetBone != null)
+                    _mainWindow.pnlKeyframes.TargetSequence = _mainWindow._chr0.FindChild(TargetBone.Name, false);
             } 
         }
 
@@ -383,7 +387,7 @@ namespace System.Windows.Forms
             lstBones.BeginUpdate();
             lstBones.Items.Clear();
             
-            if (TargetModel != null)
+            if (TargetModel != null && TargetModel._linker != null)
                 foreach (MDL0BoneNode bone in TargetModel._linker.BoneCache)
                     lstBones.Items.Add(bone, bone._render);
 
@@ -439,6 +443,11 @@ namespace System.Windows.Forms
         private void renameBoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new RenameDialog().ShowDialog(this, lstBones.SelectedItem as MDL0BoneNode);
+        }
+
+        private void lstBones_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 

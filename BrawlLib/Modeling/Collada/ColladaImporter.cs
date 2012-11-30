@@ -11,12 +11,18 @@ using BrawlLib.Imaging;
 using BrawlLib.SSBBTypes;
 using BrawlLib.Wii.Graphics;
 using System.Globalization;
+using System.Threading;
 
 namespace BrawlLib.Modeling
 {
-    public unsafe partial class Collada : Form
+    public unsafe partial class Collada : Form, IProgressTracker
     {
         public Collada() { InitializeComponent(); }
+        public Collada(Form owner, string title) : this()
+        {
+            Owner = owner;
+            Text = title; 
+        }
 
         private CheckBox fltVerts;
         private CheckBox fltNrms;
@@ -35,6 +41,44 @@ namespace BrawlLib.Modeling
         private Label Status;
         public string _filePath;
 
+        private GoodProgressBar progressBar1;
+        public bool Cancelled { get; set; }
+        public void Begin(float min, float max, float current)
+        {
+            progressBar1.MinValue = min;
+            progressBar1.MaxValue = max;
+            progressBar1.CurrentValue = current;
+
+            if (Owner != null)
+                Owner.Enabled = false;
+
+            if (Owner != null)
+                CenterToParent();
+
+            Application.DoEvents();
+        }
+        public void Update(float value)
+        {
+            //progressBar1.CurrentValue = value;
+            //Application.DoEvents();
+            //Thread.Sleep(0);
+        }
+        public void Finish()
+        {
+            if (Owner != null)
+                Owner.Enabled = true;
+
+            //Close();
+        }
+        public void Cancel()
+        {
+            Close();
+        }
+
+        public float MinValue { get { return progressBar1.MinValue; } set { progressBar1.MinValue = value; } }
+        public float MaxValue { get { return progressBar1.MaxValue; } set { progressBar1.MaxValue = value; } }
+        public float CurrentValue { get { return progressBar1.CurrentValue; } set { progressBar1.CurrentValue = value; } }
+        
         public void Say(string text)
         {
             Status.Text = text;
@@ -47,7 +91,7 @@ namespace BrawlLib.Modeling
             if (base.ShowDialog() == DialogResult.OK)
             {
                 panel1.Visible = false;
-                Height = 63;
+                Height = 86;//63;
                 UseWaitCursor = true;
                 Text = "Please wait...";
                 Show();
@@ -75,6 +119,7 @@ namespace BrawlLib.Modeling
         public static string Error;
 
         public static int index = 0;
+        public float current = 0;
         public MDL0Node ImportModel(string filePath)
         {
             MDL0Node model = new MDL0Node() { _name = Path.GetFileNameWithoutExtension(filePath), _originPath = filePath };
@@ -93,6 +138,15 @@ namespace BrawlLib.Modeling
             using (DecoderShell shell = DecoderShell.Import(filePath))
             try
             {
+                current = 0;
+                float count = 1;
+
+                count += shell._images.Count;
+                count += shell._materials.Count;
+                count += shell._scenes.Count;
+
+                //Begin(0, count, 0);
+
                 Say("Extracting textures...");
                 Error = "There was a problem reading the textures.";
 
@@ -118,6 +172,8 @@ namespace BrawlLib.Modeling
 
                     tex = model.FindOrCreateTexture(name);
                     img._node = tex;
+
+                    Update(current++);
                 }
 
                 Say("Extracting materials...");
@@ -132,8 +188,6 @@ namespace BrawlLib.Modeling
 
                     matNode._parent = model._matGroup;
                     matNode._name = mat._name != null ? mat._name : mat._id;
-
-                    matNode._index = tempNo;
 
                     if (tempNo == 0)
                     {
@@ -170,6 +224,8 @@ namespace BrawlLib.Modeling
                             
                     matNode._numTextures = (byte)matNode.Children.Count;
                     model._matList.Add(matNode);
+
+                    Update(current++);
                 }
 
                 Say("Extracting scenes...");
@@ -180,6 +236,8 @@ namespace BrawlLib.Modeling
                     scene._nodes.Sort(NodeEntry.Compare); //Parse joints first
                     foreach (NodeEntry node in scene._nodes)
                         EnumNode(node, model._boneGroup, scene, model, shell);
+
+                    Update(current++);
                 }
 
                 //Clean up and set everything left
@@ -301,6 +359,8 @@ namespace BrawlLib.Modeling
                         if (((MDL0MaterialNode)model._matList[i])._polygons.Count == 0)
                             model._matList.RemoveAt(i--);
                 }
+
+                Update(current++);
             }
             catch (Exception x)
             {
@@ -1471,6 +1531,7 @@ namespace BrawlLib.Modeling
             this.panel1 = new System.Windows.Forms.Panel();
             this.label1 = new System.Windows.Forms.Label();
             this.mdlType = new System.Windows.Forms.ComboBox();
+            this.progressBar1 = new System.Windows.Forms.GoodProgressBar();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -1635,12 +1696,27 @@ namespace BrawlLib.Modeling
             this.mdlType.TabIndex = 11;
             this.mdlType.SelectedIndexChanged += new System.EventHandler(this.mdlType_SelectedIndexChanged);
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.progressBar1.CurrentValue = 0F;
+            this.progressBar1.Location = new System.Drawing.Point(12, 30);
+            this.progressBar1.MaxValue = 1F;
+            this.progressBar1.MinValue = 0F;
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Percent = 0F;
+            this.progressBar1.Size = new System.Drawing.Size(370, 23);
+            this.progressBar1.TabIndex = 13;
+            // 
             // Collada
             // 
             this.ClientSize = new System.Drawing.Size(394, 140);
             this.ControlBox = false;
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Status);
+            this.Controls.Add(this.progressBar1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "Collada";

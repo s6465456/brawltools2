@@ -25,11 +25,11 @@ namespace System.Windows.Forms
         {
             //Add each event to the event list, but omit any events lacking a formal name.
             if (lstEvents.Items.Count <= 0)
-                foreach (ActionEventInfo e in p.EventDictionary.Values)
+                foreach (ActionEventInfo e in MoveDefNode.EventDictionary.Values)
                     if (!(e._name == null || e._name == ""))
                         lstEvents.Items.Add(e);
 
-            txtEventId.Text = MParams.Hex8(eventEvent);
+            txtEventId.Text = Helpers.Hex8(eventEvent);
             status = DialogResult.Cancel;
         }
 
@@ -46,7 +46,7 @@ namespace System.Windows.Forms
         private void lstEvents_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstEvents.SelectedIndex == -1) return;
-            txtEventId.Text = MParams.Hex8((lstEvents.SelectedItem as ActionEventInfo).idNumber);
+            txtEventId.Text = Helpers.Hex8((lstEvents.SelectedItem as ActionEventInfo).idNumber);
         }
 
         private void txtEventId_TextChanged(object sender, EventArgs e)
@@ -57,7 +57,7 @@ namespace System.Windows.Forms
             //Select the event corresponding to the id input.
             lstEvents.SelectedIndex = -1;
             for (int i = 0; i < lstEvents.Items.Count; i++)
-                if (eventId == MParams.Hex8((lstEvents.Items[i] as ActionEventInfo).idNumber))
+                if (eventId == Helpers.Hex8((lstEvents.Items[i] as ActionEventInfo).idNumber))
                 {
                     lstEvents.SelectedIndex = i; 
                     break;
@@ -72,7 +72,7 @@ namespace System.Windows.Forms
 
         private void btnDone_Click(object sender, EventArgs e)
         {
-            try { eventEvent = MParams.UnHex(txtEventId.Text); }
+            try { eventEvent = Helpers.UnHex(txtEventId.Text); }
             catch { eventEvent = 0; }
             if (eventEvent == 0)
             {

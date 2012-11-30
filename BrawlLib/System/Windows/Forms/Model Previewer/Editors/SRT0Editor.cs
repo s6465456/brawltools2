@@ -43,6 +43,7 @@ namespace System.Windows.Forms
             this.addCustomAmountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnDelete = new System.Windows.Forms.Button();
             this.grpTransform = new System.Windows.Forms.GroupBox();
+            this.btnClearFrame = new System.Windows.Forms.Button();
             this.lblScaleX = new System.Windows.Forms.Label();
             this.numScaleX = new System.Windows.Forms.NumericInputBox();
             this.AllScale = new System.Windows.Forms.CheckBox();
@@ -64,7 +65,7 @@ namespace System.Windows.Forms
             this.FrameScale.AutoSize = true;
             this.FrameScale.Checked = true;
             this.FrameScale.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.FrameScale.Location = new System.Drawing.Point(282, 61);
+            this.FrameScale.Location = new System.Drawing.Point(319, 57);
             this.FrameScale.Name = "FrameScale";
             this.FrameScale.Size = new System.Drawing.Size(53, 17);
             this.FrameScale.TabIndex = 35;
@@ -79,7 +80,7 @@ namespace System.Windows.Forms
             // 
             // btnPaste
             // 
-            this.btnPaste.Location = new System.Drawing.Point(118, 58);
+            this.btnPaste.Location = new System.Drawing.Point(100, 55);
             this.btnPaste.Name = "btnPaste";
             this.btnPaste.Size = new System.Drawing.Size(50, 20);
             this.btnPaste.TabIndex = 23;
@@ -98,7 +99,7 @@ namespace System.Windows.Forms
             this.FrameRot.AutoSize = true;
             this.FrameRot.Checked = true;
             this.FrameRot.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.FrameRot.Location = new System.Drawing.Point(233, 61);
+            this.FrameRot.Location = new System.Drawing.Point(270, 57);
             this.FrameRot.Name = "FrameRot";
             this.FrameRot.Size = new System.Drawing.Size(43, 17);
             this.FrameRot.TabIndex = 34;
@@ -107,7 +108,7 @@ namespace System.Windows.Forms
             // 
             // btnCopy
             // 
-            this.btnCopy.Location = new System.Drawing.Point(62, 58);
+            this.btnCopy.Location = new System.Drawing.Point(51, 55);
             this.btnCopy.Name = "btnCopy";
             this.btnCopy.Size = new System.Drawing.Size(50, 20);
             this.btnCopy.TabIndex = 22;
@@ -123,7 +124,7 @@ namespace System.Windows.Forms
             // 
             // btnCut
             // 
-            this.btnCut.Location = new System.Drawing.Point(6, 58);
+            this.btnCut.Location = new System.Drawing.Point(2, 55);
             this.btnCut.Name = "btnCut";
             this.btnCut.Size = new System.Drawing.Size(50, 20);
             this.btnCut.TabIndex = 21;
@@ -164,7 +165,7 @@ namespace System.Windows.Forms
             this.FrameTrans.AutoSize = true;
             this.FrameTrans.Checked = true;
             this.FrameTrans.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.FrameTrans.Location = new System.Drawing.Point(174, 61);
+            this.FrameTrans.Location = new System.Drawing.Point(211, 57);
             this.FrameTrans.Name = "FrameTrans";
             this.FrameTrans.Size = new System.Drawing.Size(53, 17);
             this.FrameTrans.TabIndex = 33;
@@ -173,7 +174,8 @@ namespace System.Windows.Forms
             // 
             // numScaleY
             // 
-            this.numScaleY.Location = new System.Drawing.Point(208, 36);
+            this.numScaleY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numScaleY.Location = new System.Drawing.Point(213, 35);
             this.numScaleY.Name = "numScaleY";
             this.numScaleY.Size = new System.Drawing.Size(82, 20);
             this.numScaleY.TabIndex = 18;
@@ -192,7 +194,8 @@ namespace System.Windows.Forms
             // 
             // numRot
             // 
-            this.numRot.Location = new System.Drawing.Point(297, 35);
+            this.numRot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRot.Location = new System.Drawing.Point(294, 35);
             this.numRot.Name = "numRot";
             this.numRot.Size = new System.Drawing.Size(82, 20);
             this.numRot.TabIndex = 15;
@@ -213,6 +216,7 @@ namespace System.Windows.Forms
             // 
             // numTransX
             // 
+            this.numTransX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.numTransX.Location = new System.Drawing.Point(77, 16);
             this.numTransX.Name = "numTransX";
             this.numTransX.Size = new System.Drawing.Size(82, 20);
@@ -222,7 +226,8 @@ namespace System.Windows.Forms
             // 
             // numTransY
             // 
-            this.numTransY.Location = new System.Drawing.Point(77, 36);
+            this.numTransY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numTransY.Location = new System.Drawing.Point(77, 35);
             this.numTransY.Name = "numTransY";
             this.numTransY.Size = new System.Drawing.Size(82, 20);
             this.numTransY.TabIndex = 13;
@@ -231,9 +236,10 @@ namespace System.Windows.Forms
             // 
             // lblTransX
             // 
+            this.lblTransX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblTransX.Location = new System.Drawing.Point(2, 16);
             this.lblTransX.Name = "lblTransX";
-            this.lblTransX.Size = new System.Drawing.Size(74, 20);
+            this.lblTransX.Size = new System.Drawing.Size(76, 20);
             this.lblTransX.TabIndex = 4;
             this.lblTransX.Text = "Translation X:";
             this.lblTransX.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -241,9 +247,10 @@ namespace System.Windows.Forms
             // 
             // lblTransY
             // 
-            this.lblTransY.Location = new System.Drawing.Point(2, 37);
+            this.lblTransY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblTransY.Location = new System.Drawing.Point(2, 35);
             this.lblTransY.Name = "lblTransY";
-            this.lblTransY.Size = new System.Drawing.Size(74, 20);
+            this.lblTransY.Size = new System.Drawing.Size(76, 20);
             this.lblTransY.TabIndex = 5;
             this.lblTransY.Text = "Translation Y:";
             this.lblTransY.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -257,9 +264,10 @@ namespace System.Windows.Forms
             // 
             // lblRot
             // 
-            this.lblRot.Location = new System.Drawing.Point(294, 15);
+            this.lblRot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblRot.Location = new System.Drawing.Point(294, 16);
             this.lblRot.Name = "lblRot";
-            this.lblRot.Size = new System.Drawing.Size(60, 20);
+            this.lblRot.Size = new System.Drawing.Size(82, 20);
             this.lblRot.TabIndex = 7;
             this.lblRot.Text = "Rotation:";
             this.lblRot.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -267,9 +275,10 @@ namespace System.Windows.Forms
             // 
             // lblScaleY
             // 
-            this.lblScaleY.Location = new System.Drawing.Point(161, 37);
+            this.lblScaleY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblScaleY.Location = new System.Drawing.Point(158, 35);
             this.lblScaleY.Name = "lblScaleY";
-            this.lblScaleY.Size = new System.Drawing.Size(47, 20);
+            this.lblScaleY.Size = new System.Drawing.Size(56, 20);
             this.lblScaleY.TabIndex = 10;
             this.lblScaleY.Text = "Scale Y:";
             this.lblScaleY.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -295,7 +304,7 @@ namespace System.Windows.Forms
             // 
             // btnDelete
             // 
-            this.btnDelete.Location = new System.Drawing.Point(6, 15);
+            this.btnDelete.Location = new System.Drawing.Point(6, 16);
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.Size = new System.Drawing.Size(50, 20);
             this.btnDelete.TabIndex = 25;
@@ -305,6 +314,7 @@ namespace System.Windows.Forms
             // 
             // grpTransform
             // 
+            this.grpTransform.Controls.Add(this.btnClearFrame);
             this.grpTransform.Controls.Add(this.lblScaleX);
             this.grpTransform.Controls.Add(this.numScaleX);
             this.grpTransform.Controls.Add(this.FrameScale);
@@ -325,23 +335,35 @@ namespace System.Windows.Forms
             this.grpTransform.Enabled = false;
             this.grpTransform.Location = new System.Drawing.Point(0, 0);
             this.grpTransform.Name = "grpTransform";
-            this.grpTransform.Size = new System.Drawing.Size(386, 82);
+            this.grpTransform.Size = new System.Drawing.Size(380, 78);
             this.grpTransform.TabIndex = 28;
             this.grpTransform.TabStop = false;
             this.grpTransform.Text = "Transform Frame";
             // 
+            // btnClearFrame
+            // 
+            this.btnClearFrame.Location = new System.Drawing.Point(149, 55);
+            this.btnClearFrame.Name = "btnClearFrame";
+            this.btnClearFrame.Size = new System.Drawing.Size(50, 20);
+            this.btnClearFrame.TabIndex = 38;
+            this.btnClearFrame.Text = "Clear";
+            this.btnClearFrame.UseVisualStyleBackColor = true;
+            this.btnClearFrame.Click += new System.EventHandler(this.btnClearFrame_Click);
+            // 
             // lblScaleX
             // 
-            this.lblScaleX.Location = new System.Drawing.Point(161, 16);
+            this.lblScaleX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblScaleX.Location = new System.Drawing.Point(158, 16);
             this.lblScaleX.Name = "lblScaleX";
-            this.lblScaleX.Size = new System.Drawing.Size(47, 20);
+            this.lblScaleX.Size = new System.Drawing.Size(56, 20);
             this.lblScaleX.TabIndex = 37;
             this.lblScaleX.Text = "Scale X:";
             this.lblScaleX.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // numScaleX
             // 
-            this.numScaleX.Location = new System.Drawing.Point(208, 16);
+            this.numScaleX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numScaleX.Location = new System.Drawing.Point(213, 16);
             this.numScaleX.Name = "numScaleX";
             this.numScaleX.Size = new System.Drawing.Size(82, 20);
             this.numScaleX.TabIndex = 36;
@@ -353,7 +375,7 @@ namespace System.Windows.Forms
             this.AllScale.AutoSize = true;
             this.AllScale.Checked = true;
             this.AllScale.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AllScale.Location = new System.Drawing.Point(118, 55);
+            this.AllScale.Location = new System.Drawing.Point(108, 57);
             this.AllScale.Name = "AllScale";
             this.AllScale.Size = new System.Drawing.Size(53, 17);
             this.AllScale.TabIndex = 32;
@@ -373,9 +395,9 @@ namespace System.Windows.Forms
             this.grpTransAll.Controls.Add(this.btnDelete);
             this.grpTransAll.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpTransAll.Enabled = false;
-            this.grpTransAll.Location = new System.Drawing.Point(386, 0);
+            this.grpTransAll.Location = new System.Drawing.Point(380, 0);
             this.grpTransAll.Name = "grpTransAll";
-            this.grpTransAll.Size = new System.Drawing.Size(175, 82);
+            this.grpTransAll.Size = new System.Drawing.Size(162, 78);
             this.grpTransAll.TabIndex = 29;
             this.grpTransAll.TabStop = false;
             this.grpTransAll.Text = "Transform All";
@@ -385,7 +407,7 @@ namespace System.Windows.Forms
             this.AllRot.AutoSize = true;
             this.AllRot.Checked = true;
             this.AllRot.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AllRot.Location = new System.Drawing.Point(118, 38);
+            this.AllRot.Location = new System.Drawing.Point(108, 38);
             this.AllRot.Name = "AllRot";
             this.AllRot.Size = new System.Drawing.Size(43, 17);
             this.AllRot.TabIndex = 31;
@@ -397,7 +419,7 @@ namespace System.Windows.Forms
             this.AllTrans.AutoSize = true;
             this.AllTrans.Checked = true;
             this.AllTrans.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AllTrans.Location = new System.Drawing.Point(118, 21);
+            this.AllTrans.Location = new System.Drawing.Point(108, 19);
             this.AllTrans.Name = "AllTrans";
             this.AllTrans.Size = new System.Drawing.Size(53, 17);
             this.AllTrans.TabIndex = 30;
@@ -406,7 +428,7 @@ namespace System.Windows.Forms
             // 
             // btnClean
             // 
-            this.btnClean.Location = new System.Drawing.Point(62, 35);
+            this.btnClean.Location = new System.Drawing.Point(55, 35);
             this.btnClean.Name = "btnClean";
             this.btnClean.Size = new System.Drawing.Size(50, 20);
             this.btnClean.TabIndex = 29;
@@ -426,7 +448,7 @@ namespace System.Windows.Forms
             // 
             // btnCopyAll
             // 
-            this.btnCopyAll.Location = new System.Drawing.Point(6, 55);
+            this.btnCopyAll.Location = new System.Drawing.Point(6, 54);
             this.btnCopyAll.Name = "btnCopyAll";
             this.btnCopyAll.Size = new System.Drawing.Size(50, 20);
             this.btnCopyAll.TabIndex = 27;
@@ -436,7 +458,7 @@ namespace System.Windows.Forms
             // 
             // btnClear
             // 
-            this.btnClear.Location = new System.Drawing.Point(62, 15);
+            this.btnClear.Location = new System.Drawing.Point(55, 16);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(50, 20);
             this.btnClear.TabIndex = 26;
@@ -446,7 +468,7 @@ namespace System.Windows.Forms
             // 
             // btnInsert
             // 
-            this.btnInsert.Location = new System.Drawing.Point(62, 55);
+            this.btnInsert.Location = new System.Drawing.Point(55, 54);
             this.btnInsert.Name = "btnInsert";
             this.btnInsert.Size = new System.Drawing.Size(50, 20);
             this.btnInsert.TabIndex = 24;
@@ -459,7 +481,7 @@ namespace System.Windows.Forms
             this.Controls.Add(this.grpTransAll);
             this.Controls.Add(this.grpTransform);
             this.Name = "SRT0Editor";
-            this.Size = new System.Drawing.Size(561, 82);
+            this.Size = new System.Drawing.Size(542, 78);
             this.ctxBox.ResumeLayout(false);
             this.grpTransform.ResumeLayout(false);
             this.grpTransform.PerformLayout();
@@ -518,6 +540,7 @@ namespace System.Windows.Forms
         public event EventHandler CreateUndo;
 
         internal NumericInputBox[] _transBoxes = new NumericInputBox[9];
+        private Button btnClearFrame;
         private AnimationFrame _tempFrame = AnimationFrame.Neutral;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -551,6 +574,17 @@ namespace System.Windows.Forms
             set { grpTransform.Enabled = grpTransAll.Enabled = (_mainWindow.EnableTransformEdit = value) && (TargetTexRef != null); }
         }
 
+        public SRT0TextureNode TexEntry
+        { 
+            get 
+            {
+                MDL0MaterialRefNode mr = TargetTexRef;
+                if (mr != null && SelectedAnimation != null)
+                    return SelectedAnimation.FindChild(mr.Parent.Name + "/Texture" + mr.Index, true) as SRT0TextureNode;
+                else return null;
+            }
+        }
+
         public SRT0Editor()
         {
             InitializeComponent();
@@ -578,15 +612,14 @@ namespace System.Windows.Forms
                 return;
 
             NumericInputBox box = _transBoxes[index];
-            MDL0MaterialRefNode mr = TargetTexRef;
-            SRT0TextureNode entry;
+            
             if (TargetTexRef != null)
-            if ((SelectedAnimation != null) && (CurrentFrame > 0) && ((entry = SelectedAnimation.FindChild(mr.Parent.Name + "/Texture" + mr.Index, true) as SRT0TextureNode) != null))
+            if ((SelectedAnimation != null) && (CurrentFrame > 0) && TexEntry != null)
             {
-                KeyframeEntry e = entry.Keyframes.GetKeyframe((KeyFrameMode)index + 0x10, CurrentFrame - 1);
+                KeyframeEntry e = TexEntry.Keyframes.GetKeyframe((KeyFrameMode)index + 0x10, CurrentFrame - 1);
                 if (e == null)
                 {
-                    box.Value = entry.Keyframes[KeyFrameMode.ScaleX + index, CurrentFrame - 1];
+                    box.Value = TexEntry.Keyframes[KeyFrameMode.ScaleX + index, CurrentFrame - 1];
                     box.BackColor = Color.White;
                 }
                 else
@@ -597,7 +630,7 @@ namespace System.Windows.Forms
             }
             else
             {
-                FrameState state = mr._bindState;
+                FrameState state = TargetTexRef._bindState;
                 box.Value = ((float*)&state)[index];
                 box.BackColor = Color.White;
             }
@@ -632,52 +665,108 @@ namespace System.Windows.Forms
             NumericInputBox box = sender as NumericInputBox;
             int index = (int)box.Tag;
 
+            AnimationFrame kf;
+            float* pkf = (float*)&kf;
+
             if (index == 2 || index == 4 || index == 5 || index == 8)
                 return;
 
-            MDL0MaterialRefNode mr = TargetTexRef;
-
             if ((SelectedAnimation != null) && (CurrentFrame > 0))
             {
-                SRT0TextureNode entry = SelectedAnimation.FindChild(mr.Parent.Name + "/Texture" + mr.Index, true) as SRT0TextureNode;
-
-                if (entry == null)
+                int kfIndex = _mainWindow.pnlKeyframes.FindKeyframe(CurrentFrame - 1);
+                int x;
+                if (TexEntry == null)
                 {
                     if (!float.IsNaN(box.Value))
                     {
-                        entry = SelectedAnimation.FindOrCreateEntry(mr.Parent.Name, mr.Index);
+                        SRT0TextureNode newEntry = SelectedAnimation.FindOrCreateEntry(TargetTexRef.Parent.Name, TargetTexRef.Index);
 
                         //Set initial values (so they aren't null)
-                        FrameState state = mr._bindState; //Get the texture's bindstate
+                        FrameState state = TargetTexRef._bindState; //Get the texture's bindstate
                         float* p = (float*)&state;
                         for (int i = 0; i < 3; i++) //Get the scale
                             if (p[i] != 1.0f) //Check for default values
-                                entry.SetKeyframe(KeyFrameMode.ScaleX + i, 0, p[i]);
+                                newEntry.SetKeyframe(KeyFrameMode.ScaleX + i, 0, p[i]);
                         for (int i = 3; i < 9; i++) //Get rotation and translation respectively
                             if (p[i] != 0.0f) //Check for default values
-                                entry.SetKeyframe(KeyFrameMode.ScaleX + i, 0, p[i]);
+                                newEntry.SetKeyframe(KeyFrameMode.ScaleX + i, 0, p[i]);
                         if (p[10] != 0.0f)
-                            entry.SetKeyframe(KeyFrameMode.ScaleX + 10, 0, p[10]);
+                            newEntry.SetKeyframe(KeyFrameMode.ScaleX + 10, 0, p[10]);
+
+                        kf = AnimationFrame.Empty;
+                        kf.forKeyframeSRT = true;
+                        kf.SetBool(index + 0x10, true);
+                        kf.Index = CurrentFrame - 1;
+                        pkf[index] = box.Value;
+
+                        int count = _mainWindow.pnlKeyframes.listKeyframes.Items.Count;
+                        for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.pnlKeyframes.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
+
+                        _mainWindow.pnlKeyframes.listKeyframes.Items.Insert(x, kf);
+                        _mainWindow.pnlKeyframes.listKeyframes.SelectedIndex = x;
 
                         //Finally, replace with the changed value
-                        entry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
+                        newEntry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
                     }
                 }
                 else //Set to existing SRT0 texture 
                     if (float.IsNaN(box.Value))
-                        entry.RemoveKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1);
+                    {
+                        //Value removed, find keyframe and zero it out
+                        if (kfIndex >= 0)
+                        {
+                            kf = (AnimationFrame)_mainWindow.pnlKeyframes.listKeyframes.Items[kfIndex];
+                            kf.forKeyframeSRT = true;
+                            kf.SetBool(index + 0x10, false);
+                            pkf[index] = box.Value;
+
+                            for (x = 0; (x < 9) && (float.IsNaN(pkf[x]) || !kf.GetBool(x + 0x10)); x++) ;
+                            if (x == 9)
+                            {
+                                _mainWindow.pnlKeyframes.listKeyframes.Items.RemoveAt(kfIndex);
+                                _mainWindow.pnlKeyframes.listKeyframes.SelectedIndex = -1;
+                            }
+                            else
+                                _mainWindow.pnlKeyframes.listKeyframes.Items[kfIndex] = kf;
+                        }
+                        TexEntry.RemoveKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1);
+                    }
                     else
-                        entry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
+                    {
+                        TexEntry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
+                        if (kfIndex >= 0)
+                        {
+                            kf = (AnimationFrame)_mainWindow.pnlKeyframes.listKeyframes.Items[kfIndex];
+                            kf.forKeyframeSRT = true;
+                            kf.SetBool(index + 0x10, true);
+                            pkf[index] = box.Value;
+                            _mainWindow.pnlKeyframes.listKeyframes.Items[kfIndex] = kf;
+                        }
+                        else
+                        {
+                            kf = AnimationFrame.Empty;
+                            kf.forKeyframeSRT = true;
+                            kf.SetBool(index + 0x10, true);
+                            kf.Index = CurrentFrame - 1;
+                            pkf[index] = box.Value;
+
+                            int count = _mainWindow.pnlKeyframes.listKeyframes.Items.Count;
+                            for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.pnlKeyframes.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
+
+                            _mainWindow.pnlKeyframes.listKeyframes.Items.Insert(x, kf);
+                            _mainWindow.pnlKeyframes.listKeyframes.SelectedIndex = x;
+                        }
+                    }
             }
             else
             {
                 //Change base transform
-                FrameState state = mr._bindState;
+                FrameState state = TargetTexRef._bindState;
                 float* p = (float*)&state;
                 p[index] = float.IsNaN(box.Value) ? (index > 2 ? 0.0f : 1.0f) : box.Value;
-                mr._bindState = state;
+                TargetTexRef._bindState = state;
                 //mr.RecalcBindState();
-                mr.SignalPropertyChange();
+                TargetTexRef.SignalPropertyChange();
             }
             TargetModel.ApplySRT(SelectedAnimation, CurrentFrame);
             ResetBox(index);
@@ -972,7 +1061,7 @@ namespace System.Windows.Forms
             if (SelectedAnimation == null || type == 0)
                 return;
 
-            EditDialog ed = new EditDialog();
+            EditAllKeyframesDialog ed = new EditAllKeyframesDialog();
             ed.ShowDialog(null, (KeyFrameMode)type, SelectedAnimation.FindChild(TargetTexRef.Name, false) as CHR0EntryNode);
             ResetBox(type - 0x10);
             _mainWindow.UpdateModel();
@@ -1066,6 +1155,20 @@ namespace System.Windows.Forms
 
             SelectedAnimation.DeleteKeyframe(CurrentFrame - 1);
             _mainWindow.SRT0StateChanged(this, null);
+        }
+
+        private void btnClearFrame_Click(object sender, EventArgs e)
+        {
+            BoxChangedCreateUndo(this, null);
+
+            for (int i = 0; i < 9; i++)
+            {
+                if (i == 2 || i == 4 || i == 5 || i == 8)
+                    continue;
+
+                _transBoxes[i].Value = float.NaN;
+                BoxChanged(_transBoxes[i], null);
+            }
         }
     }
 }

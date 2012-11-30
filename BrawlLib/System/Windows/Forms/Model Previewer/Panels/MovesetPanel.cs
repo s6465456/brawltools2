@@ -1227,7 +1227,7 @@ namespace System.Windows.Forms
 
                         node = null;
 
-                        _mainMoveset.Populate();
+                        _mainMoveset.Populate(0);
 
                         if (_mainMoveset.data.misc.hurtBoxes != null)
                         {
@@ -1268,7 +1268,7 @@ namespace System.Windows.Forms
                     else
                         MessageBox.Show(this, "Unable to recognize input file.");
                 }
-                catch (Exception x) { MessageBox.Show(this, x.ToString()); _updating = false; }
+                //catch (Exception x) { MessageBox.Show(this, x.ToString()); _updating = false; }
                 finally
                 {
                     if (node != null)

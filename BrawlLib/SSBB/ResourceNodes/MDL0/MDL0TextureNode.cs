@@ -108,11 +108,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public PLT0Node palette = null;
-        internal unsafe void Prepare(MDL0MaterialRefNode mRef, int shaderProgramHandle, TKContext ctx)
+        internal unsafe void Prepare(MDL0MaterialRefNode mRef, int shaderProgramHandle)
         {
-            //if (_context == null)
-            //    _context = ctx;
-
             if (mRef.PaletteNode != null)
                 palette = mRef.RootNode.FindChild("Palettes(NW4R)/" + mRef.Palette, true) as PLT0Node;
             else palette = null;
@@ -120,9 +117,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             try
             {
                 if (Texture != null)
-                    Texture.Bind(mRef.Index, shaderProgramHandle, ctx);
+                    Texture.Bind(mRef.Index, shaderProgramHandle, _context);
                 else
-                    Load(mRef.Index, shaderProgramHandle, palette, ctx);
+                    Load(mRef.Index, shaderProgramHandle, palette);
             }
             catch { }
 
@@ -213,12 +210,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_context == null)
                 return;
 
-            //_context.Capture();
+            _context.Capture();
             Load();
         }
 
-        private unsafe void Load() { Load(-1, -1, null, null); }
-        private unsafe void Load(int index, int program, PLT0Node palette, TKContext ctx)
+        private unsafe void Load() { Load(-1, -1, null); }
+        private unsafe void Load(int index, int program, PLT0Node palette)
         {
             if (_context == null)
                 return;
@@ -228,7 +225,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (Texture != null)
                 Texture.Delete();
             Texture = new GLTexture(0, 0);
-            Texture.Bind(index, program, ctx);
+            Texture.Bind(index, program, _context);
 
             //ctx._states[String.Format("{0}_TexRef", Name)] = Texture;
 

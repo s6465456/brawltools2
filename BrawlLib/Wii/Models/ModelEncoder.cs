@@ -189,8 +189,10 @@ namespace BrawlLib.Wii.Models
                                     p._elementIndices[x] = (short)aList.Count;
 
                                     if (form != null)
+                                    {
                                         form.Say("Encoding " + str + (x - aInd) + " for Object " + i + ": " + p.Name);
-                                    
+                                        form.Update(form.current++);
+                                    }
                                     switch (aInd)
                                     {
                                         case 0:
@@ -901,6 +903,7 @@ namespace BrawlLib.Wii.Models
                     }
 
             //Palettes
+            if (palGrp == null) return;
             list = palGrp.Children;
             list.Sort(); //Alphabetical order
             if (pDecGroup != null)

@@ -159,7 +159,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal static ResourceNode TryParse(DataSource source) { return ((VIS0v3*)source.Address)->_header._tag == VIS0v3.Tag ? new VIS0Node() : null; }
     }
 
-    public unsafe class VIS0EntryNode : ResourceNode
+    public unsafe class VIS0EntryNode : ResourceNode, IBoolArrayNode
     {
         internal VIS0Entry* Header { get { return (VIS0Entry*)WorkingUncompressed.Address; } }
 
@@ -238,12 +238,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public bool GetEntry(int index)
         {
             int i = index >> 3;
+            if (i >= _data.Length) return false;
             int bit = 1 << (7 - (index & 0x7));
             return (_data[i] & bit) != 0;
         }
         public void SetEntry(int index, bool value)
         {
             int i = index >> 3;
+            if (i >= _data.Length) return;
             int bit = 1 << (7 - (index & 0x7));
             int mask = ~bit;
             _data[i] = (byte)((_data[i] & mask) | (value ? bit : 0));

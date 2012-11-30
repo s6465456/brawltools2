@@ -18,15 +18,25 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal int _numFrames = 1, _origPathOffset, _loop, _version = 3;
 
+        [Browsable(false)]
+        public override int tFrameCount
+        {
+            get { return (int)FrameCount; }
+            set { FrameCount = (ushort)value; }
+        }
+
+        [Browsable(false)]
+        public override bool tLoop { get { return Loop; } set { Loop = value; } }
+
         [Category("CLR0")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
         [Category("CLR0")]
-        public uint FrameCount
+        public int FrameCount
         {
-            get { return (uint)_numFrames; }
+            get { return _numFrames; }
             set
             {
-                _numFrames = (int)value;
+                _numFrames = value;
                 foreach (CLR0MaterialNode n in Children)
                     foreach (CLR0MaterialEntryNode e in n.Children)
                         e.NumEntries = _numFrames + 1;
@@ -73,7 +83,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             entry._target = EntryTarget.Color0;
             entry._name = entry._target.ToString();
             entry._numEntries = -1;
-            entry.NumEntries = _numFrames + 1;
+            entry.NumEntries = _numFrames;
+            entry.Constant = true;
+            entry.SolidColor = new ARGBPixel();
             node.Name = this.FindName(null);
             this.AddChild(node);
             node.AddChild(entry);
@@ -208,11 +220,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _entries = new List<int>();
 
             for (int i = 0; i < 11; i++)
-            {
-                EntryFlag flag = (EntryFlag)((uint)_flags >> i * 2);
-                if (((uint)flag & 1) != 0)
+                if ((((uint)_flags >> i * 2) & 1) != 0) 
                     _entries.Add(i);
-            }
 
             return _entries.Count > 0;
         }
@@ -241,7 +250,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             entry._target = (EntryTarget)value;
             entry._name = entry._target.ToString();
             entry._numEntries = -1;
-            entry.NumEntries = ((CLR0Node)Parent)._numFrames + 1;
+            entry.NumEntries = ((CLR0Node)Parent)._numFrames;
             AddChild(entry);
         }
     }
@@ -262,7 +271,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     _constant = value;
                     if (_constant)
-                        MakeSolid(new ARGBPixel());
+                        MakeSolid(_solidColor);
                     else
                         MakeList();
                 }
@@ -292,7 +301,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public List<ARGBPixel> Colors { get { return _colors; } set { _colors = value; SignalPropertyChange(); } }
 
-        internal ARGBPixel _solidColor;
+        internal ARGBPixel _solidColor = new ARGBPixel();
         [Browsable(false)]
         public ARGBPixel SolidColor { get { return _solidColor; } set { _solidColor = value; SignalPropertyChange(); } }
 
@@ -331,7 +340,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else
             {
-                _numEntries = ((CLR0Node)_parent._parent)._numFrames + 1;
+                _numEntries = ((CLR0Node)_parent._parent)._numFrames;
                 ABGRPixel* data = Header->Data;
                 for (int i = 0; i < _numEntries; i++)
                     _colors.Add((ARGBPixel)(*data++));
@@ -352,7 +361,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void MakeList()
         {
             _constant = false;
-            int entries = ((CLR0Node)_parent._parent)._numFrames + 1;
+            int entries = ((CLR0Node)_parent._parent)._numFrames;
             _numEntries = _colors.Count;
             NumEntries = entries;
         }
@@ -365,20 +374,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region IColorSource Members
 
+        public bool HasPrimary(int id) { return true; }
+        public ARGBPixel GetPrimaryColor(int id) { return _colorMask; }
+        public void SetPrimaryColor(int id, ARGBPixel color) { _colorMask = color; SignalPropertyChange(); }
         [Browsable(false)]
-        public bool HasPrimary { get { return true; } }
+        public string PrimaryColorName(int id) { return "Mask:"; }
         [Browsable(false)]
-        public ARGBPixel PrimaryColor
-        {
-            get { return _colorMask; }
-            set { _colorMask = value; SignalPropertyChange(); }
-        }
-        [Browsable(false)]
-        public string PrimaryColorName { get { return "Mask:"; } }
-        [Browsable(false)]
-        public int ColorCount { get { return (_numEntries == 0) ? 1 : _numEntries; } }
-        public ARGBPixel GetColor(int index) { return (_numEntries == 0) ? _solidColor : _colors[index]; }
-        public void SetColor(int index, ARGBPixel color)
+        public int ColorCount(int id) { return (_numEntries == 0) ? 1 : _numEntries; }
+        public ARGBPixel GetColor(int index, int id) { return (_numEntries == 0) ? _solidColor : _colors[index]; }
+        public void SetColor(int index, int id, ARGBPixel color)
         {
             if (_numEntries == 0)
                 _solidColor = color;

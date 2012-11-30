@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using BrawlLib.SSBBTypes;
 using System.Windows.Forms;
+using BrawlLib.SSBB.ResourceNodes;
 
 namespace BrawlLib.Wii.Compression
 {
@@ -35,8 +36,10 @@ namespace BrawlLib.Wii.Compression
 
                 switch (cmpr->Algorithm)
                 {
-                    case CompressionType.LZ77: return true;
-                    //case CompressionType.RunLength: return true;
+                    case CompressionType.LZ77:
+                    case CompressionType.Huffman: 
+                    case CompressionType.RunLength: 
+                        return true;
                     default: return false;
                 }
             }
@@ -46,22 +49,25 @@ namespace BrawlLib.Wii.Compression
             switch (header->Algorithm)
             {
                 case CompressionType.LZ77: { LZ77.Expand(header, dstAddr, dstLen); break; }
-                case CompressionType.Huffman:
                 case CompressionType.RunLength: { RunLength.Expand(header, dstAddr, dstLen); break; }
-                case CompressionType.Differential:
+                case CompressionType.Huffman: { CXSecureDecompression.CXSecureUncompressHuffman(header, dstAddr, dstLen); break; }
+                case CompressionType.Differential: { CXSecureDecompression.CXSecureUnfilterDiff(header, dstAddr, dstLen); break; }
                 default:
                     throw new InvalidCompressionException("Unknown compression type.");
             }
+            //int i = 0;
+            //if ((i = CXSecureDecompression.CXSecureUncompressAny((VoidPtr)header, (uint)dstLen, dstAddr)) < 0)
+            //    throw new InvalidCompressionException(((CX.ERR)i).ToString());
         }
         public static void Expand(YAZ0* header, VoidPtr dstAddr, int dstLen)
         {
             RunLength.ExpandYAZ0(header, dstAddr, dstLen);
         }
-        internal static unsafe void Compact(CompressionType type, VoidPtr srcAddr, int srcLen, Stream outStream)
+        internal static unsafe void Compact(CompressionType type, VoidPtr srcAddr, int srcLen, Stream outStream, ResourceNode r)
         {
             switch (type)
             {
-                case CompressionType.LZ77: { LZ77.Compact(srcAddr, srcLen, outStream, null); break; }
+                case CompressionType.LZ77: { LZ77.Compact(srcAddr, srcLen, outStream, r); break; }
             }
         }
 

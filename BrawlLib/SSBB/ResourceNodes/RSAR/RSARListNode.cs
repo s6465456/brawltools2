@@ -31,7 +31,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 case 0: t = typeof(RSARSoundNode); break;
                 case 1: t = typeof(RSARBankNode); break;
-                case 2: t = typeof(RSARTypeNode); break;
+                case 2: t = typeof(RSARPlayerInfoNode); break;
                 case 3: t = typeof(RSARFileNode); break;
                 case 4: t = typeof(RSARGroupNode); break;
                 default: return;

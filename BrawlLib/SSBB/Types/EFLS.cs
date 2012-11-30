@@ -45,7 +45,7 @@ namespace BrawlLib.SSBBTypes
 
         public bshort _brresID1; //-1 if no brres, otherwise brres ID
         public bshort _brresID2; //brres ID
-        public bint _stringOffset; //From file, 0 is empty string?
+        public bint _stringOffset; //From file, 0 is empty string
         public bint _re3dOffset; //From file
         public int _unk;
 

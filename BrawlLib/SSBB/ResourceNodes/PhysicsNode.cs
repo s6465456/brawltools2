@@ -74,6 +74,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
+        public int ChildCount { get { return Children.Count; } }
+
         [Category("Offsets")]
         public int Unknown { get { return Header._unk0; } }
         [Category("Offsets")]
@@ -134,12 +136,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<VoidPtr> _indexAddrs;
         public List<uint> _counts;
         
-        public List<int>[] _indices;
-        public int[] Indices1 { get { return _indices[0].ToArray(); } }
-        public int[] Indices2 { get { return _indices[1].ToArray(); } }
-        public int[] Indices3 { get { return _indices[2].ToArray(); } }
-        public int[] Indices4 { get { return _indices[3].ToArray(); } }
-        public int[] Indices5 { get { return _indices[4].ToArray(); } }
+        public int[][] _indices;
+        public int[][] Indices { get { return _indices; } }
 
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
@@ -171,57 +169,76 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _indexAddrs = new List<VoidPtr>();
             _counts = new List<uint>();
-            _indices = new List<int>[5];
-
-            _indices[1] = new List<int>();
-            _indices[2] = new List<int>();
-            _indices[0] = new List<int>();
-            _indices[4] = new List<int>();
-            _indices[3] = new List<int>();
+            _indices = new int[0][];
 
             if (Offset2 - Offset1 != 0)
             {
                 _indexAddrs.Add(Base + Offset1);
                 _counts.Add((Offset2 - Offset1) / 4);
+                Array.Resize(ref _indices, _indices.Length + 1);
+                //Array.Resize(ref _indices[_indices.Length - 1], (int)_counts[_counts.Count - 1]);
             }
             if (Offset3 - Offset2 != 0)
             {
                 _indexAddrs.Add(Base + Offset2);
                 _counts.Add((Offset3 - Offset2) / 4);
+                Array.Resize(ref _indices, _indices.Length + 1);
+                //Array.Resize(ref _indices[_indices.Length - 1], (int)_counts[_counts.Count - 1]);
             }
             if (Offset4 - Offset3 != 0)
             {
                 _indexAddrs.Add(Base + Offset3);
                 _counts.Add((Offset4 - Offset3) / 4);
+                Array.Resize(ref _indices, _indices.Length + 1);
+                //Array.Resize(ref _indices[_indices.Length - 1], (int)_counts[_counts.Count - 1]);
             }
             if (Offset5 - Offset4 != 0)
             {
                 _indexAddrs.Add(Base + Offset4);
                 _counts.Add((Offset5 - Offset4) / 4);
+                Array.Resize(ref _indices, _indices.Length + 1);
+                //Array.Resize(ref _indices[_indices.Length - 1], (int)_counts[_counts.Count - 1]);
             }
             if (DataLength - Offset5 != 0)
             {
                 _indexAddrs.Add(Base + Offset5);
                 _counts.Add((DataLength - Offset5) / 4);
+                Array.Resize(ref _indices, _indices.Length + 1);
+                //Array.Resize(ref _indices[_indices.Length - 1], (int)_counts[_counts.Count - 1]);
             }
-            int i = 0;
+            int z = 0, m = 0;
             foreach (VoidPtr ptr in _indexAddrs)
             {
+                m = 0;
                 bint* addr = (bint*)ptr;
-                for (int x = 0; x < _counts[i]; x++) 
+                for (int x = 0; x < _counts[z]; x++) 
                 {
                     if (*addr != -1)
-                        _indices[i].Add(*addr); 
+                    {
+                        Array.Resize(ref _indices[z], m + 1);
+                        _indices[z][m++] = *addr;
+                    }
                     addr++; 
                 }
-                i++;
+                z++;
             }
-            return false;
+            //if (Index == 1 && _indices.Length > 0 && _indices[0].Length != Parent.Children[0].Children.Count)
+            //    Console.WriteLine();
+            if (_indices.Length > 1 && _indices[1].Length % 3 != 0)
+                Console.WriteLine();
+            if (_indices.Length > 2 && _indices[2].Length % 3 != 0)
+                Console.WriteLine();
+            return true;
         }
 
         protected override void OnPopulate()
         {
-
+            for (int i = 0; i < _indices[1].Length / 3; i++)
+            {
+                //if (_indices[2][i * 3] != _indices[1][i * 3 + 2])
+                //    Console.WriteLine();
+                new RawDataNode("Entry" + i).Initialize(this, Base + _indices[1][i * 3], 0);
+            }
         }
 
         protected override int OnCalculateSize(bool force)
@@ -240,16 +257,34 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal PhysicsClassName* Header { get { return (PhysicsClassName*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
-        int _value;
+        Bin32 _value;
         byte _unk2;
-        public int Unk1 { get { return _value; } set { _value = value; SignalPropertyChange(); } }
+        [TypeConverter(typeof(Bin32StringConverter))]
+        public Bin32 Unk1 { get { return _value; } set { _value = value; SignalPropertyChange(); } }
         public byte Unk2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
 
         protected override bool OnInitialize()
         {
             _name = Header->_value;
-            _value = Header->_unk1;
+            _value = new Bin32(Header->_unk1);
             _unk2 = Header->_unk2;
+            return false;
+        }
+    }
+
+    public unsafe class PhysicsVectorNode : ResourceNode
+    {
+        internal PhysicsVector* Header { get { return (PhysicsVector*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+
+        int x, y, z;
+
+        public int X { get { return x; } set { x = value; SignalPropertyChange(); } }
+        public int Y { get { return y; } set { y = value; SignalPropertyChange(); } }
+        public int Z { get { return z; } set { z = value; SignalPropertyChange(); } }
+
+        protected override bool OnInitialize()
+        {
             return false;
         }
     }

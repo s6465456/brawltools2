@@ -156,7 +156,6 @@ namespace BrawlLib.Wii.Models
                 foreach (BoneWeight w in _weights)
                     if (w.Bone != null)
                         _matrix += (w.Bone.Matrix * w.Bone.InverseBindMatrix) * w.Weight;
-                _invMatrix = _matrix.Inverse();
             }
             else if (_weights.Length == 1)
             {

@@ -154,23 +154,22 @@ namespace BrawlLib.Modeling
          */
         static ACTC_var incVertexValence(ref ACTCData tc, uint v, out ACTCVertex found)
         {
-            ACTCVertex vertex;
-            found = null;
+            found = new ACTCVertex();
             if (tc.UsingStaticVerts == 1)
             {
-                vertex = tc.StaticVerts[v];
-                vertex.Count++;
-                if (vertex.Count == 1)
+                found = tc.StaticVerts[v];
+                found.Count++;
+                if (found.Count == 1)
                 {
-                    vertex.V = v;
+                    found.V = v;
                     tc.VertexCount++;
                 }
             }
             else
             {
-                if (tableRetrieve(v, tc.Vertices, out vertex) == 1)
+                if (tableRetrieve(v, tc.Vertices, out found) == 1)
                 {
-                    if (vertex.V != v)
+                    if (found.V != v)
                     {
                         //(int)ACTC_.DEBUG(
                         //    fprintf(stderr, "ACTC::incVertexValence : Got vertex %d when "
@@ -179,17 +178,17 @@ namespace BrawlLib.Modeling
                         //)
                         return tc.Error = ACTC_var.DATABASE_CORRUPT;
                     }
-                    vertex.Count++;
+                    found.Count++;
                 }
                 else
                 {
                     ////chartedSetLabel("new Vertex");
-                    vertex = new ACTCVertex();
-                    vertex.V = v;
-                    vertex.Count = 1;
-                    vertex.Edges = new ACTCEdge[0];
+                    found = new ACTCVertex();
+                    found.V = v;
+                    found.Count = 1;
+                    found.Edges = new ACTCEdge[0];
                     //vertex.Edges.Length = 0;
-                    if (tableInsert(v, ref tc.Vertices, vertex) == 0)
+                    if (tableInsert(v, ref tc.Vertices, found) == 0)
                     {
                         //(int)ACTC_.DEBUG(fprintf(stderr, "ACTC::incVertexValence : Failed "
                         //    "to insert vertex into table\n");)
@@ -199,10 +198,8 @@ namespace BrawlLib.Modeling
                 }
             }
 
-            if (vertex.Count > tc.CurMaxVertValence)
-                tc.CurMaxVertValence = vertex.Count;
-
-            found = vertex;
+            if (found.Count > tc.CurMaxVertValence)
+                tc.CurMaxVertValence = found.Count;
 
             return ACTC_var.NO_ERROR;
         }

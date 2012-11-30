@@ -14,12 +14,12 @@ namespace PowerPcAssembly
     {
         const int RowHeight = 16;
 
-        public RELSectionNode _section;
+        public RELDataNode _section;
         [Browsable(false)]
-        public RELSectionNode Section
+        public RELDataNode Section
         {
             get { return _section; }
-            set { _section = value; Source = _section.CodeList; }
+            set { _section = value; if (_section != null) Source = _section.CodeList; }
         }
 
         public event EventHandler IndexChanged;

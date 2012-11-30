@@ -151,4 +151,38 @@ namespace BrawlLib.SSBBTypes
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct VirtualFunctionTable
+    {
+        public buint Declaration;
+        public bint ScopeLevel;
+
+        public buint* Functions { get { return (buint*)(Address + 8); } } 
+        //(no termination)
+
+        private VoidPtr Address { get { fixed (void* p = &this)return p; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct Declaration
+    {
+        public buint NameOffset;
+        public bint InheritanceOffset;
+
+        public string Name { get { return new String((sbyte*)Address + NameOffset); } }
+        public Inheritance* Inheritance { get { return (Inheritance*)(Address + InheritanceOffset); } }
+        //(0x00000000 terminated)
+
+        private VoidPtr Address { get { fixed (void* p = &this)return p; } }
+    }
+    
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct Inheritance
+    {
+        public buint Declaration;
+        public bint ScopeLevel;
+
+        private VoidPtr Address { get { fixed (void* p = &this)return p; } }
+    }
 }
