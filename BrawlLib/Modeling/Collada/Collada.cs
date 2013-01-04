@@ -185,7 +185,7 @@ namespace BrawlLib.Modeling
 
             writer.WriteStartElement("library_geometries");
 
-            foreach (MDL0PolygonNode poly in grp.Children)
+            foreach (MDL0ObjectNode poly in grp.Children)
             {
                 PrimitiveManager manager = poly._manager;
 
@@ -475,7 +475,7 @@ namespace BrawlLib.Modeling
             writer.WriteEndElement(); //source
         }
 
-        private static unsafe void WritePrimitive(MDL0PolygonNode poly, NewPrimitive prim, XmlWriter writer)
+        private static unsafe void WritePrimitive(MDL0ObjectNode poly, NewPrimitive prim, XmlWriter writer)
         {
             PrimitiveManager manager = poly._manager;
             int count;
@@ -504,8 +504,8 @@ namespace BrawlLib.Modeling
             }
             count = prim._elementCount / stride;
 
-            if (poly._material != null)
-                writer.WriteAttributeString("material", poly._material.Name);
+            if (poly._opaMaterial != null)
+                writer.WriteAttributeString("material", poly._opaMaterial.Name);
 
             writer.WriteAttributeString("count", count.ToString());
 
@@ -599,7 +599,7 @@ namespace BrawlLib.Modeling
             Matrix m;
             bool first;
 
-            foreach (MDL0PolygonNode poly in model._polyList)
+            foreach (MDL0ObjectNode poly in model._polyList)
             {
                 List<Vertex3> verts = poly._manager._vertices;
 
@@ -872,7 +872,7 @@ namespace BrawlLib.Modeling
                     WriteBone(bone, writer);
 
             if (model._polyList != null)
-                foreach (MDL0PolygonNode poly in model._polyList)
+                foreach (MDL0ObjectNode poly in model._polyList)
                     //if (poly._singleBind == null) //Single bind objects will be written under their bone
                         WritePolyInstance(poly, writer);
         }
@@ -908,7 +908,7 @@ namespace BrawlLib.Modeling
             writer.WriteEndElement(); //node
         }
 
-        private static void WritePolyInstance(MDL0PolygonNode poly, XmlWriter writer)
+        private static void WritePolyInstance(MDL0ObjectNode poly, XmlWriter writer)
         {
             writer.WriteStartElement("node");
             writer.WriteAttributeString("id", poly.Name);
@@ -930,15 +930,15 @@ namespace BrawlLib.Modeling
             //writer.WriteString("#" + poly.Model._linker.BoneCache[0].Name);
             //writer.WriteEndElement();
 
-            if (poly._material != null)
+            if (poly._opaMaterial != null)
             {
                 writer.WriteStartElement("bind_material");
                 writer.WriteStartElement("technique_common");
                 writer.WriteStartElement("instance_material");
-                writer.WriteAttributeString("symbol", poly._material.Name);
-                writer.WriteAttributeString("target", "#" + poly._material.Name);
+                writer.WriteAttributeString("symbol", poly._opaMaterial.Name);
+                writer.WriteAttributeString("target", "#" + poly._opaMaterial.Name);
 
-                foreach (MDL0MaterialRefNode mr in poly._material.Children)
+                foreach (MDL0MaterialRefNode mr in poly._opaMaterial.Children)
                 {
                     writer.WriteStartElement("bind_vertex_input");
                     writer.WriteAttributeString("semantic", "TEXCOORD" + (mr.TextureCoordId < 0 ? 0 : mr.TextureCoordId)); //Replace with true set id

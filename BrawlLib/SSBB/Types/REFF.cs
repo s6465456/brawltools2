@@ -14,7 +14,7 @@ namespace BrawlLib.SSBBTypes
 
         public const uint Tag = 0x46464552;
 
-        public SSBBCommonHeader _header;
+        public NW4RCommonHeader _header;
         public uint _tag; //Same as header
         public bint _dataLength; //Size of second REFF block. (file size - 0x18)
         public bint _dataOffset; //Offset from itself. Begins first entry
@@ -118,15 +118,15 @@ namespace BrawlLib.SSBBTypes
 
         public ParticleParameterHeader* _params { get { return (ParticleParameterHeader*)(Address + _headerSize + 8); } }
 
-        public bshort* _ptclTrackCount { get { return (bshort*)((VoidPtr)_params + _params->headersize + 4); } }
-        public bshort* _ptclInitTrackCount { get { return _ptclTrackCount + 1; } }
-        public bshort* _emitTrackCount { get { return (bshort*)((VoidPtr)_ptclTrackCount + 4 + *_ptclTrackCount * 8); } }
-        public bshort* _emitInitTrackCount { get { return _emitTrackCount + 1; } }
+        public bushort* _ptclTrackCount { get { return (bushort*)((VoidPtr)_params + _params->headersize + 4); } }
+        public bushort* _ptclInitTrackCount { get { return _ptclTrackCount + 1; } }
+        public bushort* _emitTrackCount { get { return (bushort*)((VoidPtr)_ptclTrackCount + 4 + *_ptclTrackCount * 8); } }
+        public bushort* _emitInitTrackCount { get { return _emitTrackCount + 1; } }
 
         public buint* _ptclTrack { get { return (buint*)((VoidPtr)_ptclTrackCount + 4); } }
         public buint* _emitTrack { get { return (buint*)((VoidPtr)_emitTrackCount + 4); } }
 
-        public VoidPtr _postFieldInfo { get { return (VoidPtr)_emitTrackCount + 4 + *_emitTrackCount * 8; } }
+        public VoidPtr _animations { get { return (VoidPtr)_emitTrackCount + 4 + *_emitTrackCount * 8; } }
         
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }
@@ -282,10 +282,10 @@ namespace BrawlLib.SSBBTypes
             public VoidPtr Address { get { fixed (void* p = &this)return p; } }
         }
 
-        public byte mTevTexture1;
-        public byte mTevTexture2;
-        public byte mTevTexture3;
-        public byte mTevTexture4;
+        //public byte mTevTexture1;
+        //public byte mTevTexture2;
+        //public byte mTevTexture3;
+        //public byte mTevTexture4;
         public TevStageColor mTevColor1;
         public TevStageColor mTevColor2;
         public TevStageColor mTevColor3;
@@ -358,7 +358,7 @@ namespace BrawlLib.SSBBTypes
             public byte mTevKColor4;
         }
         public ColorInput mColorInput;
-        public ColorInput mAlphaInput;
+        //public ColorInput mAlphaInput;
 
         //Length below is 0x48
 
@@ -460,14 +460,14 @@ namespace BrawlLib.SSBBTypes
         // Stored in typeDir member.
         public enum Ahead
         {
-            AHEAD_SPEED = 0,                    // Velocity vector direction
-            AHEAD_EMITTER_CENTER,               // Relative position from the center of emitter
-            AHEAD_EMITTER_DESIGN,               // Emitter specified direction
-            AHEAD_PARTICLE,                     // Difference in location from the previous particle
-            AHEAD_USER,                         // User specified (unused)
-            AHEAD_NO_DESIGN,                    // Unspecified
-            AHEAD_PARTICLE_BOTH,                // Difference in position with both neighboring particles
-            AHEAD_NO_DESIGN2,                   // Unspecified (initialized as the world Y-axis)
+            Speed = 0,                   // Velocity vector direction
+            EmitterCenter,               // Relative position from the center of emitter
+            EmitterDesign,               // Emitter specified direction
+            Particle,                    // Difference in location from the previous particle
+            User,                        // User specified (unused)
+            NoDesign,                    // Unspecified
+            ParticleBoth,                // Difference in position with both neighboring particles
+            NoDesignYAxis,               // Unspecified (initialized as the world Y-axis)
         }
 
         // Movement direction (Y-axis) -- billboards
@@ -475,11 +475,11 @@ namespace BrawlLib.SSBBTypes
         // Stored in typeDir member.
         public enum BillboardAhead
         {
-            BILLBOARD_AHEAD_SPEED = 0,              // Velocity vector direction
-            BILLBOARD_AHEAD_EMITTER_CENTER,         // Relative position from the center of emitter
-            BILLBOARD_AHEAD_EMITTER_DESIGN,         // Emitter specified direction
-            BILLBOARD_AHEAD_PARTICLE,               // Difference in location from the previous particle
-            BILLBOARD_AHEAD_PARTICLE_BOTH,          // Difference in position with both neighboring particles
+            Speed = 0,              // Velocity vector direction
+            EmitterCenter,          // Relative position from the center of emitter
+            EmitterDesign,          // Emitter specified direction
+            Particle,               // Difference in location from the previous particle
+            ParticleBoth,           // Difference in position with both neighboring particles
         }
 
         // Rotational axis to take into account when rendering
@@ -487,10 +487,10 @@ namespace BrawlLib.SSBBTypes
         // Stored in typeAxis member.
         public enum RotateAxis
         {
-            ROTATE_AXIS_X = 0,          // X-axis rotation only
-            ROTATE_AXIS_Y,              // Y-axis rotation only
-            ROTATE_AXIS_Z,              // Z-axis rotation only
-            ROTATE_AXIS_XYZ,            // 3-axis rotation
+            OnlyX = 0,          // X-axis rotation only
+            OnlyY,              // Y-axis rotation only
+            OnlyZ,              // Z-axis rotation only
+            XYZ,                // 3-axis rotation
         }
 
         // Base surface (polygon render surface)
@@ -654,14 +654,29 @@ namespace BrawlLib.SSBBTypes
     {
         //Updates: ParticleParam
         Color0Primary = 0,
+        Unknown1 = 1,
+        Unknown2 = 2,
         Alpha0Primary = 3,
         Color0Secondary = 4,
+        Unknown5 = 5,
+        Unknown6 = 6,
         Alpha0Secondary = 7,
         Color1Primary = 8,
+        Unknown9 = 9,
+        Unknown10 = 10,
         Alpha1Primary = 11,
         Color1Secondary = 12,
+        Unknown13 = 13,
+        Unknown14 = 14,
         Alpha1Secondary = 15,
         Size = 16,
+        Unknown17 = 17,
+        Unknown18 = 18,
+        Unknown19 = 19,
+        Unknown20 = 20,
+        Unknown21 = 21,
+        Unknown22 = 22,
+        Unknown23 = 23,
         Scale = 24,
         ACMPref0 = 119,
         ACMPref1 = 120,
@@ -734,69 +749,69 @@ namespace BrawlLib.SSBBTypes
     {
         /* Update target: ParticleParam*/
         // curveFlag = 0(u8) or 3(f32)
-        AC_TARGET_COLOR0PRI = 0,
-        AC_TARGET_ALPHA0PRI = 3,
-        AC_TARGET_COLOR0SEC = 4,
-        AC_TARGET_ALPHA0SEC = 7,
-        AC_TARGET_COLOR1PRI = 8,
-        AC_TARGET_ALPHA1PRI = 11,
-        AC_TARGET_COLOR1SEC = 12,
-        AC_TARGET_ALPHA1SEC = 15,
-        AC_TARGET_SIZE = 16,
-        AC_TARGET_SCALE = 24,
-        AC_TARGET_ACMPREF0 = 119,
-        AC_TARGET_ACMPREF1 = 120,
-        AC_TARGET_TEXTURE1SCALE = 44,
-        AC_TARGET_TEXTURE1ROTATE = 68,
-        AC_TARGET_TEXTURE1TRANSLATE = 80,
-        AC_TARGET_TEXTURE2SCALE = 52,
-        AC_TARGET_TEXTURE2ROTATE = 72,
-        AC_TARGET_TEXTURE2TRANSLATE = 88,
-        AC_TARGET_TEXTUREINDSCALE = 60,
-        AC_TARGET_TEXTUREINDROTATE = 76,
-        AC_TARGET_TEXTUREINDTRANSLATE = 96,
+        COLOR0PRI = 0,
+        ALPHA0PRI = 3,
+        COLOR0SEC = 4,
+        ALPHA0SEC = 7,
+        COLOR1PRI = 8,
+        ALPHA1PRI = 11,
+        COLOR1SEC = 12,
+        ALPHA1SEC = 15,
+        SIZE = 16,
+        SCALE = 24,
+        ACMPREF0 = 119,
+        ACMPREF1 = 120,
+        TEXTURE1SCALE = 44,
+        TEXTURE1ROTATE = 68,
+        TEXTURE1TRANSLATE = 80,
+        TEXTURE2SCALE = 52,
+        TEXTURE2ROTATE = 72,
+        TEXTURE2TRANSLATE = 88,
+        TEXTUREINDSCALE = 60,
+        TEXTUREINDROTATE = 76,
+        TEXTUREINDTRANSLATE = 96,
 
         // curveFlag = 6 (3 when baking)
-        AC_TARGET_ROTATE = 32,
+        ROTATE = 32,
 
         //curveFlag = 4
-        AC_TARGET_TEXTURE1 = 104,
-        AC_TARGET_TEXTURE2 = 108,
-        AC_TARGET_TEXTUREIND = 112,
+        TEXTURE1 = 104,
+        TEXTURE2 = 108,
+        TEXTUREIND = 112,
 
         /* Update target: child*/
         //curveFlag = 5
-        AC_TARGET_CHILD = 0,
+        CHILD = 0,
 
         /* Update target: Field*/
         //curveFlag = 7
-        AC_TARGET_FIELD_GRAVITY = 0,
-        AC_TARGET_FIELD_SPEED = 1,
-        AC_TARGET_FIELD_MAGNET = 2,
-        AC_TARGET_FIELD_NEWTON = 3,
-        AC_TARGET_FIELD_VORTEX = 4,
-        AC_TARGET_FIELD_SPIN = 6,
-        AC_TARGET_FIELD_RANDOM = 7,
-        AC_TARGET_FIELD_TAIL = 8,
+        FIELD_GRAVITY = 0,
+        FIELD_SPEED = 1,
+        FIELD_MAGNET = 2,
+        FIELD_NEWTON = 3,
+        FIELD_VORTEX = 4,
+        FIELD_SPIN = 6,
+        FIELD_RANDOM = 7,
+        FIELD_TAIL = 8,
 
         /* Update target: PostFieldInfo::AnimatableParams*/
         //curveFlag = 2
-        AC_TARGET_POSTFIELD_SIZE = 0,
-        AC_TARGET_POSTFIELD_ROTATE = 12,
-        AC_TARGET_POSTFIELD_TRANSLATE = 24,
+        POSTFIELD_SIZE = 0,
+        POSTFIELD_ROTATE = 12,
+        POSTFIELD_TRANSLATE = 24,
 
         /* Update target: EmitterParam*/
         //curveFlag = 11 (all f32)
-        AC_TARGET_EMIT_COMMONPARAM = 44,
-        AC_TARGET_EMIT_SCALE = 124,
-        AC_TARGET_EMIT_ROTATE = 136,
-        AC_TARGET_EMIT_TRANSLATE = 112,
-        AC_TARGET_EMIT_SPEED_ORIG = 72,
-        AC_TARGET_EMIT_SPEED_YAXIS = 76,
-        AC_TARGET_EMIT_SPEED_RANDOM = 80,
-        AC_TARGET_EMIT_SPEED_NORMAL = 84,
-        AC_TARGET_EMIT_SPEED_SPECDIR = 92,
-        AC_TARGET_EMIT_EMISSION = 8
+        EMIT_COMMONPARAM = 44,
+        EMIT_SCALE = 124,
+        EMIT_ROTATE = 136,
+        EMIT_TRANSLATE = 112,
+        EMIT_SPEED_ORIG = 72,
+        EMIT_SPEED_YAXIS = 76,
+        EMIT_SPEED_RANDOM = 80,
+        EMIT_SPEED_NORMAL = 84,
+        EMIT_SPEED_SPECDIR = 92,
+        EMIT_EMISSION = 8
     };
 
     public enum AnimCurveType

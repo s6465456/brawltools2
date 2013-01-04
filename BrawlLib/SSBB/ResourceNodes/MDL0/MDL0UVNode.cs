@@ -11,8 +11,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal MDL0UVData* Header { get { return (MDL0UVData*)WorkingUncompressed.Address; } }
         //protected override int DataLength { get { return Header->_dataLen; } }
 
-        public MDL0PolygonNode[] Objects { get { return _polygons.ToArray(); } }
-        internal List<MDL0PolygonNode> _polygons = new List<MDL0PolygonNode>();
+        public MDL0ObjectNode[] Objects { get { return _polygons.ToArray(); } }
+        internal List<MDL0ObjectNode> _polygons = new List<MDL0ObjectNode>();
 
         //[Category("UV Data")]
         //public int TotalLen { get { return Header->_dataLen; } }

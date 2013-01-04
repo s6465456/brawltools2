@@ -30,10 +30,22 @@ namespace BrawlLib.SSBB.ResourceNodes
                     (e = new U8FolderNode() { index = i, _name = new String(table + (int)entry->_stringOffset) }).Initialize(this, entry, 12);
                     nodes.Add(e);
                 }
-                else
-                {
+                else                {
                     if ((entry->_dataLength == 0) || (e = NodeFactory.FromAddress(this, (VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength) as ARCEntryNode) == null)
-                        (e = new U8EntryNode()).Initialize(this, (VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength);
+                    {
+                        VoidPtr addr = (VoidPtr)Header + entry->_dataOffset;
+                        CompressionHeader* cmpr = (CompressionHeader*)addr;
+                        if (cmpr->ExpandedSize >= entry->_dataLength && cmpr->Algorithm == CompressionType.LZ77)
+                        {
+                            //Expand the whole resource and initialize
+                            FileMap map = FileMap.FromTempFile(cmpr->ExpandedSize);
+                            Compressor.Expand(cmpr, map.Address, map.Length);
+                            DataSource source = new DataSource((VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength, cmpr->Algorithm);
+                            new ARCEntryNode().Initialize(this, source, new DataSource(map));
+                        }
+                        else
+                            (e = new ARCEntryNode()).Initialize(this, (VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength);
+                    }
                     e._name = new String(table + (int)entry->_stringOffset);
                     e.index = i;
                     e.parent = (int)entry->_dataOffset;

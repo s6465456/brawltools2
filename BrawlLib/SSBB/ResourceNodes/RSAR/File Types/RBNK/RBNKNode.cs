@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -17,6 +18,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         //    //foreach (RWSDDataNode node in Children[0].Children)
         //    //    builder.Add(0, node._name);
         //}
+
+        [Category("RBNK")]
+        public float Version { get { return _version; } }
+        private float _version;
 
         //Finds labels using LABL block between header and footer, also initializes array
         protected bool GetLabels(int count)
@@ -65,6 +70,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             base.OnInitialize();
 
+            _version = Header->_header.Version;
+
             ParseBlocks();
 
             return true;
@@ -73,7 +80,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override void OnPopulate()
         {
             new RBNKDataGroupNode().Initialize(this, Header->Data, Header->_dataLength);
-            new RBNKSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
+            if (Header->_waveOffset > 0)
+                new RBNKSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
         }
 
         private void ParseBlocks()
@@ -108,22 +116,22 @@ namespace BrawlLib.SSBB.ResourceNodes
             _headerLen = RBNKHeader.Size;
             foreach (ResourceNode g in Children)
                 _headerLen += g.CalculateSize(true);
-            //foreach (RWSDSoundNode s in Children[1].Children)
-            //    _audioLen += s._audioSource.Length;
+            foreach (WAVESoundNode s in Children[1].Children)
+                _audioLen += s._audioSource.Length;
 
-            return _headerLen + (_audioLen = _audioSource.Length);
+            return _headerLen + _audioLen;
         }
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address;
 
             RBNKHeader* header = (RBNKHeader*)address;
-            header->_header._length = length - _audioSource.Length;
+            header->_header._length = length;
             header->_header._tag = RBNKHeader.Tag;
             header->_header._numEntries = 2;
             header->_header._firstOffset = 0x20;
             header->_header._endian = -2;
-            header->_header._version = 0x102;
+            header->_header._version = 0x101;
             header->_dataOffset = 0x20;
             header->_dataLength = Children[0]._calcSize;
             header->_waveOffset = 0x20 + Children[0]._calcSize;
@@ -134,7 +142,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //VoidPtr audioAddr = addr;
             //foreach (ResourceNode e in Children)
             //    audioAddr += e._calcSize;
-            (Children[1] as RWSDSoundGroupNode)._audioAddr = _rebuildAudioAddr;
+            (Children[1] as RBNKSoundGroupNode)._audioAddr = _rebuildAudioAddr;
 
             Children[0].Rebuild(addr, Children[0]._calcSize, true);
             addr += Children[0]._calcSize;

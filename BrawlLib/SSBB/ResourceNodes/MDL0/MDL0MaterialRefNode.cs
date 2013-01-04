@@ -91,7 +91,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 bool allsinglebinds = true;
                 if (((MDL0MaterialNode)Parent).Objects != null)
                 {
-                    foreach (MDL0PolygonNode n in ((MDL0MaterialNode)Parent).Objects)
+                    foreach (MDL0ObjectNode n in ((MDL0MaterialNode)Parent).Objects)
                         if (n.Weighted)
                         {
                             allsinglebinds = false;
@@ -109,7 +109,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             set 
             {
                 bool changed = false;
-                foreach (MDL0PolygonNode n in ((MDL0MaterialNode)Parent).Objects)
+                foreach (MDL0ObjectNode n in ((MDL0MaterialNode)Parent).Objects)
                     if (n.Weighted)
                     {
                         n._vertexFormat.SetHasTexMatrix(Index, value);
@@ -222,14 +222,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     else
                         PaletteNode = null;
                 }
-                SignalPropertyChange();
             }
         }
         [Browsable(true), TypeConverter(typeof(DropDownListTextures))]
         public string Texture
         {
             get { return _texture == null ? null : _texture.Name; }
-            set { TextureNode = String.IsNullOrEmpty(value) ? null : Model.FindOrCreateTexture(value); }
+            set { TextureNode = String.IsNullOrEmpty(value) ? null : Model.FindOrCreateTexture(value); SignalPropertyChange(); }
         }
         #endregion
 
@@ -251,14 +250,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 if ((_palette = value) != null)
                     _palette._references.Add(this);
-                SignalPropertyChange();
             }
         }
         [Browsable(true), TypeConverter(typeof(DropDownListTextures))]
         public string Palette
         {
             get { return _palette == null ? null : _palette.Name; }
-            set { PaletteNode = String.IsNullOrEmpty(value) ? null : Model.FindOrCreatePalette(value); }
+            set { PaletteNode = String.IsNullOrEmpty(value) ? null : Model.FindOrCreatePalette(value); SignalPropertyChange(); }
         }
         #endregion
 
@@ -376,7 +374,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //    }
             //}
 
-            MDL0TexSRTData* TexSettings = ((MDL0MaterialNode)Parent).Header->TexMatrices(Model._version);
+            MDL0TexSRTData* TexSettings = ((MDL0MaterialNode)Parent).Header->TexMatrices(((MDL0MaterialNode)Parent)._initVersion);
             
             _texFlags = TexSettings->GetTexFlags(Index);
             _texMatrix = TexSettings->GetTexMatrices(Index);

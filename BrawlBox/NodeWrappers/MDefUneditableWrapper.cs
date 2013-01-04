@@ -8,7 +8,7 @@ using BrawlLib.SSBBTypes;
 
 namespace BrawlBox.NodeWrappers
 {
-    [NodeWrapper(ResourceType.MDefNoEdit)]
+    [NodeWrapper(ResourceType.NoEdit)]
     class MDefUneditableWrapper : GenericWrapper
     {
         private static ContextMenuStrip _menu;

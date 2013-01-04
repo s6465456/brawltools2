@@ -80,8 +80,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             _entryOffset = address;
-            *(buint*)address = v1.data;
-            *(buint*)(address + 4) = v2.data;
+            *(buint*)address = v1._data;
+            *(buint*)(address + 4) = v2._data;
         }
     }
 }

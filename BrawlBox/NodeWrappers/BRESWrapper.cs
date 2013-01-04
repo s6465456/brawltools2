@@ -122,7 +122,7 @@ namespace BrawlBox
                     dlg.ImageSource = path;
                     if (dlg.ShowDialog(MainForm.Instance, ResourceNode as BRESNode) == DialogResult.OK)
                     {
-                        BaseWrapper w = this.FindResource(dlg.TextureNode, true);
+                        BaseWrapper w = this.FindResource(dlg.TEX0TextureNode, true);
                         w.EnsureVisible();
                         w.TreeView.SelectedNode = w;
                     }

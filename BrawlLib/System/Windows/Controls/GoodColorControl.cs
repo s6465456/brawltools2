@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using BrawlLib.Imaging;
+using System.Drawing.Design;
 
 namespace System.Windows.Forms
 {

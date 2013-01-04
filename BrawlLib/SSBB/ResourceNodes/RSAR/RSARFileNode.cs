@@ -15,11 +15,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<RSARGroupNode> _groups = new List<RSARGroupNode>();
         public RSARGroupNode[] Groups { get { return _groups.ToArray(); } }
 
-        [Category("Data"), Browsable(true)]
-        public string DataLength { get { return WorkingUncompressed.Length.ToString("X"); } }
-        [Category("Data"), Browsable(true)]
-        public string AudioLength { get { return _audioSource.Length.ToString("X"); } }
-
         internal string _extPath;
         internal int _fileIndex;
         internal LabelItem[] _labels;
@@ -28,25 +23,37 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         [Category("File Node"), Browsable(true)]
         public int FileNodeIndex { get { return _fileIndex; } }
-        [Browsable(false)]
+        [Browsable(true)]
         public string ExtPath { get { return _extPath; } set { _extPath = value; SignalPropertyChange(); } }
-
-        [Category("Data"), Browsable(true)]
-        public string AudioOffset { get { if (RSARNode != null) return ((uint)(_audioSource.Address - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
+        [Browsable(true)]
+        public string FullExtPath
+        {
+            get { return ExtPath == null ? null : RootNode._origPath.Substring(0, RootNode._origPath.LastIndexOf('\\')) + "\\" + ExtPath.Replace('/', '\\'); }
+            set { _extPath = value.Substring(RootNode._origPath.Substring(0, RootNode._origPath.LastIndexOf('\\')).Length + 1).Replace('\\', '/'); SignalPropertyChange(); } 
+        }
+        [Browsable(true), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public FileInfo ExternalFileInfo
+        {
+            get { return FullExtPath == null ? null : new FileInfo(FullExtPath); }
+        }
 
         [Category("Data"), Browsable(true)]
         public string InfoHeaderOffset { get { if (RSARNode != null) return ((uint)(_infoHdr - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
         public VoidPtr _infoHdr;
 
+        [Category("Data"), Browsable(true)]
+        public string AudioLength { get { return _audioSource.Length.ToString("X"); } }
+        [Category("Data"), Browsable(true)]
+        public string AudioOffset { get { if (RSARNode != null) return ((uint)(_audioSource.Address - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
+        [Category("Data"), Browsable(true)]
+        public string DataLength { get { return WorkingUncompressed.Length.ToString("X"); } }
+
         protected virtual void GetStrings(LabelBuilder builder) { }
 
         public void GetExtSize()
         {
-            int t = Helpers.FindLast(RootNode._origPath, 0, '\\');
-            string p = RootNode._origPath.Substring(0, t) + "\\" + ExtPath.Replace("/", "\\");
-            FileInfo info = new FileInfo(p);
-            if (info.Exists)
-                _extFileSize = (uint)info.Length;
+            if (ExternalFileInfo.Exists)
+                _extFileSize = (uint)ExternalFileInfo.Length;
         }
 
         protected override bool OnInitialize()
@@ -60,7 +67,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        public VoidPtr _rebuildAudioAddr;
+        public VoidPtr _rebuildAudioAddr = null;
         public int _headerLen = 0, _audioLen = 0;
 
         public override unsafe void Export(string outPath)

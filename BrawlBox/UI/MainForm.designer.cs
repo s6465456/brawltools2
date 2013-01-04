@@ -39,6 +39,7 @@ namespace BrawlBox
             this.aRCArchiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.brresPackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bRStmAudioToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.u8FileArchiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -56,7 +57,6 @@ namespace BrawlBox
             this.scN0LightEditControl1 = new System.Windows.Forms.SCN0LightEditControl();
             this.scN0CameraEditControl1 = new System.Windows.Forms.SCN0CameraEditControl();
             this.animEditControl = new System.Windows.Forms.AnimEditControl();
-            this.relDisassembler1 = new PowerPcAssembly.RelDisassembler();
             this.offsetEditor1 = new System.Windows.Forms.OffsetEditor();
             this.shpAnimEditControl = new System.Windows.Forms.ShpAnimEditControl();
             this.texAnimEditControl = new System.Windows.Forms.TexAnimEditControl();
@@ -71,7 +71,7 @@ namespace BrawlBox
             this.msBinEditor1 = new System.Windows.Forms.MSBinEditor();
             this.previewPanel1 = new System.Windows.Forms.GoodPictureBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.u8FileArchiveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ppcDisassembler1 = new System.Windows.Forms.PPCDisassembler();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -174,6 +174,13 @@ namespace BrawlBox
             this.bRStmAudioToolStripMenuItem.Text = "Brstm Audio Stream";
             this.bRStmAudioToolStripMenuItem.Click += new System.EventHandler(this.bRStmAudioToolStripMenuItem_Click);
             // 
+            // u8FileArchiveToolStripMenuItem
+            // 
+            this.u8FileArchiveToolStripMenuItem.Name = "u8FileArchiveToolStripMenuItem";
+            this.u8FileArchiveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.u8FileArchiveToolStripMenuItem.Text = "U8 File Archive";
+            this.u8FileArchiveToolStripMenuItem.Click += new System.EventHandler(this.u8FileArchiveToolStripMenuItem_Click);
+            // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
@@ -270,11 +277,11 @@ namespace BrawlBox
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.ppcDisassembler1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0FogEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0LightEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0CameraEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.animEditControl);
-            this.splitContainer2.Panel2.Controls.Add(this.relDisassembler1);
             this.splitContainer2.Panel2.Controls.Add(this.offsetEditor1);
             this.splitContainer2.Panel2.Controls.Add(this.shpAnimEditControl);
             this.splitContainer2.Panel2.Controls.Add(this.texAnimEditControl);
@@ -334,19 +341,6 @@ namespace BrawlBox
             this.animEditControl.Size = new System.Drawing.Size(384, 169);
             this.animEditControl.TabIndex = 1;
             this.animEditControl.Visible = false;
-            // 
-            // relDisassembler1
-            // 
-            this.relDisassembler1.Address = ((uint)(0u));
-            this.relDisassembler1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.relDisassembler1.Index = 0;
-            this.relDisassembler1.Location = new System.Drawing.Point(0, 0);
-            this.relDisassembler1.Name = "relDisassembler1";
-            this.relDisassembler1.Section = null;
-            this.relDisassembler1.Size = new System.Drawing.Size(384, 169);
-            this.relDisassembler1.Source = null;
-            this.relDisassembler1.TabIndex = 10;
-            this.relDisassembler1.Visible = false;
             // 
             // offsetEditor1
             // 
@@ -457,12 +451,14 @@ namespace BrawlBox
             this.previewPanel1.Size = new System.Drawing.Size(98, 86);
             this.previewPanel1.TabIndex = 0;
             // 
-            // u8FileArchiveToolStripMenuItem
+            // ppcDisassembler1
             // 
-            this.u8FileArchiveToolStripMenuItem.Name = "u8FileArchiveToolStripMenuItem";
-            this.u8FileArchiveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.u8FileArchiveToolStripMenuItem.Text = "U8 File Archive";
-            this.u8FileArchiveToolStripMenuItem.Click += new System.EventHandler(this.u8FileArchiveToolStripMenuItem_Click);
+            this.ppcDisassembler1.Location = new System.Drawing.Point(0, 0);
+            this.ppcDisassembler1.Name = "ppcDisassembler1";
+            this.ppcDisassembler1.Size = new System.Drawing.Size(384, 169);
+            this.ppcDisassembler1.TabIndex = 14;
+            this.ppcDisassembler1.TargetNode = null;
+            this.ppcDisassembler1.Visible = false;
             // 
             // MainForm
             // 
@@ -529,11 +525,11 @@ namespace BrawlBox
         private AttributeGrid attributeControl;
         private OffsetEditor offsetEditor1;
         private ArticleAttributeGrid articleAttributeGrid;
-        private PowerPcAssembly.RelDisassembler relDisassembler1;
         private SCN0LightEditControl scN0LightEditControl1;
         private SCN0CameraEditControl scN0CameraEditControl1;
         private SCN0FogEditControl scN0FogEditControl1;
         private ToolStripMenuItem u8FileArchiveToolStripMenuItem;
+        private PPCDisassembler ppcDisassembler1;
     }
 }
 

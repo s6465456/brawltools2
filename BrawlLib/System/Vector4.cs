@@ -11,11 +11,6 @@ namespace System
         public Vector4(float x, float y, float z, float w) { this._x = x; this._y = y; this._z = z; this._w = w; }
         public Vector4(float s) { _x = s; _y = s; _z = s; _w = 1; }
 
-        public float X { get { return _x; } set { _x = value; } }
-        public float Y { get { return _y; } set { _y = value; } }
-        public float Z { get { return _z; } set { _z = value; } }
-        public float W { get { return _w; } set { _w = value; } }
-
         //public static explicit operator Vector3(Vector4 v) { return new Vector3(v._x / v._w, v._y / v._w, v._z / v._w); }
         public static explicit operator Vector4(Vector3 v) { return new Vector4(v._x, v._y, v._z, 1.0f); }
 

@@ -519,7 +519,7 @@ namespace System.Windows.Forms
             //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             //GL.Enable(EnableCap.AlphaTest);
-            //GL.AlphaFunc(AlphaFunction.Gequal, 0.1f);
+            //GL.AlphaFunc(AlphaFunction.Less, 0.1f);
 
             RecalcLight(null);
 

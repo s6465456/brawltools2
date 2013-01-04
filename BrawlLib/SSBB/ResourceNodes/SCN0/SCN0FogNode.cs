@@ -55,6 +55,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         MakeSolid(new ARGBPixel());
                     else
                         MakeList();
+
+                    UpdateCurrentControl();
                 }
             }
         }

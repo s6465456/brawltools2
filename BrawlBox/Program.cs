@@ -123,6 +123,31 @@ namespace BrawlBox
         {
             try
             {
+                //List<string> values = new List<string>();
+
+                //StreamReader sr = null;
+                //string line = "";
+                //string loc = Application.StartupPath + "/ppc.txt";
+                //if (File.Exists(loc))
+                //    using (sr = new StreamReader(loc))
+                //        for (int i = 0; !sr.EndOfStream; i++, line = sr.ReadLine())
+                //        {
+                //            if (String.IsNullOrEmpty(line)) continue;
+                //            string v = line.Substring(12);
+                //            int s = Helpers.FindFirst(v, 0, '(');
+                //            string name = v.Substring(0, s - 1);
+                //            int g = Helpers.FindFirst(v, 0, ')');
+                //            string desc = v.Substring(s + 1, g - (s + 1));
+                //            values.Add(name);
+                //            values.Add(desc);
+                //        }
+
+                //for (int i = 0; i < values.Count; i += 2)
+                //    Console.WriteLine("info.Add(new PPCOpCodeInfo(0x00000000, \"" + values[i] + "\", \"" + values[i + 1] + "\"));");
+                
+                //for (int i = 0; i < values.Count; i += 2)
+                //    Console.WriteLine("public const uint " + values[i] + " = 0x00000000;");
+
                 //List<string> funcNames = new List<string>();
                 //List<string> classes = new List<string>();
                 //List<int> spaces = new List<int>();
@@ -263,16 +288,16 @@ namespace BrawlBox
         {
             if (_rootNode != null)
             {
-                try
-                {
+                //try
+                //{
                     if (_rootPath == null)
                         return SaveAs();
 
                     _rootNode.Merge(Control.ModifierKeys == (Keys.Control | Keys.Shift));
                     _rootNode.Export(_rootPath);
                     return true;
-                }
-                catch (Exception x) { Say(x.Message); }
+                //}
+                //catch (Exception x) { Say(x.Message); }
             }
             return false;
         }

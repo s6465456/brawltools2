@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -13,7 +14,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.RSEQ; } }
         
         public string Offset { get { if (RSARNode != null) return ((uint)((VoidPtr)Header - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
-        
+
+        [Category("RSEQ")]
+        public float Version { get { return _version; } }
+        private float _version;
+
         public MMLCommand[] _cmds;
         public MMLCommand[] Commands { get { return _cmds; } }
 
@@ -22,7 +27,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override bool OnInitialize()
         {
             base.OnInitialize();
-
+            _version = Header->_header.Version;
             _data = new DataSource(Header->Data, Header->_dataLength);
             _cmds = MMLParser.Parse(Header->Data + 12);
             return true;

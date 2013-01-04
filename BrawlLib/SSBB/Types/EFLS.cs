@@ -77,7 +77,7 @@ namespace BrawlLib.SSBBTypes
         public bint _unk1;
         public bshort _unk2;
         public bshort _unk3;
-        public bint _stringOffset2;
+        public bint _effectNameOffset;
 
         internal byte* Address { get { fixed (void* ptr = &this)return (byte*)ptr; } }
     }

@@ -19,8 +19,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class MDL0BoneNode : MDL0EntryNode, IMatrixNode
     {
-        private List<UserDataClass> _entries = new List<UserDataClass>();
-
         public int _permanentID;
         [Browsable(false)]
         public int PermanentID { get { return _permanentID; } }
@@ -46,12 +44,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         public BillboardFlags _flags2;
         public uint _bbNodeId;
         
-        internal List<MDL0PolygonNode> _infPolys = new List<MDL0PolygonNode>();
-        internal List<MDL0PolygonNode> _manPolys = new List<MDL0PolygonNode>();
+        internal List<MDL0ObjectNode> _infPolys = new List<MDL0ObjectNode>();
+        internal List<MDL0ObjectNode> _manPolys = new List<MDL0ObjectNode>();
         [Category("Bone")]
-        public MDL0PolygonNode[] Objects { get { return _manPolys.ToArray(); } }
+        public MDL0ObjectNode[] AttachedObjects { get { return _manPolys.ToArray(); } }
         [Category("Bone")]
-        public MDL0PolygonNode[] InfluencedObjects { get { return _infPolys.ToArray(); } }
+        public MDL0ObjectNode[] InfluencedObjects { get { return _infPolys.ToArray(); } }
 
         internal FrameState _bindState = FrameState.Neutral;
         public Matrix _bindMatrix = Matrix.Identity, _inverseBindMatrix = Matrix.Identity;
@@ -191,7 +189,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     _flags1 &= ~BoneFlags.ScaleEqual;
 
-                RecalcBindState();
+                //RecalcBindState();
                 //Model.CalcBindMatrices();
                 
                 if (Parent is MDL0BoneNode)
@@ -226,7 +224,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     _flags1 &= ~BoneFlags.FixedRotation;
 
-                RecalcBindState();
+                //RecalcBindState();
                 //Model.CalcBindMatrices();
 
                 if (Parent is MDL0BoneNode)
@@ -257,7 +255,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     _flags1 &= ~BoneFlags.FixedTranslation;
 
-                RecalcBindState();
+                //RecalcBindState();
                 //Model.CalcBindMatrices();
 
                 if (Parent is MDL0BoneNode)
@@ -300,9 +298,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         //}
         //public SkeletonJoint _joint;
 
-        [Category("User Data")]
-        public UserDataClass[] Entries { get { return _entries.ToArray(); } set { _entries = value.ToList<UserDataClass>(); SignalPropertyChange(); } }
-
+        [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
+        internal UserDataCollection _userEntries = new UserDataCollection();
+        
         internal override void GetStrings(StringTable table)
         {
             table.Add(Name);
@@ -310,7 +309,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (MDL0BoneNode n in Children)
                 n.GetStrings(table);
 
-            foreach (UserDataClass s in _entries)
+            foreach (UserDataClass s in _userEntries)
                 table.Add(s._name);
         }
 
@@ -362,40 +361,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _bMin = header->_boxMin;
             _bMax = header->_boxMax;
 
-            if (header->_part2Offset != 0)
-            {
-                UserData* part2 = (UserData*)((byte*)header + header->_part2Offset);
-                ResourceGroup* group = part2->Group;
-                ResourceEntry* pEntry = &group->_first + 1;
-                int count = group->_numEntries;
-                for (int i = 0; i < count; i++)
-                {
-                    UserDataEntry* entry = (UserDataEntry*)((VoidPtr)group + pEntry->_dataOffset);
-                    UserDataClass d = new UserDataClass() { _name = new String((sbyte*)group + pEntry->_stringOffset) };
-                    VoidPtr addr = (VoidPtr)entry + entry->_dataOffset;
-                    d._type = entry->Type;
-                    for (int x = 0; x < entry->_entryCount; x++)
-                    {
-                        switch (entry->Type)
-                        {
-                            case UserValueType.Float:
-                                d._entries.Add(((float)*(bfloat*)addr).ToString());
-                                addr += 4;
-                                break;
-                            case UserValueType.Int:
-                                d._entries.Add(((int)*(bint*)addr).ToString());
-                                addr += 4;
-                                break;
-                            case UserValueType.String:
-                                string s = new String((sbyte*)(addr + 2));
-                                d._entries.Add(s);
-                                addr += s.Length + 3;
-                                break;
-                        }
-                    }
-                    _entries.Add(d);
-                }
-            }
+            (_userEntries = new UserDataCollection()).Read(header->UserDataAddress);
+            
             //We don't want to process children because not all have been parsed yet.
             //Child assigning will be handled by the parent group.
             return false;
@@ -423,16 +390,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override int OnCalculateSize(bool force)
         {
             int len = 0xD0;
-            if (_entries.Count > 0)
-            {
-                len += 0x18 + (_entries.Count * 0x2C);
-                foreach (UserDataClass c in _entries)
-                    foreach (string s in c._entries)
-                        if (c.DataType == UserValueType.Float || c.DataType == UserValueType.Int)
-                            len += 4;
-                        else if (c.DataType == UserValueType.String)
-                            len += s.Length + 3;
-            }
+            len += _userEntries.GetSize();
             return len;
         }
 
@@ -446,66 +404,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             MDL0BoneNode bone;
             int index = 0, offset;
-
+            
             //Sub-entries
-            if (_entries.Count > 0)
+            if (_userEntries.Count > 0)
             {
-                header->_part2Offset = 0xD0;
-                *(bint*)((byte*)address + 0xD0) = 0x1C + (_entries.Count * 0x2C);
-                ResourceGroup* pGroup = (ResourceGroup*)((byte*)address + 0xD4);
-                ResourceEntry* pEntry = &pGroup->_first + 1;
-                byte* pData = (byte*)pGroup + pGroup->_totalSize;
-
-                *pGroup = new ResourceGroup(_entries.Count);
-
-                int id = 0;
-                foreach (UserDataClass s in _entries)
-                {
-                    (pEntry++)->_dataOffset = (int)pData - (int)pGroup;
-                    UserDataEntry* p = (UserDataEntry*)pData;
-                    *p = new UserDataEntry(s._entries.Count, s._type, id++);
-                    pData += 0x18;
-                    for (int i = 0; i < s._entries.Count; i++)
-                        if (s.DataType == UserValueType.Float)
-                        {
-                            float x;
-                            if (!float.TryParse(s._entries[i], out x))
-                                x = 0;
-                            *(bfloat*)pData = x;
-                            pData += 4;
-                        }
-                        else if (s.DataType == UserValueType.Int)
-                        {
-                            int x;
-                            if (!int.TryParse(s._entries[i], out x))
-                                x = 0;
-                            *(bint*)pData = x;
-                            pData += 4;
-                        }
-                        else if (s.DataType == UserValueType.String)
-                        {
-                            if (s._entries[i] == null)
-                                s._entries[i] = "";
-
-                            int len = s._entries[i].Length;
-                            int ceil = len + 3;
-
-                            sbyte* ptr = (sbyte*)pData + 2;
-
-                            for (int x = 0; x < len; )
-                                ptr[x] = (sbyte)s._entries[i][x++];
-
-                            for (int x = len; x < ceil; )
-                                ptr[x++] = 0;
-
-                            *(bushort*)pData = (ushort)(len + 1);
-                            pData += s._entries[i].Length + 3;
-                        }
-                    p->_totalLen = (int)pData - (int)p;
-                }
+                header->_userDataOffset = 0xD0;
+                _userEntries.Write(address + 0xD0);
             }
             else
-                header->_part2Offset = 0;
+                header->_userDataOffset = 0;
 
             //Set first child
             if (_children.Count > 0)
@@ -599,21 +506,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_mdl0Offset = (int)mdlAddress - (int)dataAddress;
             header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
 
-            //Entry strings
-            if (_entries.Count > 0)
-            {
-                ResourceGroup* pGroup = (ResourceGroup*)((byte*)header + header->_part2Offset + 4);
-                ResourceEntry* pEntry = &pGroup->_first;
-                int count = pGroup->_numEntries;
-                (*pEntry++) = new ResourceEntry(0xFFFF, 0, 0, 0, 0);
-
-                for (int i = 0; i < count; i++)
-                {
-                    UserDataEntry* entry = (UserDataEntry*)((byte*)pGroup + (pEntry++)->_dataOffset);
-                    entry->_stringOffset = (int)stringTable[_entries[i]._name] + 4 - ((int)entry + (int)dataAddress);
-                    ResourceEntry.Build(pGroup, i + 1, entry, (BRESString*)stringTable[_entries[i]._name]);
-                }
-            }
+            _userEntries.PostProcess(dataAddress + 0xD0, stringTable);
         }
 
         //internal void GetBindState()

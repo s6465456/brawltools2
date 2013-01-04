@@ -7,6 +7,6 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct RFNT
     {
-        SSBBCommonHeader _header;
+        NW4RCommonHeader _header;
     }
 }

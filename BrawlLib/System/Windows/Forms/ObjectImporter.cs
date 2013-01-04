@@ -16,7 +16,7 @@ namespace System.Windows.Forms
         private Label label2;
         private ComboBox comboBox2;
         MDL0Node _externalModel;
-        MDL0PolygonNode node;
+        MDL0ObjectNode node;
         IMatrixNode _baseInf;
         private ComboBox comboBox3;
         private CheckBox checkBox1;
@@ -44,9 +44,9 @@ namespace System.Windows.Forms
         private void MergeChildren(MDL0BoneNode main, MDL0BoneNode ext, ResourceNode res)
         {
             bool found = false;
-            if (res is MDL0PolygonNode)
+            if (res is MDL0ObjectNode)
             {
-                MDL0PolygonNode poly = res as MDL0PolygonNode;
+                MDL0ObjectNode poly = res as MDL0ObjectNode;
                 foreach (Vertex3 v in poly._manager._vertices)
                     if (v._influence == ext)
                     {
@@ -57,7 +57,7 @@ namespace System.Windows.Forms
             else if (res is MDL0Node)
             {
                 MDL0Node mdl = res as MDL0Node;
-                foreach (MDL0PolygonNode poly in mdl.FindChild("Objects", true).Children)
+                foreach (MDL0ObjectNode poly in mdl.FindChild("Objects", true).Children)
                     foreach (Vertex3 v in poly._manager._vertices)
                         if (v._influence == ext)
                         {
@@ -86,9 +86,9 @@ namespace System.Windows.Forms
             }
         }
 
-        private void ImportObject(MDL0PolygonNode node)
+        private void ImportObject(MDL0ObjectNode node)
         {
-            MDL0PolygonNode newNode = node.Clone();
+            MDL0ObjectNode newNode = node.Clone();
             if (node._vertexNode != null)
             {
                 _internalModel.VertexGroup.AddChild(node._vertexNode);
@@ -115,13 +115,13 @@ namespace System.Windows.Forms
                     //(newNode._colorSet[i] = (MDL0ColorNode)_internalModel.ColorGroup.Children[_internalModel._colorList.Count - 1])._polygons.Add(newNode);
                 }
 
-            _internalModel._matGroup.AddChild(node._material);
-            newNode.MaterialNode = (MDL0MaterialNode)_internalModel.MaterialGroup.Children[_internalModel._matList.Count - 1];
+            _internalModel._matGroup.AddChild(node._opaMaterial);
+            newNode.OpaMaterialNode = (MDL0MaterialNode)_internalModel.MaterialGroup.Children[_internalModel._matList.Count - 1];
 
-            _internalModel._shadGroup.AddChild(node._material._shader);
-            newNode._material.ShaderNode = (MDL0ShaderNode)_internalModel.ShaderGroup.Children[_internalModel._shadList.Count - 1];
+            _internalModel._shadGroup.AddChild(node._opaMaterial._shader);
+            newNode._opaMaterial.ShaderNode = (MDL0ShaderNode)_internalModel.ShaderGroup.Children[_internalModel._shadList.Count - 1];
 
-            foreach (MDL0MaterialRefNode r in newNode._material.Children)
+            foreach (MDL0MaterialRefNode r in newNode._opaMaterial.Children)
             {
                 if (r._texture != null)
                     (r._texture = _internalModel.FindOrCreateTexture(r.TextureNode.Name))._references.Add(r);
@@ -165,7 +165,7 @@ namespace System.Windows.Forms
             }
 
             if (_mergeModels)
-                foreach (MDL0PolygonNode poly in _externalModel.FindChild("Objects", true).Children)
+                foreach (MDL0ObjectNode poly in _externalModel.FindChild("Objects", true).Children)
                     ImportObject(poly);
             else ImportObject(node);
 
@@ -180,7 +180,7 @@ namespace System.Windows.Forms
         private void getBaseInfluence()
         {
             ResourceNode[] boneCache = _externalModel._linker.BoneCache;
-            if ((node = (MDL0PolygonNode)comboBox1.SelectedItem).Weighted)
+            if ((node = (MDL0ObjectNode)comboBox1.SelectedItem).Weighted)
             {
                 int least = int.MaxValue;
                 foreach (IMatrixNode inf in node.Influences)

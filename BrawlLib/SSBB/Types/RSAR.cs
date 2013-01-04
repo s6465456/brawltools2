@@ -11,7 +11,7 @@ namespace BrawlLib.SSBBTypes
         public const int Size = 0x40;
         public const uint Tag = 0x52415352;
 
-        public SSBBCommonHeader _header;
+        public NW4RCommonHeader _header;
 
         public bint _symbOffset;
         public bint _symbLength;
@@ -27,7 +27,7 @@ namespace BrawlLib.SSBBTypes
 
             _header._tag = Tag;
             _header._endian = -2;
-            _header._version = 0x301;
+            _header._version = 0x103;
             _header._firstOffset = 0x40;
             _header._numEntries = 3;
 
@@ -97,7 +97,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct SYMBMaskHeader
     {
-        public bint _rootId; //Unknown
+        public bint _rootId;
         public bint _numEntries;
 
         private VoidPtr Address { get { fixed (SYMBMaskHeader* ptr = &this)return ptr; } }
@@ -116,6 +116,7 @@ namespace BrawlLib.SSBBTypes
         public bint _stringId;
         public bint _index;
 
+        public SYMBMaskEntry(ushort bit, int left, int right) : this(0, bit, left, right, 0, 0) { }
         public SYMBMaskEntry(ushort flags, ushort bit, int left, int right, int id, int index)
         {
             _flags = flags; 

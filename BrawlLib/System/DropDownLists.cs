@@ -4,17 +4,33 @@ using System.Globalization;
 using BrawlLib.SSBB.ResourceNodes;
 using System.Collections.Generic;
 using System.Linq;
+using BrawlLib.SSBBTypes;
 
 namespace System
 {
-    public class DropDownListMaterials : StringConverter
+    #region MDL0
+
+    public class DropDownListOpaMaterials : StringConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
             MDL0Node model = (context.Instance as MDL0EntryNode).Model;
-            return new StandardValuesCollection(model._matList.Select(n => n.ToString()).ToList());
+            List<ResourceNode> opaMats = new List<ResourceNode>();
+            foreach (MDL0MaterialNode n in model._matList) if (!n.XLUMaterial) opaMats.Add(n);
+            return new StandardValuesCollection(opaMats.Select(n => n.ToString()).ToList());
         } 
+    }
+    public class DropDownListXluMaterials : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            List<ResourceNode> xluMats = new List<ResourceNode>();
+            foreach (MDL0MaterialNode n in model._matList) if (n.XLUMaterial) xluMats.Add(n);
+            return new StandardValuesCollection(xluMats.Select(n => n.ToString()).ToList());
+        }
     }
 
     public class DropDownListTextures : StringConverter
@@ -36,7 +52,6 @@ namespace System
             return new StandardValuesCollection(model._shadList.Select(n => n.ToString()).ToList());
         }
     }
-
     public class DropDownListBones : StringConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
@@ -46,6 +61,50 @@ namespace System
             return new StandardValuesCollection(model._linker.BoneCache.Select(n => n.ToString()).ToList());
         }
     }
+
+    public class DropDownListColors : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            return new StandardValuesCollection(model._colorList.Select(n => n.ToString()).ToList());
+        }
+    }
+
+    public class DropDownListVertices : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            return new StandardValuesCollection(model._vertList.Select(n => n.ToString()).ToList());
+        }
+    }
+
+    public class DropDownListNormals : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            return new StandardValuesCollection(model._normList.Select(n => n.ToString()).ToList());
+        }
+    }
+
+    public class DropDownListUVs : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            return new StandardValuesCollection(model._uvList.Select(n => n.ToString()).ToList());
+        }
+    }
+
+    #endregion
+
+    #region MDef
 
     public class DropDownListBonesMDef : StringConverter
     {
@@ -107,6 +166,10 @@ namespace System
         }
     }
 
+    #endregion
+
+    #region SCN0
+
     public class DropDownListSCN0Ambience : StringConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
@@ -133,45 +196,9 @@ namespace System
         }
     }
 
-    public class DropDownListColors : StringConverter
-    {
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-        {
-            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
-            return new StandardValuesCollection(model._colorList.Select(n => n.ToString()).ToList());
-        }
-    }
+    #endregion
 
-    public class DropDownListVertices : StringConverter
-    {
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-        {
-            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
-            return new StandardValuesCollection(model._vertList.Select(n => n.ToString()).ToList());
-        }
-    }
-
-    public class DropDownListNormals : StringConverter
-    {
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-        {
-            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
-            return new StandardValuesCollection(model._normList.Select(n => n.ToString()).ToList());
-        }
-    }
-
-    public class DropDownListUVs : StringConverter
-    {
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
-        {
-            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
-            return new StandardValuesCollection(model._uvList.Select(n => n.ToString()).ToList());
-        }
-    }
+    #region PAT0
 
     public class DropDownListPAT0Textures : StringConverter
     {
@@ -192,6 +219,10 @@ namespace System
             return new StandardValuesCollection(main.Palettes);
         }
     }
+
+    #endregion
+
+    #region RSAR
 
     public class DropDownListRSARFiles : StringConverter
     {
@@ -245,4 +276,148 @@ namespace System
             return new StandardValuesCollection(n.Children[1].Children.Select(r => r.ToString()).ToList());
         }
     }
+
+    #endregion
+
+    #region REFF
+    
+    public class DropDownListReffAnimType : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFAnimationNode node = context.Instance as REFFAnimationNode;
+            switch (node.CurveFlag)
+            {
+                case AnimCurveType.ParticleByte:
+                case AnimCurveType.ParticleFloat:
+                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetByteFloat)));
+                case AnimCurveType.ParticleRotate:
+                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetRotateFloat)));
+                case AnimCurveType.ParticleTexture:
+                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetPtclTex)));
+                case AnimCurveType.Child:
+                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetChild)));
+                case AnimCurveType.Field:
+                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetField)));
+                case AnimCurveType.PostField:
+                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetPostField)));
+                case AnimCurveType.EmitterFloat:
+                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetEmitterFloat)));
+            }
+            return new StandardValuesCollection(null);
+        }
+    }
+
+    public class DropDownListReffBillboardAssist : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType == EmitterDrawSetting.Type.Billboard)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.BillboardAssist)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffStripeAssist : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType >= EmitterDrawSetting.Type.Stripe)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.StripeAssist)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffAssist : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType != EmitterDrawSetting.Type.Billboard)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.Assist)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffBillboardDirection : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType == EmitterDrawSetting.Type.Billboard)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.BillboardAhead)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffDirection : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType != EmitterDrawSetting.Type.Billboard)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.Ahead)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffStripeConnect : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType >= EmitterDrawSetting.Type.Stripe)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.StripeConnect)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffStripeInitialPrevAxis : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType >= EmitterDrawSetting.Type.Stripe)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.StripeInitialPrevAxis)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffStripeTexmapType : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType >= EmitterDrawSetting.Type.Stripe)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.StripeTexmapType)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffDirectionalPivot : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType == EmitterDrawSetting.Type.Directional)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.DirectionalPivot)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    public class DropDownListReffDirectionalFace : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            REFFEmitterNode node = context.Instance as REFFEmitterNode;
+            if (node.ParticleType == EmitterDrawSetting.Type.Directional)
+                return new StandardValuesCollection(Enum.GetNames(typeof(EmitterDrawSetting.Face)));
+            return new StandardValuesCollection(null);
+        }
+    }
+    #endregion
 }

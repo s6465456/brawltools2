@@ -169,7 +169,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     //Here, we are referring back to the NodeCache to grab the bone.
                                     //Note that the weights do not reference other influences, only bones. There is a good reason for this.
                                     for (int i = 0; i < count; i++, nEntry++)
-                                        if ((linker.NodeCache[nEntry->_id] as MDL0BoneNode) != null)
+                                        if (nEntry->_id < linker.NodeCache.Length && (linker.NodeCache[nEntry->_id] as MDL0BoneNode) != null)
                                             inf._weights[i] = new BoneWeight(linker.NodeCache[nEntry->_id] as MDL0BoneNode, nEntry->_value);
                                         else
                                             nullCount++;
@@ -230,19 +230,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                         break;
 
                     //Extract
-                    ExtractGroup(linker.Polygons, typeof(MDL0PolygonNode));
+                    ExtractGroup(linker.Polygons, typeof(MDL0ObjectNode));
 
                     //Attach materials to polygons.
                     //This assumes that materials have already been parsed.
 
                     List<ResourceNode> matList = ((MDL0Node)_parent)._matList;
-                    MDL0PolygonNode poly;
+                    MDL0ObjectNode poly;
                     MDL0MaterialNode mat;
-
+                    
                     //Find DrawOpa or DrawXlu entry in Definition list
                     foreach (ResourcePair p in *linker.Defs)
                         if ((p.Name == "DrawOpa") || (p.Name == "DrawXlu"))
                         {
+                            bool opa = p.Name == "DrawOpa";
                             ushort dIndex = 0;
                             byte* pData = (byte*)p.Data;
                             while (*pData++ == 4)
@@ -255,7 +256,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     SignalPropertyChange();
                                     dIndex = 0;
                                 }
-                                poly = _children[dIndex] as MDL0PolygonNode;
+                                poly = _children[dIndex] as MDL0ObjectNode;
                                 poly._drawIndex = pData[6];
                                 //Get material from index
                                 mat = matList[*(bushort*)pData] as MDL0MaterialNode;
@@ -264,7 +265,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 if (linker.BoneCache != null && boneIndex >= 0 && boneIndex < linker.BoneCache.Length)
                                     poly.BoneNode = linker.BoneCache[boneIndex] as MDL0BoneNode;
                                 //Assign material to polygon
-                                poly.MaterialNode = mat;
+                                if (opa)
+                                    poly.OpaMaterialNode = mat;
+                                else
+                                    poly.XluMaterialNode = mat;
                                 //Increment pointer
                                 pData += 7;
                             }

@@ -560,13 +560,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     foreach (MoveDefModelVisGroupNode grp in SwitchNode.Children)
                         foreach (MoveDefBoneIndexNode b in grp.Children)
                             if (b.BoneNode != null)
-                                foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
+                                foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
                                     p._render = false;
                     if ((int)e.EventData.parameters[1]._data > SwitchNode.Children.Count || (int)e.EventData.parameters[1]._data < 0) break;
                     MoveDefModelVisGroupNode Group = SwitchNode.Children[(int)e.EventData.parameters[1]._data] as MoveDefModelVisGroupNode;
                     foreach (MoveDefBoneIndexNode b in Group.Children)
                         if (b.BoneNode != null)
-                            foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
+                            foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
                                 p._render = true;
                     break;
                 case 0x0B020100:

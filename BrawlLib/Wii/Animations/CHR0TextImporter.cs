@@ -54,8 +54,12 @@ namespace BrawlLib.Wii.Animations
                     if (line.CompareTo("Animation Keyframe Data Frames") == 0)
                     {
                         line = reader.ReadLine();
-                        int keyFrameCount = int.Parse(line);
+
+                        //Remove any non-digit characters
+                        string justNumbers = new String(line.Where(Char.IsDigit).ToArray());
+                        int keyFrameCount = int.Parse(justNumbers);
                         chr0.FrameCount = keyFrameCount;
+
                         for (line = reader.ReadLine(); line != null && line.CompareTo("End Of Animation Data") != 0; line = reader.ReadLine())
                         {
                             if (line.CompareTo("Keyframe Data") == 0)

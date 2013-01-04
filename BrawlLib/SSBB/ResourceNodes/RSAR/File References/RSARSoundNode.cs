@@ -118,8 +118,18 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("a RSAR Sound")]
         public byte ActorPlayerId { get { return _actorPlayerId; } set { _actorPlayerId = value; SignalPropertyChange(); } }
 
+        [Flags]
+        public enum Sound3DFlags
+        {        
+            NotVolume = 1,
+            NotPan = 2,
+            NotSurroundPan = 4,
+            NotPriority = 8,
+            Filter = 16
+        }
+
         [Category("b RSAR Sound 3D Param")]
-        public uint Flags { get { return _sound3dParam._flags; } set { _sound3dParam._flags = value; SignalPropertyChange(); } }
+        public Sound3DFlags Flags { get { return (Sound3DFlags)(uint)_sound3dParam._flags; } set { _sound3dParam._flags = (uint)value; SignalPropertyChange(); } }
         [Category("b RSAR Sound 3D Param")]
         public DecayCurve DecayCurve { get { return (DecayCurve)_sound3dParam._decayCurve; } set { _sound3dParam._decayCurve = (byte)value; SignalPropertyChange(); } }
         [Category("b RSAR Sound 3D Param")]
@@ -180,7 +190,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         [Category("c RSAR Seq Sound Info"), TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 SeqAllocTrack { get { return new Bin32(_seqInfo._allocTrack); } set { _seqInfo._allocTrack = value.data; SignalPropertyChange(); } }
+        public Bin32 SeqAllocTrack { get { return new Bin32(_seqInfo._allocTrack); } set { _seqInfo._allocTrack = value._data; SignalPropertyChange(); } }
         [Category("c RSAR Seq Sound Info")]
         public byte SeqChannelPriority { get { return _seqInfo._channelPriority; } set { _seqInfo._channelPriority = value; SignalPropertyChange(); } }
         [Category("c RSAR Seq Sound Info")]
@@ -283,6 +293,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_soundNode is RWSDNode)
             {
                 RWSDDataNode d = _dataNode as RWSDDataNode;
+                if (d == null) return null;
                 WAVESoundNode s = _soundNode.Children[1].Children[d._part3._waveIndex] as WAVESoundNode;
                 IAudioStream stream = s.CreateStream();
                 

@@ -13,7 +13,8 @@ namespace BrawlLib.SSBBTypes
         public const int Size = 16;
 
         public uint _tag; //bres
-        public uint _version; //0xFEFF0000
+        public bushort _endian; //0xFEFF
+        public bushort _version;
         public buint _fileSize; //Total size of resource package file
         public bushort _rootOffset; //Offset to root entry
         public bushort _numSections;
@@ -23,7 +24,8 @@ namespace BrawlLib.SSBBTypes
         public BRESHeader(int size, int numSections)
         {
             _tag = Tag;
-            _version = 0xFFFE;
+            _endian = 0xFEFF;
+            _version = 0;
             _fileSize = (uint)size;
             _rootOffset = 0x10;
             _numSections = (ushort)numSections;
@@ -45,6 +47,23 @@ namespace BrawlLib.SSBBTypes
 
     //    //public static VoidPtr GetNext(VoidPtr ptr) { return Util.Align((uint)ptr + ((BRESEntry*)ptr)->_size, 32); }
     //}
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct ROOTHeader
+    {
+        public const int Tag = 0x746F6F72;
+
+        public uint _tag;
+        public bint _size;
+        public ResourceGroup _master;
+
+        public ROOTHeader(int size, int numEntries)
+        {
+            _tag = Tag;
+            _size = size;
+            _master = new ResourceGroup(numEntries);
+        }
+    }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct BRESCommonHeader

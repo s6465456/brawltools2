@@ -291,7 +291,6 @@ namespace BrawlLib.Imaging
 
         private Bitmap Quantize(int targetColors, IProgressTracker progress)
         {
-
             //Clear group table
             Memory.Fill(_groupTable, 65536 * 4, 0);
 

@@ -21,6 +21,7 @@ namespace BrawlLib.Wii.Compression
     public unsafe struct CompressionHeader
     {
         private uint _data;
+        private uint _size;
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 
@@ -34,12 +35,19 @@ namespace BrawlLib.Wii.Compression
             get { return (int)(_data & 0x0F); }
             set { _data = (_data & 0xFFFFFFF0) | ((uint)value & 0x0F); }
         }
+        public bool LargeSize { get { return (_data >> 8) == 0; } }
         public int ExpandedSize
         {
-            get { return (int)(_data >> 8); }
-            set { _data = ((uint)value << 8) | (_data & 0xFF); }
+            get { return (int)(LargeSize ? (int)_size : (int)(_data >> 8)); }
+            set 
+            {
+                if ((value & 0xFFFFFF) != value)
+                    _size = (uint)value;
+                else
+                    _data = ((uint)(value & 0xFFFFFF) << 8) | (_data & 0xFF);
+            }
         }
 
-        public VoidPtr Data { get { return Address + 4; } }
+        public VoidPtr Data { get { return Address + 4 + (LargeSize ? 4 : 0); } }
     }
 }

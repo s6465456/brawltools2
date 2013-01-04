@@ -15,7 +15,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal REFF* Header { get { return (REFF*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.REFF; } }
 
-        private int _version;
+        private float _version;
 
         private int _unk1, _unk2, _unk3, _dataLen, _dataOff;
         private int _TableLen;
@@ -23,24 +23,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         private short _TableUnk1;
 
         [Category("REFF Data")]
-        public int Version { get { return _version; } }
-        [Category("REFF Data")]
-        public int DataLength { get { return _dataLen; } }
-        [Category("REFF Data")]
-        public int DataOffset { get { return _dataOff; } }
-        [Category("REFF Data")]
-        public int Unknown1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
-        [Category("REFF Data")]
-        public int Unknown2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
-        [Category("REFF Data")]
-        public int Unknown3 { get { return _unk3; } set { _unk3 = value; SignalPropertyChange(); } }
+        public float Version { get { return _version; } }
+        //[Category("REFF Data")]
+        //public int DataLength { get { return _dataLen; } }
+        //[Category("REFF Data")]
+        //public int DataOffset { get { return _dataOff; } }
 
-        [Category("REFF Object Table")]
-        public int Length { get { return _TableLen; } }
-        [Category("REFF Object Table")]
-        public short NumEntries { get { return _TableEntries; } }
-        [Category("REFF Object Table")]
-        public short Unk1 { get { return _TableUnk1; } set { _TableUnk1 = value; SignalPropertyChange(); } }
+        //[Category("REFF Object Table")]
+        //public int Length { get { return _TableLen; } }
+        //[Category("REFF Object Table")]
+        //public short NumEntries { get { return _TableEntries; } }
 
         protected override bool OnInitialize()
         {
@@ -48,7 +40,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             REFF* header = Header;
 
-            _version = header->_header._version;
+            _version = header->_header.Version;
             _name = header->IdString;
             _dataLen = header->_dataLength;
             _dataOff = header->_dataOffset;
@@ -93,7 +85,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_dataOffset = 0x48;
             header->_header._tag = header->_tag = REFF.Tag;
             header->_header._endian = -2;
-            header->_header._version = 0x0700;
+            header->_header._version = 7;
             header->_header._firstOffset = 0x10;
             header->_header._numEntries = 1;
             header->IdString = Name;
@@ -150,7 +142,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _ptclTrackAddr = Header->_ptclTrack,
                 _emitTrackAddr = Header->_emitTrack,
             }
-            .Initialize(this, Header->_postFieldInfo, WorkingUncompressed.Length - ((int)Header->_postFieldInfo - (int)Header));
+            .Initialize(this, Header->_animations, WorkingUncompressed.Length - ((int)Header->_animations - (int)Header));
         }
 
         protected override int OnCalculateSize(bool force)
@@ -163,25 +155,29 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            base.OnRebuild(address, length, force);
+            REFFDataHeader* d = (REFFDataHeader*)address;
+            d->_headerSize = (uint)Children[0]._calcSize;
+            Children[0].Rebuild(d->_descriptor.Address, Children[0]._calcSize, true);
+            Children[1].Rebuild(d->_params, Children[1]._calcSize, true);
+            Children[2].Rebuild(d->_ptclTrackCount, Children[2]._calcSize, true);
         }
     }
 
     public unsafe class REFFAnimationListNode : ResourceNode
     {
         internal VoidPtr First { get { return (VoidPtr)WorkingUncompressed.Address; } }
-        public short _ptclTrackCount, _ptclInitTrackCount, _emitTrackCount, _emitInitTrackCount;
+        public ushort _ptclTrackCount, _ptclInitTrackCount, _emitTrackCount, _emitInitTrackCount;
         public buint* _ptclTrackAddr, _emitTrackAddr;
         public List<uint> _ptclTrack, _emitTrack;
 
-        [Category("Post Field Info Table")]
-        public short PtclTrackCount { get { return _ptclTrackCount; } }
-        [Category("Post Field Info Table")]
-        public short PtclInitTrackCount { get { return _ptclInitTrackCount; } }
-        [Category("Post Field Info Table")]
-        public short EmitTrackCount { get { return _emitTrackCount; } }
-        [Category("Post Field Info Table")]
-        public short EmitInitTrackCount { get { return _emitInitTrackCount; } }
+        [Category("Animation Table")]
+        public ushort PtclTrackCount { get { return _ptclTrackCount; } }
+        [Category("Animation Table")]
+        public ushort PtclInitTrackCount { get { return _ptclInitTrackCount; } }
+        [Category("Animation Table")]
+        public ushort EmitTrackCount { get { return _emitTrackCount; } }
+        [Category("Animation Table")]
+        public ushort EmitInitTrackCount { get { return _emitInitTrackCount; } }
 
         protected override bool OnInitialize()
         {
@@ -197,7 +193,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             addr += PtclTrackCount; //skip nulled pointers to size list
             for (int i = 0; i < PtclTrackCount; i++)
             {
-                new REFFAnimationNode().Initialize(this, First + offset, (int)*addr);
+                new REFFAnimationNode() { isPtcl = true }.Initialize(this, First + offset, (int)*addr);
                 offset += (int)*addr++;
             }
             addr = _emitTrackAddr;
@@ -208,19 +204,156 @@ namespace BrawlLib.SSBB.ResourceNodes
                 offset += (int)*addr++;
             }
         }
+
+        public ushort ptcl, emit;
+        protected override int OnCalculateSize(bool force)
+        {
+            ptcl = 0;
+            emit = 0;
+            int size = 8;
+            size += Children.Count * 8;
+            foreach (REFFAnimationNode e in Children)
+            {
+                if (e.isPtcl) ptcl++; else emit++;
+                size += e.CalculateSize(true);
+            }
+            return size;
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            buint* addr = (buint*)address;
+            ((bushort*)addr)[0] = ptcl;
+            ((bushort*)addr)[1] = (ushort)_ptclInitTrackCount; 
+            addr += ptcl + 1;
+            foreach (REFFAnimationNode e in Children)
+                if (e.isPtcl)
+                    *addr++ = (uint)e._calcSize;
+            ((bushort*)addr)[0] = emit;
+            ((bushort*)addr)[1] = (ushort)_emitInitTrackCount;
+            addr += emit + 1;
+            foreach (REFFAnimationNode e in Children)
+                if (!e.isPtcl)
+                    *addr++ = (uint)e._calcSize;
+            VoidPtr ptr = addr;
+            foreach (REFFAnimationNode e in Children)
+                if (e.isPtcl)
+                {
+                    e.Rebuild(ptr, e._calcSize, true);
+                    ptr += e._calcSize;
+                }
+            foreach (REFFAnimationNode e in Children)
+                if (!e.isPtcl)
+                {
+                    e.Rebuild(ptr, e._calcSize, true);
+                    ptr += e._calcSize;
+                }
+        }
     }
+
     public unsafe class REFFAnimationNode : ResourceNode
     {
         internal AnimCurveHeader* Header { get { return (AnimCurveHeader*)WorkingUncompressed.Address; } }
 
-        AnimCurveHeader hdr;
+        internal AnimCurveHeader hdr;
+        
+        public bool isPtcl = false;
 
+        public enum animType
+        {
+            Particle,
+            Emitter
+        }
+
+        public animType Type { get { return isPtcl ? animType.Particle : animType.Emitter; } set { isPtcl = value == animType.Particle; SignalPropertyChange(); } }
+        
         [Category("Animation")]
         public byte Magic { get { return hdr.magic; } }
+        [Category("Animation"), TypeConverter(typeof(DropDownListReffAnimType))]
+        public string KindType 
+        {
+            get 
+            {
+                switch (CurveFlag)
+                {
+                    case AnimCurveType.ParticleByte:
+                    case AnimCurveType.ParticleFloat:
+                        return ((AnimCurveTargetByteFloat)hdr.kindType).ToString();
+                    case AnimCurveType.ParticleRotate:
+                        return ((AnimCurveTargetRotateFloat)hdr.kindType).ToString();
+                    case AnimCurveType.ParticleTexture:
+                        return ((AnimCurveTargetPtclTex)hdr.kindType).ToString();
+                    case AnimCurveType.Child:
+                        return ((AnimCurveTargetChild)hdr.kindType).ToString();
+                    case AnimCurveType.Field:
+                        return ((AnimCurveTargetField)hdr.kindType).ToString();
+                    case AnimCurveType.PostField:
+                        return ((AnimCurveTargetPostField)hdr.kindType).ToString();
+                    case AnimCurveType.EmitterFloat:
+                        return ((AnimCurveTargetEmitterFloat)hdr.kindType).ToString();
+                }
+                return null;
+            }
+            set 
+            {
+                int i = 0;
+                switch (CurveFlag)
+                {
+                    case AnimCurveType.ParticleByte:
+                    case AnimCurveType.ParticleFloat:
+                        AnimCurveTargetByteFloat a;
+                        if (Enum.TryParse<AnimCurveTargetByteFloat>(value, true, out a))
+                            hdr.kindType = (byte)a;
+                        else if (int.TryParse(value, out i))
+                            hdr.kindType = (byte)i;
+                        break;
+                    case AnimCurveType.ParticleRotate:
+                        AnimCurveTargetRotateFloat b;
+                        if (Enum.TryParse<AnimCurveTargetRotateFloat>(value, true, out b))
+                            hdr.kindType = (byte)b;
+                        else if (int.TryParse(value, out i))
+                            hdr.kindType = (byte)i;
+                        break;
+                    case AnimCurveType.ParticleTexture:
+                        AnimCurveTargetPtclTex c;
+                        if (Enum.TryParse<AnimCurveTargetPtclTex>(value, true, out c))
+                            hdr.kindType = (byte)c;
+                        else if (int.TryParse(value, out i))
+                            hdr.kindType = (byte)i;
+                        break;
+                    case AnimCurveType.Child:
+                        AnimCurveTargetChild d;
+                        if (Enum.TryParse<AnimCurveTargetChild>(value, true, out d))
+                            hdr.kindType = (byte)d;
+                        else if (int.TryParse(value, out i))
+                            hdr.kindType = (byte)i;
+                        break;
+                    case AnimCurveType.Field:
+                        AnimCurveTargetField e;
+                        if (Enum.TryParse<AnimCurveTargetField>(value, true, out e))
+                            hdr.kindType = (byte)e;
+                        else if (int.TryParse(value, out i))
+                            hdr.kindType = (byte)i;
+                        break;
+                    case AnimCurveType.PostField:
+                        AnimCurveTargetPostField f;
+                        if (Enum.TryParse<AnimCurveTargetPostField>(value, true, out f))
+                            hdr.kindType = (byte)f;
+                        else if (int.TryParse(value, out i))
+                            hdr.kindType = (byte)i;
+                        break;
+                    case AnimCurveType.EmitterFloat:
+                        AnimCurveTargetEmitterFloat g;
+                        if (Enum.TryParse<AnimCurveTargetEmitterFloat>(value, true, out g))
+                            hdr.kindType = (byte)g;
+                        else if (int.TryParse(value, out i))
+                            hdr.kindType = (byte)i;
+                        break;
+                }
+            }
+        }
         [Category("Animation")]
-        public AnimCurveTarget KindType { get { return (AnimCurveTarget)hdr.kindType; } }
-        [Category("Animation")]
-        public AnimCurveType CurveFlag { get { return (AnimCurveType)hdr.curveFlag; } }
+        public AnimCurveType CurveFlag { get { return (AnimCurveType)hdr.curveFlag; } set { hdr.curveFlag = (byte)value; SignalPropertyChange(); } }
         [Category("Animation")]
         public byte KindEnable { get { return hdr.kindEnable; } }
         [Category("Animation")]
@@ -271,6 +404,16 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (InfoTableSize > 4)
                 new REFFAnimCurveTableNode() { _name = "Info Table" }.Initialize(this, (VoidPtr)Header + 0x20 + KeyTableSize + RangeTableSize + RandomTableSize + NameTableSize, (int)InfoTableSize);
         }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            return base.OnCalculateSize(force);
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            base.OnRebuild(address, length, force);
+        }
     }
 
     public unsafe class REFFAnimCurveNameTableNode : ResourceNode
@@ -316,10 +459,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override void OnPopulate()
         {
-            VoidPtr addr = (VoidPtr)Header + 4;
-            int s = (WorkingUncompressed.Length - 4) / Count;
-            for (int i = 0; i < Count; i++)
-                new MoveDefSectionParamNode() { _name = "Entry" + i }.Initialize(this, (VoidPtr)Header + 4 + i * s, s);
+            //VoidPtr addr = (VoidPtr)Header + 4;
+            //int s = (WorkingUncompressed.Length - 4) / Count;
+            //for (int i = 0; i < Count; i++)
+            //    new MoveDefSectionParamNode() { _name = "Entry" + i }.Initialize(this, (VoidPtr)Header + 4 + i * s, s);
         }
     }
 
@@ -376,14 +519,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         //public uint HeaderSize { get { return hdr.headersize; } }
 
         [Category("Particle Parameters"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel mColor11 { get { return desc.mColor11; } set { desc.mColor11 = value; SignalPropertyChange(); } }
+        public RGBAPixel Color1Primary { get { return desc.mColor11; } set { desc.mColor11 = value; SignalPropertyChange(); } }
         [Category("Particle Parameters"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel mColor12 { get { return desc.mColor12; } set { desc.mColor12 = value; SignalPropertyChange(); } }
+        public RGBAPixel Color1Secondary { get { return desc.mColor12; } set { desc.mColor12 = value; SignalPropertyChange(); } }
         [Category("Particle Parameters"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel mColor21 { get { return desc.mColor21; } set { desc.mColor21 = value; SignalPropertyChange(); } }
+        public RGBAPixel Color2Primary { get { return desc.mColor21; } set { desc.mColor21 = value; SignalPropertyChange(); } }
         [Category("Particle Parameters"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel mColor22 { get { return desc.mColor22; } set { desc.mColor22 = value; SignalPropertyChange(); } }
-
+        public RGBAPixel Color2Secondary { get { return desc.mColor22; } set { desc.mColor22 = value; SignalPropertyChange(); } }
+        
         [Category("Particle Parameters"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 Size { get { return desc.size; } set { desc.size = value; SignalPropertyChange(); } }
         [Category("Particle Parameters"), TypeConverter(typeof(Vector2StringConverter))]
@@ -414,9 +557,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte TextureReverse { get { return desc.textureReverse; } set { desc.textureReverse = value; SignalPropertyChange(); } }
 
         [Category("Particle Parameters")]
-        public byte mACmpRef0 { get { return desc.mACmpRef0; } set { desc.mACmpRef0 = value; SignalPropertyChange(); } }
+        public byte ACmpRef0 { get { return desc.mACmpRef0; } set { desc.mACmpRef0 = value; SignalPropertyChange(); } }
         [Category("Particle Parameters")]
-        public byte mACmpRef1 { get { return desc.mACmpRef1; } set { desc.mACmpRef1 = value; SignalPropertyChange(); } }
+        public byte ACmpRef1 { get { return desc.mACmpRef1; } set { desc.mACmpRef1 = value; SignalPropertyChange(); } }
 
         [Category("Particle Parameters")]
         public byte RotateOffsetRandom1 { get { return desc.rotateOffsetRandomX; } set { desc.rotateOffsetRandomX = value; SignalPropertyChange(); } }
@@ -455,6 +598,38 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             return false;
         }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            int size = 0x8C;
+            foreach (string s in _textureNames)
+            {
+                size += 3;
+                if (s != null && s.Length > 0)
+                    size += s.Length;
+            }
+            return size.Align(4);
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            ParticleParameterHeader* p = (ParticleParameterHeader*)address;
+            p->headersize = (uint)length - 4;
+            p->paramDesc = desc;
+            sbyte* ptr = (sbyte*)p->paramDesc.textureNames.Address;
+            foreach (string s in _textureNames)
+                if (s != null && s.Length > 0)
+                {
+                    *(bushort*)ptr = (ushort)(s.Length + 1); 
+                    ptr += 2;
+                    s.Write(ref ptr);
+                }
+                else
+                {
+                    *(bushort*)ptr = 1;
+                    ptr += 3;
+                }
+        }
     }
     public unsafe class REFFEmitterNode : ResourceNode
     {
@@ -465,88 +640,88 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Emitter Descriptor")]
         public EmitterDesc.EmitterCommonFlag CommonFlag { get { return (EmitterDesc.EmitterCommonFlag)(uint)desc.commonFlag; } set { desc.commonFlag = (uint)value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public uint emitFlag { get { return desc.emitFlag; } set { desc.emitFlag = value; SignalPropertyChange(); } } // EmitFormType - value & 0xFF
+        public uint EmitFlag { get { return desc.emitFlag; } set { desc.emitFlag = value; SignalPropertyChange(); } } // EmitFormType - value & 0xFF
         [Category("Emitter Descriptor")]
-        public ushort emitLife { get { return desc.emitLife; } set { desc.emitLife = value; SignalPropertyChange(); } }
+        public ushort EmitLife { get { return desc.emitLife; } set { desc.emitLife = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public ushort ptclLife { get { return desc.ptclLife; } set { desc.ptclLife = value; SignalPropertyChange(); } }
+        public ushort PtclLife { get { return desc.ptclLife; } set { desc.ptclLife = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public sbyte ptclLifeRandom { get { return desc.ptclLifeRandom; } set { desc.ptclLifeRandom = value; SignalPropertyChange(); } }
+        public sbyte PtclLifeRandom { get { return desc.ptclLifeRandom; } set { desc.ptclLifeRandom = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public sbyte inheritChildPtclTranslate { get { return desc.inheritChildPtclTranslate; } set { desc.inheritChildPtclTranslate = value; SignalPropertyChange(); } }
+        public sbyte InheritChildPtclTranslate { get { return desc.inheritChildPtclTranslate; } set { desc.inheritChildPtclTranslate = value; SignalPropertyChange(); } }
 
         [Category("Emitter Descriptor")]
-        public sbyte emitEmitIntervalRandom { get { return desc.emitEmitIntervalRandom; } set { desc.emitEmitIntervalRandom = value; SignalPropertyChange(); } }
+        public sbyte EmitIntervalRandom { get { return desc.emitEmitIntervalRandom; } set { desc.emitEmitIntervalRandom = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public sbyte emitEmitRandom { get { return desc.emitEmitRandom; } set { desc.emitEmitRandom = value; SignalPropertyChange(); } }
+        public sbyte EmitRandom { get { return desc.emitEmitRandom; } set { desc.emitEmitRandom = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float emitEmit { get { return desc.emitEmit; } set { desc.emitEmit = value; SignalPropertyChange(); } }
+        public float Emit { get { return desc.emitEmit; } set { desc.emitEmit = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public ushort emitEmitStart { get { return desc.emitEmitStart; } set { desc.emitEmitStart = value; SignalPropertyChange(); } }
+        public ushort EmitStart { get { return desc.emitEmitStart; } set { desc.emitEmitStart = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public ushort emitEmitPast { get { return desc.emitEmitPast; } set { desc.emitEmitPast = value; SignalPropertyChange(); } }
+        public ushort EmitPast { get { return desc.emitEmitPast; } set { desc.emitEmitPast = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public ushort emitEmitInterval { get { return desc.emitEmitInterval; } set { desc.emitEmitInterval = value; SignalPropertyChange(); } }
+        public ushort EmitInterval { get { return desc.emitEmitInterval; } set { desc.emitEmitInterval = value; SignalPropertyChange(); } }
 
         [Category("Emitter Descriptor")]
-        public sbyte inheritPtclTranslate { get { return desc.inheritPtclTranslate; } set { desc.inheritPtclTranslate = value; SignalPropertyChange(); } }
+        public sbyte InheritPtclTranslate { get { return desc.inheritPtclTranslate; } set { desc.inheritPtclTranslate = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public sbyte inheritChildEmitTranslate { get { return desc.inheritChildEmitTranslate; } set { desc.inheritChildEmitTranslate = value; SignalPropertyChange(); } }
+        public sbyte InheritChildEmitTranslate { get { return desc.inheritChildEmitTranslate; } set { desc.inheritChildEmitTranslate = value; SignalPropertyChange(); } }
 
         [Category("Emitter Descriptor")]
-        public float commonParam1 { get { return desc.commonParam1; } set { desc.commonParam1 = value; SignalPropertyChange(); } }
+        public float CommonParam1 { get { return desc.commonParam1; } set { desc.commonParam1 = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float commonParam2 { get { return desc.commonParam2; } set { desc.commonParam2 = value; SignalPropertyChange(); } }
+        public float CommonParam2 { get { return desc.commonParam2; } set { desc.commonParam2 = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float commonParam3 { get { return desc.commonParam3; } set { desc.commonParam3 = value; SignalPropertyChange(); } }
+        public float CommonParam3 { get { return desc.commonParam3; } set { desc.commonParam3 = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float commonParam4 { get { return desc.commonParam4; } set { desc.commonParam4 = value; SignalPropertyChange(); } }
+        public float CommonParam4 { get { return desc.commonParam4; } set { desc.commonParam4 = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float commonParam5 { get { return desc.commonParam5; } set { desc.commonParam5 = value; SignalPropertyChange(); } }
+        public float CommonParam5 { get { return desc.commonParam5; } set { desc.commonParam5 = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float commonParam6 { get { return desc.commonParam6; } set { desc.commonParam6 = value; SignalPropertyChange(); } }
+        public float CommonParam6 { get { return desc.commonParam6; } set { desc.commonParam6 = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public ushort emitEmitDiv { get { return desc.emitEmitDiv; } set { desc.emitEmitDiv = value; SignalPropertyChange(); } } //aka orig tick
+        public ushort EmitEmitDiv { get { return desc.emitEmitDiv; } set { desc.emitEmitDiv = value; SignalPropertyChange(); } } //aka orig tick
 
         [Category("Emitter Descriptor")]
-        public sbyte velInitVelocityRandom { get { return desc.velInitVelocityRandom; } set { desc.velInitVelocityRandom = value; SignalPropertyChange(); } }
+        public sbyte VelInitVelocityRandom { get { return desc.velInitVelocityRandom; } set { desc.velInitVelocityRandom = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public sbyte velMomentumRandom { get { return desc.velMomentumRandom; } set { desc.velMomentumRandom = value; SignalPropertyChange(); } }
+        public sbyte VelMomentumRandom { get { return desc.velMomentumRandom; } set { desc.velMomentumRandom = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float velPowerRadiationDir { get { return desc.velPowerRadiationDir; } set { desc.velPowerRadiationDir = value; SignalPropertyChange(); } }
+        public float VelPowerRadiationDir { get { return desc.velPowerRadiationDir; } set { desc.velPowerRadiationDir = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float velPowerYAxis { get { return desc.velPowerYAxis; } set { desc.velPowerYAxis = value; SignalPropertyChange(); } }
+        public float VelPowerYAxis { get { return desc.velPowerYAxis; } set { desc.velPowerYAxis = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float velPowerRandomDir { get { return desc.velPowerRandomDir; } set { desc.velPowerRandomDir = value; SignalPropertyChange(); } }
+        public float VelPowerRandomDir { get { return desc.velPowerRandomDir; } set { desc.velPowerRandomDir = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float velPowerNormalDir { get { return desc.velPowerNormalDir; } set { desc.velPowerNormalDir = value; SignalPropertyChange(); } }
+        public float VelPowerNormalDir { get { return desc.velPowerNormalDir; } set { desc.velPowerNormalDir = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float velDiffusionEmitterNormal { get { return desc.velDiffusionEmitterNormal; } set { desc.velDiffusionEmitterNormal = value; SignalPropertyChange(); } }
+        public float VelDiffusionEmitterNormal { get { return desc.velDiffusionEmitterNormal; } set { desc.velDiffusionEmitterNormal = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float velPowerSpecDir { get { return desc.velPowerSpecDir; } set { desc.velPowerSpecDir = value; SignalPropertyChange(); } }
+        public float VelPowerSpecDir { get { return desc.velPowerSpecDir; } set { desc.velPowerSpecDir = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public float velDiffusionSpecDir { get { return desc.velDiffusionSpecDir; } set { desc.velDiffusionSpecDir = value; SignalPropertyChange(); } }
+        public float VelDiffusionSpecDir { get { return desc.velDiffusionSpecDir; } set { desc.velDiffusionSpecDir = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 velSpecDir { get { return desc.velSpecDir; } set { desc.velSpecDir = value; SignalPropertyChange(); } }
+        public Vector3 VelSpecDir { get { return desc.velSpecDir; } set { desc.velSpecDir = value; SignalPropertyChange(); } }
 
         [Category("Emitter Descriptor"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 scale { get { return desc.scale; } set { desc.scale = value; SignalPropertyChange(); } }
+        public Vector3 Scale { get { return desc.scale; } set { desc.scale = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 rotate { get { return desc.rotate; } set { desc.rotate = value; SignalPropertyChange(); } }
+        public Vector3 Rotate { get { return desc.rotate; } set { desc.rotate = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 translate { get { return desc.translate; } set { desc.translate = value; SignalPropertyChange(); } }
+        public Vector3 Translate { get { return desc.translate; } set { desc.translate = value; SignalPropertyChange(); } }
 
         [Category("Emitter Descriptor")]
-        public byte lodNear { get { return desc.lodNear; } set { desc.lodNear = value; SignalPropertyChange(); } }
+        public byte LodNear { get { return desc.lodNear; } set { desc.lodNear = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public byte lodFar { get { return desc.lodFar; } set { desc.lodFar = value; SignalPropertyChange(); } }
+        public byte LodFar { get { return desc.lodFar; } set { desc.lodFar = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public byte lodMinEmit { get { return desc.lodMinEmit; } set { desc.lodMinEmit = value; SignalPropertyChange(); } }
+        public byte LodMinEmit { get { return desc.lodMinEmit; } set { desc.lodMinEmit = value; SignalPropertyChange(); } }
         [Category("Emitter Descriptor")]
-        public byte lodAlpha { get { return desc.lodAlpha; } set { desc.lodAlpha = value; SignalPropertyChange(); } }
-
+        public byte LodAlpha { get { return desc.lodAlpha; } set { desc.lodAlpha = value; SignalPropertyChange(); } }
+        
         [Category("Emitter Descriptor")]
-        public uint randomSeed { get { return desc.randomSeed; } set { desc.randomSeed = value; SignalPropertyChange(); } }
+        public uint RandomSeed { get { return desc.randomSeed; } set { desc.randomSeed = value; SignalPropertyChange(); } }
 
         //[Category("Emitter Descriptor")]
         //public byte userdata1 { get { fixed (byte* dat = desc.userdata) return dat[0]; } set { fixed (byte* dat = desc.userdata) dat[0] = value; SignalPropertyChange(); } }
@@ -567,16 +742,22 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Draw Settings
 
+        [Category("Draw Settings")]
         public EmitterDrawSetting.DrawFlag mFlags { get { return (EmitterDrawSetting.DrawFlag)(ushort)drawSetting.mFlags; } set { drawSetting.mFlags = (ushort)value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public byte ACmpComp0 { get { return drawSetting.mACmpComp0; } set { drawSetting.mACmpComp0 = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public byte ACmpComp1 { get { return drawSetting.mACmpComp1; } set { drawSetting.mACmpComp1 = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public byte ACmpOp { get { return drawSetting.mACmpOp; } set { drawSetting.mACmpOp = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public byte TevStageCount { get { return drawSetting.mNumTevs; } set { drawSetting.mNumTevs = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public bool FlagClamp { get { return drawSetting.mFlagClamp != 0; } set { drawSetting.mFlagClamp = (byte)(value ? 1: 0); SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public EmitterDrawSetting.IndirectTargetStage IndirectTargetStage { get { return (EmitterDrawSetting.IndirectTargetStage)drawSetting.mIndirectTargetStage; } set { drawSetting.mIndirectTargetStage = (byte)value; SignalPropertyChange(); } }
 
-        public byte mACmpComp0 { get { return drawSetting.mACmpComp0; } set { drawSetting.mACmpComp0 = value; SignalPropertyChange(); } }
-        public byte mACmpComp1 { get { return drawSetting.mACmpComp1; } set { drawSetting.mACmpComp1 = value; SignalPropertyChange(); } }
-        public byte mACmpOp { get { return drawSetting.mACmpOp; } set { drawSetting.mACmpOp = value; SignalPropertyChange(); } }
-
-        public byte mNumTevs { get { return drawSetting.mNumTevs; } set { drawSetting.mNumTevs = value; SignalPropertyChange(); } }
-        public byte mFlagClamp { get { return drawSetting.mFlagClamp; } set { drawSetting.mFlagClamp = value; SignalPropertyChange(); } }
-
-        public EmitterDrawSetting.IndirectTargetStage mIndirectTargetStage { get { return (EmitterDrawSetting.IndirectTargetStage)drawSetting.mIndirectTargetStage; } set { drawSetting.mIndirectTargetStage = (byte)value; SignalPropertyChange(); } }
+        #region Old
 
         //public byte mTevTexture1 { get { return drawSetting.mTevTexture1; } set { drawSetting.mTevTexture1 = value; SignalPropertyChange(); } }
         //public byte mTevTexture2 { get { return drawSetting.mTevTexture2; } set { drawSetting.mTevTexture2 = value; SignalPropertyChange(); } }
@@ -767,7 +948,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         //public TevKColorSel mTevKColorSel4 { get { return (TevKColorSel)drawSetting.mTevKColorSel4; } set { drawSetting.mTevKColorSel4 = (byte)value; SignalPropertyChange(); } }
         //[Category("Constant Register Selection")]
         //public TevKAlphaSel mTevKAlphaSel4 { get { return (TevKAlphaSel)drawSetting.mTevKAlphaSel4; } set { drawSetting.mTevKAlphaSel4 = (byte)value; SignalPropertyChange(); } }
-        
+
+        #endregion
+
         //BlendMode
         [Category("Blend Mode")]
         public GXBlendMode BlendType { get { return (GXBlendMode)drawSetting.mBlendMode.mType; } set { drawSetting.mBlendMode.mType = (byte)value; SignalPropertyChange(); } }
@@ -780,75 +963,360 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //Color
         [Category("Color Input")]
-        public EmitterDrawSetting.ColorInput.RasColor cmRasColor { get { return (EmitterDrawSetting.ColorInput.RasColor)drawSetting.mColorInput.mRasColor; } set { drawSetting.mColorInput.mRasColor = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.ColorInput.RasColor RasterColor { get { return (EmitterDrawSetting.ColorInput.RasColor)drawSetting.mColorInput.mRasColor; } set { drawSetting.mColorInput.mRasColor = (byte)value; SignalPropertyChange(); } }
         [Category("Color Input")]
-        public EmitterDrawSetting.ColorInput.TevColor cmTevColor1 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevColor1; } set { drawSetting.mColorInput.mTevColor1 = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.ColorInput.TevColor TevColor1 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevColor1; } set { drawSetting.mColorInput.mTevColor1 = (byte)value; SignalPropertyChange(); } }
         [Category("Color Input")]
-        public EmitterDrawSetting.ColorInput.TevColor cmTevColor2 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevColor2; } set { drawSetting.mColorInput.mTevColor2 = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.ColorInput.TevColor TevColor2 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevColor2; } set { drawSetting.mColorInput.mTevColor2 = (byte)value; SignalPropertyChange(); } }
         [Category("Color Input")]
-        public EmitterDrawSetting.ColorInput.TevColor cmTevColor3 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevColor3; } set { drawSetting.mColorInput.mTevColor3 = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.ColorInput.TevColor TevColor3 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevColor3; } set { drawSetting.mColorInput.mTevColor3 = (byte)value; SignalPropertyChange(); } }
         [Category("Color Input")]
-        public EmitterDrawSetting.ColorInput.TevColor cmTevKColor1 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevKColor1; } set { drawSetting.mColorInput.mTevKColor1 = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.ColorInput.TevColor TevKColor1 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevKColor1; } set { drawSetting.mColorInput.mTevKColor1 = (byte)value; SignalPropertyChange(); } }
         [Category("Color Input")]
-        public EmitterDrawSetting.ColorInput.TevColor cmTevKColor2 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevKColor2; } set { drawSetting.mColorInput.mTevKColor2 = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.ColorInput.TevColor TevKColor2 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevKColor2; } set { drawSetting.mColorInput.mTevKColor2 = (byte)value; SignalPropertyChange(); } }
         [Category("Color Input")]
-        public EmitterDrawSetting.ColorInput.TevColor cmTevKColor3 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevKColor3; } set { drawSetting.mColorInput.mTevKColor3 = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.ColorInput.TevColor TevKColor3 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevKColor3; } set { drawSetting.mColorInput.mTevKColor3 = (byte)value; SignalPropertyChange(); } }
         [Category("Color Input")]
-        public EmitterDrawSetting.ColorInput.TevColor cmTevKColor4 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevKColor4; } set { drawSetting.mColorInput.mTevKColor4 = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.ColorInput.TevColor TevKColor4 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mColorInput.mTevKColor4; } set { drawSetting.mColorInput.mTevKColor4 = (byte)value; SignalPropertyChange(); } }
         
-        //Alpha
-        [Category("Alpha Input")]
-        public EmitterDrawSetting.ColorInput.RasColor amRasColor { get { return (EmitterDrawSetting.ColorInput.RasColor)drawSetting.mAlphaInput.mRasColor; } set { drawSetting.mAlphaInput.mRasColor = (byte)value; SignalPropertyChange(); } }
-        [Category("Alpha Input")]
-        public EmitterDrawSetting.ColorInput.TevColor amTevColor1 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevColor1; } set { drawSetting.mAlphaInput.mTevColor1 = (byte)value; SignalPropertyChange(); } }
-        [Category("Alpha Input")]
-        public EmitterDrawSetting.ColorInput.TevColor amTevColor2 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevColor2; } set { drawSetting.mAlphaInput.mTevColor2 = (byte)value; SignalPropertyChange(); } }
-        [Category("Alpha Input")]
-        public EmitterDrawSetting.ColorInput.TevColor amTevColor3 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevColor3; } set { drawSetting.mAlphaInput.mTevColor3 = (byte)value; SignalPropertyChange(); } }
-        [Category("Alpha Input")]
-        public EmitterDrawSetting.ColorInput.TevColor amTevKColor1 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevKColor1; } set { drawSetting.mAlphaInput.mTevKColor1 = (byte)value; SignalPropertyChange(); } }
-        [Category("Alpha Input")]
-        public EmitterDrawSetting.ColorInput.TevColor amTevKColor2 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevKColor2; } set { drawSetting.mAlphaInput.mTevKColor2 = (byte)value; SignalPropertyChange(); } }
-        [Category("Alpha Input")]
-        public EmitterDrawSetting.ColorInput.TevColor amTevKColor3 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevKColor3; } set { drawSetting.mAlphaInput.mTevKColor3 = (byte)value; SignalPropertyChange(); } }
-        [Category("Alpha Input")]
-        public EmitterDrawSetting.ColorInput.TevColor amTevKColor4 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevKColor4; } set { drawSetting.mAlphaInput.mTevKColor4 = (byte)value; SignalPropertyChange(); } }
+        ////Alpha
+        //[Category("Alpha Input")]
+        //public EmitterDrawSetting.ColorInput.RasColor amRasColor { get { return (EmitterDrawSetting.ColorInput.RasColor)drawSetting.mAlphaInput.mRasColor; } set { drawSetting.mAlphaInput.mRasColor = (byte)value; SignalPropertyChange(); } }
+        //[Category("Alpha Input")]
+        //public EmitterDrawSetting.ColorInput.TevColor amTevColor1 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevColor1; } set { drawSetting.mAlphaInput.mTevColor1 = (byte)value; SignalPropertyChange(); } }
+        //[Category("Alpha Input")]
+        //public EmitterDrawSetting.ColorInput.TevColor amTevColor2 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevColor2; } set { drawSetting.mAlphaInput.mTevColor2 = (byte)value; SignalPropertyChange(); } }
+        //[Category("Alpha Input")]
+        //public EmitterDrawSetting.ColorInput.TevColor amTevColor3 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevColor3; } set { drawSetting.mAlphaInput.mTevColor3 = (byte)value; SignalPropertyChange(); } }
+        //[Category("Alpha Input")]
+        //public EmitterDrawSetting.ColorInput.TevColor amTevKColor1 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevKColor1; } set { drawSetting.mAlphaInput.mTevKColor1 = (byte)value; SignalPropertyChange(); } }
+        //[Category("Alpha Input")]
+        //public EmitterDrawSetting.ColorInput.TevColor amTevKColor2 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevKColor2; } set { drawSetting.mAlphaInput.mTevKColor2 = (byte)value; SignalPropertyChange(); } }
+        //[Category("Alpha Input")]
+        //public EmitterDrawSetting.ColorInput.TevColor amTevKColor3 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevKColor3; } set { drawSetting.mAlphaInput.mTevKColor3 = (byte)value; SignalPropertyChange(); } }
+        //[Category("Alpha Input")]
+        //public EmitterDrawSetting.ColorInput.TevColor amTevKColor4 { get { return (EmitterDrawSetting.ColorInput.TevColor)drawSetting.mAlphaInput.mTevKColor4; } set { drawSetting.mAlphaInput.mTevKColor4 = (byte)value; SignalPropertyChange(); } }
 
-        public GXCompare mZCompareFunc { get { return (GXCompare)drawSetting.mZCompareFunc; } set { drawSetting.mZCompareFunc = (byte)value; SignalPropertyChange(); } }
-        public EmitterDrawSetting.AlphaFlickType mAlphaFlickType { get { return (EmitterDrawSetting.AlphaFlickType)drawSetting.mAlphaFlickType; } set { drawSetting.mAlphaFlickType = (byte)value; SignalPropertyChange(); } }
-        public ushort mAlphaFlickCycle { get { return drawSetting.mAlphaFlickCycle; } set { drawSetting.mAlphaFlickCycle = value; SignalPropertyChange(); } }
-        public byte mAlphaFlickRandom { get { return drawSetting.mAlphaFlickRandom; } set { drawSetting.mAlphaFlickRandom = value; SignalPropertyChange(); } }
-        public byte mAlphaFlickAmplitude { get { return drawSetting.mAlphaFlickAmplitude; } set { drawSetting.mAlphaFlickAmplitude = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public GXCompare ZCompareFunc { get { return (GXCompare)drawSetting.mZCompareFunc; } set { drawSetting.mZCompareFunc = (byte)value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public EmitterDrawSetting.AlphaFlickType AlphaFlickType { get { return (EmitterDrawSetting.AlphaFlickType)drawSetting.mAlphaFlickType; } set { drawSetting.mAlphaFlickType = (byte)value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public ushort AlphaFlickCycle { get { return drawSetting.mAlphaFlickCycle; } set { drawSetting.mAlphaFlickCycle = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public byte AlphaFlickRandom { get { return drawSetting.mAlphaFlickRandom; } set { drawSetting.mAlphaFlickRandom = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public byte AlphaFlickAmplitude { get { return drawSetting.mAlphaFlickAmplitude; } set { drawSetting.mAlphaFlickAmplitude = value; SignalPropertyChange(); } }
 
         //mLighting 
         [Category("Lighting")]
-        public EmitterDrawSetting.Lighting.Mode mMode { get { return (EmitterDrawSetting.Lighting.Mode)drawSetting.mLighting.mMode; } set { drawSetting.mLighting.mMode = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.Lighting.Mode Mode { get { return (EmitterDrawSetting.Lighting.Mode)drawSetting.mLighting.mMode; } set { drawSetting.mLighting.mMode = (byte)value; SignalPropertyChange(); } }
         [Category("Lighting")]
-        public EmitterDrawSetting.Lighting.Type mlType { get { return (EmitterDrawSetting.Lighting.Type)drawSetting.mLighting.mType; } set { drawSetting.mLighting.mMode = (byte)value; SignalPropertyChange(); } }
+        public EmitterDrawSetting.Lighting.Type LightType { get { return (EmitterDrawSetting.Lighting.Type)drawSetting.mLighting.mType; } set { drawSetting.mLighting.mMode = (byte)value; SignalPropertyChange(); } }
+        [Category("Lighting"), TypeConverter(typeof(RGBAStringConverter))]
+        public RGBAPixel Ambient { get { return drawSetting.mLighting.mAmbient; } set { drawSetting.mLighting.mAmbient = value; SignalPropertyChange(); } }
+        [Category("Lighting"), TypeConverter(typeof(RGBAStringConverter))]
+        public RGBAPixel Diffuse { get { return drawSetting.mLighting.mDiffuse; } set { drawSetting.mLighting.mDiffuse = value; SignalPropertyChange(); } }
         [Category("Lighting")]
-        public RGBAPixel mAmbient { get { return drawSetting.mLighting.mAmbient; } set { drawSetting.mLighting.mAmbient = value; SignalPropertyChange(); } }
-        [Category("Lighting")]
-        public RGBAPixel mDiffuse { get { return drawSetting.mLighting.mDiffuse; } set { drawSetting.mLighting.mDiffuse = value; SignalPropertyChange(); } }
-        [Category("Lighting")]
-        public float mRadius { get { return drawSetting.mLighting.mRadius; } set { drawSetting.mLighting.mRadius = value; SignalPropertyChange(); } }
-        [Category("Lighting")]
-        public Vector3 mPosition { get { return drawSetting.mLighting.mPosition; } set { drawSetting.mLighting.mPosition = value; SignalPropertyChange(); } }
-
+        public float Radius { get { return drawSetting.mLighting.mRadius; } set { drawSetting.mLighting.mRadius = value; SignalPropertyChange(); } }
+        [Category("Lighting"), TypeConverter(typeof(Vector3StringConverter))]
+        public Vector3 Position { get { return drawSetting.mLighting.mPosition; } set { drawSetting.mLighting.mPosition = value; SignalPropertyChange(); } }
+        
+        //[Category("Draw Settings")]
         //public fixed float mIndTexOffsetMtx[6] { get { return drawSetting.mFlags; } set { drawSetting.mFlags = value; SignalPropertyChange(); } } //2x3 Matrix
-        public sbyte mIndTexScaleExp { get { return drawSetting.mIndTexScaleExp; } set { drawSetting.mIndTexScaleExp = value; SignalPropertyChange(); } }
-        public sbyte pivotX { get { return drawSetting.pivotX; } set { drawSetting.pivotX = value; SignalPropertyChange(); } }
-        public sbyte pivotY { get { return drawSetting.pivotY; } set { drawSetting.pivotY = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public sbyte IndTexScaleExp { get { return drawSetting.mIndTexScaleExp; } set { drawSetting.mIndTexScaleExp = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public sbyte PivotX { get { return drawSetting.pivotX; } set { drawSetting.pivotX = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public sbyte PivotY { get { return drawSetting.pivotY; } set { drawSetting.pivotY = value; SignalPropertyChange(); } }
+        //[Category("Draw Settings")]
         //public byte padding { get { return drawSetting.padding; } set { drawSetting.padding = value; SignalPropertyChange(); } }
-        public byte ptcltype { get { return drawSetting.ptcltype; } set { drawSetting.ptcltype = value; SignalPropertyChange(); } }
-        public byte typeOption { get { return drawSetting.typeOption; } set { drawSetting.typeOption = value; SignalPropertyChange(); } }
-        public byte typeDir { get { return drawSetting.typeDir; } set { drawSetting.typeDir = value; SignalPropertyChange(); } }
-        public byte typeAxis { get { return drawSetting.typeAxis; } set { drawSetting.typeAxis = value; SignalPropertyChange(); } }
-        public byte typeOption0 { get { return drawSetting.typeOption0; } set { drawSetting.typeOption0 = value; SignalPropertyChange(); } }
-        public byte typeOption1 { get { return drawSetting.typeOption1; } set { drawSetting.typeOption1 = value; SignalPropertyChange(); } }
-        public byte typeOption2 { get { return drawSetting.typeOption2; } set { drawSetting.typeOption2 = value; SignalPropertyChange(); } }
-        //public byte padding4 { get { return drawSetting.padding4; } set { drawSetting.padding4 = value; SignalPropertyChange(); } }
-        public float zOffset { get { return drawSetting.zOffset; } set { drawSetting.zOffset = value; SignalPropertyChange(); } }
+        [Category("Particle Settings")]
+        public EmitterDrawSetting.Type ParticleType 
+        {
+            get { return (EmitterDrawSetting.Type)drawSetting.ptcltype; }
+            set
+            {
+                if (!(ParticleType >= EmitterDrawSetting.Type.Stripe && value >= EmitterDrawSetting.Type.Stripe))
+                    typeOption2._data = 0;
 
+                drawSetting.ptcltype = (byte)value;
+
+                SignalPropertyChange();
+                UpdateProperties();
+            }
+        }
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffBillboardAssist))]
+        public string BillboardAssist 
+        {
+            get
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Billboard)
+                    return ((EmitterDrawSetting.BillboardAssist)drawSetting.typeOption).ToString();
+                else
+                    return "";
+            } 
+            set
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Billboard && !String.IsNullOrEmpty(value))
+                {
+                    drawSetting.typeOption = (byte)(EmitterDrawSetting.BillboardAssist)Enum.Parse(typeof(EmitterDrawSetting.BillboardAssist), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffStripeAssist))]
+        public string StripeAssist
+        {
+            get
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe)
+                    return ((EmitterDrawSetting.StripeAssist)drawSetting.typeOption).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe && !String.IsNullOrEmpty(value))
+                {
+                    drawSetting.typeOption = (byte)(EmitterDrawSetting.StripeAssist)Enum.Parse(typeof(EmitterDrawSetting.StripeAssist), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffAssist))]
+        public string Assist
+        {
+            get
+            {
+                if (ParticleType != EmitterDrawSetting.Type.Billboard)
+                    return ((EmitterDrawSetting.Assist)drawSetting.typeOption).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType != EmitterDrawSetting.Type.Billboard && !String.IsNullOrEmpty(value))
+                {
+                    drawSetting.typeOption = (byte)(EmitterDrawSetting.Assist)Enum.Parse(typeof(EmitterDrawSetting.Assist), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffBillboardDirection))]
+        public string BillboardDirection
+        {
+            get
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Billboard)
+                    return ((EmitterDrawSetting.BillboardAhead)drawSetting.typeDir).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Billboard && !String.IsNullOrEmpty(value))
+                {
+                    drawSetting.typeDir = (byte)(EmitterDrawSetting.BillboardAhead)Enum.Parse(typeof(EmitterDrawSetting.BillboardAhead), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffDirection))]
+        public string Direction
+        {
+            get
+            {
+                if (ParticleType != EmitterDrawSetting.Type.Billboard)
+                    return ((EmitterDrawSetting.Ahead)drawSetting.typeOption).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType != EmitterDrawSetting.Type.Billboard && !String.IsNullOrEmpty(value))
+                {
+                    drawSetting.typeOption = (byte)(EmitterDrawSetting.Ahead)Enum.Parse(typeof(EmitterDrawSetting.Ahead), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+
+        [Category("Particle Settings")]
+        public EmitterDrawSetting.RotateAxis TypeAxis { get { return (EmitterDrawSetting.RotateAxis)drawSetting.typeAxis; } set { drawSetting.typeAxis = (byte)value; SignalPropertyChange(); } }
+
+        private Bin8 typeOption2;
+
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffStripeConnect))]
+        public string StripeConnect
+        {
+            get
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe)
+                    return ((EmitterDrawSetting.StripeConnect)typeOption2[0, 3]).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe && !String.IsNullOrEmpty(value))
+                {
+                    typeOption2[0, 3] = (byte)(EmitterDrawSetting.StripeConnect)Enum.Parse(typeof(EmitterDrawSetting.StripeConnect), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffStripeInitialPrevAxis))]
+        public string StripeInitialPrevAxis
+        {
+            get
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe)
+                    return ((EmitterDrawSetting.StripeInitialPrevAxis)typeOption2[3, 3]).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe && !String.IsNullOrEmpty(value))
+                {
+                    typeOption2[3, 3] = (byte)(EmitterDrawSetting.StripeInitialPrevAxis)Enum.Parse(typeof(EmitterDrawSetting.StripeInitialPrevAxis), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffStripeTexmapType))]
+        public string StripeTexmapType
+        {
+            get
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe)
+                    return ((EmitterDrawSetting.StripeTexmapType)typeOption2[6, 1]).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe && !String.IsNullOrEmpty(value))
+                {
+                    typeOption2[6, 1] = (byte)(EmitterDrawSetting.StripeTexmapType)Enum.Parse(typeof(EmitterDrawSetting.StripeTexmapType), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffDirectionalPivot))]
+        public string DirectionalPivot
+        {
+            get
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Directional)
+                    return ((EmitterDrawSetting.DirectionalPivot)typeOption2._data).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Directional && !String.IsNullOrEmpty(value))
+                {
+                    typeOption2._data = (byte)(EmitterDrawSetting.DirectionalPivot)Enum.Parse(typeof(EmitterDrawSetting.StripeTexmapType), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+
+        [Category("Particle Settings")]
+        public string DirectionalChangeYBySpeed
+        {
+            get
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Directional)
+                    return (drawSetting.typeOption0 != 0).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Directional && !String.IsNullOrEmpty(value))
+                {
+                    bool b;
+                    bool.TryParse(value, out b);
+                    drawSetting.typeOption0 = (byte)(b ? 1 : 0);
+                    SignalPropertyChange();
+                }
+            }
+        }
+        [Category("Particle Settings")]
+        public string StripeTubeVertexCount
+        {
+            get
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe)
+                    return drawSetting.typeOption0.ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType >= EmitterDrawSetting.Type.Stripe && !String.IsNullOrEmpty(value))
+                {
+                    byte b;
+                    byte.TryParse(value, out b);
+                    if (b >= 3)
+                        drawSetting.typeOption0 = b;
+                    SignalPropertyChange();
+                }
+            }
+        }
+
+        [Category("Particle Settings"), TypeConverter(typeof(DropDownListReffDirectionalFace))]
+        public string DirectionalFace
+        {
+            get
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Directional)
+                    return ((EmitterDrawSetting.Face)drawSetting.typeOption1).ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType == EmitterDrawSetting.Type.Directional && !String.IsNullOrEmpty(value))
+                {
+                    drawSetting.typeOption1 = (byte)(EmitterDrawSetting.Face)Enum.Parse(typeof(EmitterDrawSetting.Face), value);
+                    SignalPropertyChange();
+                }
+            }
+        }
+
+        [Category("Particle Settings")]
+        public string StripeInterpDivisionCount
+        {
+            get
+            {
+                if (ParticleType == EmitterDrawSetting.Type.SmoothStripe)
+                    return drawSetting.typeOption1.ToString();
+                else
+                    return "";
+            }
+            set
+            {
+                if (ParticleType == EmitterDrawSetting.Type.SmoothStripe && !String.IsNullOrEmpty(value))
+                {
+                    byte b;
+                    byte.TryParse(value, out b);
+                    if (b >= 1)
+                        drawSetting.typeOption1 = b;
+                    SignalPropertyChange();
+                }
+            }
+        }
+        
+        //[Category("Draw Settings")]
+        //public byte padding4 { get { return drawSetting.padding4; } set { drawSetting.padding4 = value; SignalPropertyChange(); } }
+        [Category("Draw Settings")]
+        public float ZOffset { get { return drawSetting.zOffset; } set { drawSetting.zOffset = value; SignalPropertyChange(); } }
+        
         #endregion
 
         EmitterDrawSetting drawSetting;
@@ -861,13 +1329,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             desc = *Descriptor;
             drawSetting = desc.drawSetting;
+            typeOption2 = new Bin8(drawSetting.typeOption2);
             
-            return mNumTevs > 0;
+            return TevStageCount > 0;
         }
 
         protected override void OnPopulate()
         {
-            int col1 = 4;
+            int col1 = 0;
             int colop1 = col1 + 16;
             int alpha1 = colop1 + 20;
             int alphaop1 = alpha1 + 16;
@@ -876,7 +1345,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 REFFTEVStage s = new REFFTEVStage(i);
 
-                fixed (byte* p = &drawSetting.mTevTexture1)
+                byte* p = (byte*)drawSetting.mTevColor1.Address;
                 {
                     s.kcsel = p[csel1 + i];
                     s.kasel = p[csel1 + 4 + i];
@@ -910,6 +1379,56 @@ namespace BrawlLib.SSBB.ResourceNodes
                 s.te = false;
 
                 s.Parent = this;
+            }
+        }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            return 0x140;
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            EmitterDesc* hdr = (EmitterDesc*)address;
+            *hdr = desc;
+            hdr->drawSetting = drawSetting;
+            hdr->drawSetting.typeOption2 = typeOption2._data;
+            int col1 = 0;
+            int colop1 = col1 + 16;
+            int alpha1 = colop1 + 20;
+            int alphaop1 = alpha1 + 16;
+            int csel1 = alphaop1 + 20;
+            for (int i = 0; i < 4; i++)
+            {
+                REFFTEVStage s = (REFFTEVStage)Children[i];
+
+                byte* p = (byte*)hdr->drawSetting.mTevColor1.Address;
+                {
+                    p[csel1 + i] = (byte)s.kcsel;
+                    p[csel1 + 4 + i] = (byte)s.kasel;
+
+                    p[col1 + 4 * i + 3] = (byte)s.cseld;
+                    p[col1 + 4 * i + 2] = (byte)s.cselc;
+                    p[col1 + 4 * i + 1] = (byte)s.cselb;
+                    p[col1 + 4 * i + 0] = (byte)s.csela;
+
+                    p[colop1 + 5 * i + 0] = (byte)s.cop;
+                    p[colop1 + 5 * i + 1] = (byte)s.cbias;
+                    p[colop1 + 5 * i + 2] = (byte)s.cshift;
+                    p[colop1 + 5 * i + 3] = (byte)s.cclamp;
+                    p[colop1 + 5 * i + 4] = (byte)s.cdest;
+
+                    p[alpha1 + 4 * i + 3] = (byte)s.aseld;
+                    p[alpha1 + 4 * i + 2] = (byte)s.aselc;
+                    p[alpha1 + 4 * i + 1] = (byte)s.aselb;
+                    p[alpha1 + 4 * i + 0] = (byte)s.asela;
+
+                    p[alphaop1 + 5 * i + 0] = (byte)s.aop;
+                    p[alphaop1 + 5 * i + 1] = (byte)s.abias;
+                    p[alphaop1 + 5 * i + 2] = (byte)s.ashift;
+                    p[alphaop1 + 5 * i + 3] = (byte)s.aclamp;
+                    p[alphaop1 + 5 * i + 4] = (byte)s.adest;
+                }
             }
         }
     }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -13,11 +14,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.RWSD; } }
 
         public string Offset { get { if (RSARNode != null) return ((uint)((VoidPtr)Header - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
-        
+
+        [Category("RWSD")]
+        public float Version { get { return _version; } }
+        private float _version;
+
         protected override void GetStrings(LabelBuilder builder)
         {
-            foreach (RWSDDataNode node in Children[0].Children)
-                builder.Add(0, node._name);
+            //foreach (RWSDDataNode node in Children[0].Children)
+            //    builder.Add(0, node._name);
         }
 
         //Finds labels using LABL block between header and footer, also initializes array
@@ -72,6 +77,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
 
+            _version = Header->_header.Version;
+
             ParseBlocks();
 
             return true;
@@ -92,7 +99,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             int count = list->_numEntries;
 
             new RWSDDataGroupNode().Initialize(this, Header->Data, Header->_dataLength);
-            new RWSDSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
+            if (Header->_waveOffset > 0)
+                new RWSDSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
 
             //Get sound info from RSAR (mainly for names)
             if (rsar != null)
@@ -155,17 +163,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             _headerLen = RWSDHeader.Size;
             foreach (ResourceNode g in Children)
                 _headerLen += g.CalculateSize(true);
-            //foreach (RWSDSoundNode s in Children[1].Children)
-            //    _audioLen += s._audioSource.Length;
+            foreach (WAVESoundNode s in Children[1].Children)
+                _audioLen += s._audioSource.Length;
 
-            return _headerLen + (_audioLen = _audioSource.Length);
+            return _headerLen + _audioLen;
         }
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address;
 
             RWSDHeader* header = (RWSDHeader*)address;
-            header->_header._length = length - _audioSource.Length;
+            header->_header._length = length;
             header->_header._tag = RWSDHeader.Tag;
             header->_header._numEntries = 2;
             header->_header._firstOffset = 0x20;
@@ -178,10 +186,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             addr += 0x20; //Advance address to data header
 
-            //VoidPtr audioAddr = addr;
-            //foreach (ResourceNode e in Children)
-            //    audioAddr += e._calcSize;
-            (Children[1] as RWSDSoundGroupNode)._audioAddr = _rebuildAudioAddr;
+            if (RSARNode == null)
+            {
+                VoidPtr audioAddr = addr;
+                foreach (ResourceNode e in Children)
+                    audioAddr += e._calcSize;
+                (Children[1] as RWSDSoundGroupNode)._audioAddr = audioAddr;
+            }
+            else (Children[1] as RWSDSoundGroupNode)._audioAddr = _rebuildAudioAddr;
 
             Children[0].Rebuild(addr, Children[0]._calcSize, true);
             addr += Children[0]._calcSize;

@@ -71,7 +71,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         [Category("Texture Animation Data")]
         public TexMatrixMode MatrixMode { get { return (TexMatrixMode)_matrixMode; } set { _matrixMode = (int)value; SignalPropertyChange(); } }
-        
+
+        [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
+        internal UserDataCollection _userEntries = new UserDataCollection();
+
+        [Category("Texture Animation Data")]
+        public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
+        public string _originalPath;
+
         public void InsertKeyframe(int index)
         {
             FrameCount++;
@@ -99,6 +107,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _loop = Header5->_loop;
                 _numFrames = Header5->_numFrames;
                 _matrixMode = Header5->_matrixMode;
+
+                if (Header5->_origPathOffset > 0)
+                    _originalPath = Header5->OrigPath;
+
+                (_userEntries = new UserDataCollection()).Read(Header5->UserData);
             }
             else
             {
@@ -107,6 +120,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _loop = Header4->_loop;
                 _numFrames = Header4->_numFrames;
                 _matrixMode = Header5->_matrixMode;
+
+                if (Header4->_origPathOffset > 0)
+                    _originalPath = Header4->OrigPath;
             }
 
             return Header4->Group->_numEntries > 0;
@@ -125,6 +141,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             table.Add(Name);
             foreach (SRT0EntryNode n in Children)
                 table.Add(n.Name);
+
+            foreach (UserDataClass s in _userEntries)
+                table.Add(s._name);
+
+            if (!String.IsNullOrEmpty(_originalPath))
+                table.Add(_originalPath);
         }
 
         protected internal override void PostProcess(VoidPtr bresAddress, VoidPtr dataAddress, int dataLength, StringTable stringTable)
@@ -134,9 +156,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             SRT0v4* header = (SRT0v4*)dataAddress;
 
             if (_version == 5)
+            {
                 ((SRT0v5*)dataAddress)->ResourceStringAddress = stringTable[Name] + 4;
+                if (!String.IsNullOrEmpty(_originalPath))
+                    ((SRT0v5*)dataAddress)->OrigPathAddress = stringTable[_originalPath] + 4;
+            }
             else
+            {
                 header->ResourceStringAddress = stringTable[Name] + 4;
+                if (!String.IsNullOrEmpty(_originalPath))
+                    header->OrigPathAddress = stringTable[_originalPath] + 4;
+            }
 
             ResourceGroup* group = header->Group;
             group->_first = new ResourceEntry(0xFFFF, 0, 0, 0, 0);
@@ -150,6 +180,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 ResourceEntry.Build(group, index++, dataAddress, (BRESString*)stringTable[n.Name]);
                 n.PostProcess(dataAddress, stringTable);
             }
+
+            if (_version == 5) _userEntries.PostProcess(((SRT0v5*)dataAddress)->UserData, stringTable);
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -185,6 +217,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 entryAddress += n._entryLen;
                 dataAddress += n._dataLen;
             }
+
+            if (_userEntries.Count > 0 && _version == 5)
+            {
+                SRT0v5* header = (SRT0v5*)address;
+                header->UserData = dataAddress;
+                _userEntries.Write(dataAddress);
+            }
         }
 
         protected override int OnCalculateSize(bool force)
@@ -192,27 +231,30 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = (Version == 5 ? SRT0v5.Size : SRT0v4.Size) + 0x18 + Children.Count * 0x10;
             foreach (SRT0EntryNode entry in Children)
                 size += entry.CalculateSize(true);
+            size += _userEntries.GetSize();
             return size;
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((BRESCommonHeader*)source.Address)->_tag == SRT0v4.Tag ? new SRT0Node() : null; }
 
-        internal unsafe SRT0TextureNode FindOrCreateEntry(string name, int index)
+        internal unsafe SRT0TextureNode FindOrCreateEntry(string name, int index, bool ind)
         {
             foreach (SRT0EntryNode t in Children)
                 if (t.Name == name)
                 {
-                    foreach (SRT0TextureNode n in t.Children)
-                        if (n.TextureIndex == index)
-                            return n;
-                    SRT0TextureNode child = new SRT0TextureNode(index) { _numFrames = _numFrames };
+                    int value = 0;
+                    foreach (SRT0TextureNode x in t.Children)
+                        if (x._textureIndex == value && x._indirect == ind)
+                            return x;
+
+                    SRT0TextureNode child = new SRT0TextureNode(index, ind) { _numFrames = _numFrames };
                     t.AddChild(child);
                     return child;
                 }
             SRT0EntryNode entry = new SRT0EntryNode();
             entry.Name = name;
             AddChild(entry);
-            SRT0TextureNode tex = new SRT0TextureNode(index) { _numFrames = _numFrames };
+            SRT0TextureNode tex = new SRT0TextureNode(index, ind) { _numFrames = _numFrames };
             entry.AddChild(tex);
             return tex;
         }
@@ -229,11 +271,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal SRT0Entry* Header { get { return (SRT0Entry*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.SRT0Entry; } }
 
-        public int[] _usageIndices = new int[8];
+        public int[] _usageIndices = new int[11];
         
         public TextureIndices _texIndices;
         public IndirectTextureIndices _indIndices;
-        public int _unk1;
 
         protected override bool OnInitialize()
         {
@@ -242,16 +283,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _texIndices = (TextureIndices)(int)Header->_textureIndices;
             _indIndices = (IndirectTextureIndices)(int)Header->_indirectIndices;
-            _unk1 = Header->_indirectIndices;
 
             for (int i = 0; i < 8; i++)
                 _usageIndices[i] = ((Header->_textureIndices >> i) & 1);
 
-            //Indirect animation unsupported for now
-            //for (int i = 0; i < 3; i++)
-            //    _usageIndices[i + 8] = ((Header->_indirectIndices >> i) & 1);
+            for (int i = 0; i < 3; i++)
+                _usageIndices[i + 8] = ((Header->_indirectIndices >> i) & 1);
 
-            return (int)_texIndices > 0;
+            return (int)_texIndices > 0 || (int)_indIndices > 0;
         }
 
         protected internal virtual void PostProcess(VoidPtr dataAddress, StringTable stringTable)
@@ -263,14 +302,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override void OnPopulate()
         {
             int index = 0; VoidPtr addr;
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 11; i++)
                 if (_usageIndices[i] == 1)
-                    new SRT0TextureNode(i).Initialize(this, new DataSource(addr = (VoidPtr)Header->GetEntry(index++), ((SRT0TextureEntry*)addr)->Code.DataSize()));
+                    new SRT0TextureNode(i, i >= 8).Initialize(this, new DataSource(addr = (VoidPtr)Header->GetEntry(index++), ((SRT0TextureEntry*)addr)->Code.DataSize()));
         }
 
         internal int _entryLen 
         {
-            get 
+            get
             {
                 int size = 12;
                 foreach (SRT0TextureNode t in Children)
@@ -296,7 +335,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             SRT0Entry* header = (SRT0Entry*)address;
 
             header->_textureIndices = (int)_texIndices;
-            header->_indirectIndices = _unk1;
+            header->_indirectIndices = (int)_indIndices;
 
             VoidPtr entryAddress = address + 12 + (Children.Count) * 4;
 
@@ -322,7 +361,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = 12;
             foreach (SRT0TextureNode n in Children)
             {
-                _texIndices += 1 << n._textureIndex;
+                if (n._indirect)
+                    _indIndices += 1 << n._textureIndex;
+                else
+                    _texIndices += 1 << n._textureIndex;
                 size += 4 + n.CalculateSize(true);
             }
             return size;
@@ -330,13 +372,22 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void CreateEntry()
         {
+            bool indirect = false;
             int value = 0;
             foreach (SRT0TextureNode t in Children)
-                if (t._textureIndex == value)
+                if (t._textureIndex == value && !t._indirect)
                     value++;
             if (value == 8)
-                return;
-            SRT0TextureNode node = new SRT0TextureNode(value) { _numFrames = ((SRT0Node)Parent).FrameCount };
+            {
+                indirect = true;
+                value = 0;
+                foreach (SRT0TextureNode t in Children)
+                    if (t._textureIndex == value && t._indirect)
+                        value++;
+                if (value == 3)
+                    return;
+            }
+            SRT0TextureNode node = new SRT0TextureNode(value, indirect) { _numFrames = ((SRT0Node)Parent).FrameCount };
             AddChild(node);
         }
     }
@@ -350,18 +401,40 @@ namespace BrawlLib.SSBB.ResourceNodes
         //public SRT0Code Flags { get { return _flags; } }
         public SRT0Code _flags;
 
+        public bool _indirect = false;
+        [Category("SRT0 Texture Entry")]
+        public bool Indirect
+        {
+            get { return _indirect; }
+            set
+            {
+                foreach (SRT0TextureNode t in Parent.Children)
+                    if (t.Index != Index && t._textureIndex == _textureIndex && t._indirect == value)
+                        return;
+
+                _indirect = value;
+
+                Name = (_indirect ? "Ind" : "") + "Texture" + _textureIndex;
+
+                CheckNext();
+                CheckPrev();
+            }
+        }
         [Category("SRT0 Texture Entry")]
         public int TextureIndex
         {
             get { return _textureIndex; }
             set
             {
-                foreach (SRT0TextureNode t in Parent.Children)
-                    if (t.Index != Index && t._textureIndex == (value > 7 ? 7 : value < 0 ? 0 : value))
-                        return; 
-                _textureIndex = value > 7 ? 7 : value < 0 ? 0 : value;
+                int val = _indirect ? value.Clamp(0, 2) : value.Clamp(0, 7);
 
-                Name = "Texture" + _textureIndex;
+                foreach (SRT0TextureNode t in Parent.Children)
+                    if (t.Index != Index && t._textureIndex == val && t._indirect == _indirect)
+                        return;
+
+                _textureIndex = val;
+
+                Name = (_indirect ? "Ind" : "") + "Texture" + _textureIndex;
 
                 CheckNext();
                 CheckPrev();
@@ -369,7 +442,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         public int _textureIndex;
 
-        public SRT0TextureNode(int index) { _textureIndex = index; _name = "Texture" + index; }
+        public SRT0TextureNode(int index, bool indirect)
+        {
+            _textureIndex = index; 
+            _name = "Texture" + index;
+            _indirect = indirect;
+        }
 
         public void CheckNext()
         {
@@ -377,7 +455,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return;
 
             int index = Index;
-            if (_textureIndex > ((SRT0TextureNode)Parent.Children[Index + 1])._textureIndex)
+            if (_textureIndex > ((SRT0TextureNode)Parent.Children[Index + 1])._textureIndex || (_indirect == true && ((SRT0TextureNode)Parent.Children[Index + 1])._indirect == false))
             {
                 doMoveDown();
                 if (index != Index)
@@ -391,7 +469,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return;
 
             int index = Index;
-            if (_textureIndex < ((SRT0TextureNode)Parent.Children[Index - 1])._textureIndex)
+            if (_textureIndex < ((SRT0TextureNode)Parent.Children[Index - 1])._textureIndex || (_indirect == false && ((SRT0TextureNode)Parent.Children[Index - 1])._indirect == true))
             {
                 doMoveUp();
                 if (index != Index)
@@ -433,7 +511,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override bool OnInitialize()
         {
             if (_name == null)
-                _name = "Texture" + _textureIndex;
+                _name = (_indirect ? "Ind" : "") + "Texture" + _textureIndex;
 
             _flags = Header->Code;
 

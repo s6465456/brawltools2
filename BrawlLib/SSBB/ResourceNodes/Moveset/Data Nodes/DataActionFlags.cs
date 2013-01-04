@@ -51,13 +51,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         public uint flags4;
 
         [Category("Raw Flags Binary"), TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 Flags1b { get { return new Bin32((uint)flags1); } set { flags1 = (int)value.data; SignalPropertyChange(); } }
+        public Bin32 Flags1b { get { return new Bin32((uint)flags1); } set { flags1 = (int)value._data; SignalPropertyChange(); } }
         [Category("Raw Flags Binary"), TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 Flags2b { get { return new Bin32((uint)flags2); } set { flags2 = (int)value.data; SignalPropertyChange(); } }
+        public Bin32 Flags2b { get { return new Bin32((uint)flags2); } set { flags2 = (int)value._data; SignalPropertyChange(); } }
         [Category("Raw Flags Binary"), TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 Flags3b { get { return new Bin32((uint)flags3); } set { flags3 = (int)value.data; SignalPropertyChange(); } }
+        public Bin32 Flags3b { get { return new Bin32((uint)flags3); } set { flags3 = (int)value._data; SignalPropertyChange(); } }
         [Category("Raw Flags Binary"), TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 Flags4b { get { return new Bin32(flags4); } set { flags4 = value.data; SignalPropertyChange(); } }
+        public Bin32 Flags4b { get { return new Bin32(flags4); } set { flags4 = value._data; SignalPropertyChange(); } }
 
         [Category("Raw Flags Int")]
         public int Flags1i { get { return flags1; } set { flags1 = value; SignalPropertyChange(); } }

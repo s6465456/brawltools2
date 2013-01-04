@@ -17,7 +17,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal REFT* Header { get { return (REFT*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.REFT; } }
 
-        private int _version;
+        private float _version;
 
         private int _unk1, _unk2, _unk3, _dataLen, _dataOff;
         private int _TableLen;
@@ -25,24 +25,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         private short _TableUnk1;
 
         [Category("REFF Data")]
-        public int Version { get { return _version; } }
-        [Category("REFT Data")]
-        public int DataLength { get { return _dataLen; } }
-        [Category("REFT Data")]
-        public int DataOffset { get { return _dataOff; } }
-        [Category("REFT Data")]
-        public int Unknown1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
-        [Category("REFT Data")]
-        public int Unknown2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
-        [Category("REFT Data")]
-        public int Unknown3 { get { return _unk3; } set { _unk3 = value; SignalPropertyChange(); } }
+        public float Version { get { return _version; } }
+        //[Category("REFT Data")]
+        //public int DataLength { get { return _dataLen; } }
+        //[Category("REFT Data")]
+        //public int DataOffset { get { return _dataOff; } }
 
-        [Category("REFT Object Table")]
-        public int Length { get { return _TableLen; } }
-        [Category("REFT Object Table")]
-        public short NumEntries { get { return _TableEntries; } }
-        [Category("REFT Object Table")]
-        public short Unk1 { get { return _TableUnk1; } set { _TableUnk1 = value; SignalPropertyChange(); } }
+        //[Category("REFT Object Table")]
+        //public int Length { get { return _TableLen; } }
+        //[Category("REFT Object Table")]
+        //public short NumEntries { get { return _TableEntries; } }
 
         protected override bool OnInitialize()
         {
@@ -50,13 +42,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             REFT* header = Header;
 
-            _version = header->_header._version;
+            _version = header->_header.Version;
             _name = header->IdString;
             _dataLen = header->_dataLength;
             _dataOff = header->_dataOffset;
-            _unk1 = header->_unk1;
-            _unk2 = header->_unk2;
-            _unk3 = header->_unk3;
+            _unk1 = header->_linkPrev;
+            _unk2 = header->_linkNext;
 
             REFTypeObjectTable* objTable = header->Table;
             _TableLen = (int)objTable->_length;
@@ -89,14 +80,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             REFT* header = (REFT*)address;
-            header->_unk1 = 0;
-            header->_unk2 = 0;
-            header->_unk3 = 0;
+            header->_linkPrev = 0;
+            header->_linkNext = 0;
+            header->_padding = 0;
             header->_dataLength = length - 0x18;
             header->_dataOffset = 0x48;
             header->_header._tag = header->_tag = REFT.Tag;
             header->_header._endian = -2;
-            header->_header._version = 0x0700;
+            header->_header._version = 7;
             header->_header._firstOffset = 0x10;
             header->_header._numEntries = 1;
             header->IdString = Name;
@@ -123,7 +114,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     }
     public unsafe class REFTEntryNode : ResourceNode, IImageSource, IColorSource
     {
-        internal REFTData* Header { get { return (REFTData*)WorkingUncompressed.Address; } }
+        internal REFTImageHeader* Header { get { return (REFTImageHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.REFTImage; } }
 
         public int _offset;
@@ -134,7 +125,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         int numColors, _imgLen, _pltLen;
         int _width, _height;
         uint _unk;
-        
+        int _lod;
+        float _lodBias;
+        internal uint _minFltr;
+        internal uint _magFltr;
+
         [Browsable(false)]
         public bool hasPlt { get { return Header->_colorCount > 0; } }
 
@@ -154,7 +149,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int ImageLength { get { return _imgLen; } }
         [Category("REFT Image")]
         public int PaletteLength { get { return _pltLen; } }
-        
+        [Category("REFT Image")]
+        public int LevelOfDetail { get { return _lod; } }
+        [Category("REFT Image")]
+        public MDL0MaterialRefNode.TextureMinFilter MinFilter { get { return (MDL0MaterialRefNode.TextureMinFilter)_minFltr; } set { _minFltr = (uint)value; SignalPropertyChange(); } }
+        [Category("REFT Image")]
+        public MDL0MaterialRefNode.TextureMagFilter MagFilter { get { return (MDL0MaterialRefNode.TextureMagFilter)_magFltr; } set { _magFltr = (uint)value; SignalPropertyChange(); } }
+        [Category("REFT Image")]
+        public float LODBias { get { return _lodBias; } set { _lodBias = value; SignalPropertyChange(); } }
+
         [Category("REFT Entry")]
         public int REFTOffset { get { return _offset; } }
         [Category("REFT Entry")]
@@ -167,7 +170,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             try
             {
                 if (hasPlt == true)
-                    return TextureConverter.DecodeREFTIndexed((byte*)Header + 0x20, Width, Height, Palette, index + 1, _format);
+                    return TextureConverter.DecodeIndexed((byte*)Header + 0x20, Width, Height, Palette, index + 1, _format);
                 else
                     return TextureConverter.Decode((byte*)Header + 0x20, Width, Height, index + 1, _format);
             }
@@ -211,13 +214,34 @@ namespace BrawlLib.SSBB.ResourceNodes
             _width = Header->_width;
             _height = Header->_height;
             _pltLen = (int)Header->_pltSize;
+            _lod = Header->_mipmap;
+            _minFltr = Header->_min_filt;
+            _magFltr = Header->_mag_filt;
 
             return false;
         }
 
+        //public void Replace(Bitmap bmp)
+        //{
+        //    ReplaceRaw(TextureConverter.Get(_format).EncodeREFTTexture(bmp, 1, PaletteFormat, _format == WiiPixelFormat.CI4 || _format == WiiPixelFormat.CI8));
+        //}
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            base.OnRebuild(address, length, force);
+
+            REFTImageHeader* header = (REFTImageHeader*)address;
+            header->Set((byte)_minFltr, (byte)_magFltr, (byte)_lodBias);
+        }
+
         public void Replace(Bitmap bmp)
         {
-            ReplaceRaw(TextureConverter.Get(_format).EncodeREFTTexture(bmp, 1, WiiPaletteFormat.IA8, false));
+            FileMap tMap;
+            if (hasPlt)
+                tMap = TextureConverter.Get(_format).EncodeREFTTextureIndexed(bmp, LevelOfDetail, Palette.Entries.Length, PaletteFormat, QuantizationAlgorithm.MedianCut);
+            else
+                tMap = TextureConverter.Get(_format).EncodeREFTTexture(bmp, LevelOfDetail, WiiPaletteFormat.IA8);
+            ReplaceRaw(tMap);
         }
 
         public override unsafe void Replace(string fileName)

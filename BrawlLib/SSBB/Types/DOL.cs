@@ -79,6 +79,7 @@ namespace BrawlLib.SSBBTypes
         public uint DataLoadAddr(int index) { return *((buint*)Address + 25 + index); }
         public uint TextSize(int index) { return *((buint*)Address + 36 + index); }
         public uint DataSize(int index) { return *((buint*)Address + 43 + index); }
+
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }
 }

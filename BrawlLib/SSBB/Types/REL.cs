@@ -6,7 +6,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct RELHeader
     {
-        public const uint Size = 0x4C;
+        public const int Size = 0x4C;
         
         public ModuleInfo _info;
 
@@ -18,7 +18,7 @@ namespace BrawlLib.SSBBTypes
 
         //0x30
 
-        //IDs for sections that contain these
+        //IDs of sections that contain these
         public byte _prologSection; //1
         public byte _epilogSection; //1
         public byte _unresolvedSection; //1
@@ -30,7 +30,7 @@ namespace BrawlLib.SSBBTypes
         public buint _unresolvedOffset;
 
         //0x40
-        public buint _moduleAlign; //Alignment of this model (32 bytes)
+        public buint _moduleAlign; //Alignment of this module (32 bytes)
         public buint _bssAlign; //Alignment of the command list for this module (8 bytes)
         public buint _fixSize; //Pointer to the command list for this module
 
@@ -49,7 +49,7 @@ namespace BrawlLib.SSBBTypes
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 
-        public RELSection* SectionInfo { get { return (RELSection*)(Address + _info.sectionInfoOffset); } }
+        public RELSection* SectionInfo { get { return (RELSection*)(Address + _info._sectionInfoOffset); } }
         public RELImport* Imports { get { return (RELImport*)(Address + _impOffset); } }
         
         public int ImportListCount { get { return (int)(_impSize / RELImport.Size); } }
@@ -141,13 +141,13 @@ namespace BrawlLib.SSBBTypes
     {
         public const int Size = 0x20;
 
-        public buint id;                 // Unique identifier for the module
-        public ModuleLink link;          // Doubly linked list of modules
-        public buint numSections;        // # of sections
-        public buint sectionInfoOffset;  // Offset to section info table
-        public buint nameOffset;         // Offset to module name
-        public buint nameSize;           // Size of module name
-        public buint version;            // Version number
+        public buint _id;                 // Unique identifier for the module
+        public ModuleLink _link;          // Doubly linked list of modules
+        public buint _numSections;        // # of sections
+        public buint _sectionInfoOffset;  // Offset to section info table
+        public buint _nameOffset;         // Offset to module name
+        public buint _nameSize;           // Size of module name
+        public buint _version;            // Version number
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }
@@ -155,8 +155,8 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct VirtualFunctionTable
     {
-        public buint Declaration;
-        public bint ScopeLevel;
+        public buint _declaration;
+        public bint _scopeLevel;
 
         public buint* Functions { get { return (buint*)(Address + 8); } } 
         //(no termination)
@@ -167,11 +167,11 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct Declaration
     {
-        public buint NameOffset;
-        public bint InheritanceOffset;
+        public buint _nameOffset;
+        public bint _inheritanceOffset;
 
-        public string Name { get { return new String((sbyte*)Address + NameOffset); } }
-        public Inheritance* Inheritance { get { return (Inheritance*)(Address + InheritanceOffset); } }
+        public string Name { get { return new String((sbyte*)Address + _nameOffset); } }
+        public Inheritance* Inheritance { get { return (Inheritance*)(Address + _inheritanceOffset); } }
         //(0x00000000 terminated)
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
@@ -180,8 +180,8 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct Inheritance
     {
-        public buint Declaration;
-        public bint ScopeLevel;
+        public buint _declaration;
+        public bint _scopeLevel;
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }

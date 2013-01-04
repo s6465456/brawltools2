@@ -175,11 +175,12 @@ namespace System.Windows.Forms
         {
             using (SoundPathChanger dlg = new SoundPathChanger())
             {
-                dlg.FilePath = _selectedItem._node._extPath;
+                dlg.FilePath = _selectedItem._node.FullExtPath;
+                dlg.dlg.InitialDirectory = TargetNode._origPath.Substring(0, TargetNode._origPath.LastIndexOf('\\'));
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    _selectedItem._node.ExtPath = dlg.FilePath;
-                    _selectedItem.SubItems[2].Text = dlg.FilePath;
+                    _selectedItem._node.FullExtPath = dlg.FilePath;
+                    _selectedItem.SubItems[2].Text = _selectedItem.SubItems[3].Text = _selectedItem._node._extPath;
                 }
             }
         }
@@ -209,9 +210,7 @@ namespace System.Windows.Forms
         {
             if (_selectedItem._node is RSARExtFileNode)
             {
-                int t = Helpers.FindLast(TargetNode.RootNode._origPath, 0, '\\');
-                string p = TargetNode.RootNode._origPath.Substring(0, t) + "\\" + _selectedItem._node.ExtPath.Replace("/", "\\");
-                if (File.Exists(p)) Process.Start(p);
+                if (File.Exists(_selectedItem._node.FullExtPath)) Process.Start(_selectedItem._node.FullExtPath);
                 else mnuPath_Click(this, null);
             }
             else

@@ -25,8 +25,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal VoidPtr Data { get { return (VoidPtr)WorkingUncompressed.Address; } }
 
         [Category("Data"), Browsable(true)]
-        public string Offset { get { if (RSARNode != null) return ((uint)(Data - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
-
+        public string DataOffset { get { if (RSARNode != null) return ((uint)(Data - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
+        
         public VoidPtr _rebuildBase;
         public int _rebuildIndex, _rebuildStringId;
 

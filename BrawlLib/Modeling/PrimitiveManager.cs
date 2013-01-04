@@ -48,7 +48,7 @@ namespace BrawlLib.Modeling
 
         public ElementDescriptor _desc;
         internal int _pointCount, _faceCount, _stride;
-        public MDL0PolygonNode _polygon;
+        public MDL0ObjectNode _polygon;
 
         //The primitives indices match up to these values as an index.
         internal UnsafeBuffer[] _faceData = new UnsafeBuffer[12];
@@ -141,7 +141,7 @@ namespace BrawlLib.Modeling
         #endregion
 
         public PrimitiveManager() { }
-        public PrimitiveManager(MDL0Polygon* polygon, AssetStorage assets, IMatrixNode[] nodes, MDL0PolygonNode p)
+        public PrimitiveManager(MDL0Object* polygon, AssetStorage assets, IMatrixNode[] nodes, MDL0ObjectNode p)
         {
             _polygon = p;
             Nodes = new Dictionary<int, IMatrixNode>();
@@ -155,28 +155,32 @@ namespace BrawlLib.Modeling
             _faceCount = polygon->_numFaces;
 
             //Grab asset lists in sequential order.
-            if ((id = polygon->_vertexId) >= 0)
-            {
-                pAssetList[0] = (byte*)assets.Assets[0][id].Address;
+
+            if (polygon->_vertexFormat.PosFormat != XFDataFormat.None)
                 pOutList[0] = (byte*)(_faceData[0] = new UnsafeBuffer(12 * _pointCount)).Address;
-            }
-            if ((id = polygon->_normalId) >= 0)
-            {
-                pAssetList[1] = (byte*)assets.Assets[1][id].Address;
+            if ((id = polygon->_vertexId) >= 0)
+                pAssetList[0] = (byte*)assets.Assets[0][id].Address;
+
+            if (polygon->_vertexFormat.NormalFormat != XFDataFormat.None)
                 pOutList[1] = (byte*)(_faceData[1] = new UnsafeBuffer(12 * _pointCount)).Address;
-            }
+            if ((id = polygon->_normalId) >= 0)
+                pAssetList[1] = (byte*)assets.Assets[1][id].Address;
+
             for (int i = 0, x = 2; i < 2; i++, x++)
-                if ((id = ((bshort*)polygon->_colorIds)[i]) >= 0)
-                {
-                    pAssetList[x] = (byte*)assets.Assets[2][id].Address;
+            {
+                if (polygon->_vertexFormat.GetColorFormat(i) != XFDataFormat.None)
                     pOutList[x] = (byte*)(_faceData[x] = new UnsafeBuffer(4 * _pointCount)).Address;
-                }
+                if ((id = ((bshort*)polygon->_colorIds)[i]) >= 0)
+                    pAssetList[x] = (byte*)assets.Assets[2][id].Address;
+            }
+
             for (int i = 0, x = 4; i < 8; i++, x++)
-                if ((id = ((bshort*)polygon->_uids)[i]) >= 0)
-                {
-                    pAssetList[x] = (byte*)assets.Assets[3][id].Address;
+            {
+                if (polygon->_vertexFormat.GetUVFormat(i) != XFDataFormat.None)
                     pOutList[x] = (byte*)(_faceData[x] = new UnsafeBuffer(8 * _pointCount)).Address;
-                }
+                if ((id = ((bshort*)polygon->_uids)[i]) >= 0)
+                    pAssetList[x] = (byte*)assets.Assets[3][id].Address;
+            }
 
             //Compile decode script by reading the polygon def list
             //This sets how to read the facepoints
@@ -197,7 +201,7 @@ namespace BrawlLib.Modeling
             { _graphicsBuffer.Dispose(); _graphicsBuffer = null; }
         }
 
-        internal void WritePrimitives(MDL0PolygonNode poly, MDL0Polygon* header)
+        internal void WritePrimitives(MDL0ObjectNode poly, MDL0Object* header)
         {
             _polygon = poly;
 
@@ -288,7 +292,7 @@ namespace BrawlLib.Modeling
                         {
                             *(PrimitiveHeader*)address = new PrimitiveHeader() { Type = WiiPrimitiveType.TriangleStrip, Entries = (ushort)tri.points.Count }; address += 3;
                             foreach (Facepoint f in tri.points)
-                                WriteFacepoint(f, g, desc, ref address);
+                                WriteFacepoint(f, g, desc, ref address, poly);
                         }
                     }
                     if (g.Triangles.Count != 0)
@@ -296,9 +300,9 @@ namespace BrawlLib.Modeling
                         *(PrimitiveHeader*)address = new PrimitiveHeader() { Type = WiiPrimitiveType.Triangles, Entries = (ushort)(g.Triangles.Count * 3) }; address += 3;
                         foreach (Triangle tri in g.Triangles)
                         {
-                            WriteFacepoint(tri.x, g, desc, ref address);
-                            WriteFacepoint(tri.y, g, desc, ref address);
-                            WriteFacepoint(tri.z, g, desc, ref address);
+                            WriteFacepoint(tri.x, g, desc, ref address, poly);
+                            WriteFacepoint(tri.y, g, desc, ref address, poly);
+                            WriteFacepoint(tri.z, g, desc, ref address, poly);
                         }
                     }
                 }
@@ -308,13 +312,12 @@ namespace BrawlLib.Modeling
                     {
                         *(PrimitiveHeader*)address = g._headers[i]; address += 3;
                         foreach (Facepoint point in g._points[i])
-                            WriteFacepoint(point, g, desc, ref address);
+                            WriteFacepoint(point, g, desc, ref address, poly);
                     }
                 }
             }
         }
-
-        internal void WriteFacepoint(Facepoint f, PrimitiveGroup g, GXVtxDescList[] desc, ref VoidPtr address)
+        internal void WriteFacepoint(Facepoint f, PrimitiveGroup g, GXVtxDescList[] desc, ref VoidPtr address, MDL0ObjectNode node)
         {
             foreach (GXVtxDescList d in desc)
                 switch (d.attr)
@@ -338,8 +341,9 @@ namespace BrawlLib.Modeling
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
-                                *(BVec3*)address = f.Vertex.Position;
-                                address += 12;
+                                byte* addr = (byte*)address;
+                                node.Model._linker._vertices[node._elementIndices[0]].Write(ref addr, f.VertexIndex);
+                                address = addr;
                                 break;
                             case XFDataFormat.Index8:
                                 *(byte*)address++ = (byte)f.VertexIndex;
@@ -354,8 +358,9 @@ namespace BrawlLib.Modeling
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
-                                *(BVec3*)address = f.Vertex.Normal;
-                                address += 12;
+                                byte* addr = (byte*)address;
+                                node.Model._linker._normals[node._elementIndices[1]].Write(ref addr, f.NormalIndex);
+                                address = addr;
                                 break;
                             case XFDataFormat.Index8:
                                 *(byte*)address++ = (byte)f.NormalIndex;
@@ -371,10 +376,10 @@ namespace BrawlLib.Modeling
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
-                                *(byte*)address++ = (byte)f.Vertex.Color[(int)d.attr - 11].R;
-                                *(byte*)address++ = (byte)f.Vertex.Color[(int)d.attr - 11].G;
-                                *(byte*)address++ = (byte)f.Vertex.Color[(int)d.attr - 11].B;
-                                *(byte*)address++ = (byte)f.Vertex.Color[(int)d.attr - 11].A;
+                                int index = (int)d.attr - 11;
+                                byte* addr = (byte*)address;
+                                node.Model._linker._colors[node._elementIndices[index + 2]].Write(ref addr, f.ColorIndex[index]);
+                                address = addr;
                                 break;
                             case XFDataFormat.Index8:
                                 if ((_polygon._c0Changed && d.attr == GXAttr.GX_VA_CLR0) ||
@@ -404,8 +409,10 @@ namespace BrawlLib.Modeling
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
-                                *(BVec2*)address = f.Vertex.UV[(int)d.attr - 13];
-                                address += 8;
+                                int index = (int)d.attr - 13;
+                                byte* addr = (byte*)address;
+                                node.Model._linker._uvs[node._elementIndices[index + 4]].Write(ref addr, f.UVIndex[index]);
+                                address = addr;
                                 break;
                             case XFDataFormat.Index8:
                                 *(byte*)address++ = (byte)f.UVIndex[(int)d.attr - 13];
@@ -419,7 +426,7 @@ namespace BrawlLib.Modeling
                 }
         }
 
-        internal void ExtractPrimitives(MDL0Polygon* header, ref ElementDescriptor desc, byte** pOut, byte** pAssets)
+        internal void ExtractPrimitives(MDL0Object* header, ref ElementDescriptor desc, byte** pOut, byte** pAssets)
         {
             int count;
             ushort index = 0, temp;
@@ -734,7 +741,7 @@ namespace BrawlLib.Modeling
                     _stride += 8;
         }
 
-        internal Facepoint[] MergeData(MDL0PolygonNode poly)
+        internal Facepoint[] MergeData(MDL0ObjectNode poly)
         {
             Facepoint[] _facepoints = new Facepoint[_pointCount];
 
@@ -1007,12 +1014,14 @@ namespace BrawlLib.Modeling
 
         #region Flags
 
-        public GXVtxDescList[] setDescList(MDL0PolygonNode polygon)
+        public GXVtxDescList[] setDescList(MDL0ObjectNode polygon, params bool[] forceDirect)
         {
             //Everything is set in the order the facepoint is written!
 
+            ModelLinker linker = polygon.Model._linker;
             short[] indices = polygon._elementIndices;
             int textures = 0, colors = 0;
+            XFDataFormat fmt;
 
             //Create new command list
             List<GXVtxDescList> list = new List<GXVtxDescList>();
@@ -1042,20 +1051,25 @@ namespace BrawlLib.Modeling
             if (indices[0] > -1 && _faceData[0] != null) //Positions
             {
                 polygon._arrayFlags.HasPositions = true;
-                polygon._vertexFormat.PosFormat = (XFDataFormat)(RawVertices.Length > byte.MaxValue ? 3 : 2);
+                fmt = (forceDirect != null && forceDirect.Length > 0 && forceDirect[0] == true) ? XFDataFormat.Direct : (XFDataFormat)(RawVertices.Length > byte.MaxValue ? 3 : 2);
 
-                list.Add(new GXVtxDescList() { attr = GXAttr.GX_VA_POS, type = (XFDataFormat)(RawVertices.Length > byte.MaxValue ? 3 : 2) });
-                polygon.fpStride += RawVertices.Length > byte.MaxValue ? 2 : 1;
+                polygon._vertexFormat.PosFormat = fmt;
+
+                list.Add(new GXVtxDescList() { attr = GXAttr.GX_VA_POS, type = fmt });
+                polygon.fpStride += fmt == XFDataFormat.Direct ? linker._vertices[polygon._elementIndices[0]]._dstStride : (int)fmt - 1;
             }
             else
                 polygon._arrayFlags.HasPositions = false;
             if (indices[1] > -1 && _faceData[1] != null) //Normals
             {
                 polygon._arrayFlags.HasNormals = true;
-                polygon._vertexFormat.NormalFormat = (XFDataFormat)(RawNormals.Length > byte.MaxValue ? 3 : 2);
 
-                list.Add(new GXVtxDescList() { attr = GXAttr.GX_VA_NRM, type = (XFDataFormat)(RawNormals.Length > byte.MaxValue ? 3 : 2) });
-                polygon.fpStride += RawNormals.Length > byte.MaxValue ? 2 : 1;
+                fmt = (forceDirect != null && forceDirect.Length > 1 && forceDirect[1] == true) ? XFDataFormat.Direct : (XFDataFormat)(RawNormals.Length > byte.MaxValue ? 3 : 2);
+
+                polygon._vertexFormat.NormalFormat = fmt;
+
+                list.Add(new GXVtxDescList() { attr = GXAttr.GX_VA_NRM, type = fmt });
+                polygon.fpStride += fmt == XFDataFormat.Direct ? linker._normals[polygon._elementIndices[1]]._dstStride : (int)fmt - 1;
             }
             else
                 polygon._arrayFlags.HasNormals = false;
@@ -1064,10 +1078,13 @@ namespace BrawlLib.Modeling
                 {
                     colors++;
                     polygon._arrayFlags.SetHasColor(i - 2, true);
-                    polygon._vertexFormat.SetColorFormat(i - 2, (XFDataFormat)(Colors(i - 2).Length > byte.MaxValue ? 3 : 2));
 
-                    list.Add(new GXVtxDescList() { attr = (GXAttr)(i + 9), type = (XFDataFormat)(Colors(i - 2).Length > byte.MaxValue ? 3 : 2) });
-                    polygon.fpStride += Colors(i - 2).Length > byte.MaxValue ? 2 : 1;
+                    fmt = (forceDirect != null && forceDirect.Length > 2 && forceDirect[2] == true) ? XFDataFormat.Direct : (XFDataFormat)(Colors(i - 2).Length > byte.MaxValue ? 3 : 2);
+
+                    polygon._vertexFormat.SetColorFormat(i - 2, fmt);
+
+                    list.Add(new GXVtxDescList() { attr = (GXAttr)(i + 9), type = fmt });
+                    polygon.fpStride += fmt == XFDataFormat.Direct ? linker._colors[polygon._elementIndices[i]]._dstStride : (int)fmt - 1;
                 }
                 else
                     polygon._arrayFlags.SetHasColor(i - 2, false);
@@ -1076,10 +1093,13 @@ namespace BrawlLib.Modeling
                 {
                     textures++;
                     polygon._arrayFlags.SetHasUVs(i - 4, true);
-                    polygon._vertexFormat.SetUVFormat(i - 4, (XFDataFormat)(UVs(i - 4).Length > byte.MaxValue ? 3 : 2));
 
-                    list.Add(new GXVtxDescList() { attr = (GXAttr)(i + 9), type = (XFDataFormat)(UVs(i - 4).Length > byte.MaxValue ? 3 : 2) });
-                    polygon.fpStride += UVs(i - 4).Length > byte.MaxValue ? 2 : 1;
+                    fmt = (forceDirect != null && forceDirect.Length > 3 && forceDirect[3] == true) ? XFDataFormat.Direct : (XFDataFormat)(UVs(i - 4).Length > byte.MaxValue ? 3 : 2);
+
+                    polygon._vertexFormat.SetUVFormat(i - 4, fmt);
+
+                    list.Add(new GXVtxDescList() { attr = (GXAttr)(i + 9), type = fmt });
+                    polygon.fpStride += fmt == XFDataFormat.Direct ? linker._uvs[polygon._elementIndices[i]]._dstStride : (int)fmt - 1;
                 }
                 else
                     polygon._arrayFlags.SetHasUVs(i - 4, false);
@@ -1091,7 +1111,7 @@ namespace BrawlLib.Modeling
             return list.ToArray();
         }
 
-        public void SetVtxDescriptor(GXVtxDescList* attrPtr, MDL0PolygonNode polygon)
+        public void SetVtxDescriptor(GXVtxDescList* attrPtr, MDL0ObjectNode polygon)
         {
             //This sets up how to read the facepoints.
 
@@ -1193,7 +1213,7 @@ namespace BrawlLib.Modeling
             }
         }
 
-        public GXVtxAttrFmtList[] setFmtList(MDL0PolygonNode polygon, ModelLinker linker)
+        public GXVtxAttrFmtList[] setFmtList(MDL0ObjectNode polygon, ModelLinker linker)
         {
             List<GXVtxAttrFmtList> list = new List<GXVtxAttrFmtList>();
             VertexCodec vert = null;
@@ -1265,7 +1285,7 @@ namespace BrawlLib.Modeling
             return list.ToArray();
         }
 
-        public void SetVertexFormat(GXVtxFmt vtxfmt, GXVtxAttrFmtList* list, MDL0Polygon* polygon)
+        public void SetVertexFormat(GXVtxFmt vtxfmt, GXVtxAttrFmtList* list, MDL0Object* polygon)
         {
             //These are default values.
 

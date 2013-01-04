@@ -328,10 +328,13 @@ namespace System.Windows.Forms
                 splitter2.Visible = panel4.Visible = audioPlaybackPanel1.Visible = true;
 
                 dataListBox.Items.AddRange(TargetNode.Children[0].Children.ToArray());
-                if (dataListBox.Items.Count > 0) dataListBox.SelectedIndex = 0;
+                if (dataListBox.Items.Count > 0) 
+                    dataListBox.SelectedIndex = 0;
 
-                soundsListBox.Items.AddRange(TargetNode.Children[1].Children.ToArray());
-                if (soundsListBox.Items.Count > 0) soundsListBox.SelectedIndex = 0;
+                if (TargetNode.Children.Count > 1)
+                    soundsListBox.Items.AddRange(TargetNode.Children[1].Children.ToArray());
+                if (soundsListBox.Items.Count > 0) 
+                    soundsListBox.SelectedIndex = 0;
             }
             button1.Visible = TargetNode is RBNKNode;
 

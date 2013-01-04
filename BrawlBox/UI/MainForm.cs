@@ -48,8 +48,10 @@ namespace BrawlBox
             scN0CameraEditControl1.Dock =
             scN0LightEditControl1.Dock =
             scN0FogEditControl1.Dock = 
+            ppcDisassembler1.Dock = 
             movesetEditor1.Dock = DockStyle.Fill;
             m_DelegateOpenFile = new DelegateOpenFile(Program.Open);
+            _instance = this;
         }
 
         private delegate bool DelegateOpenFile(String s);
@@ -100,9 +102,9 @@ namespace BrawlBox
                 resourceTree.SelectedNode = _root.FindResource(n, true);
         }
 
-        private Control _currentControl = null;
+        public Control _currentControl = null;
         private Control _secondaryControl = null;
-        private void resourceTree_SelectionChanged(object sender, EventArgs e)
+        public void resourceTree_SelectionChanged(object sender, EventArgs e)
         {
             Image img = previewPanel1.Picture;
             if (img != null)
@@ -126,6 +128,7 @@ namespace BrawlBox
             scN0CameraEditControl1.TargetSequence = null;
             scN0LightEditControl1.TargetSequence = null;
             scN0FogEditControl1.TargetSequence = null;
+            ppcDisassembler1.TargetNode = null;
 
             Control newControl = null;
             Control newControl2 = null;
@@ -231,18 +234,10 @@ namespace BrawlBox
                     newControl = scN0FogEditControl1;
                     disable2nd = true;
                 }
-                else if (node is RELSectionNode)
+                else if (node is ModuleDataNode && !(node as ModuleDataNode).HasNoCode)
                 {
-                    if (((RELSectionNode)node).CodeSection)
-                    {
-                        relDisassembler1.Section = (RELSectionNode)node;
-                        newControl = relDisassembler1;
-                    }
-                }
-                else if (node is RELDeConStructor)
-                {
-                    relDisassembler1.Section = (RELDataNode)node;
-                    newControl = relDisassembler1;
+                    ppcDisassembler1.TargetNode = node as ModuleDataNode;
+                    newControl = ppcDisassembler1;
                 }
 
                 if (node is IColorSource && !disable2nd)
@@ -308,33 +303,35 @@ namespace BrawlBox
         }
 
         private static string _inFilter =
-        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.brstm;*.brsar;*.msbin;*.rwsd;*.rseq;*.rbnk;*.efls;*.breff;*.breft;*.arc;*.rel;*.szs;*.mrg;*.mrgc|" +
+        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.tpl;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.brstm;*.brsar;*.msbin;*.rwsd;*.rseq;*.rbnk;*.efls;*.breff;*.breft;*.arc;*.dol;*.rel;*.szs;*.mrg;*.mrgc|" +
         "PAC File Archive (*.pac)|*.pac|" +
         "PCS Compressed File Archive (*.pcs)|*.pcs|" +
         "Resource Package (*.brres;*.brtex;*.brmdl)|*.brres;*.brtex;*.brmdl|" +
-        "PLT0 Palette (*.plt0)|*.plt0|" +
-        "TEX0 Texture (*.tex0)|*.tex0|" +
-        "MDL0 Model (*.mdl0)|*.mdl0|" +
-        "CHR0 Model Animation (*.chr0)|*.chr0|" +
-        "SRT0 Texture Animation (*.srt0)|*.srt0|" +
-        "SHP0 Vertex Morph (*.shp0)|*.shp0|" +
-        "PAT0 Texture Pattern (*.pat0)|*.pat0|" +
-        "VIS0 Visibility Sequence (*.vis0)|*.vis0|" +
+        "Palette (*.plt0)|*.plt0|" +
+        "Texture (*.tex0)|*.tex0|" +
+        "TPL Texture Archive (*.tpl)|*.tpl|" +
+        "Model (*.mdl0)|*.mdl0|" +
+        "Model Animation (*.chr0)|*.chr0|" +
+        "Texture Animation (*.srt0)|*.srt0|" +
+        "Vertex Morph (*.shp0)|*.shp0|" +
+        "Texture Pattern (*.pat0)|*.pat0|" +
+        "Visibility Sequence (*.vis0)|*.vis0|" +
         "Color Sequence (*.clr0)|*.clr0|" +
-        "BRSTM Audio Stream (*.brstm)|*.brstm|" +
-        "BRSAR Audio Package (*.brsar)|*.brsar|" +
-        "MSBin Message Pack (*.msbin)|*.msbin|" +
-        "Raw Sound Pack (*.rwsd)|*.rwsd|" +
-        "Raw Sound Sequence (*.rseq)|*.rseq|" +
-        "Raw Sound Bank (*.rbnk)|*.rbnk|" +
-        "EFLS Effect List (*.efls)|*.efls|" +
-        "REFF Effect Controls (*.breff)|*.breff|" +
-        "REFT Effect Textures (*.breft)|*.breft|" +
+        "Audio Stream (*.brstm)|*.brstm|" +
+        "Sound Archive (*.brsar)|*.brsar|" +
+        "Message Pack (*.msbin)|*.msbin|" +
+        "Sound Stream (*.rwsd)|*.rwsd|" +
+        "Sound Sequence (*.rseq)|*.rseq|" +
+        "Sound Bank (*.rbnk)|*.rbnk|" +
+        "Effect List (*.efls)|*.efls|" +
+        "Effect Parameters (*.breff)|*.breff|" +
+        "Effect Textures (*.breft)|*.breft|" +
         "ARC File Archive (*.arc)|*.arc|" +
-        "REL Module (*.rel)|*.rel|" +
-        "DOL Static Module (*.dol)|*.dol|" +
-        "SZS File Archive (*.szs)|*.szs|" +
-        "MRG Resource Group (*.mrg;*.mrgc)|*.mrg;*.mrgc";
+        "SZS Compressed File Archive (*.szs)|*.szs|" +
+        "Static Module (*.dol)|*.dol|" +
+        "Relocatable Module (*.rel)|*.rel|" +
+        "MRG Resource Group (*.mrg)|*.mrg|" +
+        "MRG Compressed Resource Group (*.mrgc)|*.mrgc";
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {

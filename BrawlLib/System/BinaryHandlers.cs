@@ -6,9 +6,12 @@ namespace System
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Bin32
     {
-        public uint data;
+        public uint _data;
 
-        public Bin32(uint val) { data = val; }
+        public Bin32(uint val) { _data = val; }
+
+        public static implicit operator uint(Bin32 val) { return val._data; }
+        public static implicit operator Bin32(uint val) { return new Bin32(val); }
 
         public override string ToString()
         {
@@ -16,7 +19,7 @@ namespace System
             string val = "";
             while (i++ < 32)
             {
-                val += (data >> (32 - i)) & 1;
+                val += (_data >> (32 - i)) & 1;
                 if (i % 4 == 0 && i != 32)
                     val += " ";
             }
@@ -25,13 +28,13 @@ namespace System
 
         public bool this[int index]
         {
-            get { return (data >> index & 1) != 0; }
+            get { return (_data >> index & 1) != 0; }
             set
             {
                 if (value)
-                    data |= (uint)(1 << index);
+                    _data |= (uint)(1 << index);
                 else
-                    data &= ~(uint)(1 << index);
+                    _data &= ~(uint)(1 << index);
             }
         }
 
@@ -48,23 +51,26 @@ namespace System
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
                     mask |= 1 << i;
-                return (uint)((data >> shift) & mask);
+                return (uint)((_data >> shift) & mask);
             }
             set
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
                     mask |= 1 << i;
-                data = (uint)((data & ~(mask << shift)) | ((value & mask) << shift));
+                _data = (uint)((_data & ~(mask << shift)) | ((value & mask) << shift));
             }
         }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Bin16
     {
-        public ushort data;
+        public ushort _data;
 
-        public Bin16(ushort val) { data = val; }
+        public Bin16(ushort val) { _data = val; }
+
+        public static implicit operator ushort(Bin16 val) { return val._data; }
+        public static implicit operator Bin16(ushort val) { return new Bin16(val); }
 
         public override string ToString()
         {
@@ -72,7 +78,7 @@ namespace System
             string val = "";
             while (i++ < 16)
             {
-                val += (data >> (16 - i)) & 1;
+                val += (_data >> (16 - i)) & 1;
                 if (i % 4 == 0 && i != 16)
                     val += " ";
             }
@@ -81,13 +87,13 @@ namespace System
 
         public bool this[int index]
         {
-            get { return (data >> index & 1) != 0; }
+            get { return (_data >> index & 1) != 0; }
             set
             {
                 if (value)
-                    data |= (ushort)(1 << index);
+                    _data |= (ushort)(1 << index);
                 else
-                    data &= (ushort)~(1 << index);
+                    _data &= (ushort)~(1 << index);
             }
         }
 
@@ -104,23 +110,26 @@ namespace System
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
                     mask |= 1 << i;
-                return (ushort)((data >> shift) & mask);
+                return (ushort)((_data >> shift) & mask);
             }
             set
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
                     mask |= 1 << i;
-                data = (ushort)((data & ~(mask << shift)) | ((value & mask) << shift));
+                _data = (ushort)((_data & ~(mask << shift)) | ((value & mask) << shift));
             }
         }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Bin8
     {
-        public byte data;
+        public byte _data;
 
-        public Bin8(byte val) { data = val; }
+        public Bin8(byte val) { _data = val; }
+
+        public static implicit operator byte(Bin8 val) { return val._data; }
+        public static implicit operator Bin8(byte val) { return new Bin8(val); }
 
         public override string ToString()
         {
@@ -128,7 +137,7 @@ namespace System
             string val = "";
             while (i++ < 8)
             {
-                val += (data >> (8 - i)) & 1;
+                val += (_data >> (8 - i)) & 1;
                 if (i % 4 == 0 && i != 8)
                     val += " ";
             }
@@ -137,13 +146,13 @@ namespace System
 
         public bool this[int index]
         {
-            get { return (data >> index & 1) != 0; }
+            get { return (_data >> index & 1) != 0; }
             set
             {
                 if (value)
-                    data |= (byte)(1 << index);
+                    _data |= (byte)(1 << index);
                 else
-                    data &= (byte)~(1 << index);
+                    _data &= (byte)~(1 << index);
             }
         }
 
@@ -160,14 +169,14 @@ namespace System
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
                     mask |= 1 << i;
-                return (byte)((data >> shift) & mask);
+                return (byte)((_data >> shift) & mask);
             }
             set
             {
                 int mask = 0;
                 for (int i = 0; i < bitCount; i++)
                     mask |= 1 << i;
-                data = (byte)((data & ~(mask << shift)) | ((value & mask) << shift));
+                _data = (byte)((_data & ~(mask << shift)) | ((value & mask) << shift));
             }
         }
     }

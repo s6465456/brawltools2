@@ -31,6 +31,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Scene Data")]
         public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
 
+        [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
+        internal UserDataCollection _userEntries = new UserDataCollection();
+
         protected override bool OnInitialize()
         {
             base.OnInitialize();
@@ -51,6 +55,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _fog = Header5->_fogCount;
                 _camera = Header5->_cameraCount;
                 _pad = Header5->_pad;
+
+                (_userEntries = new UserDataCollection()).Read(Header5->UserData);
 
                 return Header5->Group->_numEntries > 0;
             }
@@ -184,6 +190,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             table.Add(Name);
             foreach (SCN0GroupNode n in Children)
                 n.GetStrings(table);
+
+            foreach (UserDataClass s in _userEntries)
+                table.Add(s._name);
         }
 
         protected override int OnCalculateSize(bool force)
@@ -192,6 +201,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = SCN0v4.Size + 0x18 + Children.Count * 0x10;
             foreach (SCN0GroupNode n in Children)
                 size += n.CalculateSize(true);
+            size += _userEntries.GetSize();
             return size;
         }
 
@@ -313,6 +323,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_fogCount = _fogCount;
                 header->_cameraCount = _cameraCount;
                 header->Set(GroupLen, LightSetLen, AmbLightSetLen, LightLen, FogLen, CameraLen);
+
+                if (_userEntries.Count > 0)
+                {
+                    header->UserData = lightArrayAddress;
+                    _userEntries.Write(lightArrayAddress);
+                }
             }
             else
             {
@@ -364,6 +380,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     n.PostProcess(header, dataAddress, stringTable);
                 }
             }
+
+            if (_version == 5) _userEntries.PostProcess(((SCN0v5*)dataAddress)->UserData, stringTable);
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((SCN0v4*)source.Address)->_header._tag == SCN0v4.Tag ? new SCN0Node() : null; }

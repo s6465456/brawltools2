@@ -39,7 +39,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     }
     public class MoveDefGroupNode : MoveDefEntryNode
     {
-        public override ResourceType ResourceType { get { return ResourceType.MDefNoEdit; } }
+        public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
     }
 
     public unsafe class MoveDefRawDataNode : MoveDefExternalNode

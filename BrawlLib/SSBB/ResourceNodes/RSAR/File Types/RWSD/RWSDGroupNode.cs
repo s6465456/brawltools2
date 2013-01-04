@@ -19,7 +19,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = 0xC + Children.Count * 8;
             foreach (RSARFileEntryNode g in Children)
                 size += g.CalculateSize(true);
-            return size;
+            return size.Align(0x20);
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -31,6 +31,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr addr = address + 12 + Children.Count * 8;
             foreach (RWSDDataNode d in Children)
             {
+                d._baseAddr = header->_list.Address;
                 header->_list[d.Index] = (int)(addr - header->_list.Address);
                 d.Rebuild(addr, d._calcSize, force);
                 addr += d._calcSize;
@@ -40,7 +41,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class RWSDSoundGroupNode : ResourceNode
     {
-        internal RWSD_WAVEHeader* Header { get { return (RWSD_WAVEHeader*)WorkingUncompressed.Address; } }
+        internal WAVEHeader* Header { get { return (WAVEHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.RWSDSoundGroup; } }
 
         public VoidPtr _audioAddr;
@@ -56,6 +57,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             for (int i = 0; i < Header->_numEntries; i++)
                 new WAVESoundNode().Initialize(this, Header->GetEntry(i), 0);
+            foreach (WAVESoundNode n in Children)
+                n.GetAudio();
         }
 
         protected override int OnCalculateSize(bool force)
@@ -69,8 +72,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             uint offset = 0;
-            RWSD_WAVEHeader* header = (RWSD_WAVEHeader*)address;
-            header->_tag = RWSD_WAVEHeader.Tag;
+            WAVEHeader* header = (WAVEHeader*)address;
+            header->_tag = WAVEHeader.Tag;
             header->_numEntries = Children.Count;
             header->_length = length;
             buint* table = (buint*)header + 3;

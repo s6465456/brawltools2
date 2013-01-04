@@ -23,9 +23,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal int _frameCount = 1, _version = 3, _loop;
 
-        [Category("Bone Visibility")]
+        [Category("Bone Visibility Data")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
-        [Category("Bone Visibility")]
+        [Category("Bone Visibility Data")]
         public int FrameCount 
         { 
             get { return _frameCount; } 
@@ -38,8 +38,16 @@ namespace BrawlLib.SSBB.ResourceNodes
             } 
         }
         
-        [Category("Bone Visibility")]
+        [Category("Bone Visibility Data")]
         public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
+
+        [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
+        internal UserDataCollection _userEntries = new UserDataCollection();
+
+        [Category("Bone Visibility Data")]
+        public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
+        public string _originalPath;
 
         public unsafe VIS0EntryNode CreateEntry()
         {
@@ -64,14 +72,23 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _loop = header->_loop;
                 if ((_name == null) && (header->_stringOffset != 0))
                     _name = header->ResourceString;
+
+                if (Header4->_origPathOffset > 0)
+                    _originalPath = Header4->OrigPath;
+
+                (_userEntries = new UserDataCollection()).Read(Header4->UserData);
             }
             else
             {
                 VIS0v3* header = Header3;
                 _frameCount = header->_numFrames;
                 _loop = header->_loop;
+
                 if ((_name == null) && (header->_stringOffset != 0))
                     _name = header->ResourceString;
+
+                if (Header3->_origPathOffset > 0)
+                    _originalPath = Header3->OrigPath;
             }
 
             return Header3->Group->_numEntries > 0;
@@ -82,6 +99,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = VIS0v3.Size + 0x18 + Children.Count * 0x10;
             foreach (ResourceNode e in Children)
                 size += e.CalculateSize(force);
+            size += _userEntries.GetSize();
             return size;
         }
 
@@ -115,6 +133,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 n.Rebuild(dataAddress, len, force);
                 dataAddress += len;
             }
+
+            if (_userEntries.Count > 0 && _version == 4)
+            {
+                VIS0v4* header = (VIS0v4*)address;
+                header->UserData = dataAddress;
+                _userEntries.Write(dataAddress);
+            }
         }
 
         protected override void OnPopulate()
@@ -129,6 +154,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             table.Add(Name);
             foreach (VIS0EntryNode n in Children)
                 table.Add(n.Name);
+
+            foreach (UserDataClass s in _userEntries)
+                table.Add(s._name);
+
+            if (!String.IsNullOrEmpty(_originalPath))
+                table.Add(_originalPath);
         }
 
         protected internal override void PostProcess(VoidPtr bresAddress, VoidPtr dataAddress, int dataLength, StringTable stringTable)
@@ -138,9 +169,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             VIS0v3* header = (VIS0v3*)dataAddress;
 
             if (_version == 4)
+            {
                 ((VIS0v4*)dataAddress)->ResourceStringAddress = stringTable[Name] + 4;
+                if (!String.IsNullOrEmpty(_originalPath))
+                    ((VIS0v4*)dataAddress)->OrigPathAddress = stringTable[_originalPath] + 4;
+            }
             else
+            {
                 header->ResourceStringAddress = stringTable[Name] + 4;
+                if (!String.IsNullOrEmpty(_originalPath))
+                    header->OrigPathAddress = stringTable[_originalPath] + 4;
+            }
 
             ResourceGroup* group = header->Group;
             group->_first = new ResourceEntry(0xFFFF, 0, 0, 0, 0);
@@ -154,6 +193,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 ResourceEntry.Build(group, index++, dataAddress, (BRESString*)stringTable[n.Name]);
                 n.PostProcess(dataAddress, stringTable);
             }
+
+            if (_version == 4) _userEntries.PostProcess(((VIS0v4*)dataAddress)->UserData, stringTable);
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((VIS0v3*)source.Address)->_header._tag == VIS0v3.Tag ? new VIS0Node() : null; }

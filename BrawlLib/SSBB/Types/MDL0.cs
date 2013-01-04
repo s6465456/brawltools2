@@ -32,7 +32,7 @@ namespace BrawlLib.SSBBTypes
         public string ResourceString { get { return new String((sbyte*)ResourceStringAddress); } }
         public VoidPtr ResourceStringAddress
         {
-            get { return (VoidPtr)Address + StringOffset; }
+            get { return Address + StringOffset; }
             set { StringOffset = (int)value - (int)Address; }
         }
 
@@ -44,9 +44,9 @@ namespace BrawlLib.SSBBTypes
             return (ResourceGroup*)(Address + offset);
         }
 
-        public UserData* Part2 { get { return (_part2Offset > 0) ? (UserData*)(Address + _part2Offset) : null; } }
+        public VoidPtr UserData { get { return (_userDataOffset > 0) ? Address + _userDataOffset : null; } }
 
-        public int _part2Offset
+        public int _userDataOffset
         {
             get
             {
@@ -84,6 +84,7 @@ namespace BrawlLib.SSBBTypes
             {
                 switch (_header._version)
                 {
+                    default:
                     case 0x08:
                     case 0x09:
                         return *(bint*)(Address + 0x3C);
@@ -91,8 +92,6 @@ namespace BrawlLib.SSBBTypes
                         return *(bint*)(Address + 0x44);
                     case 0x0B:
                         return *(bint*)(Address + 0x48);
-                    default:
-                        return *(bint*)(Address + 0x3C);
                 }
             }
             set
@@ -233,6 +232,13 @@ namespace BrawlLib.SSBBTypes
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
         public MDL0Header* MDL0 { get { return (MDL0Header*)(Address + _mdl0Offset); } }
+
+        public string OrigPath { get { return new String((sbyte*)OrigPathAddress); } }
+        public VoidPtr OrigPathAddress
+        {
+            get { return Address + _origPathOffset; }
+            set { _origPathOffset = (int)value - (int)Address; }
+        }
 
         public MDL0NodeTable* IndexTable { get { return (MDL0NodeTable*)((VoidPtr)Address + _dataOffset); } }
     }
@@ -487,14 +493,14 @@ namespace BrawlLib.SSBBTypes
         public bint _firstChildOffset;
         public bint _nextOffset;
         public bint _prevOffset;
-        public bint _part2Offset;
+        public bint _userDataOffset;
 
         public bMatrix43 _transform;
         public bMatrix43 _transformInv;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public UserData* Part2 { get { return (UserData*)(Address + _part2Offset); } }
+        public UserData* UserDataAddress { get { if (_userDataOffset <= 0) return null; return (UserData*)(Address + _userDataOffset); } }
 
         public string ResourceString { get { return new String((sbyte*)ResourceStringAddress); } }
         public VoidPtr ResourceStringAddress
@@ -812,8 +818,8 @@ namespace BrawlLib.SSBBTypes
                 flags0 = value._flags;
                 c00 = value.MaterialColor;
                 c01 = value.AmbientColor;
-                _colorCtrl00 = value._color._binary.data;
-                _colorCtrl01 = value._alpha._binary.data;
+                _colorCtrl00 = value._color._binary._data;
+                _colorCtrl01 = value._alpha._binary._data;
             }
         }
         public LightChannel Channel2 
@@ -824,8 +830,8 @@ namespace BrawlLib.SSBBTypes
                 flags1 = value._flags;
                 c10 = value.MaterialColor;
                 c11 = value.AmbientColor;
-                _colorCtrl10 = value._color._binary.data;
-                _colorCtrl11 = value._alpha._binary.data;
+                _colorCtrl10 = value._color._binary._data;
+                _colorCtrl11 = value._alpha._binary._data;
             }
         }
     }
@@ -867,7 +873,7 @@ namespace BrawlLib.SSBBTypes
         public byte _enableAlphaTest;
         public sbyte _lightSet;
         public sbyte _fogSet;
-        public byte _pad1;
+        public byte _pad1; //Use this as a temporary location to store the model version
         public byte _indirectMethod1;
         public byte _indirectMethod2;
         public byte _indirectMethod3;
@@ -1180,44 +1186,44 @@ namespace BrawlLib.SSBBTypes
             Reg16 = 0x61,
 
             Mem00 = (BPMemory)0xFE,
-            _Value00 = new UInt24(0xF),
+            _Value00 = new BUInt24(0xF),
             Mem01 = (BPMemory)0xF6,
             _Value01 = new KSel(0x4),
             Mem02 = (BPMemory)0xFE,
-            _Value02 = new UInt24(0xF),
+            _Value02 = new BUInt24(0xF),
             Mem03 = (BPMemory)0xF7,
             _Value03 = new KSel(0xE),
             Mem04 = (BPMemory)0xFE,
-            _Value04 = new UInt24(0xF),
+            _Value04 = new BUInt24(0xF),
             Mem05 = (BPMemory)0xF8,
             _Value05 = new KSel(0x0),
             Mem06 = (BPMemory)0xFE,
-            _Value06 = new UInt24(0xF),
+            _Value06 = new BUInt24(0xF),
             Mem07 = (BPMemory)0xF9,
             _Value07 = new KSel(0xC),
             Mem08 = (BPMemory)0xFE,
-            _Value08 = new UInt24(0xF),
+            _Value08 = new BUInt24(0xF),
             Mem09 = (BPMemory)0xFA,
             _Value09 = new KSel(0x5),
             Mem10 = (BPMemory)0xFE,
-            _Value10 = new UInt24(0xF),
+            _Value10 = new BUInt24(0xF),
             Mem11 = (BPMemory)0xFB,
             _Value11 = new KSel(0xD),
             Mem12 = (BPMemory)0xFE,
-            _Value12 = new UInt24(0xF),
+            _Value12 = new BUInt24(0xF),
             Mem13 = (BPMemory)0xFC,
             _Value13 = new KSel(0xA),
             Mem14 = (BPMemory)0xFE,
-            _Value14 = new UInt24(0xF),
+            _Value14 = new BUInt24(0xF),
             Mem15 = (BPMemory)0xFD,
             _Value15 = new KSel(0xE),
             Mem16 = (BPMemory)0x27,
-            _Value16 = new UInt24(0xFF, 0xFF, 0xFF),
+            _Value16 = new BUInt24(0xFF, 0xFF, 0xFF),
         };
 
         public byte Reg00; //0x61
         public BPMemory Mem00;
-        public UInt24 _Value00; //KSel Mask - Swap Mode
+        public BUInt24 _Value00; //KSel Mask - Swap Mode
         
         public byte Reg01; //0x61
         public BPMemory Mem01;
@@ -1225,7 +1231,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg02; //0x61
         public BPMemory Mem02;
-        public UInt24 _Value02; //KSel Mask - Swap Mode
+        public BUInt24 _Value02; //KSel Mask - Swap Mode
 
         public byte Reg03; //0x61
         public BPMemory Mem03;
@@ -1233,7 +1239,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg04; //0x61
         public BPMemory Mem04;
-        public UInt24 _Value04; //KSel Mask - Swap Mode
+        public BUInt24 _Value04; //KSel Mask - Swap Mode
 
         public byte Reg05; //0x61
         public BPMemory Mem05;
@@ -1241,7 +1247,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg06; //0x61
         public BPMemory Mem06;
-        public UInt24 _Value06; //KSel Mask - Swap Mode
+        public BUInt24 _Value06; //KSel Mask - Swap Mode
 
         public byte Reg07; //0x61
         public BPMemory Mem07;
@@ -1249,7 +1255,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg08; //0x61
         public BPMemory Mem08;
-        public UInt24 _Value08; //KSel Mask - Swap Mode
+        public BUInt24 _Value08; //KSel Mask - Swap Mode
 
         public byte Reg09; //0x61
         public BPMemory Mem09;
@@ -1257,7 +1263,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg10; //0x61
         public BPMemory Mem10;
-        public UInt24 _Value10; //KSel Mask - Swap Mode
+        public BUInt24 _Value10; //KSel Mask - Swap Mode
 
         public byte Reg11; //0x61
         public BPMemory Mem11;
@@ -1265,7 +1271,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg12; //0x61
         public BPMemory Mem12;
-        public UInt24 _Value12; //KSel Mask - Swap Mode
+        public BUInt24 _Value12; //KSel Mask - Swap Mode
 
         public byte Reg13; //0x61
         public BPMemory Mem13;
@@ -1273,7 +1279,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte Reg14; //0x61
         public BPMemory Mem14;
-        public UInt24 _Value14; //KSel Mask - Swap Mode
+        public BUInt24 _Value14; //KSel Mask - Swap Mode
         
         public byte Reg15; //0x61
         public BPMemory Mem15;
@@ -1281,7 +1287,7 @@ namespace BrawlLib.SSBBTypes
         
         public byte Reg16; //0x61
         public BPMemory Mem16; //IREF
-        public UInt24 _Value16; 
+        public BUInt24 _Value16; 
 
         private fixed byte _pad[11];
     }
@@ -1307,7 +1313,7 @@ namespace BrawlLib.SSBBTypes
 
         public static readonly StageGroup Default = new StageGroup()
         {
-            mask = new BPCommand(true) { Mem = BPMemory.BPMEM_BP_MASK, Data = new UInt24(0xFFFFF0) },
+            mask = new BPCommand(true) { Mem = BPMemory.BPMEM_BP_MASK, Data = new BUInt24(0xFFFFF0) },
             ksel = new BPCommand(true) { Mem = BPMemory.BPMEM_TEV_KSEL0 },
             tref = new BPCommand(true) { Mem = BPMemory.BPMEM_TREF0 },
             eClrEnv = new BPCommand(true) { Mem = BPMemory.BPMEM_TEV_COLOR_ENV_0 },
@@ -1387,56 +1393,6 @@ namespace BrawlLib.SSBBTypes
         }
     }
 
-    public enum UserValueType
-    {
-        Int = 0,
-        Float,
-        String
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct UserData
-    {
-        public bint _totalLen; //including group + all entries
-        
-        private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-        public ResourceGroup* Group { get { return (ResourceGroup*)(Address + 4); } }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct UserDataEntry
-    {
-        public bint _totalLen;
-        public bint _dataOffset;
-        public bint _entryCount;
-        public bint _type;
-        public bint _stringOffset; //same as entry
-        public bint _id;
-
-        //Entries, in the specified type
-
-        public UserValueType Type { get { return (UserValueType)(int)_type; } set { _type = (int)value; } }
-
-        public UserDataEntry(int entries, UserValueType type, int id)
-        {
-            _totalLen = 0;
-            _dataOffset = 0x18;
-            _entryCount = entries;
-            _type = (int)type;
-            _stringOffset = 0;
-            _id = id;
-        }
-
-        private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-
-        public string ResourceString { get { return new String((sbyte*)ResourceStringAddress); } }
-        public VoidPtr ResourceStringAddress
-        {
-            get { return (VoidPtr)Address + _stringOffset; }
-            set { _stringOffset = (int)value - (int)Address; }
-        }
-    }
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct MDL0Shader
     {
@@ -1480,7 +1436,7 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct MDL0Polygon
+    public unsafe struct MDL0Object
     {
         public const uint Size = 0x64;
 

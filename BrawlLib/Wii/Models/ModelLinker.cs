@@ -42,7 +42,7 @@ namespace BrawlLib.Wii.Models
             typeof(MDL0UVNode),
             typeof(MDL0MaterialNode),
             typeof(MDL0ShaderNode),
-            typeof(MDL0PolygonNode),
+            typeof(MDL0ObjectNode),
             null,
             null,
             null,
@@ -115,6 +115,8 @@ namespace BrawlLib.Wii.Models
         public List<VertexCodec> _normals;
         public List<ColorCodec> _colors;
         public List<VertexCodec> _uvs;
+
+        public bool[] _forceDirectAssets = new bool[4] { false, false, false, false };
 
         private ModelLinker() { }
 

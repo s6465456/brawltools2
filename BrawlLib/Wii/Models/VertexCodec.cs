@@ -250,6 +250,10 @@ namespace BrawlLib.Wii.Models
             _scale = bestScale;
             _dstStride = _dstElements << ((int)_type >> 1);
             _dataLen = _dstCount * _dstStride;
+
+            _quantScale = VQuant.QuantTable[_scale];
+            GetEncoder();
+           
         }
 
         private delegate void VertEncoder(float value, ref byte* pOut);
@@ -271,28 +275,32 @@ namespace BrawlLib.Wii.Models
             pOut += 4;
         };
 
+        VertEncoder _enc;
+        float _quantScale;
+        public void GetEncoder()
+        {
+            switch (_type)
+            {
+                case WiiVertexComponentType.Int8:
+                case WiiVertexComponentType.UInt8:
+                    _enc = _byteEncoder;
+                    break;
+                case WiiVertexComponentType.Int16:
+                case WiiVertexComponentType.UInt16:
+                    _enc = _shortEncoder;
+                    break;
+                default:
+                    _enc = _floatEncoder;
+                    break;
+            }
+        }
+
         public void Write(byte* pOut)
         {
             try
             {
                 int[] imp = _remap._impTable;
-                float scale = VQuant.QuantTable[_scale];
-                VertEncoder enc;
-                switch (_type)
-                {
-                    case WiiVertexComponentType.Int8:
-                    case WiiVertexComponentType.UInt8:
-                        enc = _byteEncoder;
-                        break;
-                    case WiiVertexComponentType.Int16:
-                    case WiiVertexComponentType.UInt16:
-                        enc = _shortEncoder;
-                        break;
-                    default:
-                        enc = _floatEncoder;
-                        break;
-                }
-
+                
                 //Copy elements using encoder
                 float* pTemp = _pData;
                 for (int i = 0; i < _dstCount; i++)
@@ -301,17 +309,28 @@ namespace BrawlLib.Wii.Models
                         pTemp = &_pData[imp[i] * _srcElements];
                     for (int x = 0; x < _srcElements; x++, pTemp++)
                         if (x < _dstElements)
-                            enc(*pTemp * scale, ref pOut);
+                            _enc(*pTemp * _quantScale, ref pOut);
                 }
 
                 //Zero remaining
                 for (int i = _dataLen; (i & 0x1F) != 0; i++)
                     *pOut++ = 0;
             }
-            finally
-            {
-                Dispose();
-            }
+            finally { Dispose(); }
+        }
+
+        public void Write(ref byte* pOut, int index)
+        {
+            int[] imp = _remap._impTable;
+
+            //Copy element using encoder
+            float* pTemp = _pData;
+            if (imp != null)
+                pTemp = &_pData[imp[index] * _srcElements];
+            for (int x = 0; x < _srcElements; x++, pTemp++)
+                if (x < _dstElements)
+                    _enc(*pTemp * _quantScale, ref pOut);
+            
         }
         public void Write(Vector2[] vertices, byte* pOut)
         {
@@ -323,26 +342,11 @@ namespace BrawlLib.Wii.Models
             fixed (Vector3* p = vertices)
                 Write((float*)p, pOut);
         }
+        
         public void Write(float* pIn, byte* pOut)
         {
             int[] imp = _remap._impTable;
             byte* pCeil = pOut + _dataLen.Align(0x20);
-            float scale = VQuant.QuantTable[_scale];
-            VertEncoder enc;
-            switch (_type)
-            {
-                case WiiVertexComponentType.Int8:
-                case WiiVertexComponentType.UInt8:
-                    enc = _byteEncoder;
-                    break;
-                case WiiVertexComponentType.Int16:
-                case WiiVertexComponentType.UInt16:
-                    enc = _shortEncoder;
-                    break;
-                default:
-                    enc = _floatEncoder;
-                    break;
-            }
 
             //Copy elements using encoder
             float* pTemp = pIn;
@@ -352,7 +356,7 @@ namespace BrawlLib.Wii.Models
                     pTemp = &pIn[imp[i] * _srcElements];
                 for (int x = 0; x < _srcElements; x++, pTemp++)
                     if (x < _dstElements)
-                        enc(*pTemp * scale, ref pOut);
+                        _enc(*pTemp * _quantScale, ref pOut);
             }
 
             //Zero remaining

@@ -555,7 +555,7 @@ namespace BrawlLib.Modeling
 
             //To do: Seperate meshes by the texture/color they use and create facedata for diffuse colors.
             PrimitiveManager manager = new PrimitiveManager();
-            MDL0PolygonNode p = new MDL0PolygonNode() { _manager = manager, _material = (MDL0MaterialNode)model._matList[0] };
+            MDL0ObjectNode p = new MDL0ObjectNode() { _manager = manager, _opaMaterial = (MDL0MaterialNode)model._matList[0] };
             p._manager._vertices = new List<Vertex3>();
             p.Name = "Mesh";
             p._parent = model._polyGroup;

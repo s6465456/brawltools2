@@ -9,7 +9,7 @@ namespace BrawlLib.SSBBTypes
     {
         public const uint Tag = 0x51455352;
 
-        public SSBBCommonHeader _header;
+        public NW4RCommonHeader _header;
 
         public bint _dataOffset;
         public bint _dataLength;
