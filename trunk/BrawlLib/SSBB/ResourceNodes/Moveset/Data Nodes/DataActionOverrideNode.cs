@@ -71,7 +71,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MoveDefActionOverrideEntryNode : MoveDefEntryNode
     {
         internal ActionOverride* Header { get { return (ActionOverride*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.MDefNoEdit; } }
+        public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
 
         public int _actionId, _commandListOffset;
 

@@ -111,6 +111,8 @@ namespace BrawlBox
                 res.Renamed += OnRenamed;
                 res.MovedUp += OnMovedUp;
                 res.MovedDown += OnMovedDown;
+                res.UpdateProps += OnUpdateProps;
+                res.UpdateCurrControl += OnUpdateCurrControl;
             }
             _resource = res;
         }
@@ -126,13 +128,23 @@ namespace BrawlBox
                 _resource.Renamed -= OnRenamed;
                 _resource.MovedUp -= OnMovedUp;
                 _resource.MovedDown -= OnMovedDown;
+                _resource.UpdateProps -= OnUpdateProps;
+                _resource.UpdateCurrControl -= OnUpdateCurrControl;
                 _resource = null;
             }
 
             foreach (BaseWrapper n in Nodes)
                 n.Unlink();
         }
-
+        internal protected virtual void OnUpdateProps(object sender, EventArgs e)
+        {
+            MainForm.Instance.propertyGrid1.Refresh();
+        }
+        internal protected virtual void OnUpdateCurrControl(object sender, EventArgs e)
+        {
+            MainForm.Instance._currentControl = null;
+            MainForm.Instance.resourceTree_SelectionChanged(this, null);
+        }
         internal protected virtual void OnChildAdded(ResourceNode parent, ResourceNode child)
         {
             Nodes.Add(Wrap(_owner, child));

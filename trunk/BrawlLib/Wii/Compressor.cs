@@ -50,8 +50,8 @@ namespace BrawlLib.Wii.Compression
             {
                 case CompressionType.LZ77: { LZ77.Expand(header, dstAddr, dstLen); break; }
                 case CompressionType.RunLength: { RunLength.Expand(header, dstAddr, dstLen); break; }
-                case CompressionType.Huffman: { CXSecureDecompression.CXSecureUncompressHuffman(header, dstAddr, dstLen); break; }
-                case CompressionType.Differential: { CXSecureDecompression.CXSecureUnfilterDiff(header, dstAddr, dstLen); break; }
+                case CompressionType.Huffman: //{ CXSecureDecompression.CXSecureUncompressHuffman(header, dstAddr, dstLen); break; }
+                case CompressionType.Differential: //{ CXSecureDecompression.CXSecureUnfilterDiff(header, dstAddr, dstLen); break; }
                 default:
                     throw new InvalidCompressionException("Unknown compression type.");
             }

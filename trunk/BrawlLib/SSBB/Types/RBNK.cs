@@ -9,7 +9,7 @@ namespace BrawlLib.SSBBTypes
         public const uint Tag = 0x4B4E4252;
         public const int Size = 0x20;
 
-        public SSBBCommonHeader _header;
+        public NW4RCommonHeader _header;
 
         public bint _dataOffset;
         public bint _dataLength;
@@ -28,7 +28,7 @@ namespace BrawlLib.SSBBTypes
         public byte GetKey(int index) { return *(byte*)(Address + 1 + index); }
         //Align to 4 bytes after byte table
         public RuintCollection* Collection { get { return (RuintCollection*)(Address + (1 + _tableCount).Align(4)); } }
-        //Invalid,InstParam,RangeTable,IndexTable,Null
+        //Invalid, InstParam, RangeTable, IndexTable, Null
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

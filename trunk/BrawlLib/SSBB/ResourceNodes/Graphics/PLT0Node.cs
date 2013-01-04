@@ -12,7 +12,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class PLT0Node : BRESEntryNode, IColorSource
     {
         public override ResourceType ResourceType { get { return ResourceType.PLT0; } }
-        internal PLT0* Header { get { return (PLT0*)WorkingUncompressed.Address; } }
+        internal PLT0v1* Header { get { return (PLT0v1*)WorkingUncompressed.Address; } }
 
         public override int DataAlign { get { return 0x20; } }
 
@@ -55,14 +55,17 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            TextureConverter.EncodePalette(address, Palette, _format);
+            PLT0v1* header = (PLT0v1*)address;
+            *header = new PLT0v1(Palette.Entries.Length, _format);
+
+            TextureConverter.EncodePalette(address + 0x40, Palette, _format);
         }
 
         protected internal override void PostProcess(VoidPtr bresAddress, VoidPtr dataAddress, int dataLength, StringTable stringTable)
         {
             base.PostProcess(bresAddress, dataAddress, dataLength, stringTable);
 
-            PLT0* header = (PLT0*)dataAddress;
+            PLT0v1* header = (PLT0v1*)dataAddress;
             header->ResourceStringAddress = stringTable[Name] + 4;
         }
 
@@ -80,6 +83,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #endregion
 
-        internal static ResourceNode TryParse(DataSource source) { return ((PLT0*)source.Address)->_bresEntry._tag == PLT0.Tag ? new PLT0Node() : null; }
+        internal static ResourceNode TryParse(DataSource source) { return ((PLT0v1*)source.Address)->_bresEntry._tag == PLT0v1.Tag ? new PLT0Node() : null; }
     }
 }

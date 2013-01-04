@@ -72,7 +72,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         [Category("Animation Data")]
         public bool Loop { get { return _loop != 0; } set { _loop = (ushort)(value ? 1 : 0); SignalPropertyChange(); } }
-        
+
+        [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
+        internal UserDataCollection _userEntries = new UserDataCollection();
+
+        [Category("Animation Data")]
+        public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
+        public string _originalPath;
+
         public CHR0EntryNode CreateEntry() { return CreateEntry(null); }
         public CHR0EntryNode CreateEntry(string name)
         {
@@ -118,6 +126,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                     else
                         _name = "anim" + Index;
 
+                if (Header5->_origPathOffset > 0)
+                    _originalPath = Header5->OrigPath;
+
+                (_userEntries = new UserDataCollection()).Read(Header5->UserData);
+
                 return Header5->Group->_numEntries > 0;
             }
             else
@@ -133,6 +146,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                         _name = Header4_3->ResourceString;
                     else
                         _name = "anim" + Index;
+
+                if (Header4_3->_origPathOffset > 0)
+                    _originalPath = Header4_3->OrigPath;
 
                 return Header4_3->Group->_numEntries > 0;
             }
@@ -376,6 +392,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             table.Add(Name);
             foreach (CHR0EntryNode n in Children)
                 table.Add(n.Name);
+
+            foreach (UserDataClass s in _userEntries)
+                table.Add(s._name);
+
+            if (!String.IsNullOrEmpty(_originalPath))
+                table.Add(_originalPath);
         }
 
         protected override int OnCalculateSize(bool force)
@@ -383,6 +405,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = (_version == 5 ? CHR0v5.Size : CHR0v4_3.Size) + 0x18 + (Children.Count * 0x10);
             foreach (CHR0EntryNode n in Children)
                 size += n.CalculateSize(true);
+            size += _userEntries.GetSize();
             return size;
         }
 
@@ -435,6 +458,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 entryAddress += n._entryLen;
                 dataAddress += n._dataLen;
             }
+
+            if (_userEntries.Count > 0 && _version == 5)
+            {
+                CHR0v5* header = (CHR0v5*)address;
+                header->UserData = dataAddress;
+                _userEntries.Write(dataAddress);
+            }
         }
 
         protected internal override void PostProcess(VoidPtr bresAddress, VoidPtr dataAddress, int dataLength, StringTable stringTable)
@@ -445,13 +475,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_version == 5)
             {
                 CHR0v5* header = (CHR0v5*)dataAddress;
-                header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
+                header->ResourceStringAddress = (int)stringTable[Name] + 4;
+                if (!String.IsNullOrEmpty(_originalPath))
+                    header->OrigPathAddress = stringTable[_originalPath] + 4;
                 group = header->Group;
             }
             else
             {
                 CHR0v4_3* header = (CHR0v4_3*)dataAddress;
-                header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
+                header->ResourceStringAddress = (int)stringTable[Name] + 4;
+                if (!String.IsNullOrEmpty(_originalPath))
+                    header->OrigPathAddress = stringTable[_originalPath] + 4;
                 group = header->Group;
             }
 
@@ -465,6 +499,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 ResourceEntry.Build(group, index++, dataAddress, (BRESString*)stringTable[n.Name]);
                 n.PostProcess(dataAddress, stringTable);
             }
+
+            if (_version == 5) _userEntries.PostProcess(((CHR0v5*)dataAddress)->UserData, stringTable);
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((BRESCommonHeader*)source.Address)->_tag == CHR0v4_3.Tag ? new CHR0Node() : null; }

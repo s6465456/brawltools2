@@ -557,9 +557,9 @@ namespace System.Windows.Forms
             set { _targetObject = value; }
         }
 
-        private MDL0PolygonNode _selectedPolygon;
+        private MDL0ObjectNode _selectedPolygon;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0PolygonNode SelectedPolygon { get { return _selectedPolygon; } set { lstObjects.SelectedItem = value; } }
+        public MDL0ObjectNode SelectedPolygon { get { return _selectedPolygon; } set { lstObjects.SelectedItem = value; } }
 
         private MDL0TextureNode _selectedTexture;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -750,7 +750,7 @@ namespace System.Windows.Forms
 
             ResourceNode n;
             if (_selectedPolygon != null && _syncObjTex)
-                foreach (MDL0MaterialRefNode tref in _selectedPolygon.MaterialNode.Children)
+                foreach (MDL0MaterialRefNode tref in _selectedPolygon.OpaMaterialNode.Children)
                     lstTextures.Items.Add(tref.TextureNode, tref.TextureNode.Enabled);
             else if (TargetModel != null && (n = TargetModel.FindChild("Textures", false)) != null)
                 foreach (MDL0TextureNode tref in n.Children)
@@ -790,7 +790,7 @@ namespace System.Windows.Forms
                 UpdateAnimations(fileType.SelectedIndex);
 
                 if ((n = TargetModel.FindChild("Objects", false)) != null)
-                    foreach (MDL0PolygonNode poly in n.Children)
+                    foreach (MDL0ObjectNode poly in n.Children)
                         lstObjects.Items.Add(poly, poly._render);
 
                 if ((n = TargetModel.FindChild("Textures", false)) != null)
@@ -882,8 +882,8 @@ namespace System.Windows.Forms
 
         private void lstPolygons_SelectedValueChanged(object sender, EventArgs e)
         {
-            _targetObject = _selectedPolygon = lstObjects.SelectedItem as MDL0PolygonNode;
-            TargetTexRef = _selectedPolygon != null && _selectedTexture != null ? _selectedPolygon.MaterialNode.FindChild(_selectedTexture.Name, true) as MDL0MaterialRefNode : null;
+            _targetObject = _selectedPolygon = lstObjects.SelectedItem as MDL0ObjectNode;
+            TargetTexRef = _selectedPolygon != null && _selectedTexture != null ? _selectedPolygon.OpaMaterialNode.FindChild(_selectedTexture.Name, true) as MDL0MaterialRefNode : null;
             _mainWindow.SelectedPolygonChanged(this, null);
             overObjPnl.Invalidate();
             overTexPnl.Invalidate();
@@ -900,7 +900,7 @@ namespace System.Windows.Forms
 
         private void lstPolygons_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            MDL0PolygonNode poly = lstObjects.Items[e.Index] as MDL0PolygonNode;
+            MDL0ObjectNode poly = lstObjects.Items[e.Index] as MDL0ObjectNode;
 
             poly._render = e.NewValue == CheckState.Checked;
 
@@ -915,7 +915,7 @@ namespace System.Windows.Forms
 
                 if (VIS0Indices.ContainsKey(poly._bone.Name))
                     foreach (int i in VIS0Indices[poly._bone.Name])
-                        if (((MDL0PolygonNode)lstObjects.Items[i])._render != poly._render)
+                        if (((MDL0ObjectNode)lstObjects.Items[i])._render != poly._render)
                             lstObjects.SetItemChecked(i, poly._render);
 
                 if (temp)
@@ -976,7 +976,7 @@ namespace System.Windows.Forms
                 if (_syncObjTex)
                     _selectedTexture.ObjOnly = true;
 
-                TargetTexRef = _selectedPolygon != null ? _selectedPolygon.MaterialNode.FindChild(_selectedTexture.Name, true) as MDL0MaterialRefNode : null;
+                TargetTexRef = _selectedPolygon != null ? _selectedPolygon.OpaMaterialNode.FindChild(_selectedTexture.Name, true) as MDL0MaterialRefNode : null;
             }
             if (!_updating) _mainWindow.modelPanel1.Invalidate();
         }
@@ -1385,11 +1385,11 @@ namespace System.Windows.Forms
             Graphics g = e.Graphics;
             for (int i = 0; i < lstObjects.Items.Count; i++)
             {
-                MDL0PolygonNode poly = lstObjects.Items[i] as MDL0PolygonNode;
-                if (poly.MaterialNode != null)
+                MDL0ObjectNode poly = lstObjects.Items[i] as MDL0ObjectNode;
+                if (poly.OpaMaterialNode != null)
                     if (_srt0Selection != null)
                     {
-                        if (_srt0Selection.FindChildByType(poly.MaterialNode.Name, false, ResourceType.SRT0Entry) != null)
+                        if (_srt0Selection.FindChildByType(poly.OpaMaterialNode.Name, false, ResourceType.SRT0Entry) != null)
                         {
                             Rectangle r = lstObjects.GetItemRectangle(i);
                             g.DrawRectangle(Pens.Black, r);
@@ -1397,7 +1397,7 @@ namespace System.Windows.Forms
                     }
                     else if (_pat0Selection != null)
                     {
-                        if (_pat0Selection.FindChildByType(poly.MaterialNode.Name, false, ResourceType.PAT0Entry) != null)
+                        if (_pat0Selection.FindChildByType(poly.OpaMaterialNode.Name, false, ResourceType.PAT0Entry) != null)
                         {
                             Rectangle r = lstObjects.GetItemRectangle(i);
                             g.DrawRectangle(Pens.Black, r);
@@ -1413,14 +1413,14 @@ namespace System.Windows.Forms
                 return;
             Graphics g = e.Graphics;
             ResourceNode rn = null;
-            if (_selectedPolygon != null && _selectedPolygon.MaterialNode != null)
+            if (_selectedPolygon != null && _selectedPolygon.OpaMaterialNode != null)
                 for (int i = 0; i < lstTextures.Items.Count; i++)
                 {
                     MDL0TextureNode tex = lstTextures.Items[i] as MDL0TextureNode;
-                    if ((rn = _selectedPolygon.MaterialNode.FindChild(tex.Name, true)) != null)
+                    if ((rn = _selectedPolygon.OpaMaterialNode.FindChild(tex.Name, true)) != null)
                         if (_srt0Selection != null)
                         {
-                            if (_srt0Selection.FindChildByType(_selectedPolygon.MaterialNode.Name + "/Texture" + rn.Index, false, ResourceType.SRT0Texture) != null)
+                            if (_srt0Selection.FindChildByType(_selectedPolygon.OpaMaterialNode.Name + "/Texture" + rn.Index, false, ResourceType.SRT0Texture) != null)
                             {
                                 Rectangle r = lstTextures.GetItemRectangle(i);
                                 g.DrawRectangle(Pens.Black, r);
@@ -1429,7 +1429,7 @@ namespace System.Windows.Forms
                         }
                         else if (_pat0Selection != null)
                         {
-                            if (_pat0Selection.FindChildByType(_selectedPolygon.MaterialNode.Name + "/Texture" + rn.Index, false, ResourceType.PAT0Texture) != null)
+                            if (_pat0Selection.FindChildByType(_selectedPolygon.OpaMaterialNode.Name + "/Texture" + rn.Index, false, ResourceType.PAT0Texture) != null)
                             {
                                 Rectangle r = lstTextures.GetItemRectangle(i);
                                 g.DrawRectangle(Pens.Black, r);

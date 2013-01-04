@@ -87,7 +87,7 @@ namespace BrawlLib.Wii.Audio
             wave->_loopStartSample = (uint)loopStart;
             wave->_sampleRate = (ushort)sampleRate;
             wave->_channelInfoTableOffset = 0x1C;
-            wave->_nibbles = samples;
+            wave->_nibbles = samples.Align(0x10) / 14 * 16 - 3;
             wave->_dataLocation = (uint)entrySize;
 
             //Create one ChannelInfo for each channel

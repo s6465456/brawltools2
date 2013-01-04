@@ -57,6 +57,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         MakeSolid(new ARGBPixel());
                     else
                         MakeList();
+
+                    UpdateCurrentControl();
                 }
             }
         }
@@ -76,8 +78,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return _numEntries; }
             set
             {
-                if (_numEntries == 0)
-                    return;
+                //if (_numEntries == 0)
+                //    return;
 
                 if (value > _numEntries)
                 {

@@ -97,7 +97,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int offsetID = 0;
         public bool isExtra = false;
 
-        public override ResourceType ResourceType { get { return ResourceType.MDefNoEdit; } }
+        public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
 
         protected override bool OnInitialize()
         {
@@ -187,7 +187,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe abstract class MoveDefExternalNode : MoveDefEntryNode
     {
-        public override ResourceType ResourceType { get { return ResourceType.MDefNoEdit; } }
+        public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
 
         public List<int> _offsets = new List<int>();
         public List<MoveDefEntryNode> _refs = new List<MoveDefEntryNode>();

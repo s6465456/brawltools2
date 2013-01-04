@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace BrawlLib.Wii.Models
 {
-    public unsafe delegate void ColorConverter(ref byte* pIn, ref byte* pOut);
+    public unsafe delegate void ColorCodecConverter(ref byte* pIn, ref byte* pOut);
     public unsafe class ColorCodec : IDisposable
     {
         #region Encoders
@@ -206,25 +206,29 @@ namespace BrawlLib.Wii.Models
             }
 
             _dataLen = _dstStride * _dstCount;
+
+            GetEncoder();
+        }
+
+        ColorCodecConverter enc;
+        public void GetEncoder()
+        {
+            switch (_outType)
+            {
+                case WiiColorComponentType.RGB565: enc = Color_RGBA_wRGB565; break;
+                case WiiColorComponentType.RGB8: enc = Color_RGBA_RGB; break;
+                case WiiColorComponentType.RGBX8: enc = Color_RGBA_RGBX; break;
+                case WiiColorComponentType.RGBA4: enc = Color_RGBA_wRGBA4; break;
+                case WiiColorComponentType.RGBA6: enc = Color_RGBA_wRGBA6; break;
+                case WiiColorComponentType.RGBA8: enc = Color_RGBA_RGBA; break;
+                default: return;
+            }
         }
 
         public void Write(byte* pOut)
         {
             try
             {
-                //Get encoder
-                ColorConverter enc;
-                switch (_outType)
-                {
-                    case WiiColorComponentType.RGB565: enc = Color_RGBA_wRGB565; break;
-                    case WiiColorComponentType.RGB8: enc = Color_RGBA_RGB; break;
-                    case WiiColorComponentType.RGBX8: enc = Color_RGBA_RGBX; break;
-                    case WiiColorComponentType.RGBA4: enc = Color_RGBA_wRGBA4; break;
-                    case WiiColorComponentType.RGBA6: enc = Color_RGBA_wRGBA6; break;
-                    case WiiColorComponentType.RGBA8: enc = Color_RGBA_RGBA; break;
-                    default: return;
-                }
-
                 //Write colors
                 byte* sPtr;
                 foreach (int i in _remapData._impTable)
@@ -243,6 +247,12 @@ namespace BrawlLib.Wii.Models
             }
         }
 
+        public void Write(ref byte* pOut, int index)
+        {
+            byte* sPtr = (byte*)(_pData + _remapData._impTable[index]);
+            enc(ref sPtr, ref pOut);
+        }
+
         public static UnsafeBuffer Decode(MDL0ColorData* header)
         {
             int count = header->_numEntries;
@@ -250,7 +260,7 @@ namespace BrawlLib.Wii.Models
             byte* pIn = (byte*)header + header->_dataOffset;
             byte* pOut = (byte*)buffer.Address;
 
-            ColorConverter dec;
+            ColorCodecConverter dec;
             switch (header->Type)
             {
                 case WiiColorComponentType.RGB565: dec = Color_wRGB565_RGBA; break;
@@ -326,16 +336,16 @@ namespace BrawlLib.Wii.Models
             return c;
         }
 
-        public static List<RGBAPixel> ToRGBA(ARGBPixel[] pixels)
-        {
-            List<RGBAPixel> newPixels = new List<RGBAPixel>(pixels.Length);
-            int i = 0;
-            foreach (ARGBPixel p in pixels)
-            {
-                newPixels.Add((RGBAPixel)p);
-                i += 1;
-            }
-            return newPixels;
-        }
+        //public static List<RGBAPixel> ToRGBA(ARGBPixel[] pixels)
+        //{
+        //    List<RGBAPixel> newPixels = new List<RGBAPixel>(pixels.Length);
+        //    int i = 0;
+        //    foreach (ARGBPixel p in pixels)
+        //    {
+        //        newPixels.Add((RGBAPixel)p);
+        //        i += 1;
+        //    }
+        //    return newPixels;
+        //}
     }
 }

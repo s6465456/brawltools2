@@ -15,7 +15,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.RSAR; } }
 
         [Category("Sound Archive")]
-        public string Version { get { return ((int)Header->_header._version.Reverse() - 0x100).ToString(); } }
+        public float Version { get { return Header->_header.Version; } }
         [Category("Sound Archive")]
         public ushort SeqSoundCount { get { return ftr._seqSoundCount; } set { ftr._seqSoundCount = value; SignalPropertyChange(); } }
         [Category("Sound Archive")]
@@ -41,8 +41,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
-            if ((_name == null) && (_origPath != null))
-                _name = Path.GetFileNameWithoutExtension(_origPath);
+            if (_name == null)
+                if (_origPath != null)
+                    _name = Path.GetFileNameWithoutExtension(_origPath);
+                else
+                    _name = "Sound Archive";
 
             _files = new List<RSARFileNode>();
             _children = new List<ResourceNode>();
@@ -51,6 +54,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
+        public RSARGroupNode _nullGroup;
         protected override void OnPopulate()
         {
             //Retrieve all files to attach to entries
@@ -96,6 +100,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     {
                         n._name = "<null>";
                         n._parent = this;
+                        _nullGroup = n as RSARGroupNode;
                     }
                     else
                     {
@@ -118,6 +123,24 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
             ftr = *(INFOFooter*)((uint)baseAddr + typeList[5]);
+
+            //bint* offsets = (bint*)((VoidPtr)symb + 12);
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    SYMBMaskHeader* hdr = (SYMBMaskHeader*)((VoidPtr)symb + 8 + offsets[i]);
+            //    Console.WriteLine("Root Index = " + hdr->_rootId);
+            //    for (int x = 0; x < hdr->_numEntries; x++)
+            //    {
+            //        SYMBMaskEntry* e = &hdr->Entries[x];
+            //        if (x == 0)
+            //            Console.WriteLine(String.Format("[{3}] {0}, {1}, {2} - {4}", -1, -1, -1, e->_index, new string(offset + stringOffsets[e->_stringId])));
+            //        else if (x % 2 != 0)
+            //        {
+            //            SYMBMaskEntry* e2 = &hdr->Entries[x + 1];
+            //            Console.WriteLine(String.Format("[{3}] {0}, {1}, {2} - {4}", e2->_bit, e2->_leftId, e2->_rightId, e->_index, new string(offset + stringOffsets[e->_stringId])));
+            //        }
+            //    }
+            //}
             //Sort(true);
         }
 
@@ -275,8 +298,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _entryList.SortStrings();
 
-            _infoCache[4][_infoCache[4].Count - 1]._rebuildIndex = _infoCache[4].Count - 1;
-
             return _converter.CalculateSize(_entryList, this);
         }
 
@@ -299,6 +320,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             rsar->Set(symbLen, infoLen, fileLen);
 
             _entryList.Clear();
+
+            //IsDirty = false;
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((RSARHeader*)source.Address)->_header._tag == RSARHeader.Tag ? new RSARNode() : null; }

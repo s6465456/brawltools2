@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL;
+using System.Linq;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -33,27 +34,30 @@ namespace BrawlLib.SSBB.ResourceNodes
         //            return 0;
         //    }
         //}
+        
+        [Category("Texture Data")]
+        public string[] References { get { return _references.Select(n => n.Parent.ToString()).ToArray(); } }
 
-        [Category("Texture Data")]
-        public int NumEntries
-        {
-            get
-            {
-                //if (Header != null) return Header->_numEntries;
-                //else 
-                return _references.Count;
-            }
-        }
-        [Category("Texture Data")]
-        public int DataLen
-        {
-            get
-            {
-                //if (Header != null) return Header->_numEntries * 8 + 4;
-                //else
-                return _references.Count * 8 + 4;
-            }
-        }
+        //[Category("Texture Data")]
+        //public int NumEntries
+        //{
+        //    get
+        //    {
+        //        //if (Header != null) return Header->_numEntries;
+        //        //else 
+        //        return _references.Count;
+        //    }
+        //}
+        //[Category("Texture Data")]
+        //public int DataLen
+        //{
+        //    get
+        //    {
+        //        //if (Header != null) return Header->_numEntries * 8 + 4;
+        //        //else
+        //        return _references.Count * 8 + 4;
+        //    }
+        //}
 
         //[Category("Texture Data")]
         //public string[] Entries { get { return _entries; } }

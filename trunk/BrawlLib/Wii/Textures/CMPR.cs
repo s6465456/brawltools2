@@ -40,16 +40,22 @@ namespace BrawlLib.Wii.Textures
         //    _blockIndex = 0;
         //    return base.EncodeTexture(src, mipLevels, out paletteFile);
         //}
+        internal FileMap EncodeTPLTextureCached(Bitmap src, int mipLevels, UnsafeBuffer blockBuffer)
+        {
+            _blockBuffer = blockBuffer;
+            try { return base.EncodeTPLTexture(src, mipLevels); }
+            finally { _blockBuffer = null; }
+        }
         public FileMap EncodeREFTTextureCached(Bitmap src, int mipLevels, UnsafeBuffer blockBuffer)
         {
             _blockBuffer = blockBuffer;
-            try { return base.EncodeREFTTexture(src, mipLevels, WiiPaletteFormat.IA8, false); }
+            try { return base.EncodeREFTTexture(src, mipLevels, WiiPaletteFormat.IA8); }
             finally { _blockBuffer = null; }
         }
         public FileMap EncodeTextureCached(Bitmap src, int mipLevels, UnsafeBuffer blockBuffer)
         {
             _blockBuffer = blockBuffer;
-            try { return base.EncodeTexture(src, mipLevels); }
+            try { return base.EncodeTEX0Texture(src, mipLevels); }
             finally { _blockBuffer = null; }
         }
 
@@ -97,19 +103,34 @@ namespace BrawlLib.Wii.Textures
             return buffer;
         }
 
-        internal override void EncodeLevel(TEX0* header, DIB dib, Bitmap src, int dStep, int sStep, int level)
+        //internal override void EncodeLevel(TEX0v1* header, DIB dib, Bitmap src, int dStep, int sStep, int level)
+        //{
+        //    if ((level == 1) && (_blockBuffer != null))
+        //    {
+        //        CMPRBlock* sPtr = (CMPRBlock*)_blockBuffer.Address;
+        //        CMPRBlock* dPtr = (CMPRBlock*)header->PixelData;
+
+        //        int blocks = _blockBuffer.Length / 8;
+        //        for (int i = 0; i < blocks; i++)
+        //            dPtr[i] = sPtr[i];
+        //    }
+        //    else
+        //        base.EncodeLevel(header, dib, src, dStep, sStep, level);
+        //}
+
+        internal override void EncodeLevel(VoidPtr addr, DIB dib, Bitmap src, int dStep, int sStep, int level)
         {
             if ((level == 1) && (_blockBuffer != null))
             {
                 CMPRBlock* sPtr = (CMPRBlock*)_blockBuffer.Address;
-                CMPRBlock* dPtr = (CMPRBlock*)header->PixelData;
+                CMPRBlock* dPtr = (CMPRBlock*)addr;
 
                 int blocks = _blockBuffer.Length / 8;
                 for (int i = 0; i < blocks; i++)
                     dPtr[i] = sPtr[i];
             }
             else
-                base.EncodeLevel(header, dib, src, dStep, sStep, level);
+                base.EncodeLevel(addr, dib, src, dStep, sStep, level);
         }
 
         protected override void EncodeBlock(ARGBPixel* sPtr, VoidPtr blockAddr, int width)

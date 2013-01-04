@@ -6,7 +6,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class RBNKEntryNode : ResourceNode
     {
         internal VoidPtr _offset;
-
+        internal VoidPtr _rebuildBase;
         internal RBNKNode RBNKNode
         {
             get
@@ -75,7 +75,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = 0xC;
             foreach (RBNKEntryNode g in Children)
                 size += 8 + g.CalculateSize(true);
-            return size;
+            return size.Align(0x20);
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -89,7 +89,19 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr addr = address + 12 + 8 * Children.Count;
             foreach (RBNKEntryNode g in Children)
             {
+                g._rebuildBase = header->_list.Address;
                 header->_list.Entries[g.Index] = (int)(addr - header->_list.Address);
+
+                if (g is RBNKDataInstParamNode)
+                    header->_list.Entries[g.Index]._dataType = 1;
+                else if (g is RBNKDataRangeTableNode)
+                    header->_list.Entries[g.Index]._dataType = 2;
+                else if (g is RBNKDataIndexTableNode)
+                    header->_list.Entries[g.Index]._dataType = 3;
+                else if (g is RBNKNullNode)
+                    header->_list.Entries[g.Index]._dataType = 4;
+                else
+                    header->_list.Entries[g.Index]._dataType = 0;
 
                 g.Rebuild(addr, g._calcSize, false);
                 addr += g._calcSize;
@@ -116,11 +128,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr offset = &Header->_list;
             for (int i = 0; i < Header->_list._numEntries; i++)
                 new WAVESoundNode() { _offset = offset }.Initialize(this, Header->_list.Get(offset, i), 0);
+            foreach (WAVESoundNode n in Children)
+                n.GetAudio();
         }
 
         protected override int OnCalculateSize(bool force)
         {
-            int size = 0xC + Children.Count * 4;
+            int size = 0xC + Children.Count * 8;
             foreach (WAVESoundNode g in Children)
                 size += g.WorkingUncompressed.Length;
             return size.Align(0x20);
@@ -129,16 +143,18 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             uint offset = 0;
-            RWSD_WAVEHeader* header = (RWSD_WAVEHeader*)address;
-            header->_tag = RWSD_WAVEHeader.Tag;
-            header->_numEntries = Children.Count;
-            header->_length = length;
-            buint* table = (buint*)header + 3;
+            RBNK_WAVEHeader* header = (RBNK_WAVEHeader*)address;
+            header->_tag = WAVEHeader.Tag;
+            header->_list._numEntries = Children.Count;
+            header->_length = (uint)length;
+            ruint* table = header->_list.Entries;
             VoidPtr addr = (VoidPtr)(table + Children.Count);
             foreach (WAVESoundNode r in Children)
             {
                 //Set offset and write header data
-                table[r.Index] = (uint)(addr - address);
+                table[r.Index] = (uint)(addr - header->_list.Address);
+
+                //Write audio header
                 r.Rebuild(addr, r.WorkingUncompressed.Length, false);
 
                 //Set the offset to the audio samples

@@ -29,5 +29,16 @@ namespace System
             }
             return -1;
         }
+        public unsafe static void Write(this string s, sbyte* ptr)
+        {
+            for (int i = 0; i < s.Length; i++)
+                ptr[i] = (sbyte)s[i];
+        }
+        public unsafe static void Write(this string s, ref sbyte* ptr)
+        {
+            for (int i = 0; i < s.Length; i++)
+                *ptr++ = (sbyte)s[i];
+            ptr++; //Null terminator
+        }
     }
 }

@@ -24,7 +24,15 @@ namespace BrawlLib
 
         public void Clear() { _table.Clear(); }
 
-        public VoidPtr this[string s] { get { return _table[s]; } }
+        public VoidPtr this[string s] 
+        {
+            get
+            {
+                if ((!String.IsNullOrEmpty(s)) && (_table.ContainsKey(s)))
+                    return _table[s];
+                return _table.Values[0];
+            } 
+        }
         
         public void WriteTable(VoidPtr address)
         {

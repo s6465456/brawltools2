@@ -36,19 +36,34 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct SSBBCommonHeader
+    unsafe struct NW4RCommonHeader
     {
         public const uint Size = 0x10;
 
         public uint _tag;
         public short _endian;
-        public short _version;
+        public bshort _version;
         public bint _length;
         public bushort _firstOffset;
         public bushort _numEntries;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public DataBlock DataBlock { get { return new DataBlock(Address, Size); } }
+
+        public float Version 
+        {
+            get 
+            {
+                short v = _version;
+                return float.Parse((v >> 8).ToString() + "." + (v & 0xFF).ToString().PadLeft(2, '0')); } 
+            set 
+            {
+                string s = value.ToString();
+                short major = short.Parse(s.Substring(0, s.IndexOf('.')));
+                short minor = short.Parse(s.Substring(s.IndexOf('.') + 1));
+                _version = ((short)((major << 8) | (minor & 0xFF))); 
+            } 
+        }
 
         public DataBlockCollection Entries { get { return new DataBlockCollection(DataBlock); } }
     }
@@ -70,22 +85,22 @@ namespace BrawlLib.SSBBTypes
         //if dataType == 2, return T2 struct at address
 
         public bushort _reserved;
-        public bint _data;
+        public bint _dataOffset;
 
         public ruint(RefType refType, byte dataType, int data)
         {
             _refType = (byte)refType;
             _dataType = dataType;
             _reserved = 0;
-            _data = data;
+            _dataOffset = data;
         }
 
-        public VoidPtr Offset(VoidPtr baseAddr) { return baseAddr + _data; }
+        public VoidPtr Offset(VoidPtr baseAddr) { return baseAddr + _dataOffset; }
 
-        public static implicit operator ruint(int r) { return new ruint() { _refType = 1, _data = r }; }
-        public static implicit operator int(ruint r) { return r._data; }
-        public static implicit operator ruint(uint r) { return new ruint() { _refType = 1, _data = (int)r }; }
-        public static implicit operator uint(ruint r) { return (uint)r._data; }
+        public static implicit operator ruint(int r) { return new ruint() { _refType = 1, _dataOffset = r }; }
+        public static implicit operator int(ruint r) { return r._dataOffset; }
+        public static implicit operator ruint(uint r) { return new ruint() { _refType = 1, _dataOffset = (int)r }; }
+        public static implicit operator uint(ruint r) { return (uint)r._dataOffset; }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -219,7 +234,7 @@ namespace BrawlLib.SSBBTypes
         public const uint Size = 0x10;
 
         public bushort _id;
-        public bshort _pad;
+        public bushort _flag;
         public bushort _leftIndex;
         public bushort _rightIndex;
         public bint _stringOffset;
@@ -233,7 +248,7 @@ namespace BrawlLib.SSBBTypes
         public ResourceEntry(int id, int left, int right, int dataOffset, int stringOffset)
         {
             _id = (ushort)id;
-            _pad = 0;
+            _flag = 0;
             _leftIndex = (ushort)left;
             _rightIndex = (ushort)right;
             _stringOffset = stringOffset;

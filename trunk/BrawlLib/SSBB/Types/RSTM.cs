@@ -10,7 +10,7 @@ namespace BrawlLib.SSBBTypes
     {
         public const uint Tag = 0x4D545352;
 
-        public SSBBCommonHeader _header;
+        public NW4RCommonHeader _header;
         public bint _headOffset;
         public bint _headLength;
         public bint _adpcOffset;
@@ -27,7 +27,7 @@ namespace BrawlLib.SSBBTypes
             //Set header
             _header._tag = Tag;
             _header._endian = -2;
-            _header._version = 1;
+            _header._version = 0x100;
             _header._firstOffset = 0x40;
             _header._numEntries = 2;
 

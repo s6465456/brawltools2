@@ -165,6 +165,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         MakeSolid(new ARGBPixel(), 0);
                     else
                         MakeList(0);
+
+                    UpdateCurrentControl();
                 }
             }
         }
@@ -181,6 +183,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         MakeSolid(new ARGBPixel(), 1);
                     else
                         MakeList(1);
+
+                    UpdateCurrentControl();
                 }
             }
         }
@@ -195,7 +199,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void MakeList(int id)
         {
             _constants[id] = false;
-            int entries = ((CLR0Node)_parent._parent)._numFrames + 1;
+            int entries = ((SCN0Node)_parent._parent).FrameCount + 1;
             _numEntries[id] = GetColors(id).Count;
             SetNumEntries(id, entries);
         }
@@ -203,8 +207,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         internal void SetNumEntries(int id, int value)
         {
-            if (_numEntries[id] == 0)
-                return;
+            //if (_numEntries[id] == 0)
+            //    return;
 
             if (value > _numEntries[id])
             {
@@ -225,10 +229,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             set
             {
                 if (value != SetConstant)
+                {
                     if (value)
-                        MakeConstant(Enabled);
+                        MakeConstant(true);
                     else
                         MakeAnimated();
+
+                    UpdateCurrentControl();
+                }
             }
         }
         [Category("Light Enable")]
@@ -237,7 +245,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return SetEnabled; }
             set { SetEnabled = value; SignalPropertyChange(); }
         }
-
+        
         [Browsable(false)]
         public bool SetConstant
         {

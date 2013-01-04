@@ -106,11 +106,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
-            //RWSDHeader* rwsd = ((RWSDNode)_parent).Header;
-            //VoidPtr offset = &rwsd->Data->_list;
             RuintList* list;
-            //int count;
-
+            
             _part1 = *Header->GetWsdInfo(_offset);
 
             list = Header->GetTrackTable(_offset); //Count is always 1
@@ -118,28 +115,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             RuintList* l = (RuintList*)r->Offset(_offset);
             _part2 = *(RWSD_NoteEvent*)l->Get(_offset, 0);
 
-            //count = list->_numEntries;
-            //if (count > 1) MessageBox.Show(TreePath);
-            //for (int i = 0; i < count; i++)
-            //{
-            //    ruint* r = (ruint*)list->Get(_offset, i);
-            //    RuintList* l = (RuintList*)r->Offset(_offset);
-            //    for (int x = 0; x < l->_numEntries; x++)
-            //        _part2.Add(*(RWSD_NoteEvent*)l->Get(_offset, x));
-            //}
-
             list = Header->GetNoteTable(_offset); //Count is always 1
             _part3 = *(RWSD_NoteInfo*)list->Get(_offset, 0);
-
-            //count = list->_numEntries;
-            //if (count > 1) MessageBox.Show(TreePath);
-            //for (int i = 0; i < count; i++)
-            //    _part3.Add(*(RWSD_NoteInfo*)list->Get(_offset, i));
 
             if (_name == null)
                 _name = String.Format("Sound[{0}]", Index);
 
-            if (_part3._waveIndex < Parent.Parent.Children[1].Children.Count)
+            if (Parent.Parent.Children.Count > 1 && _part3._waveIndex < Parent.Parent.Children[1].Children.Count)
                 _soundNode = Parent.Parent.Children[1].Children[_part3._waveIndex];
 
             SetSizeInternal((RWSD_DATAEntry.Size + RWSD_WSDEntry.Size + 0x20 + RWSD_NoteEvent.Size + 12 + RWSD_NoteInfo.Size));
@@ -149,7 +131,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override int OnCalculateSize(bool force)
         {
-            return (RWSD_DATAEntry.Size + RWSD_WSDEntry.Size + 0x20 + RWSD_NoteEvent.Size + 12 + RWSD_NoteInfo.Size).Align(0x10);
+            return (RWSD_DATAEntry.Size + RWSD_WSDEntry.Size + 0x20 + RWSD_NoteEvent.Size + 12 + RWSD_NoteInfo.Size);
         }
         public VoidPtr _baseAddr;
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)

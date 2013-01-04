@@ -563,7 +563,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         public byte Unk1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
         [TypeConverter(typeof(Bin8StringConverter))]
-        public Bin8 Flags { get { return new Bin8(_unk2); } set { _unk2 = (byte)value.data; SignalPropertyChange(); } }
+        public Bin8 Flags { get { return new Bin8(_unk2); } set { _unk2 = (byte)value._data; SignalPropertyChange(); } }
         public byte Unk3 { get { return _unk3; } set { _unk3 = value; SignalPropertyChange(); } }
         public byte Unk4 { get { return _unk4; } set { _unk4 = value; SignalPropertyChange(); } }
         

@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace BrawlBox.NodeWrappers
 {
-    [NodeWrapper(ResourceType.MDL0Polygon)]
+    [NodeWrapper(ResourceType.MDL0Object)]
     class MDL0PolygonWrapper : GenericWrapper
     {
         #region Menu
@@ -47,10 +47,10 @@ namespace BrawlBox.NodeWrappers
 
         public void Duplicate()
         {
-            MDL0PolygonNode node = ((MDL0PolygonNode)_resource).Clone();
+            MDL0ObjectNode node = ((MDL0ObjectNode)_resource).Clone();
             node.Name += " - Copy";
-            ((MDL0PolygonNode)_resource).Model._polyGroup.AddChild(node);
-            ((MDL0PolygonNode)_resource).Model.Rebuild(true);
+            ((MDL0ObjectNode)_resource).Model._polyGroup.AddChild(node);
+            ((MDL0ObjectNode)_resource).Model.Rebuild(true);
         }
     }
 }

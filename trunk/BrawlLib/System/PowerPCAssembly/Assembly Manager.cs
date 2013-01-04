@@ -4,38 +4,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace PowerPcAssembly
+namespace System.PowerPcAssembly
 {
-    public unsafe struct ASM
+    public unsafe class ASM
     {
-        private VoidPtr address;
-        public VoidPtr Address { get { return address; } }
-
-        private int count;
-        public int Count { get { return count; } }
+        private buint* _address;
+        public int _count;
 
         public ASM(VoidPtr address, int count)
         {
-            this.address = address;
-            this.count = count;
+            _address = (buint*)address;
+            _count = count;
         }
 
-        private buint this[int i]
-        {
-            get
-            {
-                if (i >= Count) throw new IndexOutOfRangeException();
-                return (uint)Address[i, sizeof(buint)];
-            }
-        }
-        public uint AddressOf(int i) { return this[i]; }
-        public PPCOpCode Opcode(int i) { return PPCOpCode.Disassemble(*(buint*)(uint)this[i], this[i]); }
-
+        private buint* this[int i] { get { if (i < _count) return &_address[i]; return null; } }
+        
+        public PPCOpCode Opcode(int i) { return PPCOpCode.Disassemble(this[i]); }
+        
         public PPCOpCode[] ToCollection()
         {
-            PPCOpCode[] collection = new PPCOpCode[count];
+            PPCOpCode[] collection = new PPCOpCode[_count];
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < _count; i++)
                 collection[i] = Opcode(i);
 
             return collection;

@@ -13,12 +13,12 @@ namespace BrawlLib.Wii.Graphics
         {
             Reg = (byte)(enabled ? 0x61 : 0);
             Mem = BPMemory.BPMEM_GENMODE;
-            Data = (UInt24)0;
+            Data = (BUInt24)0;
         }
 
         public byte Reg; //0x61
         public BPMemory Mem;
-        public UInt24 Data;
+        public BUInt24 Data;
     }
     
     //Not reversed, can be used directly
@@ -199,7 +199,7 @@ namespace BrawlLib.Wii.Graphics
         //0001 1100 0000 0000 0000 0000   BI3
         //1110 0000 0000 0000 0000 0000   BC3
 
-        public UInt24 data;
+        public BUInt24 data;
         
         public int TexMap0 { get { return (int)data & 7; } }
         public int TexCoord0 { get { return ((int)data >> 3) & 7; } }
@@ -211,8 +211,8 @@ namespace BrawlLib.Wii.Graphics
         public int TexCoord3 { get { return ((int)data >> 21) & 7; } }
         
         public RAS1_IRef(byte dat0, byte dat1, byte dat2) { data._dat0 = dat0; data._dat1 = dat1; data._dat2 = dat2; }
-        public RAS1_IRef(uint value) { data = (UInt24)value; }
-        public RAS1_IRef(UInt24 value) { data = value; }
+        public RAS1_IRef(uint value) { data = (BUInt24)value; }
+        public RAS1_IRef(BUInt24 value) { data = value; }
         
         public static uint Shift(int bi0, int bc0, int bi1, int bc1, int bi2, int bc2, int bi3, int bc3)
         {

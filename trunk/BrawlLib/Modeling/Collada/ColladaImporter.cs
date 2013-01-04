@@ -122,7 +122,7 @@ namespace BrawlLib.Modeling
         public float current = 0;
         public MDL0Node ImportModel(string filePath)
         {
-            MDL0Node model = new MDL0Node() { _name = Path.GetFileNameWithoutExtension(filePath), _originPath = filePath };
+            MDL0Node model = new MDL0Node() { _name = Path.GetFileNameWithoutExtension(filePath), _originalPath = filePath };
             model.InitGroups();
 
             model._importOptions._mdlType = mdlType.SelectedIndex;
@@ -278,7 +278,7 @@ namespace BrawlLib.Modeling
                         }
                     }
                     if (model._polyList != null && model._polyList.Count != 0)
-                        foreach (MDL0PolygonNode poly in model._polyList)
+                        foreach (MDL0ObjectNode poly in model._polyList)
                         {
                             poly._nodeId = 0;
                             poly.SingleBindInf = (MDL0BoneNode)model._boneGroup._children[0]._children[0];
@@ -288,7 +288,7 @@ namespace BrawlLib.Modeling
                 {
                     //Check each polygon to see if it can be single-binded!
                     if (model._polyList != null && model._polyList.Count != 0)
-                        foreach (MDL0PolygonNode p in model._polyList)
+                        foreach (MDL0ObjectNode p in model._polyList)
                         {
                             IMatrixNode node = null; 
                             bool singlebind = true;
@@ -326,11 +326,11 @@ namespace BrawlLib.Modeling
                 if (model._importOptions._addClrs && model._colorGroup._children.Count == 0)
                 {
                     model._noColors = true;
-                    RGBAPixel pixel = new RGBAPixel() { R = 128, G = 128, B = 128, A = 255 };
+                    RGBAPixel pixel = new RGBAPixel() { R = 100, G = 100, B = 100, A = 255 };
 
                     //Color nodes will be remapped later
                     if (model._polyList != null && model._polyList.Count != 0)
-                        foreach (MDL0PolygonNode p in model._polyList)
+                        foreach (MDL0ObjectNode p in model._polyList)
                         {
                             p._elementIndices[2] = 0;
                             RGBAPixel* pIn = (RGBAPixel*)(p._manager._faceData[2] = new UnsafeBuffer(4 * p._manager._pointCount)).Address;
@@ -344,15 +344,15 @@ namespace BrawlLib.Modeling
                 {
                     //Remap materials
                     if (model._polyList != null)
-                        foreach (MDL0PolygonNode p in model._polyList)
+                        foreach (MDL0ObjectNode p in model._polyList)
                             foreach (MDL0MaterialNode m in model._matList)
                                 if (m.Children.Count > 0 && 
                                     m.Children[0] != null && 
-                                    p.MaterialNode != null &&
-                                    p.MaterialNode.Children.Count > 0 &&
-                                    p.MaterialNode.Children[0] != null &&
-                                    m.Children[0].Name == p.MaterialNode.Children[0].Name)
-                                    p.MaterialNode = m;
+                                    p.OpaMaterialNode != null &&
+                                    p.OpaMaterialNode.Children.Count > 0 &&
+                                    p.OpaMaterialNode.Children[0] != null &&
+                                    m.Children[0].Name == p.OpaMaterialNode.Children[0].Name)
+                                    p.OpaMaterialNode = m;
 
                     //Clean up materials
                     for (int i = 0; i < model._matList.Count; i++)
@@ -453,7 +453,7 @@ namespace BrawlLib.Modeling
                     foreach (Vertex3 v in manager._vertices)
                         v.Index = i++;
 
-                    MDL0PolygonNode poly = new MDL0PolygonNode() { _manager = manager };
+                    MDL0ObjectNode poly = new MDL0ObjectNode() { _manager = manager };
                     poly._manager._polygon = poly;
                     poly._name = node._name != null ? node._name : node._id;
 
@@ -466,7 +466,7 @@ namespace BrawlLib.Modeling
                         foreach (MaterialEntry mat in shell._materials)
                             if (mat._id == inst._material._target)
                             {
-                                (poly._material = (mat._node as MDL0MaterialNode))._polygons.Add(poly);
+                                (poly._opaMaterial = (mat._node as MDL0MaterialNode))._polygons.Add(poly);
                                 break;
                             }
 
@@ -1400,20 +1400,24 @@ namespace BrawlLib.Modeling
                     else if (_reader.Name.Equals("type", true))
                         node._type = (NodeType)Enum.Parse(typeof(NodeType), (string)_reader.Value, true);
 
+                Matrix m = Matrix.Identity;
+                //if (node._type != NodeType.JOINT)
+                //    node._type = NodeType.JOINT;
                 while (_reader.BeginElement())
                 {
                     if (_reader.Name.Equals("matrix", true))
+                        m *= ParseMatrix();
+                    else if (_reader.Name.Equals("rotate", true))
                     {
-                        node._transform = ParseMatrix().Derive();
-                        //if (node._type != NodeType.JOINT)
-                        //    node._type = NodeType.JOINT;
+                        Vector4 v = ParseVec4();
+                        m *= Matrix.RotationMatrix(v._x * v._w, v._y * v._w, v._z * v._w);
                     }
+                    else if (_reader.Name.Equals("scale", true))
+                        m.Scale(ParseVec3());
+                    else if (_reader.Name.Equals("translate", true))
+                        m.Translate(ParseVec3());
                     else if (_reader.Name.Equals("node", true))
-                    {
                         node._children.Add(ParseNode());
-                        //if (node._type != NodeType.JOINT)
-                        //    node._type = NodeType.JOINT;
-                    }
                     else if (_reader.Name.Equals("instance_controller", true))
                         node._instances.Add(ParseInstance(true));
                     else if (_reader.Name.Equals("instance_geometry", true))
@@ -1421,6 +1425,7 @@ namespace BrawlLib.Modeling
 
                     _reader.EndElement();
                 }
+                node._transform = m.Derive();
                 return node;
             }
 
@@ -1510,6 +1515,34 @@ namespace BrawlLib.Modeling
                         p[i] = 255;
                     else
                         p[i] = (byte)(f * 255.0f + 0.5f);
+                }
+                return c;
+            }
+            private Vector3 ParseVec3()
+            {
+                float f;
+                Vector3 c;
+                float* p = (float*)&c;
+                for (int i = 0; i < 3; i++)
+                {
+                    if (!_reader.ReadValue(&f))
+                        p[i] = 0;
+                    else
+                        p[i] = f;
+                }
+                return c;
+            }
+            private Vector4 ParseVec4()
+            {
+                float f;
+                Vector4 c;
+                float* p = (float*)&c;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!_reader.ReadValue(&f))
+                        p[i] = 0;
+                    else
+                        p[i] = f;
                 }
                 return c;
             }

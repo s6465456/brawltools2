@@ -13,7 +13,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class TEX0Node : BRESEntryNode, IImageSource
     {
         public override ResourceType ResourceType { get { return ResourceType.TEX0; } }
-        internal TEX0* Header { get { return (TEX0*)WorkingUncompressed.Address; } }
+        internal TEX0v1* Header1 { get { return (TEX0v1*)WorkingUncompressed.Address; } }
+        internal TEX0v3* Header3 { get { return (TEX0v3*)WorkingUncompressed.Address; } }
 
         public override int DataAlign { get { return 0x20; } }
 
@@ -21,17 +22,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         WiiPixelFormat _format;
         int _lod;
         bool _hasPalette;
+        int _version;
 
+        //[Category("Texture")]
+        //public int Version { get { return _version; } set { _version = value; } }
         [Category("Texture")]
-        public int Width { get { return _width; } set { _width = value; } }
+        public int Width { get { return _width; } }
         [Category("Texture")]
-        public int Height { get { return _height; } set { _height = value; } }
+        public int Height { get { return _height; } }
         [Category("Texture")]
-        public WiiPixelFormat Format { get { return _format; } set { _format = value; } }
+        public WiiPixelFormat Format { get { return _format; } }
         [Category("Texture")]
-        public int LevelOfDetail { get { return _lod; } set { _lod = value; } }
+        public int LevelOfDetail { get { return _lod; } }
         [Category("Texture")]
-        public bool HasPalette { get { return _hasPalette; } set { _hasPalette = value; } }
+        public bool HasPalette { get { return _hasPalette; } }
 
         public PLT0Node GetPaletteNode() { return ((_parent == null) || (!HasPalette)) ? null : _parent._parent.FindChild("Palettes(NW4R)/" + this.Name, false) as PLT0Node; }
 
@@ -39,14 +43,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
 
-            if ((_name == null) && (Header->_stringOffset != 0))
-                _name = Header->ResourceString;
+            if ((_name == null) && (Header1->_stringOffset != 0))
+                _name = Header1->ResourceString;
 
-            _width = Header->_width;
-            _height = Header->_height;
-            _format = Header->PixelFormat;
-            _lod = Header->_levelOfDetail;
-            _hasPalette = Header->HasPalette;
+            _width = Header1->_width;
+            _height = Header1->_height;
+            _format = Header1->PixelFormat;
+            _lod = Header1->_levelOfDetail;
+            _hasPalette = Header1->HasPalette;
+            _version = Header1->_header._version;
 
             return false;
         }
@@ -59,9 +64,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             try
             {
                 if (plt != null)
-                    return TextureConverter.DecodeIndexed(Header, plt.Palette, index + 1);
+                    return TextureConverter.DecodeIndexed(Header1, plt.Palette, index + 1);
                 else
-                    return TextureConverter.Decode(Header, index + 1);
+                    return TextureConverter.Decode(Header1, index + 1);
             }
             catch { return null; }
         }
@@ -71,9 +76,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             try
             {
                 if (plt != null)
-                    return TextureConverter.DecodeIndexed(Header, plt.Palette, index + 1);
+                    return TextureConverter.DecodeIndexed(Header1, plt.Palette, index + 1);
                 else
-                    return TextureConverter.Decode(Header, index + 1);
+                    return TextureConverter.Decode(Header1, index + 1);
             }
             catch { return null; }
         }
@@ -82,7 +87,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.PostProcess(bresAddress, dataAddress, dataLength, stringTable);
 
-            TEX0* header = (TEX0*)dataAddress;
+            TEX0v1* header = (TEX0v1*)dataAddress;
             header->ResourceStringAddress = stringTable[Name] + 4;
         }
 
@@ -96,7 +101,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 pn.ReplaceRaw(pMap);
             }
             else
-                tMap = TextureConverter.Get(Format).EncodeTexture(bmp, LevelOfDetail);
+                tMap = TextureConverter.Get(Format).EncodeTEX0Texture(bmp, LevelOfDetail);
             ReplaceRaw(tMap);
         }
 
@@ -139,6 +144,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 base.Export(outPath);
         }
 
-        internal static ResourceNode TryParse(DataSource source) { return ((TEX0*)source.Address)->_header._tag == TEX0.Tag ? new TEX0Node() : null; }
+        internal static ResourceNode TryParse(DataSource source) { return ((TEX0v1*)source.Address)->_header._tag == TEX0v1.Tag ? new TEX0Node() : null; }
     }
 }

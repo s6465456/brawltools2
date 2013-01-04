@@ -10,7 +10,7 @@ namespace BrawlLib.SSBBTypes
         public const uint Tag = 0x44535752;
         public const int Size = 0x20;
 
-        public SSBBCommonHeader _header;
+        public NW4RCommonHeader _header;
 
         public bint _dataOffset;
         public bint _dataLength;
@@ -20,13 +20,13 @@ namespace BrawlLib.SSBBTypes
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
         public RWSD_DATAHeader* Data { get { return (RWSD_DATAHeader*)(Address + _dataOffset); } }
-        public RWSD_WAVEHeader* Wave { get { return (RWSD_WAVEHeader*)(Address + _waveOffset); } }
+        public WAVEHeader* Wave { get { return (WAVEHeader*)(Address + _waveOffset); } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct RWSD_DATAHeader
     {
-        public const uint Tag = 0x41514144;
+        public const uint Tag = 0x41544144;
 
         public uint _tag;
         public bint _length;
@@ -111,11 +111,11 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct RWSD_WAVEHeader
+    unsafe struct WAVEHeader
     {
         public const uint Tag = 0x45564157;
 
-        public buint _tag;
+        public uint _tag;
         public bint _length;
         public bint _numEntries;
 

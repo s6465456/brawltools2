@@ -87,12 +87,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int Unknown28 { get { return unk28; } set { unk28 = value; SignalPropertyChange(); } }
 
         [Category("Data Flags"), TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 Flags1bin { get { return new Bin32(flags1); } set { flags1 = value.data; SignalPropertyChange(); } }
+        public Bin32 Flags1bin { get { return new Bin32(flags1); } set { flags1 = value._data; SignalPropertyChange(); } }
         [Category("Data Flags")]
         public uint Flags1uint { get { return flags1; } set { flags1 = value; SignalPropertyChange(); } }
 
         [Category("Data Flags"), TypeConverter(typeof(Bin32StringConverter))]
-        public Bin32 Flags2bin { get { return new Bin32((uint)flags2); } set { flags2 = (int)value.data; SignalPropertyChange(); } }
+        public Bin32 Flags2bin { get { return new Bin32((uint)flags2); } set { flags2 = (int)value._data; SignalPropertyChange(); } }
         [Category("Data Flags")]
         public int Flags2int { get { return flags2; } set { flags2 = value; SignalPropertyChange(); } }
 

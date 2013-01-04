@@ -88,7 +88,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             SetSizeInternal(0x30);
 
-            if (hdr._waveIndex < RBNKNode.Children[1].Children.Count)
+            if (RBNKNode.Children.Count > 1 && hdr._waveIndex < RBNKNode.Children[1].Children.Count)
                 _soundNode = RBNKNode.Children[1].Children[hdr._waveIndex];
 
             return false;
@@ -117,8 +117,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             _keys = new byte[Header->_tableCount];
 
             SetSizeInternal((1 + _keys.Length).Align(4) + _keys.Length * 8);
+
             for (int i = 0; i < _keys.Length; i++)
                 _keys[i] = Header->GetKey(i);
+
             return _keys.Length > 0;
         }
 
@@ -170,7 +172,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_name == null)
                 _name = String.Format("Group[{0}]", Index);
 
-            SetSizeInternal(4 + (Min - Max + 1) * 8);
+            SetSizeInternal(4 + (Max - Min + 1) * 8);
 
             return Max > Min;
         }
@@ -215,8 +217,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public byte[] Keys { get { return _keys; } }
         public byte[] _keys = new byte[0];
-
-        VoidPtr _rebuildBase;
+        
         bool _rebuildType = false; //true is range, false is index
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -258,6 +259,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override int OnCalculateSize(bool force)
         {
             int size = 0;
+            _rebuildType = false;
 
             //Determine whether to use a RangeTable or IndexTable
             _keys = new byte[Children.Count];
@@ -269,7 +271,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (e.Index == 0)
                 {
                     prevKey = e._key;
-                    continue; 
+                    continue;
                 }
 
                 currKey = e._key;
@@ -283,12 +285,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_rebuildType)
                 size = (1 + _keys.Length).Align(4) + _keys.Length * 8;
             else
-                size = Children.Count * 8;
+                size = 4 + _keys.Length * 8;
 
             foreach (RBNKEntryNode e in Children)
                 size += e.CalculateSize(true);
 
-            return size.Align(0x20);
+            return size;
         }
     }
 

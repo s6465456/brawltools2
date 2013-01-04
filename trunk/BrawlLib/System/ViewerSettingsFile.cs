@@ -6,7 +6,7 @@ namespace System
     public struct BBVS
     {
         public const uint Tag = 0x53564242;
-        public const uint Size = 0x80;
+        public const uint Size = 0x84;
 
         public uint _tag;
         public byte _version;
@@ -26,7 +26,8 @@ namespace System
         public BVec2 defaultRot;
         public ARGBPixel orbColor;
         public ARGBPixel lineColor;
-        public int pad;
+        public ARGBPixel floorColor1;
+        public ARGBPixel floorColor2;
         
         public bool RetrieveCorrAnims { get { return (_options >> 0 & 1) != 0; } }
         public bool Unused { get { return (_options >> 1 & 1) != 0; } }

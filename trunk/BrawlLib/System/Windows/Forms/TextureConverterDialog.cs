@@ -23,22 +23,33 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string ImageSource { get { return _imageSource; } set { _imageSource = value; } }
 
-        private BRESNode _parent;
+        private BRESNode _bresParent;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public BRESNode ParentNode { get { return _parent; } }
-
-        private TEX0Node _original;
+        public BRESNode BRESParentNode { get { return _bresParent; } }
+        private TPLNode _tplParent;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public TEX0Node TextureNode { get { return _original; } }
-
-        private REFTEntryNode _originalREFT;
+        public TPLNode TPLParentNode { get { return _tplParent; } }
+        private REFTNode _reftParent;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public REFTEntryNode REFTImgNode { get { return _originalREFT; } }
+        public REFTNode REFTParentNode { get { return _reftParent; } }
 
-        private PLT0Node _originalPalette;
+        private TEX0Node _origTEX0;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public PLT0Node PaletteNode { get { return _originalPalette; } }
+        public TEX0Node TEX0TextureNode { get { return _origTEX0; } }
+        private TPLTextureNode _origTPL;
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public TPLTextureNode TPLTextureNode { get { return _origTPL; } }
+        private REFTEntryNode _origREFT;
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public REFTEntryNode REFTTextureNode { get { return _origREFT; } }
 
+        private PLT0Node _origPLT0;
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public PLT0Node PLT0PaletteNode { get { return _origPLT0; } }
+        private TPLPaletteNode _origTPLPlt;
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public TPLPaletteNode TPLPaletteNode { get { return _origTPLPlt; } }
+        
         private FileMap _textureData;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public FileMap TextureData { get { return _textureData; } }
@@ -73,49 +84,72 @@ namespace System.Windows.Forms
 
         public DialogResult ShowDialog(IWin32Window owner, BRESNode parent)
         {
-            _parent = parent;
-            _original = null;
-            _originalPalette = null;
+            _bresParent = parent;
+            _origTEX0 = null;
+            _origREFT = null;
+            _origPLT0 = null;
+            _origTPL = null;
+            _origTPLPlt = null;
             _paletteData = _textureData = null;
             DialogResult = DialogResult.Cancel;
             try { return base.ShowDialog(owner); }
-            catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
+            //catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
             finally { DisposeImages(); }
         }
         public DialogResult ShowDialog(IWin32Window owner, TEX0Node original)
         {
-            _parent = null;
-            _original = original;
-            _originalPalette = original.GetPaletteNode();
+            _bresParent = null;
+            _origTEX0 = original;
+            _origPLT0 = original.GetPaletteNode();
+            _origREFT = null; 
+            _origTPL = null;
+            _origTPLPlt = null;
             _paletteData = _textureData = null;
             DialogResult = DialogResult.Cancel;
             try { return base.ShowDialog(owner); }
-            catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
+            //catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
             finally { DisposeImages(); }
         }
         public DialogResult ShowDialog(IWin32Window owner, REFTEntryNode original)
         {
-            _parent = null;
-            _originalREFT = original;
-            _original = null;
-            _originalPalette = null;
+            _bresParent = null;
+            _origREFT = original;
+            _origTEX0 = null;
+            _origTPL = null;
+            _origTPLPlt = null;
+            _origPLT0 = null;
             _paletteData = _textureData = null;
-            //cboFormat.Items.RemoveAt(9);
-            //cboFormat.Items.RemoveAt(9);
             DialogResult = DialogResult.Cancel;
             try { return base.ShowDialog(owner); }
-            catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
+            //catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
+            finally { DisposeImages(); }
+        }
+        public DialogResult ShowDialog(IWin32Window owner, TPLTextureNode original)
+        {
+            _bresParent = null;
+            _origREFT = null;
+            _origTPL = original;
+            _origTPLPlt = original.GetPaletteNode();
+            _origTEX0 = null;
+            _origPLT0 = null;
+            _paletteData = _textureData = null;
+            DialogResult = DialogResult.Cancel;
+            try { return base.ShowDialog(owner); }
+            //catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
             finally { DisposeImages(); }
         }
         new public DialogResult ShowDialog(IWin32Window owner)
         {
-            _parent = null;
-            _original = null;
-            _originalPalette = null;
+            _bresParent = null;
+            _origTEX0 = null;
+            _origPLT0 = null;
+            _origREFT = null;
+            _origTPL = null;
+            _origTPLPlt = null;
             _paletteData = _textureData = null;
             DialogResult = DialogResult.Cancel;
             try { return base.ShowDialog(owner); }
-            catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
+            //catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
             finally { DisposeImages(); }
         }
 
@@ -137,31 +171,52 @@ namespace System.Windows.Forms
                 return;
             }
 
-            if (_original != null)
+            if (_origTEX0 != null)
             {
                 _updating = true;
 
-                cboFormat.SelectedItem = _original.Format;
-                numLOD.Value = _original.LevelOfDetail;
+                cboFormat.SelectedItem = _origTEX0.Format;
+                numLOD.Value = _origTEX0.LevelOfDetail;
 
                 FixPaletteFields();
 
-                if (_originalPalette != null)
+                if (_origPLT0 != null)
                 {
                     grpPalette.Enabled = true;
-                    cboPaletteFormat.SelectedItem = _originalPalette.Format;
-                    numPaletteCount.Value = _originalPalette.Colors;
+                    cboPaletteFormat.SelectedItem = _origPLT0.Format;
+                    numPaletteCount.Value = _origPLT0.Colors;
                 }
 
                 _updating = false;
                 UpdatePreview();
             }
-            else if (_originalREFT != null)
+            else if (_origREFT != null)
             {
                 _updating = true;
-                cboFormat.SelectedItem = _originalREFT.TextureFormat;
+                cboFormat.SelectedItem = _origREFT.TextureFormat;
+                numLOD.Value = _origREFT.LevelOfDetail.Clamp(1, int.MaxValue);
+
+                FixPaletteFields();
+
+                _updating = false;
+                UpdatePreview();
+            }
+            else if (_origTPL != null)
+            {
+                _updating = true;
+                cboFormat.SelectedItem = _origTPL.Format;
                 numLOD.Value = 1;
                 //numLOD.Enabled = false;
+
+                FixPaletteFields();
+
+                if (_origTPLPlt != null)
+                {
+                    grpPalette.Enabled = true;
+                    cboPaletteFormat.SelectedItem = _origTPLPlt.Format;
+                    numPaletteCount.Value = _origTPLPlt.Colors;
+                }
+
                 _updating = false;
                 UpdatePreview();
             }
@@ -190,6 +245,7 @@ namespace System.Windows.Forms
             //        _source = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format32bppArgb);
 
             //_source.SetResolution(96.0f, 96.0f);
+
             _preview = new Bitmap(_source.Width, _source.Height, PixelFormat.Format32bppArgb);
 
             txtPath.Text = path;
@@ -288,8 +344,21 @@ namespace System.Windows.Forms
                 return;
 
             int w = _source.Width, h = _source.Height;
-            int palSize = grpPalette.Enabled ? (((int)numPaletteCount.Value * 2) + 0x40) : 0;
-            lblDataSize.Text = String.Format("{0:n0}B", TextureConverter.Get((WiiPixelFormat)cboFormat.SelectedItem).GetMipOffset(ref w, ref h, (int)numLOD.Value + 1) + 0x40 + palSize);
+            if (_origTEX0 != null || _bresParent != null)
+            {
+                int palSize = grpPalette.Enabled ? (((int)numPaletteCount.Value * 2) + 0x40) : 0;
+                lblDataSize.Text = String.Format("{0:n0}B", TextureConverter.Get((WiiPixelFormat)cboFormat.SelectedItem).GetMipOffset(ref w, ref h, (int)numLOD.Value + 1) + 0x40 + palSize);
+            }
+            else if (_origREFT != null || _reftParent != null)
+            {
+                int palSize = grpPalette.Enabled ? (((int)numPaletteCount.Value * 2)) : 0;
+                lblDataSize.Text = String.Format("{0:n0}B", TextureConverter.Get((WiiPixelFormat)cboFormat.SelectedItem).GetMipOffset(ref w, ref h, (int)numLOD.Value + 1) + 0x20 + palSize);
+            }
+            else if (_origTPL != null || _tplParent != null)
+            {
+                int palSize = grpPalette.Enabled ? (((int)numPaletteCount.Value * 2) + 0xC) : 0;
+                lblDataSize.Text = String.Format("{0:n0}B", TextureConverter.Get((WiiPixelFormat)cboFormat.SelectedItem).GetMipOffset(ref w, ref h, (int)numLOD.Value + 1) + 0x28 + palSize);
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -399,71 +468,129 @@ namespace System.Windows.Forms
             TextureConverter format = TextureConverter.Get((WiiPixelFormat)cboFormat.SelectedItem);
             if (format.IsIndexed)
             {
-                if (_originalREFT == null)
+                if (_origTEX0 != null || _bresParent != null)
                     _textureData = format.EncodeTextureIndexed(_indexed, (int)numLOD.Value, (WiiPaletteFormat)cboPaletteFormat.SelectedItem, out _paletteData);
-                else
+                else if (_origREFT != null || _reftParent != null)
                     _textureData = format.EncodeREFTTextureIndexed(_indexed, (int)numLOD.Value, (WiiPaletteFormat)cboPaletteFormat.SelectedItem);
+                else if (_origTPL != null || _tplParent != null)
+                    _textureData = format.EncodeTPLTextureIndexed(_indexed, (int)numLOD.Value, (WiiPaletteFormat)cboPaletteFormat.SelectedItem, out _paletteData);
             }
             else
             {
                 if ((format.RawFormat == WiiPixelFormat.CMPR) && (_cmprBuffer != null))
-                    if (_originalREFT == null)
+                {
+                    if (_origTEX0 != null || _bresParent != null)
                         _textureData = ((CMPR)format).EncodeTextureCached(_source, (int)numLOD.Value, _cmprBuffer);
-                    else
+                    else if (_origREFT != null || _reftParent != null)
                         _textureData = ((CMPR)format).EncodeREFTTextureCached(_source, (int)numLOD.Value, _cmprBuffer);
-                else if (_originalREFT == null)
-                    _textureData = format.EncodeTexture(_source, (int)numLOD.Value);
-                else
-                    _textureData = format.EncodeREFTTexture(_source, (int)numLOD.Value, WiiPaletteFormat.IA8, false);
+                    else if (_origTPL != null || _tplParent != null)
+                        _textureData = ((CMPR)format).EncodeTPLTextureCached(_source, (int)numLOD.Value, _cmprBuffer);
+                }
+                else if (_origTEX0 != null || _bresParent != null)
+                    _textureData = format.EncodeTEX0Texture(_source, (int)numLOD.Value);
+                else if (_origREFT != null || _reftParent != null)
+                    _textureData = format.EncodeREFTTexture(_source, (int)numLOD.Value, WiiPaletteFormat.IA8);
+                else if (_origTPL != null || _tplParent != null)
+                    _textureData = format.EncodeTPLTexture(_source, (int)numLOD.Value);
             }
 
-            if (_parent != null)
+            if (_bresParent != null)
             {
-                _original = _parent.CreateResource<TEX0Node>(Path.GetFileNameWithoutExtension(_imageSource));
+                _origTEX0 = _bresParent.CreateResource<TEX0Node>(Path.GetFileNameWithoutExtension(_imageSource));
                 if (_paletteData != null)
                 {
-                    _originalPalette = _parent.CreateResource<PLT0Node>(_original.Name);
-                    _originalPalette.Name = _original.Name;
-                    _originalPalette.ReplaceRaw(_paletteData);
+                    _origPLT0 = _bresParent.CreateResource<PLT0Node>(_origTEX0.Name);
+                    _origPLT0.Name = _origTEX0.Name;
+                    _origPLT0.ReplaceRaw(_paletteData);
                 }
-                _original.ReplaceRaw(_textureData);
-            }
-            else if (_original != null)
+                _origTEX0.ReplaceRaw(_textureData);
+            } 
+            else if (_tplParent != null)
             {
-                if (_originalPalette != null)
+                //_origTEX0 = _bresParent.CreateResource<TEX0Node>(Path.GetFileNameWithoutExtension(_imageSource));
+                //if (_paletteData != null)
+                //{
+                //    _origPLT0 = _bresParent.CreateResource<PLT0Node>(_origTEX0.Name);
+                //    _origPLT0.Name = _origTEX0.Name;
+                //    _origPLT0.ReplaceRaw(_paletteData);
+                //}
+                //_origTEX0.ReplaceRaw(_textureData);
+            }
+            else if (_reftParent != null)
+            {
+                //_origTEX0 = _bresParent.CreateResource<TEX0Node>(Path.GetFileNameWithoutExtension(_imageSource));
+                //if (_paletteData != null)
+                //{
+                //    _origPLT0 = _bresParent.CreateResource<PLT0Node>(_origTEX0.Name);
+                //    _origPLT0.Name = _origTEX0.Name;
+                //    _origPLT0.ReplaceRaw(_paletteData);
+                //}
+                //_origTEX0.ReplaceRaw(_textureData);
+            }
+            else if (_origTEX0 != null)
+            {
+                if (_origPLT0 != null)
                 {
                     if (_paletteData != null)
-                        _originalPalette.ReplaceRaw(_paletteData);
+                        _origPLT0.ReplaceRaw(_paletteData);
                     else
                     {
-                        _originalPalette.Remove();
-                        _originalPalette.Dispose();
+                        _origPLT0.Remove();
+                        _origPLT0.Dispose();
                     }
                 }
                 else if (_paletteData != null)
                 {
-                    if ((_original.Parent == null) || (_original.Parent.Parent == null))
+                    if ((_origTEX0.Parent == null) || (_origTEX0.Parent.Parent == null))
                     {
                         _paletteData.Dispose();
                         _paletteData = null;
                     }
                     else
                     {
-                        _parent = _original.Parent.Parent as BRESNode;
-                        _originalPalette = _parent.CreateResource<PLT0Node>(_original.Name);
-                        _originalPalette.Name = _original.Name;
-                        _originalPalette.ReplaceRaw(_paletteData);
+                        _bresParent = _origTEX0.Parent.Parent as BRESNode;
+                        _origPLT0 = _bresParent.CreateResource<PLT0Node>(_origTEX0.Name);
+                        _origPLT0.Name = _origTEX0.Name;
+                        _origPLT0.ReplaceRaw(_paletteData);
                     }
                 }
-                _original.ReplaceRaw(_textureData);
+                _origTEX0.ReplaceRaw(_textureData);
             }
-            else if (_originalREFT != null)
-                _originalREFT.ReplaceRaw(_textureData);
+            else if (_origREFT != null)
+                _origREFT.ReplaceRaw(_textureData);
+            else if (_origTPL != null)
+            {
+                if (_origTPLPlt != null)
+                {
+                    if (_paletteData != null)
+                        _origTPLPlt.ReplaceRaw(_paletteData);
+                    else
+                    {
+                        _origTPLPlt.Remove();
+                        _origTPLPlt.Dispose();
+                    }
+                }
+                else if (_paletteData != null)
+                {
+                    if (_origTPL.Parent == null)
+                    {
+                        _paletteData.Dispose();
+                        _paletteData = null;
+                    }
+                    else
+                    {
+                        TPLGroupNode g = _origTPL.Parent as TPLGroupNode;
+                        _origTPLPlt = new TPLPaletteNode() { _name = "Palette" };
+                        (g._palette = _origTPLPlt).Parent = g;
+                        _origTPLPlt.ReplaceRaw(_paletteData);
+                    }
+                }
+                _origTPL.ReplaceRaw(_textureData);
+            }
             
             DialogResult = DialogResult.OK;
             Close();
         }
-
 
         #region Designer
 
@@ -945,6 +1072,5 @@ namespace System.Windows.Forms
         }
 
         #endregion
-
     }
 }

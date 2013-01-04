@@ -679,7 +679,7 @@ namespace System.Windows.Forms
                 {
                     if (!float.IsNaN(box.Value))
                     {
-                        SRT0TextureNode newEntry = SelectedAnimation.FindOrCreateEntry(TargetTexRef.Parent.Name, TargetTexRef.Index);
+                        SRT0TextureNode newEntry = SelectedAnimation.FindOrCreateEntry(TargetTexRef.Parent.Name, TargetTexRef.Index, false);
 
                         //Set initial values (so they aren't null)
                         FrameState state = TargetTexRef._bindState; //Get the texture's bindstate

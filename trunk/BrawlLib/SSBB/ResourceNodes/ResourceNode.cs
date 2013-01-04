@@ -80,6 +80,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal protected ResourceNode _first, _last;
         internal protected bool _hasChildren;
 
+        public event EventHandler UpdateProps, UpdateCurrControl;
         public event MoveEventHandler MovedUp, MovedDown;
         public event ResourceEventHandler Disposing, Renamed, PropertyChanged, Replaced, Restored;
         public event ResourceChildEventHandler ChildAdded, ChildRemoved;
@@ -127,7 +128,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public virtual string Name
         {
-            get { return _name; }
+            get { return String.IsNullOrEmpty(_name) ? _name = "<null>" : _name; }
             set 
             {
                 if (_name == value)
@@ -273,6 +274,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             GC.SuppressFinalize(this);
         }
 
+        public void UpdateProperties()
+        {
+            if (UpdateProps != null)
+                UpdateProps(this, null);
+        }   
+        public void UpdateCurrentControl()
+        {
+            if (UpdateCurrControl != null)
+                UpdateCurrControl(this, null);
+        }
+        
         public virtual bool MoveUp()
         {
             if (Parent == null)

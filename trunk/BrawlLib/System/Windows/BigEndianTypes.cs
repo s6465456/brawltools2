@@ -12,8 +12,13 @@ namespace System
         public static explicit operator uint(bint val) { return (uint)val._data.Reverse(); }
         public static explicit operator bint(uint val) { return new bint { _data = (int)val.Reverse() }; }
 
-        public int Value { get { return (int)this; } }
         public VoidPtr Address { get { fixed (void* p = &this)return p; } }
+
+        public int Value { get { return (int)this; } }
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -25,8 +30,13 @@ namespace System
         public static explicit operator int(buint val) { return (int)val._data.Reverse(); }
         public static explicit operator buint(int val) { return new buint { _data = (uint)val.Reverse() }; }
 
-        public uint Value { get { return (uint)this; } }
         public VoidPtr Address { get { fixed (void* p = &this)return p; } }
+
+        public uint Value { get { return (uint)this; } }
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -37,6 +47,12 @@ namespace System
         public static implicit operator bfloat(float val) { return new bfloat { _data = val.Reverse() }; }
 
         public VoidPtr Address { get { fixed (void* p = &this)return p; } }
+
+        public float Value { get { return (float)this; } }
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -49,6 +65,12 @@ namespace System
         public static explicit operator bshort(ushort val) { return new bshort { _data = (short)val.Reverse() }; }
 
         public VoidPtr Address { get { fixed (void* p = &this)return p; } }
+
+        public short Value { get { return (short)this; } }
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -61,6 +83,12 @@ namespace System
         public static explicit operator bushort(short val) { return new bushort { _data = (ushort)val.Reverse() }; }
 
         public VoidPtr Address { get { fixed (void* p = &this)return p; } }
+
+        public ushort Value { get { return (ushort)this; } }
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

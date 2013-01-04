@@ -1792,7 +1792,7 @@ namespace System.Windows.Forms
                             foreach (MoveDefBoneIndexNode b in Group.Children)
                             {
                                 if (b.BoneNode != null)
-                                    foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
+                                    foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
                                         p._render = false;
                             }
                         }
@@ -1805,7 +1805,7 @@ namespace System.Windows.Forms
                             foreach (MoveDefBoneIndexNode b in Group.Children)
                             {
                                 if (b.BoneNode != null)
-                                    foreach (MDL0PolygonNode p in b.BoneNode._manPolys)
+                                    foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
                                         p._render = true;
                             }
                         }

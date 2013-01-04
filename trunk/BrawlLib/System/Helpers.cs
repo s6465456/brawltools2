@@ -173,7 +173,6 @@ namespace System
         {
             for (int i = begin; i < str.Length; i++)
                 if (str[i] == chr) return i;
-
             return -1;
         }
 
@@ -182,7 +181,6 @@ namespace System
         {
             for (int i = str.Length - 1; i >= begin; i--)
                 if (str[i] == chr) return i;
-
             return -1;
         }
 
@@ -192,8 +190,16 @@ namespace System
             int x = 0;
             for (int i = begin; i < str.Length; i++)
                 if (str[i] == chr) x++;
-
             return x;
+        }
+
+        //Find the indices of instances of the passed character.
+        public static int[] IndiciesOf(string str, int begin, char chr)
+        {
+            List<int> indices = new List<int>();
+            for (int i = begin; i < str.Length; i++)
+                if (str[i] == chr) indices.Add(i);
+            return indices.ToArray();
         }
 
         //Find the first occuring instance of any of the passed characters.

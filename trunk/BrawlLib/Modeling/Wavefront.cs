@@ -24,8 +24,8 @@ namespace BrawlLib.Modeling
                         WriteNormalGroup(writer, (o as MDL0NormalNode));
                     else if (o is MDL0UVNode)
                         WriteUVGroup(writer, (o as MDL0UVNode));
-                    else if (o is MDL0PolygonNode)
-                        WritePolygon(writer, o as MDL0PolygonNode);
+                    else if (o is MDL0ObjectNode)
+                        WritePolygon(writer, o as MDL0ObjectNode);
 
                 writer.Flush();
             }
@@ -108,7 +108,7 @@ namespace BrawlLib.Modeling
         {
             writer.WriteLine(String.Format("usemtl {0}", mat.Name));
         }
-        private static void WritePolygon(StreamWriter writer, MDL0PolygonNode poly)
+        private static void WritePolygon(StreamWriter writer, MDL0ObjectNode poly)
         {
             if (poly._manager._vertices != null)
             {

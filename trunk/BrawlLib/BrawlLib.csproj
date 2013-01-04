@@ -174,7 +174,6 @@
     <Compile Include="OpenGL\IRenderedObject.cs" />
     <Compile Include="Platform\Win32.DirectSound.cs" />
     <Compile Include="Platform\Win32.DirectSoundBuffer.cs" />
-    <Compile Include="Platform\Win32.OpenGL.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -188,11 +187,25 @@
     <Compile Include="SSBB\ResourceNodes\AI\ATKDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\AI\CENode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Graphics\TPLNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Graphics\REFFTEVStage.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELMethodNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELObjectParser.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\ModuleDataNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELDeConStructorNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELCommand.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELLinkNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELImportNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELObjectNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELSectionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELMiscNodes.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELType.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Items\AnimParamNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Common Nodes\MoveDefPatternPowerMulNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\UserData.cs" />
-    <Compile Include="SSBB\ResourceNodes\DOLNode.cs" />
+    <None Include="SSBB\Types\RLYT.cs" />
+    <Compile Include="SSBB\Types\TPL.cs" />
+    <Compile Include="SSBB\UserData.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\DOLNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Archives\U8Node.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Actions\ActionEventNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Actions\EventParameterNodes.cs" />
@@ -217,6 +230,9 @@
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefGeneralNodes.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefStringTables.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataReferenceNode.cs" />
+    <Compile Include="System\ArrayExtension.cs" />
+    <Compile Include="System\ListExtension.cs" />
+    <Compile Include="System\TypeConverters.cs" />
     <Compile Include="System\Helpers.cs" />
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefLookupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RASDNode.cs" />
@@ -238,7 +254,7 @@
     <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Archives\MRGNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RawDataNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RELNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\RELNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Graphics\REFFNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Graphics\EFLSNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0BoneNode.cs" />
@@ -250,14 +266,12 @@
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0MaterialRefNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0Node.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0NormalNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\MDL0\MDL0PolygonNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\MDL0\MDL0ObjectNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0TextureNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0UVNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0VertexNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MSBinNode.cs" />
     <Compile Include="SSBB\ResourceNodes\ResourceType.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\Old\FILENode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\Old\INFONode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RBNK\RBNKNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARBankNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\RSAREntryNode.cs" />
@@ -273,14 +287,13 @@
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDDataNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDGroupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\Old\SYMBNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSTMNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWSD\RWSDSoundNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\RSAR\File Types\WAVESoundNode.cs" />
     <Compile Include="SSBB\StringTable.cs" />
     <Compile Include="SSBB\Types\AI.cs" />
     <Compile Include="SSBB\Types\RFNT.cs" />
     <Compile Include="SSBB\Types\DOL.cs" />
-    <Compile Include="SSBB\Types\YAZ0U8.cs" />
+    <Compile Include="SSBB\Types\U8.cs" />
     <Compile Include="SSBB\Types\RASD.cs" />
     <Compile Include="SSBB\Types\Physics.cs" />
     <Compile Include="SSBB\Types\STPM.cs" />
@@ -307,21 +320,18 @@
     <Compile Include="System\Audio\wAudioProvider.cs" />
     <Compile Include="System\Audio\WAV.cs" />
     <Compile Include="System\BinaryHandlers.cs" />
-    <Compile Include="System\Int24.cs" />
-    <Compile Include="System\UInt24.cs" />
+    <Compile Include="System\BInt24.cs" />
+    <Compile Include="System\BUInt24.cs" />
     <Compile Include="System\IO\GeckoStream.cs" />
     <Compile Include="System\PowerPCAssembly\Assembly Manager.cs" />
     <Compile Include="System\PowerPCAssembly\PowerPcAssembly.cs" />
-    <Compile Include="System\PowerPCAssembly\PowerPcDisassembler.cs">
+    <Compile Include="System\Windows\Controls\PowerPcDisassembler.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\PowerPCAssembly\PowerPcDisassembler.Designer.cs">
+    <Compile Include="System\Windows\Controls\PowerPcDisassembler.Designer.cs">
       <DependentUpon>PowerPcDisassembler.cs</DependentUpon>
     </Compile>
     <Compile Include="System\PowerPCAssembly\PowerPcFormat.cs" />
-    <Compile Include="System\PowerPCAssembly\RelPowerPcDisassembler.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="System\RoundingExtensions.cs" />
     <Compile Include="System\ViewerSettingsFile.cs" />
     <Compile Include="System\Quaternion.cs" />
@@ -364,6 +374,9 @@
     <None Include="System\Windows\Forms\GradientDialog2.cs">
       <SubType>Form</SubType>
     </None>
+    <Compile Include="System\Windows\Controls\EditAllDialog\CHR0.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="System\Windows\Forms\EditRSARFileDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -598,21 +611,20 @@
     <Compile Include="SSBB\ResourceNodes\ResourceNode.cs" />
     <Compile Include="SSBB\Types\ARC.cs" />
     <Compile Include="SSBB\Types\BRES.cs" />
-    <Compile Include="SSBB\Types\CHR0.cs" />
-    <Compile Include="SSBB\Types\CLR0.cs" />
+    <Compile Include="SSBB\Types\Animations\CHR0.cs" />
+    <Compile Include="SSBB\Types\Animations\CLR0.cs" />
     <Compile Include="SSBB\Types\Common.cs" />
     <Compile Include="SSBB\Types\FighterDefinition.cs" />
     <Compile Include="SSBB\Types\MDL0.cs" />
-    <Compile Include="SSBB\Types\PAT0.cs" />
+    <Compile Include="SSBB\Types\Animations\PAT0.cs" />
     <Compile Include="SSBB\Types\PLT0.cs" />
-    <Compile Include="SSBB\Types\ROOT.cs" />
     <Compile Include="SSBB\Types\RSAR.cs" />
     <Compile Include="SSBB\Types\RSTM.cs" />
     <Compile Include="SSBB\Types\SCN0.cs" />
-    <Compile Include="SSBB\Types\SHP0.cs" />
-    <Compile Include="SSBB\Types\SRT0.cs" />
+    <Compile Include="SSBB\Types\Animations\SHP0.cs" />
+    <Compile Include="SSBB\Types\Animations\SRT0.cs" />
     <Compile Include="SSBB\Types\TEX0.cs" />
-    <Compile Include="SSBB\Types\VIS0.cs" />
+    <Compile Include="SSBB\Types\Animations\VIS0.cs" />
     <Compile Include="System\Windows\BigEndianTypes.cs" />
     <Compile Include="System\Int16Extension.cs" />
     <Compile Include="System\Int32Extension.cs" />
@@ -642,7 +654,6 @@
     <Compile Include="Wii\Models\ElementCodec.cs" />
     <Compile Include="Wii\Models\Enum.cs" />
     <Compile Include="Wii\Models\bMatrix43.cs" />
-    <None Include="Wii\Models\ModelConverter.cs" />
     <Compile Include="Wii\Models\InfluenceManager.cs" />
     <Compile Include="Wii\Models\ModelEncoder.cs" />
     <Compile Include="Wii\Models\ModelLinker.cs" />
@@ -671,11 +682,11 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\PowerPCAssembly\PowerPcDisassembler.resx">
+    <EmbeddedResource Include="System\Windows\Controls\PowerPcDisassembler.resx">
       <DependentUpon>PowerPcDisassembler.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\PowerPCAssembly\RelPowerPcDisassembler.resx">
-      <DependentUpon>RelPowerPcDisassembler.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Controls\EditAllDialog\CHR0.resx">
+      <DependentUpon>CHR0.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\EditRSARFileDialog.resx">
       <DependentUpon>EditRSARFileDialog.cs</DependentUpon>

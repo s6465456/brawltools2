@@ -76,20 +76,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             *header = new EFLSHeader(count, _brresCount, _unk1, _unk2);
 
             EFLSEntry* entry = (EFLSEntry*)((int)header + 0x10);
-            byte* dPtr = (byte*)entry + (count * 0x10);
+            sbyte* dPtr = (sbyte*)entry + (count * 0x10);
             foreach (EFLSEntryNode n in Children)
             {
                 int offset = n._name.Equals("<null>", StringComparison.OrdinalIgnoreCase) ? 0 : (int)dPtr - (int)header;
                 *entry = new EFLSEntry(n._brresID1, n._brresID2, offset, n._unk);
 
                 if (offset > 0)
-                {
-                    int len = n._name.Length;
-                    fixed (char* cPtr = n._name)
-                        for (int i = 0; i < len; i++)
-                            *dPtr++ = (byte)cPtr[i];
-                    *dPtr++ = 0;
-                }
+                    n._name.Write(ref dPtr);
 
                 if (n.Children.Count > 0)
                 {
@@ -102,28 +96,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                     RE3DAddr->_numEntries = (byte)n.Children.Count;
 
                     RE3DEntry* rEntry = (RE3DEntry*)((VoidPtr)RE3DAddr + 0x10);
-                    byte* sPtr = (byte*)rEntry + n.Children.Count * 0x10;
+                    sbyte* sPtr = (sbyte*)rEntry + n.Children.Count * 0x10;
 
                     foreach (RE3DEntryNode rNode in n.Children)
                     {
                         rEntry->_unk1 = rNode._unk1;
                         rEntry->_unk2 = rNode._unk2;
                         rEntry->_unk3 = rNode._unk3;
+
                         rEntry->_stringOffset = (int)sPtr - (int)RE3DAddr;
-
                         int len = rNode._name.Length;
-                        fixed (char* cPtr = rNode._name)
-                            for (int i = 0; i < len; i++)
-                                *sPtr++ = (byte)cPtr[i];
-                        *sPtr++ = 0;
-
-                        rEntry->_stringOffset2 = (int)sPtr - (int)RE3DAddr;
-
+                        rNode._name.Write(ref sPtr);
+                        rEntry->_effectNameOffset = (int)sPtr - (int)RE3DAddr;
                         len = rNode.Effect.Length;
-                        fixed (char* cPtr = rNode.Effect)
-                            for (int i = 0; i < len; i++)
-                                *sPtr++ = (byte)cPtr[i];
-                        *sPtr++ = 0;
+                        rNode._effect.Write(ref sPtr);
 
                         rEntry++;
                         re3dSize += 0x10 + rNode.Name.Length + 1 + rNode.Effect.Length + 1;
@@ -197,7 +183,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _unk1 = Header->_unk1;
             _unk2 = Header->_unk2;
             _unk3 = Header->_unk3;
-            _stringOffset2 = Header->_stringOffset2;
+            _stringOffset2 = Header->_effectNameOffset;
 
             _name = new String((sbyte*)(((VoidPtr)Header - 0x10 - 0x10 * Index) + _stringOffset));
             _effect = ((_stringOffset2 > 0) ? new String((sbyte*)(((VoidPtr)Header - 0x10 - 0x10 * Index) + _stringOffset2)) : null);

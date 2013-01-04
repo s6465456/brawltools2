@@ -127,7 +127,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         private void getRawIRef()
         {
-            _swapBlock._Value16 = (UInt24)RAS1_IRef.Shift(bi0, bc0, bi1, bc1, bi2, bc2, bi3, bc3);
+            _swapBlock._Value16 = (BUInt24)RAS1_IRef.Shift(bi0, bc0, bi1, bc1, bi2, bc2, bi3, bc3);
             SignalPropertyChange();
         }
         public void getIRefValues()

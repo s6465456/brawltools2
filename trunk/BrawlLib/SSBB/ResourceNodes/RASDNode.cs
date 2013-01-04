@@ -12,14 +12,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal RASD* Header { get { return (RASD*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
-        [Category("RASD")]
-        public int Entries { get { return Header->_header._numEntries; } }
+        //[Category("RASD")]
+        //public int Entries { get { return Header->_numEntries; } }
 
         //RASD is found in "External" bres group nodes
         protected override bool OnInitialize()
         {
             base.OnInitialize();
-            SetSizeInternal(Header->_header._length);
+            //SetSizeInternal(Header->_header._length);
             _name = "RASD" + Index;
             return false;
         }

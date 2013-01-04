@@ -55,6 +55,8 @@ namespace BrawlBox
                         Resources.IMG, //30
                         Resources.SCN0,
                         Resources.STPM,
+                        Resources.TPL,
+                        Resources.Palette,
                     });
                 }
                 return _imgList;

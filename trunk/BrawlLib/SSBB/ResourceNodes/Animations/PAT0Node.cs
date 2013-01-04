@@ -23,9 +23,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.PAT0; } }
 
-        [Category("Texture Pattern")]
+        [Category("Texture Pattern Data")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
-        [Category("Texture Pattern"), Browsable(true)]
+        [Category("Texture Pattern Data")]
         public string[] Textures
         {
             get
@@ -44,7 +44,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return _textureFiles.ToArray();
             }
         }
-        [Category("Texture Pattern"), Browsable(true)]
+        [Category("Texture Pattern Data")]
         public string[] Palettes
         {
             get
@@ -63,7 +63,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return _paletteFiles.ToArray();
             }
         }
-        [Category("Texture Pattern")]
+        [Category("Texture Pattern Data")]
         public ushort FrameCount
         {
             get { return _frameCount; }
@@ -76,8 +76,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 SignalPropertyChange();
             }
         }
-        [Category("Texture Pattern")]
+        [Category("Texture Pattern Data")]
         public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
+
+        [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
+        internal UserDataCollection _userEntries = new UserDataCollection();
+
+        [Category("Texture Pattern Data")]
+        public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
+        public string _originalPath;
 
         [Browsable(false)]
         public override int tFrameCount
@@ -108,6 +116,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 pltPtr = header->_numPltPtr;
                 if ((_name == null) && (header->_stringOffset != 0))
                     _name = header->ResourceString;
+
+                if (Header4->_origPathOffset > 0)
+                    _originalPath = Header4->OrigPath;
+
+                (_userEntries = new UserDataCollection()).Read(Header4->UserData);
             }
             else
             {
@@ -116,8 +129,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _loop = header->_loop;
                 texPtr = header->_numTexPtr;
                 pltPtr = header->_numPltPtr;
+
                 if ((_name == null) && (header->_stringOffset != 0))
                     _name = header->ResourceString;
+
+                if (Header3->_origPathOffset > 0)
+                    _originalPath = Header3->OrigPath;
             }
 
             //Get texture strings
@@ -149,11 +166,15 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 table.Add(n.Name);
                 foreach (PAT0TextureNode t in n.Children)
-                {
                     foreach (PAT0TextureEntryNode e in t.Children)
                         table.Add(e.Name);
-                }
             }
+
+            foreach (UserDataClass s in _userEntries)
+                table.Add(s._name);
+
+            if (!String.IsNullOrEmpty(_originalPath))
+                table.Add(_originalPath);
         }
 
         protected override int OnCalculateSize(bool force)
@@ -178,6 +199,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (PAT0EntryNode n in Children)
                 size += n.CalculateSize(true);
 
+            size += _userEntries.GetSize();
+
             return size;
         }
 
@@ -190,7 +213,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_header._tag = PAT0v4.Tag;
                 header->_header._version = 4;
                 header->_dataOffset = PAT0v4.Size;
-                header->_part2Offset = header->_origPathOffset = 0;
+                header->_userDataOffset = header->_origPathOffset = 0;
                 header->_numFrames = _frameCount;
                 header->_numEntries = (ushort)Children.Count;
                 header->_numTexPtr = (ushort)_textureFiles.Count;
@@ -256,6 +279,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 n.Rebuild(entryAddress, n._entryLen, true);
                 entryAddress += n._entryLen;
             }
+
+            if (_userEntries.Count > 0 && _version == 4)
+            {
+                PAT0v4* header = (PAT0v4*)address;
+                header->UserData = dataAddress;
+                _userEntries.Write(dataAddress);
+            }
         }
 
         protected internal override void PostProcess(VoidPtr bresAddress, VoidPtr dataAddress, int dataLength, StringTable stringTable)
@@ -264,9 +294,17 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             PAT0v3* header = (PAT0v3*)dataAddress;
             if (_version == 4)
+            {
                 ((PAT0v4*)dataAddress)->ResourceStringAddress = stringTable[Name] + 4;
+                if (!String.IsNullOrEmpty(_originalPath))
+                    ((PAT0v4*)dataAddress)->OrigPathAddress = stringTable[_originalPath] + 4;
+            }
             else
+            {
                 header->ResourceStringAddress = stringTable[Name] + 4;
+                if (!String.IsNullOrEmpty(_originalPath))
+                    header->OrigPathAddress = stringTable[_originalPath] + 4;
+            }
 
             ResourceGroup* group = header->Group;
             group->_first = new ResourceEntry(0xFFFF, 0, 0, 0, 0);
@@ -292,6 +330,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (i = 0; i < _paletteFiles.Count; i++)
                 if (!String.IsNullOrEmpty(_paletteFiles[i]))
                     strings[i] = (int)stringTable[_paletteFiles[i]] + 4 - (int)strings;
+
+            if (_version == 4) _userEntries.PostProcess(((PAT0v4*)dataAddress)->UserData, stringTable);
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((PAT0v3*)source.Address)->_header._tag == PAT0v3.Tag ? new PAT0Node() : null; }

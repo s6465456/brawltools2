@@ -809,7 +809,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
             }
             header->_listCount = Children.Count;
-            header->_flags = flags.data;
+            header->_flags = flags._data;
         }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

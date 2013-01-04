@@ -4,6 +4,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using BrawlLib.Imaging;
 using BrawlLib.Wii.Graphics;
+using BrawlLib.SSBB.ResourceNodes;
 
 namespace BrawlLib.SSBBTypes
 {
@@ -85,7 +86,7 @@ namespace BrawlLib.SSBBTypes
         public bint _lightOffset;
         public bint _fogOffset;
         public bint _cameraOffset;
-        public bint _part2Offset;
+        public bint _userDataOffset;
         public bint _stringOffset;
         public bint _origPathOffset;
         public bshort _frameCount;
@@ -123,6 +124,12 @@ namespace BrawlLib.SSBBTypes
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
         public ResourceGroup* Group { get { return (ResourceGroup*)(Address + _dataOffset); } }
+
+        public VoidPtr UserData
+        {
+            get { return (UserData*)(Address + _userDataOffset); }
+            set { _userDataOffset = (int)(VoidPtr)value - (int)Address; }
+        }
 
         public SCN0LightSet* LightSets { get { return (SCN0LightSet*)(Address + _lightSetOffset); } }
         public SCN0AmbientLight* AmbientLights { get { return (SCN0AmbientLight*)(Address + _ambLightOffset); } }
@@ -171,7 +178,7 @@ namespace BrawlLib.SSBBTypes
         public byte _numLights;
         public byte _pad;
         public fixed int _entries[8]; //string offsets
-        public fixed short _lightIds[8]; //entries are set here as ids at runtime
+        public fixed short _lightIds[8]; //entry ids are set here at runtime
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public bint* Offsets { get { fixed (void* ptr = _entries)return (bint*)ptr; } }
@@ -305,7 +312,7 @@ namespace BrawlLib.SSBBTypes
         public SCN0CommonHeader _header;
         
         public byte _flags;
-        public UInt24 _pad;
+        public BUInt24 _pad;
         public bint _type;
 
         public bfloat _start;

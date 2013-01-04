@@ -81,7 +81,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (MoveDefEventParameterNode p in Children)
             {
                 s += ((int)p._type).ToString() + "\\";
-                s += p._value + "|";
+                if (p._type == ArgVarType.Offset)
+                {
+                    MoveDefEventOffsetNode o = p as MoveDefEventOffsetNode;
+                    s += o.list + "," + o.type + "," + o.index;
+                }
+                else s += p._value;
+                s += "|";
             }
             return s;
         }
@@ -104,7 +110,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 uint idNumber = Convert.ToUInt32(id, 16);
 
                 newEv.EventID = idNumber;
-
+                
                 uint _event = newEv.EventID;
                 ActionEventInfo info = newEv.EventInfo;
 
@@ -113,9 +119,22 @@ namespace BrawlLib.SSBB.ResourceNodes
                     string[] pLines = lines[i + 1].Split('\\');
 
                     int type = int.Parse(pLines[0]);
-                    int value = int.Parse(pLines[1]);
 
-                    newEv.NewParam(i, value, type);
+                    if (type == 2) //Offset
+                    {
+                        string[] oLines = pLines[1].Split(',');
+                        int list = int.Parse(oLines[0]), type2 = int.Parse(oLines[1]), index = int.Parse(oLines[2]);
+                        MoveDefEventOffsetNode o = (MoveDefEventOffsetNode)newEv.NewParam(i, 0, 2);
+                        o.action = node.GetAction(list, type2, index);
+                        o.list = list;
+                        o.type = type2;
+                        o.index = index;
+                    }
+                    else
+                    {
+                        int value = int.Parse(pLines[1]);
+                        newEv.NewParam(i, value, type);
+                    }
                 }
 
                 newEv._parent = null;
@@ -131,8 +150,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0; i < numArguments; i++) 
                 NewParam(i, 0, -1);
         }
-        
-        public void NewParam(int i, int value, int typeOverride)
+
+        public MoveDefEntryNode NewParam(int i, int value, int typeOverride)
         {
             MoveDefEntryNode child = null;
             ActionEventInfo info = EventInfo;
@@ -193,6 +212,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 AddChild(child);
             else
                 InsertChild(child, true, i);
+            return child;
         }
 
         [Category("MoveDef Event")]

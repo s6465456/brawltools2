@@ -93,7 +93,7 @@ namespace System
 
             return m;
         }
-
+        public void Translate(Vector3 v) { Translate(v._x, v._y, v._z); }
         public void Translate(float x, float y, float z)
         {
             fixed (float* p = _values)
@@ -534,7 +534,7 @@ namespace System
             state.CalcTransforms();
             return state;
         }
-
+        internal void Scale(Vector3 v) { Scale(v._x, v._y, v._z); }
         internal void Scale(float x, float y, float z)
         {
             Matrix m = ScaleMatrix(x, y, z);
@@ -956,7 +956,7 @@ namespace System
 
             return result;
         }
-        public Matrix RotationAxis(Vector3 axis, float angle)
+        public static Matrix RotationAxis(Vector3 axis, float angle)
         {
             if (axis.Dot() != 1.0f)
                 axis.Normalize();
@@ -977,15 +977,15 @@ namespace System
             result[0, 0] = xx + (cos * (1.0f - xx));
             result[0, 1] = (xy - (cos * xy)) + (sin * z);
             result[0, 2] = (xz - (cos * xz)) - (sin * y);
-            result[0, 3] = 0.0f;
+            result[0, 3] = 1.0f;
             result[1, 0] = (xy - (cos * xy)) - (sin * z);
             result[1, 1] = yy + (cos * (1.0f - yy));
             result[1, 2] = (yz - (cos * yz)) + (sin * x);
-            result[1, 3] = 0.0f;
+            result[1, 3] = 1.0f;
             result[2, 0] = (xz - (cos * xz)) + (sin * y);
             result[2, 1] = (yz - (cos * yz)) - (sin * x);
             result[2, 2] = zz + (cos * (1.0f - zz));
-            result[2, 3] = 0.0f;
+            result[2, 3] = 1.0f;
             result[3, 0] = 0.0f;
             result[3, 1] = 0.0f;
             result[3, 2] = 0.0f;

@@ -14,14 +14,14 @@ namespace BrawlLib.SSBBTypes
 
         public const uint Tag = 0x54464552;
 
-        public SSBBCommonHeader _header;
+        public NW4RCommonHeader _header;
         public uint _tag; //Same as header
         public bint _dataLength; //Size of second REFT block. (file size - 0x18)
         public bint _dataOffset; //Offset from itself. Begins first entry
-        public bint _unk1; //0
-        public bint _unk2; //0
+        public bint _linkPrev; //0
+        public bint _linkNext; //0
         public bshort _stringLen;
-        public bshort _unk3; //0
+        public bshort _padding; //0
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 
@@ -50,7 +50,7 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct REFTData
+    public unsafe struct REFTImageHeader
     {
         public buint _unknown;
         public bushort _width;
@@ -64,26 +64,33 @@ namespace BrawlLib.SSBBTypes
         public byte _mipmap;
         public byte _min_filt;
         public byte _mag_filt;
-        public byte _reserved1;
+        public byte _reserved;
         public bfloat _lod_bias;
         
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 
-        public REFTData(ushort width, ushort height, byte format)
+        public REFTImageHeader(ushort width, ushort height, byte format, byte pltFormat, ushort colors, uint imgSize, byte lod)
         {
             _unknown = 0;
             _width = width;
             _height = height;
-            _imagelen = 0;
+            _imagelen = imgSize;
             _format = format;
-            _pltFormat = 0;
-            _colorCount = 0;
-            _pltSize = 0;
-            _mipmap = 0;
+            _pltFormat = pltFormat;
+            _colorCount = colors;
+            _pltSize = (uint)colors * 2;
+            _mipmap = lod;
             _min_filt = 0;
             _mag_filt = 0;
-            _reserved1 = 0;
+            _reserved = 0;
             _lod_bias = 0;
+        }
+
+        public void Set(byte min, byte mag, float lodBias)
+        {
+            _min_filt = min;
+            _mag_filt = mag;
+            _lod_bias = lodBias;
         }
 
         //From here starts the image.
