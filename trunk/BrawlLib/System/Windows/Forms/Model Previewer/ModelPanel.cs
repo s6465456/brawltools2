@@ -483,8 +483,14 @@ namespace System.Windows.Forms
                 GL.ColorMaterial(MaterialFace.Back, ColorMaterialParameter.Emission);
             }
             //GL.LightModel(LightModelParameter.LightModelAmbient, new float[] { 0.2f, 0.2f, 0.2f, 1.0f });
-            //GL.LightModel(LightModelParameter.LightModelTwoSide, 1);
-            //GL.LightModel(LightModelParameter.LightModelLocalViewer, 1);
+            GL.LightModel(LightModelParameter.LightModelTwoSide, 1);
+            GL.LightModel(LightModelParameter.LightModelLocalViewer, 1);
+
+            GL.Enable(EnableCap.AlphaTest);
+            GL.AlphaFunc(AlphaFunction.Lequal, 0.1f);
+
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
         }
 
         protected internal unsafe override void OnInit(TKContext ctx)
@@ -514,12 +520,6 @@ namespace System.Windows.Forms
             GL.ShadeModel(ShadingModel.Smooth);
 
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-
-            //GL.Enable(EnableCap.Blend);
-            //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-
-            //GL.Enable(EnableCap.AlphaTest);
-            //GL.AlphaFunc(AlphaFunction.Less, 0.1f);
 
             RecalcLight(null);
 

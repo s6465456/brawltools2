@@ -64,10 +64,7 @@ namespace BrawlBox
         {
             _models.Add(model);
             ReadSettings();
-            try 
-            { 
-                return base.ShowDialog(owner);
-            }
+            try { return base.ShowDialog(owner); }
             finally { _models = null; }
         }
 

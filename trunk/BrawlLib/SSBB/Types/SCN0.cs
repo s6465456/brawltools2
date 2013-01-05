@@ -124,11 +124,11 @@ namespace BrawlLib.SSBBTypes
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
         public ResourceGroup* Group { get { return (ResourceGroup*)(Address + _dataOffset); } }
-
+        
         public VoidPtr UserData
         {
-            get { return (UserData*)(Address + _userDataOffset); }
-            set { _userDataOffset = (int)(VoidPtr)value - (int)Address; }
+            get { return _userDataOffset == 0 ? null : Address + _userDataOffset; }
+            set { _userDataOffset = (int)value - (int)Address; }
         }
 
         public SCN0LightSet* LightSets { get { return (SCN0LightSet*)(Address + _lightSetOffset); } }

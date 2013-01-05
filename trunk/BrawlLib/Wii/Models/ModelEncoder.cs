@@ -427,7 +427,7 @@ namespace BrawlLib.Wii.Models
             linker.Finish();
 
             //Set new properties
-            *props = new MDL0Props(linker.Version, linker.Model._numVertices, linker.Model._numFaces, linker.Model._numNodes, linker.Model._scalingRule, linker.Model._texMtxMode, linker.Model._needNrmMtxArray, linker.Model._needTexMtxArray, linker.Model._enableExtents, linker.Model._envMtxMode, linker.Model.BoxMin, linker.Model.BoxMax);
+            *props = new MDL0Props(linker.Version, linker.Model._numFacepoints, linker.Model._numFaces, linker.Model._numNodes, linker.Model._scalingRule, linker.Model._texMtxMode, linker.Model._needNrmMtxArray, linker.Model._needTexMtxArray, linker.Model._enableExtents, linker.Model._envMtxMode, linker.Model.BoxMin, linker.Model.BoxMax);
         }
 
         private static void WriteNodeTable(ModelLinker linker)
@@ -899,11 +899,11 @@ namespace BrawlLib.Wii.Models
 
             if (linker.Model._polyList != null)
             {
-                linker.Model._numVertices = 0;
+                linker.Model._numFacepoints = 0;
                 linker.Model._numFaces = 0;
                 foreach (MDL0ObjectNode n in linker.Model._polyList)
                 {
-                    linker.Model._numVertices += n._numVertices;
+                    linker.Model._numFacepoints += n._numFacepoints;
                     linker.Model._numFaces += n._numFaces;
                 }
             }
