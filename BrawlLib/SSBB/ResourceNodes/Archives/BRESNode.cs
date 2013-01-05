@@ -141,6 +141,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     ext = ".pat0";
                 else if (group.Type == BRESGroupNode.BRESGroupType.VIS0)
                     ext = ".vis0";
+                else if (group.Type == BRESGroupNode.BRESGroupType.Palettes)
+                    continue;
                 foreach (BRESEntryNode entry in group.Children)
                     entry.Export(Path.Combine(outFolder, entry.Name + ext));
             }
@@ -155,6 +157,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if (group.Type == BRESGroupNode.BRESGroupType.Textures)
                     ext = imageExtension;
+                else if (group.Type == BRESGroupNode.BRESGroupType.Palettes)
+                    ext = ".plt0";
                 else if (group.Type == BRESGroupNode.BRESGroupType.Models)
                     ext = ".mdl0";
                 else if (group.Type == BRESGroupNode.BRESGroupType.CHR0)

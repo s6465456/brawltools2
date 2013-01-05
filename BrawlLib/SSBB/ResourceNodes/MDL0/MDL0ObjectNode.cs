@@ -13,11 +13,11 @@ using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MDL0PolygonNode : MDL0EntryNode
+    public unsafe class MDL0ObjectNode : MDL0EntryNode
     {
-        internal MDL0Polygon* Header { get { return (MDL0Polygon*)WorkingUncompressed.Address; } }
+        internal MDL0Object* Header { get { return (MDL0Object*)WorkingUncompressed.Address; } }
 
-        public override ResourceType ResourceType { get { return ResourceType.MDL0Polygon; } }
+        public override ResourceType ResourceType { get { return ResourceType.MDL0Object; } }
 
         #region Attributes
 
@@ -43,17 +43,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return _drawIndex; }
             set
             {
-                if (value < 0 || value >= Model._polyList.Count)
-                    return;
-
                 _drawIndex = value;
                 SignalPropertyChange();
             }
         }
 
-        [Category("Object Data")]
+        [Category("Object Data"), Browsable(false)]
         public int TotalLen { get { return _totalLength; } }
-        [Category("Object Data")]
+        [Category("Object Data"), Browsable(false)]
         public int MDL0Offset { get { return _mdl0Offset; } }
         //[Category("Object Data")]
         //public int NodeId { get { return _nodeId; } }
@@ -125,7 +122,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Object Data")]
         public int ID { get { return _entryIndex; } }
         [Category("Object Data")]
-        public int FacepointCount { get { return _numVertices; } }
+        public int FacepointCount { get { return _numFacepoints; } }
         [Category("Object Data")]
         public int VertexCount { get { return _manager._vertices.Count; } }
         [Category("Object Data")]
@@ -138,6 +135,76 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Linked Sets
+
+        [TypeConverter(typeof(DropDownListVertices))]
+        public string VertexNode
+        {
+            get { return _vertexNode == null ? null : _vertexNode._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_vertexNode = null;
+                    //_elementIndices[0] = -1;
+                }
+                else
+                {
+                    MDL0VertexNode node = Model.FindChild(String.Format("Vertices/{0}", value), false) as MDL0VertexNode;
+                    if (node != null)
+                    {
+                        if (_vertexNode != null && node.NumVertices == _vertexNode.NumVertices)
+                        {
+                            _vertexNode = node;
+                            _elementIndices[0] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Vertex counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        //public MDL0VertexNode VertexNode { get { return _vertexNode; } set { _vertexNode = value; SignalPropertyChange(); _rebuild = true; } }
+        public MDL0VertexNode _vertexNode;
+
+        [TypeConverter(typeof(DropDownListNormals))]
+        public string NormalNode
+        {
+            get { return _normalNode == null ? null : _normalNode._name; }
+            set
+            {
+                if (String.IsNullOrEmpty(value))
+                {
+                    return;
+                    //_normalNode = null;
+                    //_elementIndices[1] = -1;
+                }
+                else
+                {
+                    MDL0NormalNode node = Model.FindChild(String.Format("Normals/{0}", value), false) as MDL0NormalNode;
+                    if (node != null)
+                    {
+                        if (_normalNode != null && node.NumEntries == _normalNode.NumEntries)
+                        {
+                            _normalNode = node;
+                            _elementIndices[1] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
+                            return;
+                        }
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+        //public MDL0NormalNode NormalNode { get { return _normalNode; } }
+        internal MDL0NormalNode _normalNode;
 
         public bool _c0Changed = false;
         [TypeConverter(typeof(DropDownListColors))]
@@ -252,76 +319,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //public MDL0ColorNode[] ColorNodes { get { return _colorSet; } }
         internal MDL0ColorNode[] _colorSet = new MDL0ColorNode[2];
-
-        [TypeConverter(typeof(DropDownListVertices))]
-        public string VertexNode
-        {
-            get { return _vertexNode == null ? null : _vertexNode._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_vertexNode = null;
-                    //_elementIndices[0] = -1;
-                }
-                else
-                {
-                    MDL0VertexNode node = Model.FindChild(String.Format("Vertices/{0}", value), false) as MDL0VertexNode;
-                    if (node != null)
-                    {
-                        if (_vertexNode != null && node.NumVertices == _vertexNode.NumVertices)
-                        {
-                            _vertexNode = node;
-                            _elementIndices[0] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Vertex counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
-        }
-        //public MDL0VertexNode VertexNode { get { return _vertexNode; } set { _vertexNode = value; SignalPropertyChange(); _rebuild = true; } }
-        public MDL0VertexNode _vertexNode;
-
-        [TypeConverter(typeof(DropDownListNormals))]
-        public string NormalNode
-        {
-            get { return _normalNode == null ? null : _normalNode._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_normalNode = null;
-                    //_elementIndices[1] = -1;
-                }
-                else
-                {
-                    MDL0NormalNode node = Model.FindChild(String.Format("Normals/{0}", value), false) as MDL0NormalNode;
-                    if (node != null)
-                    {
-                        if (_normalNode != null && node.NumEntries == _normalNode.NumEntries)
-                        {
-                            _normalNode = node;
-                            _elementIndices[1] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
-        }
-        //public MDL0NormalNode NormalNode { get { return _normalNode; } }
-        internal MDL0NormalNode _normalNode;
 
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord0
@@ -589,7 +586,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         int _totalLength, _mdl0Offset, _stringOffset;
 
-        public int _numVertices;
+        public int _numFacepoints;
         public int _numFaces;
         public int _nodeId;
         public int _defBufferSize = 0xE0;
@@ -626,7 +623,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(true), TypeConverter(typeof(DropDownListBones))]
         public string SingleBind
         {
-            get { return _singleBind == null ? "(none)" : _singleBind.IsPrimaryNode ? ((MDL0BoneNode)_singleBind)._name : "(multiple)"; }
+            get { return _singleBind == null ? "" : _singleBind.IsPrimaryNode ? ((MDL0BoneNode)_singleBind)._name : "(multiple)"; }
             set
             {
                 SingleBindInf = String.IsNullOrEmpty(value) ? null : Model.FindBone(value); 
@@ -665,26 +662,75 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Material linkage
-        internal MDL0MaterialNode _material;
-        [Browsable(false)]
-        public MDL0MaterialNode MaterialNode
+        public void EvalMaterials(ref string message)
         {
-            get { return _material; }
-            set
+            if (XluMaterialNode != null && !XluMaterialNode.XLUMaterial)
+                if (OpaMaterialNode != null)
+                    message += Name + "\n";
+            if (OpaMaterialNode != null && OpaMaterialNode.XLUMaterial)
+                if (XluMaterialNode != null)
+                    message += Name + "\n";
+        }
+        public void FixMaterials(ref string message)
+        {
+            if (XluMaterialNode != null && !XluMaterialNode.XLUMaterial)
             {
-                if (_material == value)
-                    return;
-                if (_material != null)
-                    _material._polygons.Remove(this);
-                if ((_material = value) != null)
-                    _material._polygons.Add(this);
+                if (OpaMaterialNode == null)
+                    OpaMaterialNode = XluMaterialNode;
+                else
+                    message += Name + "\n";
+                XluMaterialNode = null;
+            }
+            if (OpaMaterialNode != null && OpaMaterialNode.XLUMaterial)
+            {
+                if (XluMaterialNode == null)
+                    XluMaterialNode = OpaMaterialNode;
+                else
+                    message += Name + "\n";
+                OpaMaterialNode = null;
             }
         }
-        [Browsable(true), TypeConverter(typeof(DropDownListMaterials))]
-        public string Material
+
+        internal MDL0MaterialNode _opaMaterial, _xluMaterial;
+        [Browsable(false)]
+        public MDL0MaterialNode OpaMaterialNode
         {
-            get { return _material == null ? null : _material._name; }
-            set { if (String.IsNullOrEmpty(value)) return; MaterialNode = Model.FindOrCreateMaterial(value); Model.SignalPropertyChange(); }
+            get { return _opaMaterial; }
+            set
+            {
+                if (_opaMaterial == value)
+                    return;
+                if (_opaMaterial != null)
+                    _opaMaterial._polygons.Remove(this);
+                if ((_opaMaterial = value) != null)
+                    _opaMaterial._polygons.Add(this);
+            }
+        }
+        [Browsable(false)]
+        public MDL0MaterialNode XluMaterialNode
+        {
+            get { return _xluMaterial; }
+            set
+            {
+                if (_xluMaterial == value)
+                    return;
+                if (_xluMaterial != null)
+                    _xluMaterial._polygons.Remove(this);
+                if ((_xluMaterial = value) != null)
+                    _xluMaterial._polygons.Add(this);
+            }
+        }
+        [Browsable(true), TypeConverter(typeof(DropDownListOpaMaterials))]
+        public string OpaMaterial
+        {
+            get { return _opaMaterial == null ? null : _opaMaterial._name; }
+            set { if (String.IsNullOrEmpty(value)) return; OpaMaterialNode = Model.FindOrCreateOpaMaterial(value); Model.SignalPropertyChange(); }
+        }
+        [Browsable(true), TypeConverter(typeof(DropDownListXluMaterials))]
+        public string XluMaterial
+        {
+            get { return _xluMaterial == null ? null : _xluMaterial._name; }
+            set { if (String.IsNullOrEmpty(value)) return; XluMaterialNode = Model.FindOrCreateXluMaterial(value); Model.SignalPropertyChange(); }
         }
         #endregion
 
@@ -736,7 +782,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
-            MDL0Polygon* header = Header;
+            MDL0Object* header = Header;
             _nodeId = header->_nodeId;
 
             SetSizeInternal(_totalLength = header->_totalLength);
@@ -751,7 +797,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _vertexSpecs = header->_vertexSpecs;
             _arrayFlags = header->_arrayFlags;
 
-            _numVertices = header->_numVertices;
+            _numFacepoints = header->_numVertices;
             _numFaces = header->_numFaces;
 
             _flag = header->_flag;
@@ -772,15 +818,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _name = header->ResourceString;
                 else
                     _name = "polygon" + Index;
-
-            //Create primitive manager
-            if (_parent != null)
-            {
-                int i = 0;
-                _manager = new PrimitiveManager(header, Model._assets, linker.NodeCache, this);
-                foreach (Vertex3 v in _manager._vertices)
-                    v.Index = i++;
-            }
 
             //Link nodes
             if (header->_vertexId >= 0)
@@ -813,6 +850,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _elementIndices[i] = (short)(_colorSet[i - 2] != null ? _colorSet[i - 2].Index : -1);
             for (int i = 4; i < 12; i++)
                 _elementIndices[i] = (short)(_uvSet[i - 4] != null ? _uvSet[i - 4].Index : -1);
+
+            //Create primitive manager
+            if (_parent != null)
+            {
+                int i = 0;
+                _manager = new PrimitiveManager(header, Model._assets, linker.NodeCache, this);
+                foreach (Vertex3 v in _manager._vertices)
+                    v.Index = i++;
+            }
 
             //Get polygon UVAT groups
             MDL0PolygonDefs* Defs = (MDL0PolygonDefs*)header->DefList;
@@ -901,7 +947,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 //RecalcIndices();
 
-                int size = (int)MDL0Polygon.Size;
+                int size = (int)MDL0Object.Size;
 
                 if (Model._version >= 10)
                     size += 4; //Add extra -1 value
@@ -938,14 +984,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
 
                 //Set vertex descriptor
-                _descList = _manager.setDescList(this);
+                _descList = _manager.setDescList(this, Model._linker._forceDirectAssets);
 
                 //Add table length
                 size += _nodeCache.Length * 2 + 4;
-                if ((size.Align(0x10) + 0xE0) % 0x20 == 0)
-                    tableLen = size.Align(0x10);
-                else
-                    tableLen = size.Align(0x20);
+                tableLen = ((size.Align(0x10) + 0xE0) % 0x20 == 0) ? size.Align(0x10) : size.Align(0x20);
 
                 //Add def length
                 size = primitiveStart = tableLen + 0xE0;
@@ -1064,16 +1107,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
 
                 size += primitiveSize;
-                if ((size.Align(0x10)) % 0x20 == 0)
-                {
-                    size = size.Align(0x10);
-                    primitiveSize = primitiveSize.Align(0x10);
-                }
-                else
-                {
-                    size = size.Align(0x20);
-                    primitiveSize = primitiveSize.Align(0x20);
-                }
+                int align = ((size.Align(0x10)) % 0x20 == 0) ? 0x10 : 0x20;
+                size = size.Align(align);
+                primitiveSize = primitiveSize.Align(align);
 
                 //Texture matrices (0x30) start at 0x00, max 11
                 //Pos matrices (0x20) start at 0x78, max 10
@@ -1087,7 +1123,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            MDL0Polygon* header = (MDL0Polygon*)address;
+            MDL0Object* header = (MDL0Object*)address;
 
             if (Model._rebuildAllObj || Model._isImport || _rebuild)
             {
@@ -1097,7 +1133,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //header->_numVertices = _numVertices = triCount + stripCount;
                 //header->_numFaces = _numFaces = (triCount / 3) + (stripCount <= 2 ? 0 : stripCount - 2);
 
-                _numVertices = header->_numVertices = _manager._pointCount;
+                _numFacepoints = header->_numVertices = _manager._pointCount;
                 _numFaces = header->_numFaces = _manager._faceCount;
 
                 _primBufferSize = header->_primitives._bufferSize = primitiveSize;
@@ -1132,12 +1168,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     header->_nodeId = _nodeId = -1;
 
                 //Set asset ids
-                header->_vertexId = _elementIndices[0];
-                header->_normalId = _elementIndices[1];
+                header->_vertexId = Model._isImport && Model._linker._forceDirectAssets[0] ? (short)-1 : (short)(_elementIndices[0] >= 0 ? _elementIndices[0] : -1);
+                header->_normalId = Model._isImport && Model._linker._forceDirectAssets[1] ? (short)-1 : (short)(_elementIndices[1] >= 0 ? _elementIndices[1] : -1);
                 for (int i = 2; i < 4; i++)
-                    *(bshort*)&header->_colorIds[i - 2] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
+                    *(bshort*)&header->_colorIds[i - 2] = Model._isImport && Model._linker._forceDirectAssets[2] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
                 for (int i = 4; i < 12; i++)
-                    *(bshort*)&header->_uids[i - 4] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
+                    *(bshort*)&header->_uids[i - 4] = Model._isImport && Model._linker._forceDirectAssets[3] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
 
                 //Write def list
                 MDL0PolygonDefs* Defs = (MDL0PolygonDefs*)header->DefList;
@@ -1203,7 +1239,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _rebuild = false;
         }
 
-        public void CorrectNodeIds(MDL0Polygon* header)
+        public void CorrectNodeIds(MDL0Object* header)
         {
             //Write weight table. The count won't change
             bushort* ptr = (bushort*)header->WeightIndices(Model._version);
@@ -1231,7 +1267,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected internal override void PostProcess(VoidPtr mdlAddress, VoidPtr dataAddress, StringTable stringTable)
         {
-            MDL0Polygon* header = (MDL0Polygon*)dataAddress;
+            MDL0Object* header = (MDL0Object*)dataAddress;
             header->_mdl0Offset = (int)mdlAddress - (int)dataAddress;
             header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
             header->_index = Index;
@@ -1252,9 +1288,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.MultMatrix((float*)&m);
             }
 
-            if (_material != null)
+            if (_opaMaterial != null)
             {
-                switch ((int)_material.CullMode)
+                switch ((int)_opaMaterial.CullMode)
                 {
                     case 0: //None
                         GL.Disable(EnableCap.CullFace);
@@ -1273,11 +1309,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                         break;
                 }
 
-                if (_material.EnableDepthTest)
+                if (_opaMaterial.EnableDepthTest)
                 {
                     GL.Enable(EnableCap.DepthTest);
                     DepthFunction depth = DepthFunction.Lequal;
-                    switch (_material.DepthFunction)
+                    switch (_opaMaterial.DepthFunction)
                     {
                         case GXCompare.Never:
                             depth = DepthFunction.Never; break;
@@ -1301,69 +1337,69 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     GL.Disable(EnableCap.DepthTest);
 
-                if (_material._blendMode.EnableBlend)
-                {
-                    GL.Enable(EnableCap.Blend);
-                    BlendingFactorSrc src = BlendingFactorSrc.OneMinusSrcAlpha;
-                    switch (_material._blendMode.SrcFactor)
-                    {
-                        case BlendFactor.DestinationAlpha:
-                            src = BlendingFactorSrc.DstAlpha; break;
-                        case BlendFactor.DestinationColor:
-                            src = BlendingFactorSrc.DstColor; break;
-                        case BlendFactor.InverseDestinationAlpha:
-                            src = BlendingFactorSrc.OneMinusDstAlpha; break;
-                        case BlendFactor.InverseDestinationColor:
-                            src = BlendingFactorSrc.OneMinusDstColor; break;
-                        case BlendFactor.InverseSourceAlpha:
-                            src = BlendingFactorSrc.OneMinusSrcAlpha; break;
-                        //case BlendFactor.InverseSourceColor:
-                        //    src = BlendingFactorSrc.ONE_MINUS_SRC_COLOR; break;
-                        case BlendFactor.One:
-                            src = BlendingFactorSrc.One; break;
-                        case BlendFactor.SourceAlpha:
-                            src = BlendingFactorSrc.SrcAlpha; break;
-                        //case BlendFactor.SourceColor:
-                        //    src = BlendingFactorSrc.SrcColor; break;
-                        case BlendFactor.Zero:
-                            src = BlendingFactorSrc.Zero; break;
-                    }
-                    BlendingFactorDest dst = BlendingFactorDest.OneMinusSrcAlpha;
-                    switch (_material._blendMode.DstFactor)
-                    {
-                        case BlendFactor.DestinationAlpha:
-                            dst = BlendingFactorDest.DstAlpha; break;
-                        case BlendFactor.DestinationColor:
-                            dst = BlendingFactorDest.DstColor; break;
-                        case BlendFactor.InverseDestinationAlpha:
-                            dst = BlendingFactorDest.OneMinusDstAlpha; break;
-                        case BlendFactor.InverseDestinationColor:
-                            dst = BlendingFactorDest.OneMinusDstColor; break;
-                        case BlendFactor.InverseSourceAlpha:
-                            dst = BlendingFactorDest.OneMinusSrcAlpha; break;
-                        //case BlendFactor.InverseSourceColor:
-                        //    dst = BlendingFactorDest.ONE_MINUS_SRC_COLOR; break;
-                        case BlendFactor.One:
-                            dst = BlendingFactorDest.One; break;
-                        case BlendFactor.SourceAlpha:
-                            dst = BlendingFactorDest.SrcAlpha; break;
-                        //case BlendFactor.SourceColor:
-                        //    dst = BlendingFactorDest.SrcColor; break;
-                        case BlendFactor.Zero:
-                            dst = BlendingFactorDest.Zero; break;
-                    }
-                    GL.BlendFunc(src, dst);
-                }
-                else
-                    GL.Disable(EnableCap.Blend);
+                //if (_opaMaterial._blendMode.EnableBlend)
+                //{
+                //    GL.Enable(EnableCap.Blend);
+                //    BlendingFactorSrc src = BlendingFactorSrc.OneMinusSrcAlpha;
+                //    switch (_opaMaterial._blendMode.SrcFactor)
+                //    {
+                //        case BlendFactor.DestinationAlpha:
+                //            src = BlendingFactorSrc.DstAlpha; break;
+                //        case BlendFactor.DestinationColor:
+                //            src = BlendingFactorSrc.DstColor; break;
+                //        case BlendFactor.InverseDestinationAlpha:
+                //            src = BlendingFactorSrc.OneMinusDstAlpha; break;
+                //        case BlendFactor.InverseDestinationColor:
+                //            src = BlendingFactorSrc.OneMinusDstColor; break;
+                //        case BlendFactor.InverseSourceAlpha:
+                //            src = BlendingFactorSrc.OneMinusSrcAlpha; break;
+                //        //case BlendFactor.InverseSourceColor:
+                //        //    src = BlendingFactorSrc.ONE_MINUS_SRC_COLOR; break;
+                //        case BlendFactor.One:
+                //            src = BlendingFactorSrc.One; break;
+                //        case BlendFactor.SourceAlpha:
+                //            src = BlendingFactorSrc.SrcAlpha; break;
+                //        //case BlendFactor.SourceColor:
+                //        //    src = BlendingFactorSrc.SrcColor; break;
+                //        case BlendFactor.Zero:
+                //            src = BlendingFactorSrc.Zero; break;
+                //    }
+                //    BlendingFactorDest dst = BlendingFactorDest.OneMinusSrcAlpha;
+                //    switch (_opaMaterial._blendMode.DstFactor)
+                //    {
+                //        case BlendFactor.DestinationAlpha:
+                //            dst = BlendingFactorDest.DstAlpha; break;
+                //        case BlendFactor.DestinationColor:
+                //            dst = BlendingFactorDest.DstColor; break;
+                //        case BlendFactor.InverseDestinationAlpha:
+                //            dst = BlendingFactorDest.OneMinusDstAlpha; break;
+                //        case BlendFactor.InverseDestinationColor:
+                //            dst = BlendingFactorDest.OneMinusDstColor; break;
+                //        case BlendFactor.InverseSourceAlpha:
+                //            dst = BlendingFactorDest.OneMinusSrcAlpha; break;
+                //        //case BlendFactor.InverseSourceColor:
+                //        //    dst = BlendingFactorDest.ONE_MINUS_SRC_COLOR; break;
+                //        case BlendFactor.One:
+                //            dst = BlendingFactorDest.One; break;
+                //        case BlendFactor.SourceAlpha:
+                //            dst = BlendingFactorDest.SrcAlpha; break;
+                //        //case BlendFactor.SourceColor:
+                //        //    dst = BlendingFactorDest.SrcColor; break;
+                //        case BlendFactor.Zero:
+                //            dst = BlendingFactorDest.Zero; break;
+                //    }
+                //    GL.BlendFunc(src, dst);
+                //}
+                //else
+                //    GL.Disable(EnableCap.Blend);
 
-                if (_material.EnableBlendLogic)
-                {
-                    GL.Enable(EnableCap.ColorLogicOp);
-                    GL.LogicOp((LogicOp)((int)LogicOp.Clear + (int)_material.BlendLogicOp));
-                }
-                else 
-                    GL.Disable(EnableCap.ColorLogicOp);
+                //if (_opaMaterial.EnableBlendLogic)
+                //{
+                //    GL.Enable(EnableCap.ColorLogicOp);
+                //    GL.LogicOp((LogicOp)((int)LogicOp.Clear + (int)_opaMaterial.BlendLogicOp));
+                //}
+                //else 
+                //    GL.Disable(EnableCap.ColorLogicOp);
 
                 //if (_material.EnableAlphaFunction)
                 //{
@@ -1454,9 +1490,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             w("vec4 colors_0;\n");
             w("vec4 colors_1;\n");
 
-            if (MaterialNode.Children.Count < 7)
+            if (OpaMaterialNode.Children.Count < 7)
             {
-                for (uint i = 0; i < MaterialNode.Children.Count; i++)
+                for (uint i = 0; i < OpaMaterialNode.Children.Count; i++)
                     w("vec3 tex{0};\n", i);
                 w("vec4 clipPos;\n");
                 w("vec4 Normal;\n");
@@ -1533,10 +1569,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             tabs = 0;
 
             uint lightMask = 0;
-            if (MaterialNode.LightChannels > 0)
-                lightMask |= (uint)MaterialNode._chan1._color.Lights | (uint)MaterialNode._chan1._alpha.Lights;
-            if (MaterialNode.LightChannels > 1)
-                lightMask |= (uint)MaterialNode._chan2._color.Lights | (uint)MaterialNode._chan2._alpha.Lights;
+            if (OpaMaterialNode.LightChannels > 0)
+                lightMask |= (uint)OpaMaterialNode._chan1._color.Lights | (uint)OpaMaterialNode._chan1._alpha.Lights;
+            if (OpaMaterialNode.LightChannels > 1)
+                lightMask |= (uint)OpaMaterialNode._chan2._color.Lights | (uint)OpaMaterialNode._chan2._alpha.Lights;
 
 	        w("//Vertex Shader\n");
 
@@ -1666,7 +1702,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
 	        w("float4 mat, lacc;\nfloat3 ldir, h;\nfloat dist, dist2, attn;\n");
 
-            if (MaterialNode.LightChannels == 0)
+            if (OpaMaterialNode.LightChannels == 0)
             {
                 if (_colorSet[0] != null)
                     w("o.colors_0 = color0;\n");
@@ -1677,7 +1713,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        // TODO: This probably isn't necessary if pixel lighting is enabled.
 	        tempShader += GenerateLightingShader(I_MATERIALS, I_LIGHTS, "color", "o.colors_");
 
-            if (MaterialNode.LightChannels < 2)
+            if (OpaMaterialNode.LightChannels < 2)
             {
                 if (_colorSet[1] != null)
                     w("o.colors_1 = color1;\n");
@@ -1687,9 +1723,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
 	        // transform texcoords
 	        w("float4 coord = float4(0.0f, 0.0f, 1.0f, 1.0f);\n");
-	        for (int i = 0; i < MaterialNode.Children.Count; i++) 
+	        for (int i = 0; i < OpaMaterialNode.Children.Count; i++) 
             {
-		        MDL0MaterialRefNode texgen = MaterialNode.Children[i] as MDL0MaterialRefNode;
+		        MDL0MaterialRefNode texgen = OpaMaterialNode.Children[i] as MDL0MaterialRefNode;
 
                 w("{\n");
                 w("//Texgen " + i + "\n");
@@ -1797,7 +1833,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        }
 
 	        // clipPos/w needs to be done in pixel shader, not here
-	        if (MaterialNode.Children.Count < 7) 
+	        if (OpaMaterialNode.Children.Count < 7) 
 		        w("o.clipPos = float4(pos.x,pos.y,o.pos.z,o.pos.w);\n");
             else 
             {
@@ -1809,14 +1845,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             //if(g_ActiveConfig.bEnablePixelLighting && ctx.bSupportsPixelLighting)
             //{
-                if (MaterialNode.Children.Count < 7) 
+                if (OpaMaterialNode.Children.Count < 7) 
 			        w("o.Normal = float4(_norm0.x,_norm0.y,_norm0.z,pos.z);\n");
                 else 
                 {
 			        w("o.tex4.w = _norm0.x;\n");
 			        w("o.tex5.w = _norm0.y;\n");
 			        w("o.tex6.w = _norm0.z;\n");
-			        if (MaterialNode.Children.Count < 8)
+			        if (OpaMaterialNode.Children.Count < 8)
 				        w("o.tex7 = pos.xyzz;\n");
 			        else
 				        w("o.tex7.w = pos.z;\n");
@@ -1856,13 +1892,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 		    // Will look better when we bind uniforms in GLSL 1.3
 		    // clipPos/w needs to be done in pixel shader, not here
 
-		    if (MaterialNode.Children.Count < 7) 
+		    if (OpaMaterialNode.Children.Count < 7) 
             {
-			    for (uint i = 0; i < MaterialNode.Children.Count; i++)
+			    for (uint i = 0; i < OpaMaterialNode.Children.Count; i++)
 				    w("gl_TexCoord[{0}].xyz = o.tex{0};\n", i);
-			    w("gl_TexCoord[{0}] = o.clipPos;\n", MaterialNode.Children.Count);
+			    w("gl_TexCoord[{0}] = o.clipPos;\n", OpaMaterialNode.Children.Count);
 			    //if(g_ActiveConfig.bEnablePixelLighting && ctx.bSupportsPixelLighting)
-				    w("gl_TexCoord[{0}] = o.Normal;\n", MaterialNode.Children.Count + 1);
+				    w("gl_TexCoord[{0}] = o.Normal;\n", OpaMaterialNode.Children.Count + 1);
 		    } 
             else 
             {
@@ -1984,10 +2020,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             string s = Tabs + "{\n";
             w(ref s, "//Lighting Section\n");
-            for (uint j = 0; j < MaterialNode.LightChannels; j++)
+            for (uint j = 0; j < OpaMaterialNode.LightChannels; j++)
             {
-                LightChannelControl color = j == 0 ? MaterialNode._chan1._color : MaterialNode._chan2._color;
-                LightChannelControl alpha = j == 0 ? MaterialNode._chan1._alpha : MaterialNode._chan2._alpha;
+                LightChannelControl color = j == 0 ? OpaMaterialNode._chan1._color : OpaMaterialNode._chan2._color;
+                LightChannelControl alpha = j == 0 ? OpaMaterialNode._chan1._alpha : OpaMaterialNode._chan2._alpha;
 
                 if (color.MaterialSource == GXColorSrc.Vertex) 
                     if (_colorSet[j] != null)
@@ -2190,9 +2226,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             int currUniform = GL.GetUniformLocation(programHandle, I_LIGHTS);
             if (currUniform > -1)
             {
-                int frame = MaterialNode.renderFrame;
+                int frame = OpaMaterialNode.renderFrame;
                 List<float> values = new List<float>();
-                foreach (SCN0LightNode l in MaterialNode._lightSet._lights)
+                foreach (SCN0LightNode l in OpaMaterialNode._lightSet._lights)
                 {
                     //float4 col; float4 cosatt; float4 distatt; float4 pos; float4 dir;
 
@@ -2244,32 +2280,32 @@ namespace BrawlLib.SSBB.ResourceNodes
             currUniform = GL.GetUniformLocation(programHandle, I_MATERIALS);
             if (currUniform > -1) GL.Uniform4(currUniform, 4, new float[] 
             {
-                MaterialNode.C1AmbientColor.R * RGBAPixel.ColorFactor,
-                MaterialNode.C1AmbientColor.G * RGBAPixel.ColorFactor,
-                MaterialNode.C1AmbientColor.B * RGBAPixel.ColorFactor,
-                MaterialNode.C1AmbientColor.A * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C1AmbientColor.R * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C1AmbientColor.G * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C1AmbientColor.B * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C1AmbientColor.A * RGBAPixel.ColorFactor,
 
-                MaterialNode.C2AmbientColor.R * RGBAPixel.ColorFactor,
-                MaterialNode.C2AmbientColor.G * RGBAPixel.ColorFactor,
-                MaterialNode.C2AmbientColor.B * RGBAPixel.ColorFactor,
-                MaterialNode.C2AmbientColor.A * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C2AmbientColor.R * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C2AmbientColor.G * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C2AmbientColor.B * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C2AmbientColor.A * RGBAPixel.ColorFactor,
 
-                MaterialNode.C1MaterialColor.R * RGBAPixel.ColorFactor,
-                MaterialNode.C1MaterialColor.G * RGBAPixel.ColorFactor,
-                MaterialNode.C1MaterialColor.B * RGBAPixel.ColorFactor,
-                MaterialNode.C1MaterialColor.A * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C1MaterialColor.R * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C1MaterialColor.G * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C1MaterialColor.B * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C1MaterialColor.A * RGBAPixel.ColorFactor,
 
-                MaterialNode.C2MaterialColor.R * RGBAPixel.ColorFactor,
-                MaterialNode.C2MaterialColor.G * RGBAPixel.ColorFactor,
-                MaterialNode.C2MaterialColor.B * RGBAPixel.ColorFactor,
-                MaterialNode.C2MaterialColor.A * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C2MaterialColor.R * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C2MaterialColor.G * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C2MaterialColor.B * RGBAPixel.ColorFactor,
+                OpaMaterialNode.C2MaterialColor.A * RGBAPixel.ColorFactor,
             });
             currUniform = GL.GetUniformLocation(programHandle, I_TEXMATRICES);
             if (currUniform > -1)
             {
                 List<float> mtxValues = new List<float>();
                 int i = 0;
-                foreach (MDL0MaterialRefNode m in MaterialNode.Children)
+                foreach (MDL0MaterialRefNode m in OpaMaterialNode.Children)
                 {
                     for (int x = 0; x < 12; x++)
                         mtxValues.Add(m.EffectMatrix[x]);
@@ -2285,11 +2321,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                     Console.WriteLine();
                 GL.Uniform4(currUniform, 24, mtxValues.ToArray());
             }
-            currUniform = GL.GetUniformLocation(programHandle, I_TRANSFORMMATRICES);
-            if (currUniform > -1) GL.Uniform4(currUniform, 64, new float[] 
-            {
+            //currUniform = GL.GetUniformLocation(programHandle, I_TRANSFORMMATRICES);
+            //if (currUniform > -1) GL.Uniform4(currUniform, 64, new float[] 
+            //{
                 
-            });
+            //});
             //currUniform = GL.GetUniformLocation(programHandle, I_NORMALMATRICES);
             //if (currUniform > -1) GL.Uniform4(currUniform, 32, new float[] 
             //{
@@ -2313,7 +2349,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 //_renderUpdate = MaterialNode._renderUpdate = MaterialNode.ShaderNode._renderUpdate = true;
 
-                bool updateProgram = _renderUpdate || MaterialNode._renderUpdate || MaterialNode.ShaderNode._renderUpdate;
+                bool updateProgram = _renderUpdate || OpaMaterialNode._renderUpdate || OpaMaterialNode.ShaderNode._renderUpdate;
                 if (updateProgram)
                 {
                     temp = true;
@@ -2344,9 +2380,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                         else
                             GL.AttachShader(shaderProgramHandle, vertexShaderHandle);
                     }
-                    if (_renderUpdate || MaterialNode._renderUpdate || MaterialNode.ShaderNode._renderUpdate)
+                    if (_renderUpdate || OpaMaterialNode._renderUpdate || OpaMaterialNode.ShaderNode._renderUpdate)
                     {
-                        fragmentShaderSource = MaterialNode.GeneratePixelShaderCode(this, MDL0MaterialNode.PSGRENDER_MODE.PSGRENDER_NORMAL, ctx);
+                        fragmentShaderSource = OpaMaterialNode.GeneratePixelShaderCode(this, MDL0MaterialNode.PSGRENDER_MODE.PSGRENDER_NORMAL, ctx);
 
                         GL.ShaderSource(fragmentShaderHandle, fragmentShaderSource);
                         GL.CompileShader(fragmentShaderHandle);
@@ -2362,7 +2398,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         else
                             GL.AttachShader(shaderProgramHandle, fragmentShaderHandle);
 
-                        MaterialNode._renderUpdate = MaterialNode.ShaderNode._renderUpdate = false;
+                        OpaMaterialNode._renderUpdate = OpaMaterialNode.ShaderNode._renderUpdate = false;
                     }
 
                     _renderUpdate = false;
@@ -2375,9 +2411,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (temp)
                 {
                     SetUniforms(shaderProgramHandle);
-                    MaterialNode.SetUniforms(shaderProgramHandle);
+                    OpaMaterialNode.SetUniforms(shaderProgramHandle);
                 }
-                if (MaterialNode._lightSet != null)
+                if (OpaMaterialNode._lightSet != null)
                     SetLightUniforms(shaderProgramHandle);
             }
 
@@ -2385,9 +2421,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             PreRender();
 
-            if (_material != null)
-                if (_material.Children.Count == 0) _manager.RenderTexture(null);
-                else foreach (MDL0MaterialRefNode mr in _material.Children)
+            if (_opaMaterial != null)
+                if (_opaMaterial.Children.Count == 0) _manager.RenderTexture(null);
+                else foreach (MDL0MaterialRefNode mr in _opaMaterial.Children)
                 {
                     if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
                         continue;
@@ -2480,9 +2516,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Etc
 
-        public MDL0PolygonNode Clone()
+        public MDL0ObjectNode Clone()
         {
-            MDL0PolygonNode node = this.MemberwiseClone() as MDL0PolygonNode;
+            MDL0ObjectNode node = this.MemberwiseClone() as MDL0ObjectNode;
             //node._parent = Parent;
             //node.Name = Name;
             //node.SingleBindInf = SingleBindInf;
@@ -2569,7 +2605,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             SingleBindInf = null;
             BoneNode = null;
-            MaterialNode = null;
+            OpaMaterialNode = null;
+            XluMaterialNode = null;
 
             if (_manager != null)
             {
@@ -2582,26 +2619,72 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             Dispose();
 
-            foreach (MDL0PolygonNode p in node._polyList)
+            foreach (MDL0ObjectNode p in node._polyList)
                 p.RecalcIndices();
         }
 
-        public static int DrawCompare(ResourceNode n1, ResourceNode n2)
+        public static int DrawCompareOpa(ResourceNode n1, ResourceNode n2)
         {
             //First compare draw priorities
-            if (((MDL0PolygonNode)n1).DrawPriority > ((MDL0PolygonNode)n2).DrawPriority)
+            if (((MDL0ObjectNode)n1).DrawPriority > ((MDL0ObjectNode)n2).DrawPriority)
                 return 1;
-            if (((MDL0PolygonNode)n1).DrawPriority < ((MDL0PolygonNode)n2).DrawPriority)
+            if (((MDL0ObjectNode)n1).DrawPriority < ((MDL0ObjectNode)n2).DrawPriority)
                 return -1;
+
+            //Make sure the node isn't null
+            if (((MDL0ObjectNode)n1).OpaMaterialNode != null && ((MDL0ObjectNode)n2).OpaMaterialNode == null)
+                return 1;
+            if (((MDL0ObjectNode)n1).OpaMaterialNode == null && ((MDL0ObjectNode)n2).OpaMaterialNode != null)
+                return -1;
+            if (((MDL0ObjectNode)n1).OpaMaterialNode == null && ((MDL0ObjectNode)n2).OpaMaterialNode == null)
+                return 0;
+
             //They were equal. Fall back on material draw priority
-            if (((MDL0PolygonNode)n1).MaterialNode.Index > ((MDL0PolygonNode)n2).MaterialNode.Index)
+            if (((MDL0ObjectNode)n1).OpaMaterialNode.Index > ((MDL0ObjectNode)n2).OpaMaterialNode.Index)
                 return 1;
-            if (((MDL0PolygonNode)n1).MaterialNode.Index < ((MDL0PolygonNode)n2).MaterialNode.Index)
+            if (((MDL0ObjectNode)n1).OpaMaterialNode.Index < ((MDL0ObjectNode)n2).OpaMaterialNode.Index)
                 return -1;
+
+            //Now compare the object index
+            if (((MDL0ObjectNode)n1).Index > ((MDL0ObjectNode)n2).Index)
+                return 1;
+            if (((MDL0ObjectNode)n1).Index < ((MDL0ObjectNode)n2).Index)
+                return -1;
+
             //Should never return equal
             return 0;
         }
+        public static int DrawCompareXlu(ResourceNode n1, ResourceNode n2)
+        {
+            //First compare draw priorities
+            if (((MDL0ObjectNode)n1).DrawPriority > ((MDL0ObjectNode)n2).DrawPriority)
+                return 1;
+            if (((MDL0ObjectNode)n1).DrawPriority < ((MDL0ObjectNode)n2).DrawPriority)
+                return -1;
 
-#endregion
+            //Make sure the node isn't null
+            if (((MDL0ObjectNode)n1).XluMaterialNode != null && ((MDL0ObjectNode)n2).XluMaterialNode == null)
+                return 1;
+            if (((MDL0ObjectNode)n1).XluMaterialNode == null && ((MDL0ObjectNode)n2).XluMaterialNode != null)
+                return -1;
+            if (((MDL0ObjectNode)n1).XluMaterialNode == null && ((MDL0ObjectNode)n2).XluMaterialNode == null)
+                return 0;
+
+            //They were equal. Fall back on material draw priority
+            if (((MDL0ObjectNode)n1).XluMaterialNode.Index > ((MDL0ObjectNode)n2).XluMaterialNode.Index)
+                return 1;
+            if (((MDL0ObjectNode)n1).XluMaterialNode.Index < ((MDL0ObjectNode)n2).XluMaterialNode.Index)
+                return -1;
+
+            //Now compare the object index
+            if (((MDL0ObjectNode)n1).Index > ((MDL0ObjectNode)n2).Index)
+                return 1;
+            if (((MDL0ObjectNode)n1).Index < ((MDL0ObjectNode)n2).Index)
+                return -1;
+
+            //Should never return equal
+            return 0;
+        }
+        #endregion
     }
 }

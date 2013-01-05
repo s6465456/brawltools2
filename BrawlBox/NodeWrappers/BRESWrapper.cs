@@ -337,10 +337,23 @@ namespace BrawlBox
             if (path == null)
                 return;
 
-            ExportAllAskFormat dialog = new ExportAllAskFormat();
+            bool hasTextures = false;
+            foreach (BRESGroupNode e in _resource.Children)
+                if (e.Type == BRESGroupNode.BRESGroupType.Textures)
+                {
+                    hasTextures = true;
+                    break;
+                }
 
-            if (dialog.ShowDialog() == DialogResult.OK)
-                ((BRESNode)_resource).ExportToFolder(path, dialog.SelectedExtension);
+            if (hasTextures)
+            {
+                ExportAllAskFormat dialog = new ExportAllAskFormat();
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                    ((BRESNode)_resource).ExportToFolder(path, dialog.SelectedExtension);
+            }
+            else
+                ((BRESNode)_resource).ExportToFolder(path);
         }
 
         public void EditAll()

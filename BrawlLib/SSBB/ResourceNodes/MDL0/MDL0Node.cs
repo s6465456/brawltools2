@@ -31,7 +31,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal int _version;
         internal int _scalingRule, _texMtxMode, _origPathOffset;
         public byte _needNrmMtxArray, _needTexMtxArray, _enableExtents, _envMtxMode;
-        internal int _numVertices, _numFaces, _numNodes;
+        internal int _numFacepoints, _numFaces, _numNodes;
         internal Vector3 _min, _max;
 
         public ModelLinker _linker;
@@ -52,18 +52,34 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Collada.ImportOptions _importOptions = new Collada.ImportOptions();
         
         public bool AutoMetalMaterials { get { return _autoMetal; } set { _autoMetal = value; CheckMetals(); } }
+        
+        [Category("MDL0 Definition")]
+        public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
         [Category("MDL0 Definition")]
         public MDLScalingRule ScalingRule { get { return (MDLScalingRule)_scalingRule; } set { _scalingRule = (int)value; SignalPropertyChange(); } }
         [Category("MDL0 Definition")]
         public TexMatrixMode TextureMatrixMode { get { return (TexMatrixMode)_texMtxMode; } set { _texMtxMode = (int)value; SignalPropertyChange(); } }
         [Category("MDL0 Definition")]
-        public int NumVertices { get { return _numVertices; } }//set { _numVertices = value; SignalPropertyChange(); } }
+        public int NumFacepoints { get { return _numFacepoints; } }
         [Category("MDL0 Definition")]
-        public int NumFaces { get { return _numFaces; } }//set { _numFaces = value; SignalPropertyChange(); } }
+        public int NumVertices
+        { 
+            get 
+            {
+                if (_polyList == null)
+                    return 0;
+
+                int i = 0;
+                foreach (MDL0ObjectNode n in _polyList)
+                    i += n.VertexCount;
+                return i;
+            } 
+        }
+
         [Category("MDL0 Definition")]
-        public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
+        public int NumFaces { get { return _numFaces; } }
         [Category("MDL0 Definition")]
-        public int NumNodes { get { return _numNodes; } }// set { _numNodes = value; SignalPropertyChange(); } }
+        public int NumNodes { get { return _numNodes; } }
         [Category("MDL0 Definition")]
         public int Version 
         {
@@ -588,7 +604,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _version = header->_header._version;
             _scalingRule = props->_scalingRule;
             _texMtxMode = props->_texMatrixMode;
-            _numVertices = props->_numVertices;
+            _numFacepoints = props->_numVertices;
             _numFaces = props->_numFaces;
             _origPathOffset = props->_origPathOffset;
             _numNodes = props->_numNodes;
@@ -603,6 +619,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _originalPath = props->OrigPath;
 
             (_userEntries = new UserDataCollection()).Read(header->UserData);
+
+            Populate();
 
             return true;
         }

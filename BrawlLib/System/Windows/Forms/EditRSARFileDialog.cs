@@ -33,6 +33,7 @@ namespace System.Windows.Forms
         public DialogResult ShowDialog(IWin32Window owner, RSARFileNode node)
         {
             TargetNode = node;
+            TargetNode.UpdateCurrControl += OnUpdateCurrControl;
             return base.ShowDialog();
         }
 
@@ -40,10 +41,16 @@ namespace System.Windows.Forms
         {
             DialogResult = DialogResult.OK;
             audioPlaybackPanel1.TargetSource = null;
+            TargetNode.UpdateCurrControl -= OnUpdateCurrControl;
             Close();
         }
 
         private void btnCancel_Click(object sender, EventArgs e) { DialogResult = DialogResult.Cancel; Close(); }
+
+        internal protected virtual void OnUpdateCurrControl(object sender, EventArgs e)
+        {
+            soundsListBox_SelectedIndexChanged(this, null);
+        }
 
         #region Designer
 
@@ -443,7 +450,7 @@ namespace System.Windows.Forms
             ResourceNode r = soundsListBox.Items[soundsListBox.SelectedIndex] as ResourceNode;
             using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                dlg.Filter = ExportFilters.Raw + "|" + ExportFilters.WAV;
+                dlg.Filter = ExportFilters.WAV + "|" + ExportFilters.Raw;
                 if (dlg.ShowDialog() == DialogResult.OK)
                     r.Replace(dlg.FileName);
             }

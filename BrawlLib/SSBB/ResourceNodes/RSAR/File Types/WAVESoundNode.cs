@@ -57,7 +57,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override unsafe void Replace(string fileName)
         {
-            //IAudioStream s = null;
             if (fileName.EndsWith(".wav"))
             using (BrstmConverterDialog dlg = new BrstmConverterDialog())
             {
@@ -69,15 +68,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     ReplaceRaw(dlg.AudioData);
                 }
             }
-
-            //if (fileName.EndsWith(".wav"))
-            //    s = WAV.FromFile(fileName);
             else
                 base.Replace(fileName);
-
-            //if (s != null)
-            //    try { ReplaceRaw(RSARWaveConverter.Encode(s, null)); }
-            //    finally { s.Dispose(); }
 
             //Get the audio source
             _audioSource = new DataSource(WorkingUncompressed.Address + Header->_dataLocation, (int)(WorkingUncompressed.Length - Header->_dataLocation));
@@ -86,6 +78,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             SetSizeInternal(WorkingUncompressed.Length - _audioSource.Length);
 
             stream = null;
+
+            UpdateCurrentControl();
         }
 
         public override unsafe void Export(string outPath)

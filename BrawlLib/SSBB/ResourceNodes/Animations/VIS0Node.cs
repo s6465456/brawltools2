@@ -235,8 +235,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override int OnCalculateSize(bool force)
         {
-            if (_entryCount == 0)
-                return 8;
+            if (_entryCount == 0) return 8;
             return _entryCount.Align(32) / 8 + 8;
         }
 
@@ -280,14 +279,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             int i = index >> 3;
             if (i >= _data.Length) return false;
-            int bit = 1 << (7 - (index & 0x7));
+            int bit = 1 << (7 - (index & 7));
             return (_data[i] & bit) != 0;
         }
         public void SetEntry(int index, bool value)
         {
             int i = index >> 3;
             if (i >= _data.Length) return;
-            int bit = 1 << (7 - (index & 0x7));
+            int bit = 1 << (7 - (index & 7));
             int mask = ~bit;
             _data[i] = (byte)((_data[i] & mask) | (value ? bit : 0));
             SignalPropertyChange();
