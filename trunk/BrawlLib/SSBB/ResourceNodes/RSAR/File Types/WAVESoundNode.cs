@@ -80,6 +80,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             stream = null;
 
             UpdateCurrentControl();
+            SignalPropertyChange();
+            ((RSARFileNode)_parent._parent).RSARNode.SignalPropertyChange();
         }
 
         public override unsafe void Export(string outPath)

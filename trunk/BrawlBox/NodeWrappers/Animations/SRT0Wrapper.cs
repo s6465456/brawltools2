@@ -85,7 +85,7 @@ namespace BrawlBox.NodeWrappers
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             SRT0EntryWrapper w = GetInstance<SRT0EntryWrapper>();
-            _menu.Items[0].Enabled = w._resource.Children.Count < 8;
+            _menu.Items[0].Enabled = w._resource.Children.Count < 11;
             _menu.Items[3].Enabled = _menu.Items[10].Enabled = w.Parent != null;
             _menu.Items[4].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
             _menu.Items[6].Enabled = w.PrevNode != null;

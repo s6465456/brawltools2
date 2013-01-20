@@ -4560,6 +4560,18 @@ namespace System.Windows.Forms
                         //Get point projected onto our orb.
                         Vector3 point = modelPanel1.ProjectCameraSphere(new Vector2(e.X, e.Y), center, radius, false);
 
+                        Vector3 xPoint, yPoint, zPoint, ray1, ray2;
+
+                        modelPanel1.GetScreenPointRay(new Vector2(e.X, e.Y), out ray1, out ray2);
+
+                        Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(0.0f, 0.0f, 1.0f).Normalize(center), out xPoint);
+                        Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(0.0f, 1.0f, 0.0f).Normalize(center), out yPoint);
+                        Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(1.0f, 0.0f, 0.0f).Normalize(center), out zPoint);
+
+                        xPoint.Clamp(0, 2);
+                        yPoint.Clamp(0, 2);
+                        zPoint.Clamp(0, 2);
+
                         //Get the distance of the mouse point from the bone
                         float distance = point.TrueDistance(center);
 
@@ -4567,13 +4579,22 @@ namespace System.Windows.Forms
                         {
                             Vector3 vector = point - center;
 
-                            if (vector._y < 0 && vector._z < 0 && vector._x <= 2.0f && vector._x >= 0)
+                            if (vector._x >= 0
+                                && vector._x <= 2
+                                && Math.Abs(vector._y) < 0.1
+                                && Math.Abs(vector._z) < 0.1)
                                 _snapX = true;
 
-                            if (vector._x < 0 && vector._z < 0 && vector._y <= 2.0f && vector._y >= 0)
+                            if (vector._y >= 0
+                                && vector._y <= 2
+                                && Math.Abs(vector._x) < 0.1
+                                && Math.Abs(vector._z) < 0.1)
                                 _snapY = true;
 
-                            if (vector._x < 0 && vector._y < 0 && vector._z <= 2.0f && vector._z >= 0)
+                            if (vector._z >= 0
+                                && vector._z <= 2
+                                && Math.Abs(vector._y) < 0.1
+                                && Math.Abs(vector._x) < 0.1)
                                 _snapZ = true;
                         }
                         else
@@ -4725,11 +4746,11 @@ namespace System.Windows.Forms
                             //Get difference
                             Vector3 translation = lPoint - _lastPoint;
 
-                            if (translation._x != 0.0f && _snapX) 
+                            if (translation._x != 0.0f) 
                                 ApplyTranslation(0, translation._x);
-                            if (translation._y != 0.0f && _snapY) 
+                            if (translation._y != 0.0f) 
                                 ApplyTranslation(1, translation._y);
-                            if (translation._z != 0.0f && _snapZ) 
+                            if (translation._z != 0.0f) 
                                 ApplyTranslation(2, translation._z);
                         }
                         else if (editType == 2)
@@ -4791,7 +4812,6 @@ namespace System.Windows.Forms
             float radius = center.TrueDistance(camera) / _orbRadius * 0.1f;
 
             if (editType == 0)
-            {
                 if (_snapX)
                     normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
                 else if (_snapY)
@@ -4803,26 +4823,19 @@ namespace System.Windows.Forms
                     radius *= _circOrbScale;
                     normal = camera.Normalize(center);
                 }
-                else if (Maths.LineSphereIntersect(lineStart, lineEnd, center, radius, out point))
+                else if (editType == 0 && Maths.LineSphereIntersect(lineStart, lineEnd, center, radius, out point))
                     return true;
                 else
                     normal = camera.Normalize(center);
-            }
-            else if (editType > 0)
-            {
-                float x = 0, y = 0, z = 0;
-
-                if (_snapX) y = 1.0f;
-                if (_snapY) z = 1.0f;
-                if (_snapZ) x = 1.0f;
-
-                if (_snapX || _snapY || _snapZ)
-                    normal = (bone._frameMatrix * new Vector3(x, y, z)).Normalize(center);
-                else if (Maths.LineSphereIntersect(lineStart, lineEnd, center, radius, out point))
-                    return true;
+            else
+                if (_snapX)
+                    normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
+                else if (_snapY)
+                    normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
+                else if (_snapZ)
+                    normal = (bone._frameMatrix * new Vector3(0.0f, 0.0f, 1.0f)).Normalize(center);
                 else
                     normal = camera.Normalize(center);
-            }
 
             if (Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point))
             {

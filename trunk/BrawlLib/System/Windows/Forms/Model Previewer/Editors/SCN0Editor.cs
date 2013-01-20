@@ -1619,18 +1619,19 @@ namespace System.Windows.Forms
             _transBoxes[2][0] = numPosX; numPosX.Tag = 0;
             _transBoxes[2][1] = numPosY; numPosY.Tag = 1;
             _transBoxes[2][2] = numPosZ; numPosZ.Tag = 2;
-            _transBoxes[2][3] = numRotX; numRotX.Tag = 3;
-            _transBoxes[2][4] = numRotY; numRotY.Tag = 4;
-            _transBoxes[2][5] = numRotZ; numRotZ.Tag = 5;
-            _transBoxes[2][6] = numAimX; numAimX.Tag = 6;
-            _transBoxes[2][7] = numAimY; numAimY.Tag = 7;
-            _transBoxes[2][8] = numAimZ; numAimZ.Tag = 8;
-            _transBoxes[2][9] = numTwist; numTwist.Tag = 9;
-            _transBoxes[2][10] = numFovY; numFovY.Tag = 10;
-            _transBoxes[2][11] = numHeight; numHeight.Tag = 11;
-            _transBoxes[2][12] = numAspect; numAspect.Tag = 12;
-            _transBoxes[2][13] = numNearZ; numNearZ.Tag = 13;
-            _transBoxes[2][14] = numFarZ; numFarZ.Tag = 14;
+            _transBoxes[2][3] = numAspect; numAspect.Tag = 3;
+            _transBoxes[2][4] = numNearZ; numNearZ.Tag = 4;
+            _transBoxes[2][5] = numFarZ; numFarZ.Tag = 5;
+            _transBoxes[2][6] = numRotX; numRotX.Tag = 6;
+            _transBoxes[2][7] = numRotY; numRotY.Tag = 7;
+            _transBoxes[2][8] = numRotZ; numRotZ.Tag = 8;
+            _transBoxes[2][9] = numAimX; numAimX.Tag = 9;
+            _transBoxes[2][10] = numAimY; numAimY.Tag = 10;
+            _transBoxes[2][11] = numAimZ; numAimZ.Tag = 11;
+            _transBoxes[2][12] = numTwist; numTwist.Tag = 12;
+            _transBoxes[2][13] = numFovY; numFovY.Tag = 13;
+            _transBoxes[2][14] = numHeight; numHeight.Tag = 14;
+
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

@@ -317,12 +317,13 @@ namespace BrawlBox
         "Texture Pattern (*.pat0)|*.pat0|" +
         "Visibility Sequence (*.vis0)|*.vis0|" +
         "Color Sequence (*.clr0)|*.clr0|" +
+        "Scene Settings (*.scn0)|*.scn0|" +
         "Audio Stream (*.brstm)|*.brstm|" +
         "Sound Archive (*.brsar)|*.brsar|" +
         "Message Pack (*.msbin)|*.msbin|" +
         "Sound Stream (*.rwsd)|*.rwsd|" +
-        "Sound Sequence (*.rseq)|*.rseq|" +
         "Sound Bank (*.rbnk)|*.rbnk|" +
+        "Sound Sequence (*.rseq)|*.rseq|" +
         "Effect List (*.efls)|*.efls|" +
         "Effect Parameters (*.breff)|*.breff|" +
         "Effect Textures (*.breft)|*.breft|" +

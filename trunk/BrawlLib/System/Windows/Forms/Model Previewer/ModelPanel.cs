@@ -486,11 +486,11 @@ namespace System.Windows.Forms
             GL.LightModel(LightModelParameter.LightModelTwoSide, 1);
             GL.LightModel(LightModelParameter.LightModelLocalViewer, 1);
 
-            GL.Enable(EnableCap.AlphaTest);
-            GL.AlphaFunc(AlphaFunction.Lequal, 0.1f);
+            //GL.Enable(EnableCap.AlphaTest);
+            //GL.AlphaFunc(AlphaFunction.Lequal, 0.1f);
 
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+            //GL.Enable(EnableCap.Blend);
+            //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
         }
 
         protected internal unsafe override void OnInit(TKContext ctx)

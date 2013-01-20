@@ -44,12 +44,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte _panCurve;
         public byte _actorPlayerId;
 
-        ResourceNode _soundNode;
+        RSARFileNode _soundNode;
 
         //internal VoidPtr _dataAddr;
 
         [Browsable(false)]
-        public ResourceNode SoundNode
+        public RSARFileNode SoundNode
         {
             get { return _soundNode; }
             set
@@ -77,8 +77,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         case SndType.STRM: e = typeof(RSTMNode); break;
                         case SndType.WAVE: e = typeof(RWSDNode); break;
                     }
-                    ResourceNode node = null; int t = 0;
-                    foreach (ResourceNode r in RSARNode.Files)
+                    RSARFileNode node = null; int t = 0;
+                    foreach (RSARFileNode r in RSARNode.Files)
                     {
                         if (r.Name == value) { node = r; break; }
                         t++;
@@ -280,6 +280,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             _soundNode = RSARNode.Files[_fileId];
+            _soundNode.AddSoundRef(this);
 
             if (SoundNode is RSEQNode)
                 foreach (RSEQLabelNode r in SoundNode.Children)

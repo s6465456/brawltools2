@@ -85,8 +85,9 @@ namespace BrawlLib.SSBBTypes
         //Gets names of file paths seperated by an underscore
         public string GetStringEntry(int index)
         {
-            if (index < 0) return "<null>";
-            return new String((sbyte*)(Address + 8 + StringOffsets[index]));
+            if (index < 0) 
+                return "<null>";
+            return new String(GetStringEntryAddr(index));
         }
         public sbyte* GetStringEntryAddr(int index)
         {
@@ -232,6 +233,12 @@ namespace BrawlLib.SSBBTypes
         public RuintList* Files { get { return (RuintList*)_collection[3]; } } //INFOFileEntry
         public RuintList* Groups { get { return (RuintList*)_collection[4]; } } //INFOGroupHeader
         public INFOFooter* Footer { get { return (INFOFooter*)_collection[5]; } }
+        
+        public INFOSoundEntry* GetSound(int i) { return (INFOSoundEntry*)(_collection.Address + (*Sounds)[i]); }
+        public INFOBankEntry* GetBank(int i) { return (INFOBankEntry*)(_collection.Address + (*Banks)[i]); }
+        public INFOPlayerInfoEntry* GetPlayerInfo(int i) { return (INFOPlayerInfoEntry*)(_collection.Address + (*PlayerInfo)[i]); }
+        public INFOFileEntry* GetFile(int i) { return (INFOFileEntry*)(_collection.Address + (*Files)[i]); }
+        public INFOGroupHeader* GetGroup(int i) { return (INFOGroupHeader*)(_collection.Address + (*Groups)[i]); }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

@@ -30,6 +30,7 @@ namespace BrawlBox.NodeWrappers
             _menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUpAction, Keys.Control | Keys.Up));
             _menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDownAction, Keys.Control | Keys.Down));
             _menu.Items.Add(new ToolStripMenuItem("Re&name", null, RenameAction, Keys.Control | Keys.N));
+            //_menu.Items.Add(new ToolStripMenuItem("Automatic Brawl Metal", null, MetalAction, Keys.Control | Keys.U));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("Add New S&hader", null, NewShaderAction, Keys.Control | Keys.H));
             _menu.Items.Add(new ToolStripMenuItem("Add New &Material", null, NewMaterialAction, Keys.Control | Keys.M));
@@ -42,6 +43,7 @@ namespace BrawlBox.NodeWrappers
             _menu.Closing += MenuClosing;
         }
         protected static void PreviewAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().Preview(); }
+        //protected static void MetalAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().AutoMetal(); }
         protected static void NewShaderAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewShader(); }
         protected static void NewMaterialAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewMaterial(); }
         protected static void NewColorAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewColor(); }
@@ -105,6 +107,11 @@ namespace BrawlBox.NodeWrappers
                 FindResource(mat, true).EnsureVisible();
             }
         }
+
+        //public void AutoMetal()
+        //{
+        //    ((MDL0Node)_resource).AutoMetalMaterials = true;
+        //}
 
         public void NewColor()
         {

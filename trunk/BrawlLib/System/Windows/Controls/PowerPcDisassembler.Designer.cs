@@ -72,6 +72,7 @@
             this.grdDisassembler.TabIndex = 1;
             this.grdDisassembler.Scroll += new System.Windows.Forms.ScrollEventHandler(this.grdDisassembler_Scroll);
             this.grdDisassembler.SizeChanged += new System.EventHandler(this.grdDisassembler_SizeChanged);
+            this.grdDisassembler.DoubleClick += new System.EventHandler(this.grdDisassembler_DoubleClick);
             // 
             // Column1
             // 

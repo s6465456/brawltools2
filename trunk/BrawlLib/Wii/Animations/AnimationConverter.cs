@@ -634,10 +634,8 @@ namespace BrawlLib.Wii.Animations
                     }
                 }
             }
-            else //Set isotropic to true, so it sets the default value.
-                isotropic = true;
-            if (group == 0 && isotropic)
-                code.ScaleIsotropic = true;
+            if (group == 0 && !isotropic)
+                code.ScaleIsotropic = false;
             for (int i = 0; i < (group == 1 ? 1 : 2); i++)
             {
                 if (exist)
@@ -727,7 +725,7 @@ namespace BrawlLib.Wii.Animations
             SRT0Code code = kf._texEvalCode;
 
             SRT0TextureEntry* header = (SRT0TextureEntry*)entryAddress;
-            header->_code = code.data;
+            header->_code = code.data._data;
 
             bint* pOffset = (bint*)entryAddress + 1;
 
@@ -737,16 +735,17 @@ namespace BrawlLib.Wii.Animations
             for (int type = 0; type < 3; type++)
             {
                 r = type * 3; //Increment to next
+                bool has = false;
+                switch (type)
+                {
+                    case 0: has = !code.NoScale; break;
+                    case 1: has = !code.NoRotation; break;
+                    case 2: has = !code.NoTranslation; break;
+                }
                 for (int axis = 0; axis < (type == 1 ? 1 : 2); axis++)
                 {
-                    bool has = false;
-                    switch (type)
-                    {
-                        case 0: has = !code.NoScale; break;
-                        case 1: has = !code.NoRotation; break;
-                        case 2: has = !code.NoTranslation; break;
-                    }
                     if (has)
+                    {
                         if (code.ScaleIsotropic && type == 0)
                         {
                             if (axis == 0)
@@ -771,7 +770,7 @@ namespace BrawlLib.Wii.Animations
                                         case 0:
                                             fix = code.FixedScaleX;
                                             break;
-                                        case 1: 
+                                        case 1:
                                             fix = code.FixedScaleY;
                                             break;
                                     }
@@ -800,6 +799,7 @@ namespace BrawlLib.Wii.Animations
                                 dataAddress += EncodeEntry(r + axis, AnimDataFormat.I12, kf, dataAddress);
                             }
                         }
+                    }
                 }
             }
         }
@@ -857,7 +857,7 @@ namespace BrawlLib.Wii.Animations
 
                 byte* dPtr = header->Data;
                 for (i = 0; i < numFrames; i++)
-                    *dPtr++ = (byte)((kf[mode, i] - min) / step + 0.5f);
+                    *dPtr++ = (byte)((kf[mode, i] - min) / step/* + 0.5f*/);
 
                 //Fill remaining bytes
                 while ((i++ & 3) != 0)
@@ -880,10 +880,10 @@ namespace BrawlLib.Wii.Animations
                 for (frame = root._next; frame._index != -1; frame = frame._next)
                 {
                     val = (frame._value - min) / step;
-                    if (val < 0)
-                        val -= 0.5f;
-                    else
-                        val += 0.5f;
+                    //if (val < 0)
+                    //    val -= 0.5f;
+                    //else
+                    //    val += 0.5f;
 
                     *entry++ = new I4Entry(frame._index, (int)val, frame._tangent);
                 }
@@ -905,10 +905,10 @@ namespace BrawlLib.Wii.Animations
                 for (frame = root._next; frame._index != -1; frame = frame._next)
                 {
                     val = (frame._value - min) / step;
-                    if (val < 0)
-                        val -= 0.5f;
-                    else
-                        val += 0.5f;
+                    //if (val < 0)
+                    //    val -= 0.5f;
+                    //else
+                    //    val += 0.5f;
 
                     *entry++ = new I6Entry(frame._index, (int)val, frame._tangent);
                 }
@@ -949,7 +949,7 @@ namespace BrawlLib.Wii.Animations
                     for (int x = 0; x < count; x++)
                     {
                         val = entry.Interpolate(x, linear);
-                        error = (val - valBase) / step + 0.5f;
+                        error = (val - valBase) / step/* + 0.5f*/;
                         error = Math.Abs(val - (valBase + ((int)error * step)));
 
                         if (error > scaleError)

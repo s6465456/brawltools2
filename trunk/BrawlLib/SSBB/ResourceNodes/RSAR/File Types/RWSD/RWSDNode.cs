@@ -13,7 +13,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal RWSDHeader* Header { get { return (RWSDHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.RWSD; } }
 
-        public string Offset { get { if (RSARNode != null) return ((uint)((VoidPtr)Header - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
+        //public string Offset { get { if (RSARNode != null) return ((uint)((VoidPtr)Header - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
 
         [Category("RWSD")]
         public float Version { get { return _version; } }
@@ -89,7 +89,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             RSARNode rsar = RSARNode;
             SYMBHeader* symb = null;
             RuintList* soundList = null;
-            INFOSoundEntry** soundIndices = null;
+            List<string> soundIndices = null;
             VoidPtr soundOffset = null;
             INFOSoundEntry* sEntry;
             ResourceNode g;
@@ -98,6 +98,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             RuintList* list = &data->_list;
             int count = list->_numEntries;
 
+            if (_fileIndex == 86)
+                Console.WriteLine();
+
             new RWSDDataGroupNode().Initialize(this, Header->Data, Header->_dataLength);
             if (Header->_waveOffset > 0)
                 new RWSDSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
@@ -105,16 +108,21 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Get sound info from RSAR (mainly for names)
             if (rsar != null)
             {
-                symb = rsar.Header->SYMBBlock;
+                INFOHeader* info = rsar.Header->INFOBlock;
                 soundOffset = &rsar.Header->INFOBlock->_collection;
-                soundList = rsar.Header->INFOBlock->Sounds;
-                soundIndices = (INFOSoundEntry**)Marshal.AllocHGlobal(count * 4);
 
-                //int sIndex = 0;
-                int soundCount = soundList->_numEntries;
-                for (int i = 0; i < soundCount; i++)
-                    if ((sEntry = (INFOSoundEntry*)soundList->Get(soundOffset, i))->_fileId == _fileIndex)
-                        soundIndices[((WaveSoundInfo*)sEntry->GetSoundInfoRef(soundOffset))->_soundIndex] = sEntry;
+                symb = rsar.Header->SYMBBlock;
+
+                soundList = rsar.Header->INFOBlock->Sounds;
+                soundIndices = new List<string>();
+                
+                //foreach (RSARSoundNode in _rsarSoundEntries)
+
+
+                //for (int i = 0; i < soundList->_numEntries; i++)
+                //    for (int x = 0; x < info->Sounds->_numEntries; x++)
+                //        if ((sEntry = info->GetSound(i))->_fileId == _fileIndex && sEntry->_soundType == 3)
+                //            soundIndices[((WaveSoundInfo*)sEntry->GetSoundInfoRef(soundOffset))->_soundIndex] = sEntry;
             }
 
             for (int i = 0; i < count; i++)
@@ -125,15 +133,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 node.Initialize(Children[0], entry, 0);
 
                 //Attach from INFO block
-                if (soundIndices != null)
-                {
-                    sEntry = soundIndices[i];
-                    node._name = symb->GetStringEntry(sEntry->_stringId);
-                }
+                //if (soundIndices != null && (sEntry = soundIndices[i]) != null)
+                //    node._name = symb->GetStringEntry(sEntry->_stringId);
             }
 
-            if (soundIndices != null)
-                Marshal.FreeHGlobal((IntPtr)soundIndices);
+            //if (soundIndices != null)
+            //    Marshal.FreeHGlobal((IntPtr)soundIndices);
 
             //Get labels
             RSARNode parent;

@@ -106,13 +106,6 @@ namespace BrawlBox
                 modelEditControl1.modelPanel1._diffuse = settings->diff;
                 modelEditControl1.modelPanel1._specular = settings->spec;
 
-                if (settings->CameraSet && settings->_version >= 2)
-                {
-                    modelEditControl1.btnSaveCam.Text = "Clear Camera";
-                    modelEditControl1.modelPanel1._defaultTranslate = settings->defaultCam;
-                    modelEditControl1.modelPanel1._defaultRotate = settings->defaultRot;
-                }
-
                 modelEditControl1.modelPanel1._fovY = settings->yFov;
                 modelEditControl1.modelPanel1._nearZ = settings->_nearZ;
                 modelEditControl1.modelPanel1._farZ = settings->_farz;
@@ -125,6 +118,12 @@ namespace BrawlBox
                 {
                     MDL0BoneNode.DefaultNodeColor = (Color)settings->orbColor;
                     MDL0BoneNode.DefaultBoneColor = (Color)settings->lineColor;
+                    if (settings->CameraSet)
+                    {
+                        modelEditControl1.btnSaveCam.Text = "Clear Camera";
+                        modelEditControl1.modelPanel1._defaultTranslate = settings->defaultCam;
+                        modelEditControl1.modelPanel1._defaultRotate = settings->defaultRot;
+                    }
                 }
 
                 if (settings->Maximize)

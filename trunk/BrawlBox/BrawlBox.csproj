@@ -330,6 +330,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Brawlbox.ico" />
+    <None Include="Resources\U8.png" />
     <None Include="Resources\plt.png" />
     <None Include="Resources\TPL.png" />
   </ItemGroup>

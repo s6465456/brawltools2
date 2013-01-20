@@ -2,6 +2,7 @@
 using BrawlLib.SSBBTypes;
 using System.IO;
 using BrawlLib.IO;
+using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
 
@@ -13,7 +14,33 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal DataSource _audioSource;
 
         public List<RSARGroupNode> _groups = new List<RSARGroupNode>();
+        [Browsable(false)]
         public RSARGroupNode[] Groups { get { return _groups.ToArray(); } }
+
+        public string[] GroupRefs { get { return _groups.Select(x => x.TreePath).ToArray(); } }
+
+        public List<string> _references = new List<string>();
+        public string[] EntryRefs { get { return _references.ToArray(); } }
+
+        public List<RSARSoundNode> _rsarSoundEntries = new List<RSARSoundNode>();
+        [Browsable(false)]
+        public RSARSoundNode[] Sounds { get { return _rsarSoundEntries.ToArray(); } }
+        public void AddSoundRef(RSARSoundNode n)
+        {
+            if (!_rsarSoundEntries.Contains(n))
+            {
+                _rsarSoundEntries.Add(n);
+                _references.Add(n.TreePath);
+            }
+        }
+        public void RemoveSoundRef(RSARSoundNode n)
+        {
+            if (_rsarSoundEntries.Contains(n))
+            {
+                _rsarSoundEntries.Remove(n);
+                _references.Remove(n.TreePath);
+            }
+        }
 
         internal string _extPath;
         internal int _fileIndex;

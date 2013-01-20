@@ -61,5 +61,10 @@ namespace System.Windows.Forms
         {
 
         }
+
+        private void grdDisassembler_DoubleClick(object sender, EventArgs e)
+        {
+
+        }
     }
 }

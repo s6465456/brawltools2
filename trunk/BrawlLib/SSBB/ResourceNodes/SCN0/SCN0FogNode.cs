@@ -182,7 +182,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 keyLen += 4 + _startKeys._keyCount * 12;
             if (_endKeys._keyCount > 1)
                 keyLen += 4 + _endKeys._keyCount * 12;
-            if (_colors.Count > 1)
+            if (!_constant)
                 lightLen += 4 * (FrameCount + 1);
             return SCN0Fog.Size;
         }
@@ -202,21 +202,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                         *lightAddr++ = (RGBAPixel)_colors[i];
                     else
                         *lightAddr++ = new RGBAPixel();
-                //flags &= ~SCN0FogFlags.FixedColor;
             }
             else
             {
                 flags |= SCN0FogFlags.FixedColor;
-                if (_colors.Count == 1)
-                    header->_color = (RGBAPixel)_colors[0];
-                else
-                    header->_color = new RGBAPixel();
+                header->_color = (RGBAPixel)_solidColor;
             }
             if (_startKeys._keyCount > 1)
             {
                 *((bint*)header->_start.Address) = (int)keyframeAddr - (int)header->_start.Address;
-                SCN0EntryNode.EncodeFrames(_startKeys, ref keyframeAddr);
-                //flags &= ~SCN0FogFlags.FixedStart;
+                EncodeFrames(_startKeys, ref keyframeAddr);
             }
             else
             {
@@ -229,8 +224,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_endKeys._keyCount > 1)
             {
                 *((bint*)header->_end.Address) = (int)keyframeAddr - (int)header->_end.Address;
-                SCN0EntryNode.EncodeFrames(_endKeys, ref keyframeAddr);
-                //flags &= ~SCN0FogFlags.FixedEnd;
+                EncodeFrames(_endKeys, ref keyframeAddr);
             }
             else
             {
