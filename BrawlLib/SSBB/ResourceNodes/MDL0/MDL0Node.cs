@@ -51,6 +51,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public Collada.ImportOptions _importOptions = new Collada.ImportOptions();
         
+        [Browsable(true)]
         public bool AutoMetalMaterials { get { return _autoMetal; } set { _autoMetal = value; CheckMetals(); } }
         
         [Category("MDL0 Definition")]
@@ -965,7 +966,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             //Turn off the last bound shader program.
-            if (ctx._canUseShaders) { GL.UseProgram(0); GL.ClientActiveTexture(TextureUnit.Texture0); }
+            if (ctx._canUseShaders) { GL.UseProgram(0); GL.ActiveTexture(TextureUnit.Texture0); }
             
             if (_renderBones)
             {

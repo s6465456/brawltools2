@@ -231,6 +231,44 @@ namespace BrawlLib.OpenGL
             return point;
         }
 
+        public void GetScreenPointRay(Vector2 screenPoint, out Vector3 ray1, out Vector3 ray2)
+        {
+            ray1 = new Vector3();
+            ray2 = new Vector3();
+
+            if (_camera == null) return;
+
+            //Get ray points
+            Vector4 v = new Vector4(2 * screenPoint._x / Width - 1, 2 * (Height - screenPoint._y) / Height - 1, -1.0f, 1.0f);
+            ray1 = (Vector3)(_camera._matrixInverse * _projectionInverse * v);
+            v._z = 1.0f;
+            ray2 = (Vector3)(_camera._matrixInverse * _projectionInverse * v);
+        }
+
+        public Vector3 ProjectCameraPlanes(Vector2 screenPoint, Vector3 center, float radius)
+        {
+            if (_camera == null)
+                return new Vector3();
+
+            Vector3 point1, point2, point3;
+
+            //Get ray points
+            Vector4 v = new Vector4(2 * screenPoint._x / Width - 1, 2 * (Height - screenPoint._y) / Height - 1, -1.0f, 1.0f);
+            Vector3 ray1 = (Vector3)(_camera._matrixInverse * _projectionInverse * v);
+            v._z = 1.0f;
+            Vector3 ray2 = (Vector3)(_camera._matrixInverse * _projectionInverse * v);
+
+            Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(0.0f, 0.0f, 1.0f).Normalize(center), out point1);
+            Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(0.0f, 1.0f, 0.0f).Normalize(center), out point2);
+            Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(1.0f, 0.0f, 0.0f).Normalize(center), out point3);
+
+            float x = point3.Dot();
+            float y = point2.Dot();
+            float z = point1.Dot();
+
+            return new Vector3();
+        }
+
         protected void CalculateProjection()
         {
             _projectionMatrix = Matrix.ProjectionMatrix(_fovY, _aspect, _nearZ, _farZ);

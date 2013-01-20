@@ -19,6 +19,26 @@ namespace BrawlLib.SSBB.ResourceNodes
         //    //    builder.Add(0, node._name);
         //}
 
+        public List<RSARBankNode> _rsarBankEntries = new List<RSARBankNode>();
+        [Browsable(false)]
+        public RSARBankNode[] Banks { get { return _rsarBankEntries.ToArray(); } }
+        public void AddBankRef(RSARBankNode n)
+        {
+            if (!_rsarBankEntries.Contains(n))
+            {
+                _rsarBankEntries.Add(n);
+                _references.Add(n.TreePath);
+            }
+        }
+        public void RemoveBankRef(RSARBankNode n)
+        {
+            if (_rsarBankEntries.Contains(n))
+            {
+                _rsarBankEntries.Remove(n);
+                _references.Remove(n.TreePath);
+            }
+        }
+        
         [Category("RBNK")]
         public float Version { get { return _version; } }
         private float _version;

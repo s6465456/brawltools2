@@ -291,6 +291,13 @@ namespace BrawlBox.Properties {
             }
         }
         
+        public static System.Drawing.Bitmap U8 {
+            get {
+                object obj = ResourceManager.GetObject("U8", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         public static System.Drawing.Bitmap Unknown {
             get {
                 object obj = ResourceManager.GetObject("Unknown", resourceCulture);

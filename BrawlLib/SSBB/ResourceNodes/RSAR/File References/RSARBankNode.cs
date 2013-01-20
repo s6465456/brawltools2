@@ -57,7 +57,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _fileId = Header->_fileId;
 
-            _rbnk = RSARNode.Files[_fileId] as RBNKNode;
+            if (_fileId >= 0 && _fileId < RSARNode.Files.Count)
+                _rbnk = RSARNode.Files[_fileId] as RBNKNode;
+            if (_rbnk != null)
+                _rbnk.AddBankRef(this);
 
             return false;
         }

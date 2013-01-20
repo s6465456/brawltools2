@@ -556,11 +556,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             if (flags.HasFlag(FixedFlags.ColorConstant))
-            {
-                _constants[0] = true;
-                _numEntries[0] = 0;
                 _solidColors[0] = Data->_lightColor;
-            }
             else if (Name != "<null>")
             {
                 _constants[0] = false;
@@ -570,11 +566,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _lightColor.Add(*addr++);
             }
             if (flags.HasFlag(FixedFlags.SpecColorConstant))
-            {
-                _constants[1] = true;
-                _numEntries[1] = 0;
                 _solidColors[1] = Data->_specularColor;
-            }
             else if (Name != "<null>")
             {
                 _constants[1] = false;
@@ -588,52 +580,52 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (flags.HasFlag(FixedFlags.StartXConstant))
                 GetKeys(i)[0] = Data->_startPoint._x;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->xStartKeyframes);
+                DecodeFrames(GetKeys(i), Data->xStartKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.StartYConstant))
                 GetKeys(i)[0] = Data->_startPoint._y;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->yStartKeyframes);
+                DecodeFrames(GetKeys(i), Data->yStartKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.StartZConstant))
                 GetKeys(i)[0] = Data->_startPoint._z;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->zStartKeyframes);
+                DecodeFrames(GetKeys(i), Data->zStartKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.EndXConstant))
                 GetKeys(i)[0] = Data->_endPoint._x;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->xEndKeyframes);
+                DecodeFrames(GetKeys(i), Data->xEndKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.EndYConstant))
                 GetKeys(i)[0] = Data->_endPoint._y;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->yEndKeyframes);
+                DecodeFrames(GetKeys(i), Data->yEndKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.EndZConstant))
                 GetKeys(i)[0] = Data->_endPoint._z;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->zEndKeyframes);
+                DecodeFrames(GetKeys(i), Data->zEndKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.CutoffConstant))
                 GetKeys(i)[0] = Data->_cutoff;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->cutoffKeyframes);
+                DecodeFrames(GetKeys(i), Data->cutoffKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.ShininessConstant))
                 GetKeys(i)[0] = Data->_shininess;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->shininessKeyframes);
+                DecodeFrames(GetKeys(i), Data->shininessKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.RefDistanceConstant))
                 GetKeys(i)[0] = Data->_refDistance;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->refDistanceKeyframes);
+                DecodeFrames(GetKeys(i), Data->refDistanceKeyframes);
             i++;
             if (flags.HasFlag(FixedFlags.RefBrightnessConstant))
                 GetKeys(i)[0] = Data->_refBrightness;
             else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->refBrightnessKeyframes);
+                DecodeFrames(GetKeys(i), Data->refBrightnessKeyframes);
 
             return false;
         }
@@ -644,14 +636,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             keyLen = 0;
             if (_name != "<null>")
             {
-                //if (_enabled.Count > 1)
-                //    lightLen += ((FrameCount + 1).Align(32) / 8);
                 if (!SetConstant)
                     lightLen += _entryCount.Align(32) / 8;
-
-                if (_lightColor.Count > 1)
+                if (!_constants[0])
                     lightLen += 4 * (FrameCount + 1);
-                if (_specColor.Count > 1)
+                if (!_constants[1])
                     lightLen += 4 * (FrameCount + 1);
                 for (int i = 0; i < 10; i++)
                     if (GetKeys(i)._keyCount > 1)
@@ -692,10 +681,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                 {
                     newFlags |= FixedFlags.ColorConstant;
-                    if (_lightColor.Count == 1)
-                        header->_lightColor = _lightColor[0];
-                    else
-                        header->_lightColor = new RGBAPixel();
+                    header->_lightColor = _solidColors[0];
                 }
                 if (_specColor.Count > 1)
                 {
@@ -709,10 +695,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                 {
                     newFlags |= FixedFlags.SpecColorConstant;
-                    if (_specColor.Count == 1)
-                        header->_specularColor = _specColor[0];
-                    else
-                        header->_specularColor = new RGBAPixel();
+                    header->_specularColor = _solidColors[1];
                 }
                 //if (_enabled.Count > 1)
                 if (!SetConstant && _entryCount != 0)
@@ -733,7 +716,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_startPoint._x.Address) = (int)keyframeAddr - (int)header->_startPoint._x.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -744,7 +727,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_startPoint._y.Address) = (int)keyframeAddr - (int)header->_startPoint._y.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -755,7 +738,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_startPoint._z.Address) = (int)keyframeAddr - (int)header->_startPoint._z.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -766,7 +749,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_endPoint._x.Address) = (int)keyframeAddr - (int)header->_endPoint._x.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -777,7 +760,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_endPoint._y.Address) = (int)keyframeAddr - (int)header->_endPoint._y.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -788,7 +771,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_endPoint._z.Address) = (int)keyframeAddr - (int)header->_endPoint._z.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -799,7 +782,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_cutoff.Address) = (int)keyframeAddr - (int)header->_cutoff.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -810,7 +793,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_shininess.Address) = (int)keyframeAddr - (int)header->_shininess.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -821,7 +804,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_refDistance.Address) = (int)keyframeAddr - (int)header->_refDistance.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {
@@ -832,7 +815,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (GetKeys(i)._keyCount > 1)
                 {
                     *((bint*)header->_refBrightness.Address) = (int)keyframeAddr - (int)header->_refBrightness.Address;
-                    SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
+                    EncodeFrames(GetKeys(i), ref keyframeAddr);
                 }
                 else
                 {

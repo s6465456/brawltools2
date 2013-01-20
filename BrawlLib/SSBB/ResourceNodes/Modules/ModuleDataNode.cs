@@ -217,10 +217,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         public static Color clrNotRelocated = Color.FromArgb(255, 255, 255);
         public static Color clrRelocated = Color.FromArgb(200, 255, 200);
         public static Color clrBadRelocate = Color.FromArgb(255, 200, 200);
+        public static Color clrBlr = Color.FromArgb(255, 255, 0);
 
         public Color GetStatusColorFromAddress(VoidPtr address) { return GetStatusColor(GetCommandFromAddress(address)); }
         public Color GetStatusColorFromOffset(int offset) { return GetStatusColor(GetCommandFromOffset(offset)); }
-        public Color GetStatusColorFromIndex(int index) { return GetStatusColor(GetCommandFromIndex(index)); }
+        public Color GetStatusColorFromIndex(int index) 
+        {
+            if (this[index].Code is OpBlr)
+                return clrBlr;
+            return GetStatusColor(GetCommandFromIndex(index)); 
+        }
         public Color GetStatusColor(RelCommand c)
         {
             if (c == null) 

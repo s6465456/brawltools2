@@ -57,6 +57,7 @@ namespace BrawlBox
                         Resources.STPM,
                         Resources.TPL,
                         Resources.Palette,
+                        Resources.U8, //35
                     });
                 }
                 return _imgList;

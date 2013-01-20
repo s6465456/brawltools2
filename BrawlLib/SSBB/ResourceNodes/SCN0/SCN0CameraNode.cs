@@ -19,6 +19,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal SCN0Camera* Data { get { return (SCN0Camera*)WorkingUncompressed.Address; } }
 
+        [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
+        internal UserDataCollection _userEntries = new UserDataCollection();
+
         public SCN0CameraType _type = SCN0CameraType.Aim;
         public ProjectionType _projType;
         public SCN0CameraFlags _flags1 = (SCN0CameraFlags)0xFFFE;
@@ -33,18 +37,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                 case 0: return _posX;
                 case 1: return _posY;
                 case 2: return _posZ;
-                case 3: return _rotX;
-                case 4: return _rotY;
-                case 5: return _rotZ;
-                case 6: return _aimX;
-                case 7: return _aimY;
-                case 8: return _aimZ;
-                case 9: return _twist;
-                case 10: return _fovY;
-                case 11: return _height;
-                case 12: return _aspect;
-                case 13: return _nearZ;
-                case 14: return _farZ;
+                case 3: return _aspect;
+                case 4: return _nearZ;
+                case 5: return _farZ;
+                case 6: return _rotX;
+                case 7: return _rotY;
+                case 8: return _rotZ;
+                case 9: return _aimX;
+                case 10: return _aimY;
+                case 11: return _aimZ;
+                case 12: return _twist;
+                case 13: return _fovY;
+                case 14: return _height;
             }
             return null;
         }
@@ -56,18 +60,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                 case 0: _posX = value; break;
                 case 1: _posY = value; break;
                 case 2: _posZ = value; break;
-                case 3: _rotX = value; break;
-                case 4: _rotY = value; break;
-                case 5: _rotZ = value; break;
-                case 6: _aimX = value; break;
-                case 7: _aimY = value; break;
-                case 8: _aimZ = value; break;
-                case 9: _twist = value; break;
-                case 10: _fovY = value; break;
-                case 11: _height = value; break;
-                case 12: _aspect = value; break;
-                case 13: _nearZ = value; break;
-                case 14: _farZ = value; break;
+                case 3: _aspect = value; break;
+                case 4: _nearZ = value; break;
+                case 5: _farZ = value; break;
+                case 6: _rotX = value; break;
+                case 7: _rotY = value; break;
+                case 8: _rotZ = value; break;
+                case 9: _aimX = value; break;
+                case 10: _aimY = value; break;
+                case 11: _aimZ = value; break;
+                case 12: _twist = value; break;
+                case 13: _fovY = value; break;
+                case 14: _height = value; break;
             }
         }
 
@@ -99,6 +103,25 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        public SCN0CameraFlags[] Ordered = new SCN0CameraFlags[] 
+        { 
+            SCN0CameraFlags.PosXConstant,
+            SCN0CameraFlags.PosYConstant,
+            SCN0CameraFlags.PosZConstant,
+            SCN0CameraFlags.AspectConstant,
+            SCN0CameraFlags.NearConstant,
+            SCN0CameraFlags.FarConstant,
+            SCN0CameraFlags.RotXConstant,
+            SCN0CameraFlags.RotYConstant,
+            SCN0CameraFlags.RotZConstant,
+            SCN0CameraFlags.AimXConstant,
+            SCN0CameraFlags.AimYConstant,
+            SCN0CameraFlags.AimZConstant,
+            SCN0CameraFlags.TwistConstant,
+            SCN0CameraFlags.PerspFovYConstant,
+            SCN0CameraFlags.OrthoHeightConstant,
+        };
+
         protected override bool OnInitialize()
         {
             base.OnInitialize();
@@ -111,91 +134,32 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int x = 0; x < 15; x++)
                 SetKeys(x, new KeyframeArray(FrameCount + 1));
 
-            int i = 0;
-            if (_flags1.HasFlag(SCN0CameraFlags.PosXConstant))
-                GetKeys(i)[0] = Data->_position._x;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->posXKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.PosYConstant))
-                GetKeys(i)[0] = Data->_position._y;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->posYKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.PosZConstant))
-                GetKeys(i)[0] = Data->_position._z;
-            else if (Name != "<null>" && !_replaced)
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->posZKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.RotXConstant))
-                GetKeys(i)[0] = Data->_rotate._x;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->rotXKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.RotYConstant))
-                GetKeys(i)[0] = Data->_rotate._y;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->rotYKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.RotZConstant))
-                GetKeys(i)[0] = Data->_rotate._z;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->rotZKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.AimXConstant))
-                GetKeys(i)[0] = Data->_aim._x;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->aimXKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.AimYConstant))
-                GetKeys(i)[0] = Data->_aim._y;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->aimYKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.AimZConstant))
-                GetKeys(i)[0] = Data->_aim._z;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->aimZKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.TwistConstant))
-                GetKeys(i)[0] = Data->_twist;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->twistKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.PerspFovYConstant))
-                GetKeys(i)[0] = Data->_perspFovY;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->fovYKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.OrthoHeightConstant))
-                GetKeys(i)[0] = Data->_orthoHeight;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->heightKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.AspectConstant))
-                GetKeys(i)[0] = Data->_aspect;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->aspectKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.NearConstant))
-                GetKeys(i)[0] = Data->_nearZ;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->nearZKeyframes);
-            i++;
-            if (_flags1.HasFlag(SCN0CameraFlags.FarConstant))
-                GetKeys(i)[0] = Data->_farZ;
-            else if (Name != "<null>")
-                SCN0EntryNode.DecodeFrames(GetKeys(i), Data->farZKeyframes);
+            bint* values = (bint*)&Data->_position;
 
-            _posX._linearRot = true;
-            _posY._linearRot = true;
-            _posZ._linearRot = true;
+            if (Name != "<null>")
+                for (int i = 0; i < 15; i++)
+                    DecodeFrames(GetKeys(i), &values[i], (int)_flags1, (int)Ordered[i]);
 
-            _aimX._linearRot = true;
-            _aimY._linearRot = true;
-            _aimZ._linearRot = true;
+            _posX._linear = true;
+            _posY._linear = true;
+            _posZ._linear = true;
+
+            _aimX._linear = true;
+            _aimY._linear = true;
+            _aimZ._linear = true;
+
+            (_userEntries = new UserDataCollection()).Read(Data->UserData);
 
             return false;
+        }
+
+        internal override void GetStrings(StringTable table)
+        {
+            if (Name != "<null>") 
+                table.Add(Name);
+
+            foreach (UserDataClass s in _userEntries)
+                table.Add(s._name);
         }
 
         protected override int OnCalculateSize(bool force)
@@ -206,7 +170,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 for (int i = 0; i < 15; i++)
                     if (GetKeys(i)._keyCount > 1)
                         keyLen += 4 + GetKeys(i)._keyCount * 12;
-            return SCN0Camera.Size;
+            return SCN0Camera.Size + _userEntries.GetSize();
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -217,176 +181,16 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             header->_projType = (int)_projType;
             header->_flags2 = (ushort)(2 + (int)_type);
-            header->_part2Offset = 0;
+            header->_userDataOffset = 0;
 
-            SCN0CameraFlags newFlags1 = new SCN0CameraFlags();
+            int newFlags1 = 0;
 
-            int i = 0;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_position._x.Address) = (int)keyframeAddr - (int)header->_position._x.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.PosXConstant;
-                header->_position._x = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_position._y.Address) = (int)keyframeAddr - (int)header->_position._y.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.PosYConstant;
-                header->_position._y = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_position._z.Address) = (int)keyframeAddr - (int)header->_position._z.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.PosZConstant;
-                header->_position._z = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_rotate._x.Address) = (int)keyframeAddr - (int)header->_rotate._x.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.RotXConstant;
-                header->_rotate._x = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_rotate._y.Address) = (int)keyframeAddr - (int)header->_rotate._y.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.RotYConstant;
-                header->_rotate._y = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_rotate._z.Address) = (int)keyframeAddr - (int)header->_rotate._z.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.RotZConstant;
-                header->_rotate._z = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_aim._x.Address) = (int)keyframeAddr - (int)header->_aim._x.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.AimXConstant;
-                header->_aim._x = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_aim._y.Address) = (int)keyframeAddr - (int)header->_aim._y.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.AimYConstant;
-                header->_aim._y = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_aim._z.Address) = (int)keyframeAddr - (int)header->_aim._z.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.AimZConstant;
-                header->_aim._z = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_twist.Address) = (int)keyframeAddr - (int)header->_twist.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.TwistConstant;
-                header->_twist = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_perspFovY.Address) = (int)keyframeAddr - (int)header->_perspFovY.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.PerspFovYConstant;
-                header->_perspFovY = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_orthoHeight.Address) = (int)keyframeAddr - (int)header->_orthoHeight.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.OrthoHeightConstant;
-                header->_orthoHeight = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_aspect.Address) = (int)keyframeAddr - (int)header->_aspect.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.AspectConstant;
-                header->_aspect = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_nearZ.Address) = (int)keyframeAddr - (int)header->_nearZ.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.NearConstant;
-                header->_nearZ = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
-            if (GetKeys(i)._keyCount > 1)
-            {
-                *((bint*)header->_farZ.Address) = (int)keyframeAddr - (int)header->_farZ.Address;
-                SCN0EntryNode.EncodeFrames(GetKeys(i), ref keyframeAddr);
-            }
-            else
-            {
-                newFlags1 |= SCN0CameraFlags.FarConstant;
-                header->_farZ = GetKeys(i)._keyRoot._next._value;
-            }
-            i++;
+            bint* values = (bint*)&Data->_position;
+            for (int i = 0; i < 15; i++)
+                EncodeFrames(GetKeys(i), ref keyframeAddr, &values[i], ref newFlags1, (int)Ordered[i]);
+
+            if (_userEntries.Count > 0)
+                _userEntries.Write(header->UserData = (VoidPtr)header + SCN0Camera.Size);
 
             header->_flags1 = (ushort)newFlags1;
         }
@@ -394,6 +198,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void PostProcess(VoidPtr scn0Address, VoidPtr dataAddress, StringTable stringTable)
         {
             base.PostProcess(scn0Address, dataAddress, stringTable);
+
+            _userEntries.PostProcess(((SCN0Camera*)dataAddress)->UserData, stringTable);
         }
 
         [Browsable(false)]
@@ -475,14 +281,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public static readonly CameraAnimationFrame Empty = new CameraAnimationFrame();
 
         public Vector3 Pos;
+        public float Aspect;
+        public float NearZ;
+        public float FarZ;
         public Vector3 Rot;
         public Vector3 Aim;
         public float Twist;
         public float FovY;
         public float Height;
-        public float Aspect;
-        public float NearZ;
-        public float FarZ;
 
         public bool hasPx;
         public bool hasPy;
@@ -516,29 +322,29 @@ namespace BrawlLib.SSBB.ResourceNodes
                 case 2:
                     hasPz = val; break;
                 case 3:
-                    hasRx = val; break;
-                case 4:
-                    hasRy = val; break;
-                case 5:
-                    hasRz = val; break;
-                case 6:
-                    hasAx = val; break;
-                case 7:
-                    hasAy = val; break;
-                case 8:
-                    hasAz = val; break;
-                case 9:
-                    hasT = val; break;
-                case 10:
-                    hasF = val; break;
-                case 11:
-                    hasH = val; break;
-                case 12:
                     hasA = val; break;
-                case 13:
+                case 4:
                     hasNz = val; break;
-                case 14:
+                case 5:
                     hasFz = val; break;
+                case 6:
+                    hasRx = val; break;
+                case 7:
+                    hasRy = val; break;
+                case 8:
+                    hasRz = val; break;
+                case 9:
+                    hasAx = val; break;
+                case 10:
+                    hasAy = val; break;
+                case 11:
+                    hasAz = val; break;
+                case 12:
+                    hasT = val; break;
+                case 13:
+                    hasF = val; break;
+                case 14:
+                    hasH = val; break;
             }
         }
 
@@ -560,18 +366,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                     case 0: return Pos._x;
                     case 1: return Pos._y;
                     case 2: return Pos._z;
-                    case 3: return Rot._x;
-                    case 4: return Rot._y;
-                    case 5: return Rot._z;
-                    case 6: return Aim._x;
-                    case 7: return Aim._y;
-                    case 8: return Aim._z;
-                    case 9: return Twist;
-                    case 10: return FovY;
-                    case 11: return Height;
-                    case 12: return Aspect;
-                    case 13: return NearZ;
-                    case 14: return FarZ;
+                    case 3: return Aspect;
+                    case 4: return NearZ;
+                    case 5: return FarZ;
+                    case 6: return Rot._x;
+                    case 7: return Rot._y;
+                    case 8: return Rot._z;
+                    case 9: return Aim._x;
+                    case 10: return Aim._y;
+                    case 11: return Aim._z;
+                    case 12: return Twist;
+                    case 13: return FovY;
+                    case 14: return Height;
+
                     default: return float.NaN;
                 }
             }
@@ -582,18 +389,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                     case 0: Pos._x = value; break;
                     case 1: Pos._y = value; break;
                     case 2: Pos._z = value; break;
-                    case 3: Rot._x = value; break;
-                    case 4: Rot._y = value; break;
-                    case 5: Rot._z = value; break;
-                    case 6: Aim._x = value; break;
-                    case 7: Aim._y = value; break;
-                    case 8: Aim._z = value; break;
-                    case 9: Twist = value; break;
-                    case 10: FovY = value; break;
-                    case 11: Height = value; break;
-                    case 12: Aspect = value; break;
-                    case 13: NearZ = value; break;
-                    case 14: FarZ = value; break;
+                    case 3: Aspect = value; break;
+                    case 4: NearZ = value; break;
+                    case 5: FarZ = value; break;
+                    case 6: Rot._x = value; break;
+                    case 7: Rot._y = value; break;
+                    case 8: Rot._z = value; break;
+                    case 9: Aim._x = value; break;
+                    case 10: Aim._y = value; break;
+                    case 11: Aim._z = value; break;
+                    case 12: Twist = value; break;
+                    case 13: FovY = value; break;
+                    case 14: Height = value; break;
                 }
             }
         }

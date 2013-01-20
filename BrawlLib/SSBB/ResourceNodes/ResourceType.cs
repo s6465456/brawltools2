@@ -14,7 +14,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         Container = 0x0001,
 
         ARC = 0x0202,
-        U8 = 0x1D02,
+        U8 = 0x1D23,
         U8Folder = 0x1C01,
         BRES = 0x0203,
         MSBin = 0x0204,

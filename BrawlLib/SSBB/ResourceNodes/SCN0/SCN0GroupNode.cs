@@ -194,6 +194,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        public static void DecodeFrames(KeyframeArray kf, VoidPtr offset, int flags, int fixedBit)
+        {
+            if ((flags & fixedBit) != 0)
+                kf[0] = *(bfloat*)offset;
+            else
+                DecodeFrames(kf, offset + *(bint*)offset);
+        }
         public static void DecodeFrames(KeyframeArray kf, VoidPtr dataAddr)
         {
             SCN0KeyframesHeader* header = (SCN0KeyframesHeader*)dataAddr;
@@ -202,6 +209,24 @@ namespace BrawlLib.SSBB.ResourceNodes
                 kf.SetFrameValue((int)entry->_index, entry->_value)._tangent = entry->_tangent;
         }
 
+        public static void EncodeFrames(KeyframeArray kf, ref VoidPtr dataAddr, VoidPtr offset, ref int flags, int fixedBit)
+        {
+            if (kf._keyCount > 1)
+            {
+                flags &= ~fixedBit;
+                EncodeFrames(kf, ref dataAddr, offset);
+            }
+            else
+            {
+                flags |= fixedBit;
+                *(bfloat*)offset = kf._keyRoot._next._value;
+            }
+        }
+        public static void EncodeFrames(KeyframeArray kf, ref VoidPtr dataAddr, VoidPtr offset)
+        {
+            *(bint*)offset = (int)dataAddr - (int)offset;
+            EncodeFrames(kf, ref dataAddr);
+        }
         public static void EncodeFrames(KeyframeArray kf, ref VoidPtr dataAddr)
         {
             SCN0KeyframesHeader* header = (SCN0KeyframesHeader*)dataAddr;

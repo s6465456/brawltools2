@@ -152,10 +152,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void AttachNodes()
         {
+            SCN0Node node = (SCN0Node)Parent.Parent;
+            SCN0GroupNode g = node.GetFolder<SCN0LightNode>();
             int i = 0;
-            foreach (string s in _entries)
-                _lights[i++] = ((SCN0Node)Parent.Parent).GetFolder<SCN0LightNode>().FindChild(s, false) as SCN0LightNode;
-            _ambient = ((SCN0Node)Parent.Parent).GetFolder<SCN0AmbientLightNode>().FindChild(_ambientLight, false) as SCN0AmbientLightNode;
+            if (g != null)
+                foreach (string s in _entries)
+                    _lights[i++] = g.FindChild(s, false) as SCN0LightNode;
+            g = node.GetFolder<SCN0AmbientLightNode>();
+            if (g != null)
+                _ambient = g.FindChild(_ambientLight, false) as SCN0AmbientLightNode;
         }
 
         internal override void GetStrings(StringTable table)

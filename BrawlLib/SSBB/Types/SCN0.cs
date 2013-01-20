@@ -380,7 +380,13 @@ namespace BrawlLib.SSBBTypes
         public bint _projType;
         public bushort _flags1;
         public bushort _flags2;
-        public bint _part2Offset;
+        public bint _userDataOffset;
+
+        public VoidPtr UserData
+        {
+            get { return _userDataOffset == 0 ? null : Address + _userDataOffset; }
+            set { _userDataOffset = (int)value - (int)Address; }
+        }
 
         public BVec3 _position;
         public SCN0KeyframesHeader* posXKeyframes { get { return (SCN0KeyframesHeader*)(_position._x.Address + *(bint*)_position._x.Address); } }

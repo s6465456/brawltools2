@@ -325,10 +325,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->Set(GroupLen, LightSetLen, AmbLightSetLen, LightLen, FogLen, CameraLen);
 
                 if (_userEntries.Count > 0)
-                {
-                    header->UserData = lightArrayAddress;
-                    _userEntries.Write(lightArrayAddress);
-                }
+                    _userEntries.Write(header->UserData = lightArrayAddress);
             }
             else
             {
@@ -381,7 +378,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
 
-            if (_version == 5) _userEntries.PostProcess(((SCN0v5*)dataAddress)->UserData, stringTable);
+            if (_version == 5) 
+                _userEntries.PostProcess(((SCN0v5*)dataAddress)->UserData, stringTable);
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((SCN0v4*)source.Address)->_header._tag == SCN0v4.Tag ? new SCN0Node() : null; }

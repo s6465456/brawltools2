@@ -459,8 +459,8 @@ namespace BrawlLib.Wii.Animations
             }
         }
         
-        internal bool _linearRot;
-        public bool LinearRotation { get { return _linearRot; } set { _linearRot = value; } }
+        internal bool _linear;
+        public bool LinearInterpolation { get { return _linear; } set { _linear = value; } }
 
         public float this[int index]
         {
@@ -538,7 +538,7 @@ namespace BrawlLib.Wii.Animations
                     return entry._value; //Return the value of the keyframe.
 
             //There was no keyframe... interpolate!
-            return entry._prev.Interpolate(index - entry._prev._index, _linearRot);
+            return entry._prev.Interpolate(index - entry._prev._index, _linear);
         }
         public KeyframeEntry SetFrameValue(int index, float value)
         {

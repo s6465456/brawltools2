@@ -325,6 +325,12 @@
     <Compile Include="System\IO\GeckoStream.cs" />
     <Compile Include="System\PowerPCAssembly\Assembly Manager.cs" />
     <Compile Include="System\PowerPCAssembly\PowerPcAssembly.cs" />
+    <Compile Include="System\Windows\Controls\PPCOpCodeEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\PPCOpCodeEditor.Designer.cs">
+      <DependentUpon>PPCOpCodeEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="System\Windows\Controls\PowerPcDisassembler.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -681,6 +687,9 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\PPCOpCodeEditor.resx">
+      <DependentUpon>PPCOpCodeEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\PowerPcDisassembler.resx">
       <DependentUpon>PowerPcDisassembler.cs</DependentUpon>

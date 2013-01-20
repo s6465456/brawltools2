@@ -205,7 +205,7 @@ namespace BrawlLib.SSBBTypes
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public VoidPtr Data { get { return Address + 4; } }
-        public SRT0Code Code { get { return new SRT0Code() { data = _code }; } set { _code = value.data; } }
+        public SRT0Code Code { get { return new SRT0Code() { data = (uint)_code }; } set { _code = (uint)value.data; } }
 
         //Uses same header as CHR0 animations
         public I12Header* Entry(int index) { return (I12Header*)(Address + 4 + 4 * index + GetOffset(index)); }
@@ -234,42 +234,34 @@ namespace BrawlLib.SSBBTypes
         //0000 0000 0000 0000 0000 0001 0000 0000		Fixed X Translation
         //0000 0000 0000 0000 0000 0010 0000 0000		Fixed Y Translation
 
-        public uint data;
+        public Bin32 data;
 
-        public bool AlwaysOn { get { return (data >> 0 & 1) != 0; } set { data = (uint)(data & (uint)1022) | (uint)(value ? 1 : 0); } }
-        public bool NoScale { get { return (data >> 1 & 1) != 0; } set { data = (uint)(data & (uint)1021) | (uint)((value ? 1 : 0) << 1); } }
-        public bool NoRotation { get { return (data >> 2 & 1) != 0; } set { data = (uint)(data & (uint)1019) | (uint)((value ? 1 : 0) << 2); } }
-        public bool NoTranslation { get { return (data >> 3 & 1) != 0; } set { data = (uint)(data & (uint)1023 - 0x8) | (uint)((value ? 1 : 0) << 3); } }
-        public bool ScaleIsotropic { get { return (data >> 4 & 1) != 0; } set { data = (uint)(data & (uint)1023 - 0x10) | (uint)((value ? 1 : 0) << 4); } }
-        public bool FixedScaleX { get { return (data >> 5 & 1) != 0; } set { data = (uint)(data & (uint)1023 - 0x20) | (uint)((value ? 1 : 0) << 5); } }
-        public bool FixedScaleY { get { return (data >> 6 & 1) != 0; } set { data = (uint)(data & (uint)1023 - 0x40) | (uint)((value ? 1 : 0) << 6); } }
-        public bool FixedRotation { get { return (data >> 7 & 1) != 0; } set { data = (uint)(data & (uint)1023 - 0x80) | (uint)((value ? 1 : 0) << 7); } }
-        public bool FixedX { get { return (data >> 8 & 1) != 0; } set { data = (uint)(data & (uint)1023 - 0x100) | (uint)((value ? 1 : 0) << 8); } }
-        public bool FixedY { get { return (data >> 9 & 1) != 0; } set { data = (uint)(data & (uint)1023 - 0x200) | (uint)((value ? 1 : 0) << 9); } }
+        public bool AlwaysOn { get { return data[0]; } set { data[0] = value; } }
+        public bool NoScale { get { return data[1]; } set { data[1] = value; } }
+        public bool NoRotation { get { return data[2]; } set { data[2] = value; } }
+        public bool NoTranslation { get { return data[3]; } set { data[3] = value; } }
+        public bool ScaleIsotropic { get { return data[4]; } set { data[4] = value; } }
+        public bool FixedScaleX { get { return data[5]; } set { data[5] = value; } }
+        public bool FixedScaleY { get { return data[6]; } set { data[6] = value; } }
+        public bool FixedRotation { get { return data[7]; } set { data[7] = value; } }
+        public bool FixedX { get { return data[8]; } set { data[8] = value; } }
+        public bool FixedY { get { return data[9]; } set { data[9] = value; } }
 
-        public bool GetHas(int i) { return ((data >> (i + 1)) & 1) != 1; }
-        public void SetHas(int index, bool p)
-        {
-            uint mask = (uint)1 << (1 + index);
-            data = (data & ~mask) | (!p ? mask : 0);
-        }
+        public bool GetHas(int i) { return data[i + 1] != true; }
+        public void SetHas(int index, bool p) { data[index + 1] = !p; }
 
-        public bool GetFixed(int i) { return ((data >> (i + 5)) & 1) != 0; }
-        public void SetFixed(int i, bool p)
-        {
-            uint mask = (uint)1 << (5 + i);
-            data = (data & ~mask) | (p ? mask : 0);
-        }
+        public bool GetFixed(int i) { return data[i + 5] != false; }
+        public void SetFixed(int index, bool p) { data[index + 5] = p; }
         
         public int DataSize()
         {
             int val = 4;
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
                 if (GetHas(i))
-                    if (i == 2)
-                        val += 8;
-                    else 
+                    if ((i == 1) || (i == 2 && ScaleIsotropic))
                         val += 4;
+                    else
+                        val += 8;
             return val;
         }
 
