@@ -24,12 +24,14 @@ namespace BrawlBox
                 new ToolStripMenuItem("TPL", null, NewTplAction),
                 new ToolStripMenuItem("RFNT", null, NewRfntAction),
                 new ToolStripMenuItem("WAV", null, NewWavAction),
+                new ToolStripMenuItem("BRRES", null, NewBrresAction),
                 new ToolStripMenuItem("Folder", null, NewFolderAction)));
             _menu.Items.Add(new ToolStripMenuItem("&Import", null,
                 new ToolStripMenuItem("RLYT", null, ImportRlytAction),
                 new ToolStripMenuItem("TPL", null, ImportTplAction),
                 new ToolStripMenuItem("RFNT", null, ImportRfntAction),
                 new ToolStripMenuItem("WAV", null, ImportWavAction),
+                new ToolStripMenuItem("BRRES", null, ImportBrresAction),
                 new ToolStripMenuItem("U8 Archive", null, ImportU8Action)));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("Preview All Models", null, PreviewAllAction));
@@ -52,8 +54,10 @@ namespace BrawlBox
         protected static void NewTplAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().NewTpl(); }
         protected static void NewRfntAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().NewRfnt(); }
         protected static void NewWavAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().NewWav(); }
+        protected static void NewBrresAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().NewBrres(); }
         protected static void NewFolderAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().NewFolder(); }
 
+        protected static void ImportBrresAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().ImportBrres(); }
         protected static void ImportRlytAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().ImportRlyt(); }
         protected static void ImportTplAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().ImportTpl(); }
         protected static void ImportRfntAction(object sender, EventArgs e) { GetInstance<U8FolderWrapper>().ImportRfnt(); }
@@ -140,6 +144,16 @@ namespace BrawlBox
             return node;
         }
 
+        public BRESNode NewBrres()
+        {
+            BRESNode node = ((U8FolderNode)_resource).CreateResource<BRESNode>("NewBrres");
+            BaseWrapper res = this.FindResource(node, true);
+            res = res.FindResource(node, false);
+            res.EnsureVisible();
+            res.TreeView.SelectedNode = res;
+            return node;
+        }
+
         public void ImportRlyt()
         {
             //string path;
@@ -206,6 +220,19 @@ namespace BrawlBox
                 ((U8FolderNode)_resource).AddChild(n);
 
                 BaseWrapper w = this.FindResource(n, true);
+                w.EnsureVisible();
+                w.TreeView.SelectedNode = w;
+            }
+        }
+        public void ImportBrres()
+        {
+            string path;
+            if (Program.OpenFile(ExportFilters.BRES, out path) > 0)
+            {
+                BRESNode node = NodeFactory.FromFile(null, path) as BRESNode;
+                ((U8FolderNode)_resource).AddChild(node);
+
+                BaseWrapper w = this.FindResource(node, true);
                 w.EnsureVisible();
                 w.TreeView.SelectedNode = w;
             }

@@ -14,6 +14,7 @@ namespace System.Windows.Forms
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ScriptEditor));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.description = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnAdd = new System.Windows.Forms.ToolStripButton();
             this.btnRemove = new System.Windows.Forms.ToolStripButton();
@@ -27,7 +28,7 @@ namespace System.Windows.Forms
             this.btnPaste = new System.Windows.Forms.ToolStripButton();
             this.btnCopyText = new System.Windows.Forms.ToolStripButton();
             this.EventList = new System.Windows.Forms.ListBox();
-            this.description = new System.Windows.Forms.Label();
+            this.splitter1 = new System.Windows.Forms.Splitter();
             this.panel1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -36,16 +37,27 @@ namespace System.Windows.Forms
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.description);
             this.panel1.Controls.Add(this.toolStrip1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(1, 190);
+            this.panel1.Location = new System.Drawing.Point(1, 188);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(324, 30);
+            this.panel1.Size = new System.Drawing.Size(324, 95);
             this.panel1.TabIndex = 2;
+            // 
+            // description
+            // 
+            this.description.BackColor = System.Drawing.SystemColors.Control;
+            this.description.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.description.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.description.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.description.Location = new System.Drawing.Point(0, 25);
+            this.description.Name = "description";
+            this.description.Size = new System.Drawing.Size(324, 70);
+            this.description.TabIndex = 59;
             // 
             // toolStrip1
             // 
-            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.btnAdd,
@@ -55,7 +67,7 @@ namespace System.Windows.Forms
             this.btnDown});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(324, 30);
+            this.toolStrip1.Size = new System.Drawing.Size(324, 25);
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -65,7 +77,7 @@ namespace System.Windows.Forms
             this.btnAdd.Image = ((System.Drawing.Image)(resources.GetObject("btnAdd.Image")));
             this.btnAdd.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnAdd.Name = "btnAdd";
-            this.btnAdd.Size = new System.Drawing.Size(33, 27);
+            this.btnAdd.Size = new System.Drawing.Size(33, 22);
             this.btnAdd.Text = "Add";
             this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
             // 
@@ -75,7 +87,7 @@ namespace System.Windows.Forms
             this.btnRemove.Image = ((System.Drawing.Image)(resources.GetObject("btnRemove.Image")));
             this.btnRemove.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(54, 27);
+            this.btnRemove.Size = new System.Drawing.Size(54, 22);
             this.btnRemove.Text = "Remove";
             this.btnRemove.Click += new System.EventHandler(this.btnRemove_Click);
             // 
@@ -85,7 +97,7 @@ namespace System.Windows.Forms
             this.btnModify.Image = ((System.Drawing.Image)(resources.GetObject("btnModify.Image")));
             this.btnModify.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnModify.Name = "btnModify";
-            this.btnModify.Size = new System.Drawing.Size(49, 27);
+            this.btnModify.Size = new System.Drawing.Size(49, 22);
             this.btnModify.Text = "Modify";
             this.btnModify.Click += new System.EventHandler(this.btnModify_Click);
             // 
@@ -95,7 +107,7 @@ namespace System.Windows.Forms
             this.btnUp.Image = ((System.Drawing.Image)(resources.GetObject("btnUp.Image")));
             this.btnUp.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnUp.Name = "btnUp";
-            this.btnUp.Size = new System.Drawing.Size(23, 27);
+            this.btnUp.Size = new System.Drawing.Size(23, 22);
             this.btnUp.Text = "▲";
             this.btnUp.Click += new System.EventHandler(this.btnUp_Click);
             // 
@@ -105,7 +117,7 @@ namespace System.Windows.Forms
             this.btnDown.Image = ((System.Drawing.Image)(resources.GetObject("btnDown.Image")));
             this.btnDown.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnDown.Name = "btnDown";
-            this.btnDown.Size = new System.Drawing.Size(23, 27);
+            this.btnDown.Size = new System.Drawing.Size(23, 22);
             this.btnDown.Text = "▼";
             this.btnDown.Click += new System.EventHandler(this.btnDown_Click);
             // 
@@ -178,31 +190,30 @@ namespace System.Windows.Forms
             this.EventList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.EventList.FormattingEnabled = true;
             this.EventList.HorizontalScrollbar = true;
+            this.EventList.IntegralHeight = false;
             this.EventList.Location = new System.Drawing.Point(1, 24);
             this.EventList.Name = "EventList";
             this.EventList.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.EventList.Size = new System.Drawing.Size(324, 166);
+            this.EventList.Size = new System.Drawing.Size(324, 161);
             this.EventList.TabIndex = 16;
             this.EventList.SelectedIndexChanged += new System.EventHandler(this.EventList_SelectedIndexChanged);
             this.EventList.DoubleClick += new System.EventHandler(this.EventList_DoubleClick);
             // 
-            // description
+            // splitter1
             // 
-            this.description.BackColor = System.Drawing.SystemColors.Control;
-            this.description.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.description.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.description.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.description.Location = new System.Drawing.Point(1, 220);
-            this.description.Name = "description";
-            this.description.Size = new System.Drawing.Size(324, 63);
-            this.description.TabIndex = 59;
+            this.splitter1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.splitter1.Location = new System.Drawing.Point(1, 185);
+            this.splitter1.Name = "splitter1";
+            this.splitter1.Size = new System.Drawing.Size(324, 3);
+            this.splitter1.TabIndex = 60;
+            this.splitter1.TabStop = false;
             // 
             // ScriptEditor
             // 
             this.Controls.Add(this.EventList);
             this.Controls.Add(this.panel2);
+            this.Controls.Add(this.splitter1);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.description);
             this.Name = "ScriptEditor";
             this.Padding = new System.Windows.Forms.Padding(1);
             this.Size = new System.Drawing.Size(326, 284);
@@ -252,6 +263,7 @@ namespace System.Windows.Forms
         private ToolStripButton btnCut;
         private ToolStripButton btnPaste;
         private ToolStripButton btnCopyText;
+        private Splitter splitter1;
     
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MoveDefActionNode TargetNode

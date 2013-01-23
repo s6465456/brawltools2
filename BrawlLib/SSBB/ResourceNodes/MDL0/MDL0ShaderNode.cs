@@ -19,6 +19,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.MDL0Shader; } }
 
+        
+
+        public List<string> Defaults = new List<string>();
+
         //Konstant Alpha Selection Swap table
         public KSelSwapBlock _swapBlock = KSelSwapBlock.Default;
 
@@ -159,10 +163,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte Stages { get { return stages; } } //Max 16 (2 stages per group - 8 groups)
         [Browsable(false)]
         public byte STGs 
-        { 
+        {
             get { return stages; } 
             set 
-            { 
+            {
                 stages = value; 
                 SignalPropertyChange();
 
@@ -172,7 +176,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     m.ActiveShaderStages = value;
                     m.updating = false;
                 }
-            } 
+            }
         }
         
         //[Category("Shader Data"), Browsable(true)]

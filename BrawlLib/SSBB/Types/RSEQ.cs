@@ -86,10 +86,10 @@ namespace BrawlLib.SSBBTypes
                 }
                 else if (cmd == Mml.MML_EX_COMMAND)
                 {
-                    switch ((MmlEx)(*addr++))
-                    {
+                    //switch ((MmlEx)(*addr++))
+                    //{
 
-                    }
+                    //}
                 }
             }
             commands.Add(new MMLCommand(Mml.MML_FIN, 0));

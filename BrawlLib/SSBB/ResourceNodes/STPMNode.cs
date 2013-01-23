@@ -5,6 +5,7 @@ using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using BrawlLib.Imaging;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -57,7 +58,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte echo, id2;
         public ushort id;
 
-        public STPMValueManager _values;
+        public STPMValueManager _values = new STPMValueManager(null);
 
         public class STPMValueManager
         {
@@ -65,16 +66,29 @@ namespace BrawlLib.SSBB.ResourceNodes
             public STPMValueManager(VoidPtr address)
             {
                 _values = new UnsafeBuffer(64 * 4);
-                byte* pIn = (byte*)address;
-                byte* pOut = (byte*)_values.Address;
-                for (int i = 0; i < 64 * 4; i++)
-                    *pOut++ = *pIn++;
+                if (address == null)
+                {
+                    byte* pOut = (byte*)_values.Address;
+                    for (int i = 0; i < 64 * 4; i++)
+                        *pOut++ = 0;
+                }
+                else
+                {
+                    byte* pIn = (byte*)address;
+                    byte* pOut = (byte*)_values.Address;
+                    for (int i = 0; i < 64 * 4; i++)
+                        *pOut++ = *pIn++;
+                }
             }
             ~STPMValueManager() { _values.Dispose(); }
             public float GetFloat(int index) { return ((bfloat*)_values.Address)[index]; }
             public void SetFloat(int index, float value) { ((bfloat*)_values.Address)[index] = value; }
             public int GetInt(int index) { return ((bint*)_values.Address)[index]; }
             public void SetInt(int index, int value) { ((bint*)_values.Address)[index] = value; }
+            public RGBAPixel GetRGBA(int index) { return ((RGBAPixel*)_values.Address)[index]; }
+            public void SetRGBA(int index, RGBAPixel value) { ((RGBAPixel*)_values.Address)[index] = value; }
+            public byte GetByte(int index, int index2) { return ((byte*)_values.Address)[index * 4 + index2]; }
+            public void SetByte(int index, int index2, byte value) { ((byte*)_values.Address)[index * 4 + index2] = value; }
         }
 
         [Category("STPM Data")]
@@ -93,7 +107,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("STPM Values")]
         public float Value4 { get { return _values.GetFloat(3); } set { _values.SetFloat(3, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value5 { get { return _values.GetFloat(4); } set { _values.SetFloat(4, value); SignalPropertyChange(); } }
+        public RGBAPixel Value5 { get { return _values.GetRGBA(4); } set { _values.SetRGBA(4, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
         public float ShadowVerticalAngle { get { return _values.GetFloat(5); } set { _values.SetFloat(5, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
@@ -183,7 +197,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("STPM Values")]
         public float Value49 { get { return _values.GetFloat(48); } set { _values.SetFloat(48, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value50 { get { return _values.GetFloat(49); } set { _values.SetFloat(49, value); SignalPropertyChange(); } }
+        public byte Value50a { get { return _values.GetByte(49, 0); } set { _values.SetByte(49, 0, value); SignalPropertyChange(); } }
+        [Category("STPM Values")]
+        public byte Value50b { get { return _values.GetByte(49, 1); } set { _values.SetByte(49, 1, value); SignalPropertyChange(); } }
+        [Category("STPM Values")]
+        public byte Value50c { get { return _values.GetByte(49, 2); } set { _values.SetByte(49, 2, value); SignalPropertyChange(); } }
+        [Category("STPM Values")]
+        public byte Value50d { get { return _values.GetByte(49, 3); } set { _values.SetByte(49, 3, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
         public float Value51 { get { return _values.GetFloat(50); } set { _values.SetFloat(50, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
@@ -193,25 +213,25 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("STPM Values")]
         public float Value54 { get { return _values.GetFloat(53); } set { _values.SetFloat(53, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value55 { get { return _values.GetFloat(54); } set { _values.SetFloat(54, value); SignalPropertyChange(); } }
+        public int Value55 { get { return _values.GetInt(54); } set { _values.SetInt(54, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value56 { get { return _values.GetFloat(55); } set { _values.SetFloat(55, value); SignalPropertyChange(); } }
+        public int Value56 { get { return _values.GetInt(55); } set { _values.SetInt(55, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value57 { get { return _values.GetFloat(56); } set { _values.SetFloat(56, value); SignalPropertyChange(); } }
+        public int Value57 { get { return _values.GetInt(56); } set { _values.SetInt(56, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value58 { get { return _values.GetFloat(57); } set { _values.SetFloat(57, value); SignalPropertyChange(); } }
+        public int Value58 { get { return _values.GetInt(57); } set { _values.SetInt(57, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value59 { get { return _values.GetFloat(58); } set { _values.SetFloat(58, value); SignalPropertyChange(); } }
+        public int Value59 { get { return _values.GetInt(58); } set { _values.SetInt(58, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value60 { get { return _values.GetFloat(59); } set { _values.SetFloat(59, value); SignalPropertyChange(); } }
+        public int Value60 { get { return _values.GetInt(59); } set { _values.SetInt(59, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value61 { get { return _values.GetFloat(60); } set { _values.SetFloat(60, value); SignalPropertyChange(); } }
+        public int Value61 { get { return _values.GetInt(60); } set { _values.SetInt(60, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value62 { get { return _values.GetFloat(61); } set { _values.SetFloat(61, value); SignalPropertyChange(); } }
+        public int Value62 { get { return _values.GetInt(61); } set { _values.SetInt(61, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value63 { get { return _values.GetFloat(62); } set { _values.SetFloat(62, value); SignalPropertyChange(); } }
+        public int Value63 { get { return _values.GetInt(62); } set { _values.SetInt(62, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value64 { get { return _values.GetFloat(63); } set { _values.SetFloat(63, value); SignalPropertyChange(); } }
+        public int Value64 { get { return _values.GetInt(63); } set { _values.SetInt(63, value); SignalPropertyChange(); } }
         
         protected override bool OnInitialize()
         {

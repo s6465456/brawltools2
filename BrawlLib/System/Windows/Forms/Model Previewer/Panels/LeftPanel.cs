@@ -701,6 +701,8 @@ namespace System.Windows.Forms
                 _mainWindow._shp0 = null;
                 _mainWindow._pat0 = null;
                 _mainWindow._vis0 = null;
+                _mainWindow._scn0 = null;
+                _mainWindow._clr0 = null;
                 _mainWindow.UpdatePropDisplay();
                 _mainWindow.UpdateModel();
                 _mainWindow.AnimChanged(fileType.SelectedIndex);
@@ -1364,6 +1366,8 @@ namespace System.Windows.Forms
                     case 2: ((BRESNode)r.Parent.Parent).CreateResource<SHP0Node>("NewSHP"); break;
                     case 3: ((BRESNode)r.Parent.Parent).CreateResource<PAT0Node>("NewPAT"); break;
                     case 4: ((BRESNode)r.Parent.Parent).CreateResource<VIS0Node>("NewVIS"); break;
+                    case 5: ((BRESNode)r.Parent.Parent).CreateResource<SCN0Node>("NewSCN"); break;
+                    case 6: ((BRESNode)r.Parent.Parent).CreateResource<CLR0Node>("NewCLR"); break;
                 }
             UpdateAnimations(fileType.SelectedIndex);
         }
@@ -1424,7 +1428,6 @@ namespace System.Windows.Forms
                             {
                                 Rectangle r = lstTextures.GetItemRectangle(i);
                                 g.DrawRectangle(Pens.Black, r);
-
                             }
                         }
                         else if (_pat0Selection != null)

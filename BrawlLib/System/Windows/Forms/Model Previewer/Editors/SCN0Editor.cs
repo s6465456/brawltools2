@@ -1608,10 +1608,10 @@ namespace System.Windows.Forms
             _transBoxes[0][3] = numEndX; numEndX.Tag = 3;
             _transBoxes[0][4] = numEndY; numEndY.Tag = 4;
             _transBoxes[0][5] = numEndZ; numEndZ.Tag = 5;
-            _transBoxes[0][6] = numSpotCut; numSpotCut.Tag = 6;
-            _transBoxes[0][7] = numSpotBright; numSpotBright.Tag = 7;
-            _transBoxes[0][8] = numRefDist; numRefDist.Tag = 8;
-            _transBoxes[0][9] = numRefBright; numRefBright.Tag = 9;
+            _transBoxes[0][6] = numRefDist; numRefDist.Tag = 6;
+            _transBoxes[0][7] = numRefBright; numRefBright.Tag = 7;
+            _transBoxes[0][8] = numSpotCut; numSpotCut.Tag = 8;
+            _transBoxes[0][9] = numSpotBright; numSpotBright.Tag = 9;
 
             _transBoxes[1][0] = numFogStartZ; numFogStartZ.Tag = 0;
             _transBoxes[1][1] = numFogEndZ; numFogEndZ.Tag = 1;
@@ -1999,7 +1999,29 @@ namespace System.Windows.Forms
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-
+            //Get the position of the current camera
+            Vector3 pos = _mainWindow.modelPanel1._camera.GetPoint();
+            numPosX.Value = pos._x;
+            numPosY.Value = pos._y;
+            numPosZ.Value = pos._z;
+            Vector3 rot = _mainWindow.modelPanel1._camera._rotation;
+            if (_camera.Type == SCN0CameraType.Rotate)
+            {
+                //Easy
+                numRotX.Value = rot._x;
+                numRotY.Value = rot._y;
+                numRotZ.Value = rot._z;
+            }
+            else
+            {
+                Vector3 m = _mainWindow.modelPanel1._camera.GetPoint();
+                Matrix r = Matrix.TransformMatrix(new Vector3(1), _mainWindow.modelPanel1._camera._rotation, m);
+                r.Translate(0, 0, 100);
+                Vector3 d = r.GetPoint();
+                numAimX.Value = d._x;
+                numAimY.Value = d._y;
+                numAimZ.Value = d._z;
+            }
         }
 
         private void lstCamProj_SelectedIndexChanged(object sender, EventArgs e)

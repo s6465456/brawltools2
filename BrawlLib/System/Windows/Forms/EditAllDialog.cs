@@ -46,366 +46,10 @@ namespace System.Windows.Forms
         private CheckBox srtEditLoop;
         private TabPage chr;
         private TabControl tabControl1;
+        private EditAllCHR0Editor editAllCHR0Editor1;
         private CheckBox checkBox1;
 
         public EditAllDialog() { InitializeComponent(); }
-
-        //public DialogResult ShowDialog(IWin32Window owner, ResourceNode node)
-        //{
-        //    name.MaxLength = 255;
-        //    _node = node;
-        //    Version.SelectedIndex = 0;
-        //    try { return base.ShowDialog(owner); }
-        //    finally { _node = null; }
-        //}
-
-        //private unsafe void btnOkay_Click(object sender, EventArgs e)
-        //{
-        //    string _name = name.Text;
-        //    MDL0Node model = new MDL0Node();
-        //    MDL0Node _targetModel = new MDL0Node();
-        //    bool disableLoop = false;
-
-        //    if (editLoop.Checked)
-        //        disableLoop = !enableLoop.Checked;
-             
-        //    if (Port.Checked)
-        //    {
-        //        MessageBox.Show("Please open the model you want to port the animations to.\nThen open the model the animations work normally for.");
-        //        OpenFileDialog dlgOpen = new OpenFileDialog();
-        //        OpenFileDialog dlgOpen2 = new OpenFileDialog();
-        //        dlgOpen.Filter = dlgOpen2.Filter = "MDL0 Raw Model (*.mdl0)|*.mdl0";
-        //        dlgOpen.Title = "Select the model to port the animations to...";
-        //        dlgOpen2.Title = "Select the model the animations are for...";
-        //        if (dlgOpen.ShowDialog() == DialogResult.OK)
-        //        {
-        //            _targetModel = (MDL0Node)NodeFactory.FromFile(null, dlgOpen.FileName);
-        //            if (dlgOpen2.ShowDialog() == DialogResult.OK)
-        //                model = (MDL0Node)NodeFactory.FromFile(null, dlgOpen2.FileName);
-        //        }
-        //    }
-
-        //    //Vector3 scale = new Vector3(ScaleX.Value, ScaleY.Value, ScaleZ.Value);
-        //    //Vector3 rot = new Vector3(ScaleX.Value, RotY.Value, RotZ.Value);
-        //    //Vector3 trans = new Vector3(TransX.Value, TransY.Value, TransZ.Value);
-            
-        //    //ResourceNode[] CHR0 = _node.FindChildrenByType(_name, ResourceType.CHR0);
-        //    //ResourceNode[] SRT0 = _node.FindChildrenByType(_name, ResourceType.SRT0);
-        //    //ResourceNode[] SHP0 = _node.FindChildrenByType(_name, ResourceType.SHP0);
-        //    //ResourceNode[] PAT0 = _node.FindChildrenByType(_name, ResourceType.PAT0);
-        //    //ResourceNode[] VIS0 = _node.FindChildrenByType(_name, ResourceType.VIS0);
-        //    //ResourceNode[] CLR0 = _node.FindChildrenByType(_name, ResourceType.CLR0);
-
-        //    //if (_name != null)
-        //    //    ChangeNode(_name, _node, scale, rot, trans, _targetModel, model, disableLoop);
-            
-        //    DialogResult = DialogResult.OK;
-        //    Close();
-        //}
-
-        //public unsafe void ChangeNode(string _name, ResourceNode parent, Vector3 scale, Vector3 rot, Vector3 trans, MDL0Node _targetModel, MDL0Node model, bool disLoop)
-        //{
-        //    int numFrames;
-        //    float* v;
-        //    bool hasKeyframe = false;
-        //    CHR0EntryNode entry;
-        //    KeyframeEntry kfe;
-        //    AnimationFrame anim = new AnimationFrame();
-        //    foreach (ResourceNode r in parent.Children)
-        //    {
-        //        if (r is CHR0Node)
-        //        {
-        //            if (Port.Checked && _targetModel != null && model != null)
-        //                ((CHR0Node)r).Port(_targetModel, model);
-
-        //            if (Version.Enabled)
-        //                if (Version.SelectedIndex == 0)
-        //                    ((CHR0Node)r).Version = 4;
-        //                else if (Version.SelectedIndex == 1)
-        //                    ((CHR0Node)r).Version = 5;
-
-        //            if (disLoop)
-        //                ((CHR0Node)r).Loop = false;
-
-        //            _copyNode = r.FindChild(textBox1.Text, false) as CHR0EntryNode;
-
-        //            if (r.FindChild(_name, false) == null)
-        //            {
-        //                if (_name != null && _name != String.Empty)
-        //                {
-        //                    CHR0EntryNode c = new CHR0EntryNode();
-        //                    c._numFrames = (r as CHR0Node).FrameCount;
-        //                    c.Name = _name;
-
-        //                    if (_copyNode != null)
-        //                        for (int x = 0; x < _copyNode._numFrames; x++)
-        //                            for (int i = 0x10; i < 0x19; i++)
-        //                                if ((kfe = _copyNode.GetKeyframe((KeyFrameMode)i, x)) != null)
-        //                                    c.SetKeyframe((KeyFrameMode)i, x, kfe._value);
-
-        //                    r.Children.Add(c);
-        //                    r._changed = true;
-        //                }
-        //            }
-        //        }
-        //        if (r.Name == _name)
-        //        {
-        //            if (r is CHR0EntryNode)
-        //            {
-        //                entry = r as CHR0EntryNode;
-        //                numFrames = entry.FrameCount;
-        //                if (ReplaceScale.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x10; i < 0x13; i++)
-        //                        {
-        //                            if (entry.GetKeyframe((KeyFrameMode)i, x) != null)
-        //                                entry.RemoveKeyframe((KeyFrameMode)i, x);
-        //                        }
-        //                    }
-        //                    entry.SetKeyframeOnlyScale(0, scale);
-        //                }
-        //                if (ReplaceScale.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x13; i < 0x16; i++)
-        //                        {
-        //                            if (entry.GetKeyframe((KeyFrameMode)i, x) != null)
-        //                                entry.RemoveKeyframe((KeyFrameMode)i, x);
-        //                        }
-        //                    }
-        //                    entry.SetKeyframeOnlyRot(0, rot);
-        //                }
-        //                if (ReplaceTrans.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x16; i < 0x19; i++)
-        //                        {
-        //                            if (entry.GetKeyframe((KeyFrameMode)i, x) != null)
-        //                                entry.RemoveKeyframe((KeyFrameMode)i, x);
-        //                        }
-        //                    }
-        //                    entry.SetKeyframeOnlyTrans(0, trans);
-        //                }
-        //                hasKeyframe = false;
-        //                if (AddScale.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x10; i < 0x13; i++)
-        //                        {
-        //                            if ((kfe = entry.GetKeyframe((KeyFrameMode)i, x)) != null)
-        //                            {
-        //                                switch (i)
-        //                                {
-        //                                    case 0x10:
-        //                                        kfe._value += scale._x;
-        //                                        break;
-        //                                    case 0x11:
-        //                                        kfe._value += scale._y;
-        //                                        break;
-        //                                    case 0x12:
-        //                                        kfe._value += scale._z;
-        //                                        break;
-        //                                }
-        //                                hasKeyframe = true;
-        //                            }
-        //                        }
-        //                    }
-        //                    if (!hasKeyframe)
-        //                    {
-        //                        anim = entry.GetAnimFrame(0);
-        //                        Vector3 newScale = anim.Scale;
-        //                        scale._x += newScale._x;
-        //                        scale._y += newScale._y;
-        //                        scale._z += newScale._z;
-        //                        entry.SetKeyframeOnlyScale(0, scale);
-        //                    }
-        //                }
-        //                hasKeyframe = false;
-        //                if (AddScale.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x13; i < 0x16; i++)
-        //                        {
-        //                            if ((kfe = entry.GetKeyframe((KeyFrameMode)i, x)) != null)
-        //                            {
-        //                                switch (i)
-        //                                {
-        //                                    case 0x13:
-        //                                        kfe._value += rot._x;
-        //                                        break;
-        //                                    case 0x14:
-        //                                        kfe._value += rot._y;
-        //                                        break;
-        //                                    case 0x15:
-        //                                        kfe._value += rot._z;
-        //                                        break;
-        //                                }
-        //                                hasKeyframe = true;
-        //                            }
-        //                        }
-        //                    }
-        //                    if (!hasKeyframe)
-        //                    {
-        //                        anim = entry.GetAnimFrame(0);
-        //                        Vector3 newRot = anim.Rotation;
-        //                        rot._x += newRot._x;
-        //                        rot._y += newRot._y;
-        //                        rot._z += newRot._z;
-        //                        entry.SetKeyframeOnlyRot(0, rot);
-        //                    }
-        //                }
-        //                hasKeyframe = false;
-        //                if (AddTrans.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x16; i < 0x19; i++)
-        //                        {
-        //                            if ((kfe = entry.GetKeyframe((KeyFrameMode)i, x)) != null)
-        //                            {
-        //                                switch (i)
-        //                                {
-        //                                    case 0x16:
-        //                                    kfe._value += trans._x;
-        //                                    break;
-        //                                    case 0x17:
-        //                                    kfe._value += trans._y;
-        //                                    break;
-        //                                    case 0x18:
-        //                                    kfe._value += trans._z;
-        //                                    break;
-        //                                }
-        //                                hasKeyframe = true;
-        //                            }
-        //                        }
-        //                    }
-        //                    if (!hasKeyframe)
-        //                    {
-        //                        anim = entry.GetAnimFrame(0);
-        //                        Vector3 newTrans = anim.Translation;
-        //                        trans._x += newTrans._x;
-        //                        trans._y += newTrans._y;
-        //                        trans._z += newTrans._z;
-        //                        entry.SetKeyframeOnlyTrans(0, trans);
-        //                    }
-        //                }
-        //                hasKeyframe = false;
-        //                if (SubtractScale.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x10; i < 0x13; i++)
-        //                        {
-        //                            if ((kfe = entry.GetKeyframe((KeyFrameMode)i, x)) != null)
-        //                            {
-        //                                switch (i)
-        //                                {
-        //                                    case 0x10:
-        //                                        kfe._value -= scale._x;
-        //                                        break;
-        //                                    case 0x11:
-        //                                        kfe._value -= scale._y;
-        //                                        break;
-        //                                    case 0x12:
-        //                                        kfe._value -= scale._z;
-        //                                        break;
-        //                                }
-        //                                hasKeyframe = true;
-        //                            }
-        //                        }
-        //                    }
-        //                    if (!hasKeyframe)
-        //                    {
-        //                        anim = entry.GetAnimFrame(0);
-        //                        Vector3 newScale = anim.Scale;
-        //                        scale._x = newScale._x - scale._x;
-        //                        scale._y = newScale._y - scale._y;
-        //                        scale._z = newScale._z - scale._z;
-        //                        entry.SetKeyframeOnlyScale(0, scale);
-        //                    }
-        //                }
-        //                hasKeyframe = false;
-        //                if (SubtractScale.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x13; i < 0x16; i++)
-        //                        {
-        //                            if ((kfe = entry.GetKeyframe((KeyFrameMode)i, x)) != null)
-        //                            {
-        //                                switch (i)
-        //                                {
-        //                                    case 0x13:
-        //                                        kfe._value -= rot._x;
-        //                                        break;
-        //                                    case 0x14:
-        //                                        kfe._value -= rot._y;
-        //                                        break;
-        //                                    case 0x15:
-        //                                        kfe._value -= rot._z;
-        //                                        break;
-        //                                }
-        //                                hasKeyframe = true;
-        //                            }
-        //                        }
-        //                    }
-        //                    if (!hasKeyframe)
-        //                    {
-        //                        anim = entry.GetAnimFrame(0);
-        //                        Vector3 newRot = anim.Rotation;
-        //                        rot._x = newRot._x - rot._x;
-        //                        rot._y = newRot._y - rot._y;
-        //                        rot._z = newRot._z - rot._z;
-        //                        entry.SetKeyframeOnlyRot(0, rot);
-        //                    }
-        //                }
-        //                hasKeyframe = false;
-        //                if (SubtractTrans.Checked)
-        //                {
-        //                    for (int x = 0; x < numFrames; x++)
-        //                    {
-        //                        for (int i = 0x16; i < 0x19; i++)
-        //                        {
-        //                            if ((kfe = entry.GetKeyframe((KeyFrameMode)i, x)) != null)
-        //                            {
-        //                                switch (i)
-        //                                {
-        //                                    case 0x16:
-        //                                        kfe._value -= trans._x;
-        //                                        break;
-        //                                    case 0x17:
-        //                                        kfe._value -= trans._y;
-        //                                        break;
-        //                                    case 0x18:
-        //                                        kfe._value -= trans._z;
-        //                                        break;
-        //                                }
-        //                                hasKeyframe = true;
-        //                            }
-        //                        }
-        //                    }
-        //                    if (!hasKeyframe)
-        //                    {
-        //                        anim = entry.GetAnimFrame(0);
-        //                        Vector3 newTrans = anim.Translation;
-        //                        trans._x = newTrans._x - trans._x;
-        //                        trans._y = newTrans._y - trans._y;
-        //                        trans._z = newTrans._z - trans._z;
-        //                        entry.SetKeyframeOnlyTrans(0, trans);
-        //                    }
-        //                }
-        //            }
-        //            r._changed = true;
-        //        }
-        //        ChangeNode(_name, r, scale, rot, trans, _targetModel, model, disLoop);
-        //    }
-        //}
 
         private void btnCancel_Click(object sender, EventArgs e) { DialogResult = DialogResult.Cancel; Close(); }
 
@@ -455,8 +99,10 @@ namespace System.Windows.Forms
             this.srtVersion = new System.Windows.Forms.ComboBox();
             this.srtEditLoop = new System.Windows.Forms.CheckBox();
             this.chr = new System.Windows.Forms.TabPage();
+            this.editAllCHR0Editor1 = new System.Windows.Forms.EditAllCHR0Editor();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.srt.SuspendLayout();
+            this.chr.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -464,7 +110,7 @@ namespace System.Windows.Forms
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(555, 454);
+            this.btnCancel.Location = new System.Drawing.Point(339, 379);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
@@ -475,7 +121,7 @@ namespace System.Windows.Forms
             // btnOkay
             // 
             this.btnOkay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOkay.Location = new System.Drawing.Point(474, 454);
+            this.btnOkay.Location = new System.Drawing.Point(258, 379);
             this.btnOkay.Name = "btnOkay";
             this.btnOkay.Size = new System.Drawing.Size(75, 23);
             this.btnOkay.TabIndex = 1;
@@ -497,7 +143,7 @@ namespace System.Windows.Forms
             this.vis.BackColor = System.Drawing.SystemColors.Control;
             this.vis.Location = new System.Drawing.Point(4, 25);
             this.vis.Name = "vis";
-            this.vis.Size = new System.Drawing.Size(626, 419);
+            this.vis.Size = new System.Drawing.Size(410, 322);
             this.vis.TabIndex = 4;
             this.vis.Text = "VIS0";
             // 
@@ -506,7 +152,7 @@ namespace System.Windows.Forms
             this.pat.BackColor = System.Drawing.SystemColors.Control;
             this.pat.Location = new System.Drawing.Point(4, 25);
             this.pat.Name = "pat";
-            this.pat.Size = new System.Drawing.Size(626, 419);
+            this.pat.Size = new System.Drawing.Size(410, 322);
             this.pat.TabIndex = 3;
             this.pat.Text = "PAT0";
             // 
@@ -515,7 +161,7 @@ namespace System.Windows.Forms
             this.shp.BackColor = System.Drawing.SystemColors.Control;
             this.shp.Location = new System.Drawing.Point(4, 25);
             this.shp.Name = "shp";
-            this.shp.Size = new System.Drawing.Size(626, 419);
+            this.shp.Size = new System.Drawing.Size(410, 322);
             this.shp.TabIndex = 2;
             this.shp.Text = "SHP0";
             // 
@@ -556,7 +202,7 @@ namespace System.Windows.Forms
             this.srt.Location = new System.Drawing.Point(4, 25);
             this.srt.Name = "srt";
             this.srt.Padding = new System.Windows.Forms.Padding(3);
-            this.srt.Size = new System.Drawing.Size(626, 419);
+            this.srt.Size = new System.Drawing.Size(410, 322);
             this.srt.TabIndex = 1;
             this.srt.Text = "SRT0";
             // 
@@ -852,12 +498,21 @@ namespace System.Windows.Forms
             // chr
             // 
             this.chr.BackColor = System.Drawing.SystemColors.Control;
+            this.chr.Controls.Add(this.editAllCHR0Editor1);
             this.chr.Location = new System.Drawing.Point(4, 25);
             this.chr.Name = "chr";
             this.chr.Padding = new System.Windows.Forms.Padding(3);
-            this.chr.Size = new System.Drawing.Size(626, 419);
+            this.chr.Size = new System.Drawing.Size(410, 344);
             this.chr.TabIndex = 0;
             this.chr.Text = "CHR0";
+            // 
+            // editAllCHR0Editor1
+            // 
+            this.editAllCHR0Editor1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.editAllCHR0Editor1.Location = new System.Drawing.Point(3, 3);
+            this.editAllCHR0Editor1.Name = "editAllCHR0Editor1";
+            this.editAllCHR0Editor1.Size = new System.Drawing.Size(404, 338);
+            this.editAllCHR0Editor1.TabIndex = 0;
             // 
             // tabControl1
             // 
@@ -871,14 +526,14 @@ namespace System.Windows.Forms
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(634, 448);
+            this.tabControl1.Size = new System.Drawing.Size(418, 373);
             this.tabControl1.TabIndex = 39;
             // 
             // EditAllDialog
             // 
             this.AcceptButton = this.btnOkay;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(634, 484);
+            this.ClientSize = new System.Drawing.Size(418, 409);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.btnCancel);
@@ -891,6 +546,7 @@ namespace System.Windows.Forms
             this.Text = "Edit All Animations";
             this.srt.ResumeLayout(false);
             this.srt.PerformLayout();
+            this.chr.ResumeLayout(false);
             this.tabControl1.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -899,36 +555,19 @@ namespace System.Windows.Forms
 
         private void btnOkay_Click(object sender, EventArgs e)
         {
-
+            editAllCHR0Editor1.Apply(_node);
+            DialogResult = DialogResult.OK; 
+            Close();
         }
 
         #region Check Switches
 
         #endregion
 
-        //private void copyKeyframes_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    textBox1.Enabled = copyKeyframes.Checked;
-        //}
-
-        //private void ChangeVersion_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    Version.Enabled = ChangeVersion.Checked;
-        //}
-
-        //private void editLoop_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    enableLoop.Enabled = editLoop.Checked;
-        //}
-
-        //private void checkBox16_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    textBox8.Enabled = checkBox16.Checked;
-        //}
-
-        public void ShowDialog(IWin32Window _owner, ResourceNode _resource)
+        public void ShowDialog(IWin32Window owner, ResourceNode resource)
         {
-            throw new NotImplementedException();
+            _node = resource;
+            base.ShowDialog(owner);
         }
     }
 }

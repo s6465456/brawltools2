@@ -95,39 +95,42 @@ namespace BrawlBox
             {
                 BBVS* settings = (BBVS*)map.Address;
 
-                modelEditControl1.syncAnimationsTogetherToolStripMenuItem.Checked = settings->RetrieveCorrAnims;
-                modelEditControl1.syncLoopToAnimationToolStripMenuItem.Checked = settings->SyncLoopToAnim;
-                modelEditControl1.syncTexObjToolStripMenuItem.Checked = settings->SyncTexToObj;
-                modelEditControl1.syncObjectsListToVIS0ToolStripMenuItem.Checked = settings->SyncObjToVIS0;
-                modelEditControl1.disableBonesWhenPlayingToolStripMenuItem.Checked = settings->DisableBonesOnPlay;
-
-                modelEditControl1.modelPanel1._ambient = settings->amb;
-                modelEditControl1.modelPanel1._position = settings->pos;
-                modelEditControl1.modelPanel1._diffuse = settings->diff;
-                modelEditControl1.modelPanel1._specular = settings->spec;
-
-                modelEditControl1.modelPanel1._fovY = settings->yFov;
-                modelEditControl1.modelPanel1._nearZ = settings->_nearZ;
-                modelEditControl1.modelPanel1._farZ = settings->_farz;
-
-                modelEditControl1.modelPanel1.ZoomScale = settings->zScale;
-                modelEditControl1.modelPanel1.TranslationScale = settings->tScale;
-                modelEditControl1.modelPanel1.RotationScale = settings->rScale;
-
-                if (settings->_version >= 2)
+                if (settings->UseModelViewerSettings)
                 {
-                    MDL0BoneNode.DefaultNodeColor = (Color)settings->orbColor;
-                    MDL0BoneNode.DefaultBoneColor = (Color)settings->lineColor;
-                    if (settings->CameraSet)
-                    {
-                        modelEditControl1.btnSaveCam.Text = "Clear Camera";
-                        modelEditControl1.modelPanel1._defaultTranslate = settings->defaultCam;
-                        modelEditControl1.modelPanel1._defaultRotate = settings->defaultRot;
-                    }
-                }
+                    modelEditControl1.syncAnimationsTogetherToolStripMenuItem.Checked = settings->RetrieveCorrAnims;
+                    modelEditControl1.syncLoopToAnimationToolStripMenuItem.Checked = settings->SyncLoopToAnim;
+                    modelEditControl1.syncTexObjToolStripMenuItem.Checked = settings->SyncTexToObj;
+                    modelEditControl1.syncObjectsListToVIS0ToolStripMenuItem.Checked = settings->SyncObjToVIS0;
+                    modelEditControl1.disableBonesWhenPlayingToolStripMenuItem.Checked = settings->DisableBonesOnPlay;
 
-                if (settings->Maximize)
-                    WindowState = FormWindowState.Maximized;
+                    modelEditControl1.modelPanel1._ambient = settings->_amb;
+                    modelEditControl1.modelPanel1._position = settings->_pos;
+                    modelEditControl1.modelPanel1._diffuse = settings->_diff;
+                    modelEditControl1.modelPanel1._specular = settings->_spec;
+
+                    modelEditControl1.modelPanel1._fovY = settings->_yFov;
+                    modelEditControl1.modelPanel1._nearZ = settings->_nearZ;
+                    modelEditControl1.modelPanel1._farZ = settings->_farz;
+
+                    modelEditControl1.modelPanel1.ZoomScale = settings->_zScale;
+                    modelEditControl1.modelPanel1.TranslationScale = settings->_tScale;
+                    modelEditControl1.modelPanel1.RotationScale = settings->_rScale;
+
+                    if (settings->_version >= 2)
+                    {
+                        MDL0BoneNode.DefaultNodeColor = (Color)settings->_orbColor;
+                        MDL0BoneNode.DefaultBoneColor = (Color)settings->_lineColor;
+                        if (settings->CameraSet)
+                        {
+                            modelEditControl1.btnSaveCam.Text = "Clear Camera";
+                            modelEditControl1.modelPanel1._defaultTranslate = settings->_defaultCam;
+                            modelEditControl1.modelPanel1._defaultRotate = settings->_defaultRot;
+                        }
+                    }
+
+                    if (settings->Maximize)
+                        WindowState = FormWindowState.Maximized;
+                }
             }
         }
 

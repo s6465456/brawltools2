@@ -114,21 +114,18 @@ namespace System.Windows.Forms
             GL.Ortho(0.0f, 1.0f, 1.0f, 0.0f, -0.1f, 1.0f);
         }
 
+        public static RGBAPixel _left = new RGBAPixel(192, 192, 192, 255), _right = new RGBAPixel(240, 240, 240, 255);
         internal static unsafe GLTexture CreateBG(TKContext ctx)
         {
             GLTexture tex = new GLTexture(16, 16);
             tex.Bind();
 
-            //Create BG texture
-            ABGRPixel left = new ABGRPixel(255, 192, 192, 192);
-            ABGRPixel right = new ABGRPixel(255, 240, 240, 240);
-
             int* pixelData = stackalloc int[16 * 16];
-            ABGRPixel* p = (ABGRPixel*)pixelData;
+            RGBAPixel* p = (RGBAPixel*)pixelData;
 
             for (int y = 0; y < 16; y++)
                 for (int x = 0; x < 16; x++)
-                    *p++ = ((x & 8) == (y & 8)) ? left : right;
+                    *p++ = ((x & 8) == (y & 8)) ? _left : _right;
 
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);

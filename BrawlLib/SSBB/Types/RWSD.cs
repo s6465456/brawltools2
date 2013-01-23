@@ -141,7 +141,7 @@ namespace BrawlLib.SSBBTypes
         public bushort _sampleRate;
         public byte _dataLocationType; //WaveDataLocationType
         public byte _pad;
-        public buint _loopStartSample;
+        public bint _loopStartSample;
         public bint _nibbles; //Includes ALL data, not just samples
         public buint _channelInfoTableOffset; //0x1C, offset to bint offset array for each channel
         public buint _dataLocation;
@@ -150,7 +150,7 @@ namespace BrawlLib.SSBBTypes
         public buint* OffsetTable { get { return (buint*)(Address + _channelInfoTableOffset); } }
         public ChannelInfo* GetChannelInfo(int index) { return (ChannelInfo*)(Address + OffsetTable[index]); }
         public ADPCMInfo* GetADPCMInfo(int index) { return (ADPCMInfo*)(Address + GetChannelInfo(index)->_adpcmInfoOffset); }
-        
+
         public int NumSamples { get { return (_nibbles / 16 * 14) + ((_nibbles % 16) - 2); } }
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
