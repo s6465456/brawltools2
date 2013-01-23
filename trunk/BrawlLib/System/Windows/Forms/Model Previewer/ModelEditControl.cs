@@ -2614,27 +2614,29 @@ namespace System.Windows.Forms
                     BBVS* settings = (BBVS*)map.Address;
                     settings->_tag = BBVS.Tag;
                     settings->_version = 2;
-                    settings->defaultCam = modelPanel1._defaultTranslate;
-                    settings->defaultRot = modelPanel1._defaultRotate;
-                    settings->amb = modelPanel1._ambient;
-                    settings->pos = modelPanel1._position;
-                    settings->diff = modelPanel1._diffuse;
-                    settings->spec = modelPanel1._specular;
-                    settings->yFov = modelPanel1._fovY;
+                    settings->_defaultCam = modelPanel1._defaultTranslate;
+                    settings->_defaultRot = modelPanel1._defaultRotate;
+                    settings->_amb = modelPanel1._ambient;
+                    settings->_pos = modelPanel1._position;
+                    settings->_diff = modelPanel1._diffuse;
+                    settings->_spec = modelPanel1._specular;
+                    settings->_yFov = modelPanel1._fovY;
                     settings->_nearZ = modelPanel1._nearZ;
                     settings->_farz = modelPanel1._farZ;
-                    settings->tScale = modelPanel1.TranslationScale;
-                    settings->rScale = modelPanel1.RotationScale;
-                    settings->zScale = modelPanel1.ZoomScale;
-                    settings->orbColor = (ARGBPixel)MDL0BoneNode.DefaultNodeColor;
-                    settings->lineColor = (ARGBPixel)MDL0BoneNode.DefaultBoneColor;
-                    settings->SetOptions(syncAnimationsTogetherToolStripMenuItem.Checked,
-                        false,
+                    settings->_tScale = modelPanel1.TranslationScale;
+                    settings->_rScale = modelPanel1.RotationScale;
+                    settings->_zScale = modelPanel1.ZoomScale;
+                    settings->_orbColor = (ARGBPixel)MDL0BoneNode.DefaultNodeColor;
+                    settings->_lineColor = (ARGBPixel)MDL0BoneNode.DefaultBoneColor;
+                    settings->SetOptions(
+                        syncAnimationsTogetherToolStripMenuItem.Checked,
+                        true,
                         syncLoopToAnimationToolStripMenuItem.Checked,
                         syncTexObjToolStripMenuItem.Checked,
                         syncObjectsListToVIS0ToolStripMenuItem.Checked,
-                        disableBonesWhenPlayingToolStripMenuItem.Checked, maximize, btnSaveCam.Text == "Clear Camera"
-                        );
+                        disableBonesWhenPlayingToolStripMenuItem.Checked, 
+                        maximize, 
+                        btnSaveCam.Text == "Clear Camera");
                 }
             }
             clearSavedSettingsToolStripMenuItem.Enabled = File.Exists(Application.StartupPath + "/brawlbox.settings");
@@ -3828,11 +3830,12 @@ namespace System.Windows.Forms
         #endregion
 
         #region Rendering
+        public static Color _floorHue = Color.FromArgb(255, 128, 128, 191);
         private unsafe void modelPanel1_PreRender(object sender, TKContext ctx)
         {
             if (RenderFloor)
             {
-                GL.ActiveTexture(TextureUnit.Texture0);
+                //GL.ActiveTexture(TextureUnit.Texture0);
 
                 GLTexture _bgTex = ctx.FindOrCreate<GLTexture>("TexBG", GLTexturePanel.CreateBG);
 
@@ -3851,7 +3854,9 @@ namespace System.Windows.Forms
 
                 _bgTex.Bind();
 
-                GL.Color4(0.5f, 0.5f, 0.75f, 1.0f);
+                //GL.Color4(0.5f, 0.5f, 0.75f, 1.0f);
+                GL.Color4(_floorHue);
+
                 GL.Begin(BeginMode.Quads);
 
                 GL.TexCoord2(0.0f, 0.0f);

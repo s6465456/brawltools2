@@ -39,6 +39,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public override ResourceType ResourceType { get { return ResourceType.MDL0Bone; } }
+        public override bool AllowDuplicateNames { get { return true; } }
 
         public BoneFlags _flags1 = (BoneFlags)0x100;
         public BillboardFlags _flags2;

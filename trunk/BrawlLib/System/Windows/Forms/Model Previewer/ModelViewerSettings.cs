@@ -56,6 +56,10 @@ namespace System.Windows.Forms
         private Label lblOrbColor;
         private Label lblOrbText;
         private Label label15;
+        private GroupBox groupBox4;
+        private Label lblCol1Color;
+        private Label lblCol1Text;
+        private Label label24;
         private ModelEditControl form;
 
         public ModelViewerSettingsDialog() { InitializeComponent(); _dlgColor = new GoodColorDialog(); }
@@ -93,6 +97,7 @@ namespace System.Windows.Forms
 
             UpdateOrb();
             UpdateLine();
+            UpdateCol1();
 
             return base.ShowDialog(owner);
         }
@@ -228,16 +233,21 @@ namespace System.Windows.Forms
             this.lblOrbColor = new System.Windows.Forms.Label();
             this.lblOrbText = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.lblCol1Color = new System.Windows.Forms.Label();
+            this.lblCol1Text = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(231, 327);
+            this.btnCancel.Location = new System.Drawing.Point(231, 375);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
@@ -248,7 +258,7 @@ namespace System.Windows.Forms
             // btnOkay
             // 
             this.btnOkay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOkay.Location = new System.Drawing.Point(150, 327);
+            this.btnOkay.Location = new System.Drawing.Point(150, 375);
             this.btnOkay.Name = "btnOkay";
             this.btnOkay.Size = new System.Drawing.Size(75, 23);
             this.btnOkay.TabIndex = 1;
@@ -492,6 +502,8 @@ namespace System.Windows.Forms
             // 
             // groupBox1
             // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.label17);
             this.groupBox1.Controls.Add(this.label16);
             this.groupBox1.Controls.Add(this.sw);
@@ -517,7 +529,6 @@ namespace System.Windows.Forms
             this.groupBox1.Controls.Add(this.sx);
             this.groupBox1.Controls.Add(this.dx);
             this.groupBox1.Controls.Add(this.ax);
-            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox1.Location = new System.Drawing.Point(0, 91);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(315, 167);
@@ -683,13 +694,14 @@ namespace System.Windows.Forms
             // 
             // groupBox3
             // 
+            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.lblLineColor);
             this.groupBox3.Controls.Add(this.lblLineText);
             this.groupBox3.Controls.Add(this.label20);
             this.groupBox3.Controls.Add(this.lblOrbColor);
             this.groupBox3.Controls.Add(this.lblOrbText);
             this.groupBox3.Controls.Add(this.label15);
-            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox3.Location = new System.Drawing.Point(0, 258);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(315, 62);
@@ -763,11 +775,59 @@ namespace System.Windows.Forms
             this.label15.Text = "Orb Color:";
             this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // groupBox4
+            // 
+            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Controls.Add(this.lblCol1Color);
+            this.groupBox4.Controls.Add(this.lblCol1Text);
+            this.groupBox4.Controls.Add(this.label24);
+            this.groupBox4.Location = new System.Drawing.Point(0, 326);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(315, 42);
+            this.groupBox4.TabIndex = 38;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Floor";
+            // 
+            // lblCol1Color
+            // 
+            this.lblCol1Color.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblCol1Color.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblCol1Color.Location = new System.Drawing.Point(263, 16);
+            this.lblCol1Color.Name = "lblCol1Color";
+            this.lblCol1Color.Size = new System.Drawing.Size(40, 20);
+            this.lblCol1Color.TabIndex = 5;
+            this.lblCol1Color.Click += new System.EventHandler(this.lblCol1Color_Click);
+            // 
+            // lblCol1Text
+            // 
+            this.lblCol1Text.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblCol1Text.BackColor = System.Drawing.Color.White;
+            this.lblCol1Text.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblCol1Text.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCol1Text.Location = new System.Drawing.Point(76, 16);
+            this.lblCol1Text.Name = "lblCol1Text";
+            this.lblCol1Text.Size = new System.Drawing.Size(188, 20);
+            this.lblCol1Text.TabIndex = 7;
+            this.lblCol1Text.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label24
+            // 
+            this.label24.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label24.Location = new System.Drawing.Point(6, 16);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(71, 20);
+            this.label24.TabIndex = 6;
+            this.label24.Text = "Color:";
+            this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // ModelViewerSettingsDialog
             // 
             this.AcceptButton = this.btnOkay;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(315, 359);
+            this.ClientSize = new System.Drawing.Size(315, 407);
+            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
@@ -784,6 +844,7 @@ namespace System.Windows.Forms
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -810,6 +871,16 @@ namespace System.Windows.Forms
             }
         }
 
+        private void lblCol1Color_Click(object sender, EventArgs e)
+        {
+            _dlgColor.Color = ModelEditControl._floorHue;
+            if (_dlgColor.ShowDialog(this) == DialogResult.OK)
+            {
+                ModelEditControl._floorHue = _dlgColor.Color;
+                UpdateCol1();
+            }
+        }
+
         private void UpdateOrb()
         {
             lblOrbText.Text = ((ARGBPixel)MDL0BoneNode.DefaultNodeColor).ToString();
@@ -819,6 +890,11 @@ namespace System.Windows.Forms
         {
             lblLineText.Text = ((ARGBPixel)MDL0BoneNode.DefaultBoneColor).ToString();
             lblLineColor.BackColor = Color.FromArgb(MDL0BoneNode.DefaultBoneColor.R, MDL0BoneNode.DefaultBoneColor.G, MDL0BoneNode.DefaultBoneColor.B);
+        }
+        private void UpdateCol1()
+        {
+            lblCol1Text.Text = ((ARGBPixel)ModelEditControl._floorHue).ToString();
+            lblCol1Color.BackColor = Color.FromArgb(ModelEditControl._floorHue.R, ModelEditControl._floorHue.G, ModelEditControl._floorHue.B);
         }
     }
 }

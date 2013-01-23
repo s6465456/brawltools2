@@ -24,6 +24,19 @@ namespace System
             set { Data[index] = value; }
         }
 
+        public Matrix Copy()
+        {
+            return new Matrix(Data);
+        }
+
+        public Matrix(float* values)
+        {
+            Matrix m = this;
+            float* p = (float*)&m;
+            for (int i = 0; i < 16; i++)
+                p[i] = values[i];
+        }
+
         public Matrix(float[] values)
         {
             Matrix m = this;

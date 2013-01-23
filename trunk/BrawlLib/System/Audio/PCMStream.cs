@@ -46,7 +46,7 @@ namespace System.Audio
             _frequency = (int)header->_fmtChunk._samplesSec;
             _numSamples = (int)(header->_dataChunk._chunkSize / header->_fmtChunk._blockAlign);
 
-            _source = (short*)(_sourceMap.Address + header->GetSize);
+            _source = (short*)(_sourceMap.Address + header->GetSize());
             _samplePos = 0;
         }
 

@@ -198,19 +198,16 @@ namespace System.Audio
         public const uint RIFFTag = 0x46464952;
         public const uint WAVETag = 0x45564157;
         public const uint LISTTag = 0x5453494C;
-        public const int Size = fmtChunk.Size + dataChunk.Size + 12;
-
-        public uint GetSize { get { return 12 + fmtChunk.Size + 8 + (_listChunk._chunkTag == LISTTag ? 8 + _listChunk._chunkSize : 0); } }
 
         public uint _tag;
         public uint _length;
         public uint _waveTag;
         public fmtChunk _fmtChunk;
-        public dataChunk _listChunk { get { return *(dataChunk*)(Address + 12 + fmtChunk.Size); } }
+        public dataChunk _listChunk { get { return *(dataChunk*)(Address + 12 + _fmtChunk.GetSize()); } }
         public dataChunk _dataChunk 
         {
-            get { return *(dataChunk*)(Address + 12 + fmtChunk.Size + (_listChunk._chunkTag == LISTTag ? 8 + _listChunk._chunkSize : 0)); }
-            set { *(dataChunk*)(Address + 12 + fmtChunk.Size) = value; }
+            get { return *(dataChunk*)(Address + 12 + _fmtChunk.GetSize() + (_listChunk._chunkTag == LISTTag ? 8 + _listChunk._chunkSize : 0)); }
+            set { *(dataChunk*)(Address + 12 + _fmtChunk.GetSize()) = value; }
         }
 
         public RIFFHeader(int format, int channels, int bitsPerSample, int sampleRate, int numSamples)
@@ -219,9 +216,12 @@ namespace System.Audio
             _waveTag = WAVETag;
             _fmtChunk = new fmtChunk(format, channels, bitsPerSample, sampleRate);
             uint dataLen = (uint)(numSamples * _fmtChunk._blockAlign);
-            _length = (dataLen + Size) - 8;
+            _length = 0;
             _dataChunk = new dataChunk(dataLen);
+            _length = (dataLen + GetSize()) - 8;
         }
+
+        public uint GetSize() { return (uint)(12 + _fmtChunk.GetSize() + 8 + (_listChunk._chunkTag == LISTTag ? 8 + _listChunk._chunkSize : 0)); }
         internal byte* Address { get { fixed (void* ptr = &this)return (byte*)ptr; } }
     }
 
@@ -229,7 +229,6 @@ namespace System.Audio
     unsafe struct fmtChunk
     {
         public const uint fmtTag = 0x20746D66;
-        public const int Size = 24;
 
         public uint _chunkTag;
         public uint _chunkSize;
@@ -239,7 +238,9 @@ namespace System.Audio
         public uint _avgBytesSec;
         public ushort _blockAlign;
         public ushort _bitsPerSample;
+        public ushort _extraParamSize;
 
+        public int GetSize() { return (int)(8 + _chunkSize); }
         public fmtChunk(int format, int channels, int bitsPerSample, int sampleRate)
         {
             _chunkTag = fmtTag;
@@ -250,6 +251,7 @@ namespace System.Audio
             _blockAlign = (ushort)(bitsPerSample / 8 * channels);
             _avgBytesSec = (uint)(sampleRate * _blockAlign);
             _bitsPerSample = (ushort)bitsPerSample;
+            _extraParamSize = 0;
         }
     }
 
@@ -283,7 +285,7 @@ namespace System.Audio
             using (FileStream stream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 8, FileOptions.SequentialScan))
             {
                 //Estimate size
-                int outLen = RIFFHeader.Size + (source.Samples * source.Channels * 2);
+                int outLen = 44 + (source.Samples * source.Channels * 2);
 
                 //Create file map
                 stream.SetLength(outLen);
@@ -293,7 +295,7 @@ namespace System.Audio
                     *riff = new RIFFHeader(1, source.Channels, 16, source.Frequency, source.Samples);
 
                     source.SamplePosition = 0;
-                    source.ReadSamples(map.Address + RIFFHeader.Size, source.Samples);
+                    source.ReadSamples(map.Address + 44, source.Samples);
                 }
             }
         }

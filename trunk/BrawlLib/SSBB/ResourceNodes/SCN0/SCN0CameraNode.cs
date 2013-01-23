@@ -104,7 +104,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public SCN0CameraFlags[] Ordered = new SCN0CameraFlags[] 
-        { 
+        {
             SCN0CameraFlags.PosXConstant,
             SCN0CameraFlags.PosYConstant,
             SCN0CameraFlags.PosZConstant,
@@ -315,36 +315,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             switch (index)
             {
-                case 0:
-                    hasPx = val; break;
-                case 1:
-                    hasPy = val; break;
-                case 2:
-                    hasPz = val; break;
-                case 3:
-                    hasA = val; break;
-                case 4:
-                    hasNz = val; break;
-                case 5:
-                    hasFz = val; break;
-                case 6:
-                    hasRx = val; break;
-                case 7:
-                    hasRy = val; break;
-                case 8:
-                    hasRz = val; break;
-                case 9:
-                    hasAx = val; break;
-                case 10:
-                    hasAy = val; break;
-                case 11:
-                    hasAz = val; break;
-                case 12:
-                    hasT = val; break;
-                case 13:
-                    hasF = val; break;
-                case 14:
-                    hasH = val; break;
+                case 0: hasPx = val; break;
+                case 1: hasPy = val; break;
+                case 2: hasPz = val; break;
+                case 3: hasA = val; break;
+                case 4: hasNz = val; break;
+                case 5: hasFz = val; break;
+                case 6: hasRx = val; break;
+                case 7: hasRy = val; break;
+                case 8: hasRz = val; break;
+                case 9: hasAx = val; break;
+                case 10: hasAy = val; break;
+                case 11: hasAz = val; break;
+                case 12: hasT = val; break;
+                case 13: hasF = val; break;
+                case 14: hasH = val; break;
             }
         }
 

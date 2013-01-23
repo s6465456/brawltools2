@@ -67,10 +67,10 @@ namespace System.Windows.Forms
             _boxes[3] = numEndX;
             _boxes[4] = numEndY;
             _boxes[5] = numEndZ;
-            _boxes[6] = numSpotCut;
-            _boxes[7] = numSpotBright;
-            _boxes[8] = numRefDist;
-            _boxes[9] = numRefBright;
+            _boxes[6] = numRefDist;
+            _boxes[7] = numRefBright;
+            _boxes[8] = numSpotCut;
+            _boxes[9] = numSpotBright;
 
             for (int i = 0; i < 10; i++)
                 _boxes[i].Tag = i;

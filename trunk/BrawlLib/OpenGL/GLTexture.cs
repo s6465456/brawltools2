@@ -117,8 +117,8 @@ namespace BrawlLib.OpenGL
         {
             if (program != -1 && index >= 0 && index <= 7 && ctx != null && ctx._canUseShaders)
             {
-                GL.ActiveTexture(TextureUnit.Texture0 + index);
-                //GL.ClientActiveTexture(TextureUnit.Texture0 + index);
+                //GL.ActiveTexture(TextureUnit.Texture0 + index);
+                GL.ClientActiveTexture(TextureUnit.Texture0 + index);
                 int i = GL.GetUniformLocation(program, "samp" + index);
                 if (i > -1) GL.Uniform1(i, index);
             }
