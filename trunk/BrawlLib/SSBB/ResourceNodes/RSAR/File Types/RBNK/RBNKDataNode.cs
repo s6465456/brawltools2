@@ -12,9 +12,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public RBNKInstParam hdr = new RBNKInstParam();
 
-        ResourceNode _soundNode;
+        WAVESoundNode _soundNode;
         [Browsable(false)]
-        public ResourceNode Sound
+        public WAVESoundNode Sound
         {
             get { return _soundNode; }
             set
@@ -33,9 +33,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     Sound = null;
                 else
                 {
-                    ResourceNode node = null;
+                    WAVESoundNode node = null;
                     int t = 0;
-                    foreach (ResourceNode r in Parent.Parent.Children[1].Children)
+                    foreach (WAVESoundNode r in RBNKNode.Children[1].Children)
                     {
                         if (r.Name == value) { node = r; break; }
                         t++;
@@ -84,12 +84,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             hdr = *Header;
 
             if (_name == null)
-                _name = String.Format("InstParams[{0}]", Index);
+                _name = String.Format("[{0}] InstParams", Index);
 
             SetSizeInternal(0x30);
 
             if (RBNKNode.Children.Count > 1 && hdr._waveIndex < RBNKNode.Children[1].Children.Count)
-                _soundNode = RBNKNode.Children[1].Children[hdr._waveIndex];
+                _soundNode = RBNKNode.Children[1].Children[hdr._waveIndex] as WAVESoundNode;
 
             return false;
         }
@@ -112,7 +112,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override bool OnInitialize()
         {
             if (_name == null)
-                _name = String.Format("Group[{0}]", Index);
+                _name = String.Format("[{0}] Group", Index);
 
             _keys = new byte[Header->_tableCount];
 
@@ -170,7 +170,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             hdr = *Header;
 
             if (_name == null)
-                _name = String.Format("Group[{0}]", Index);
+                _name = String.Format("[{0}] Group", Index);
 
             SetSizeInternal(4 + (Max - Min + 1) * 8);
 
@@ -299,7 +299,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override bool OnInitialize()
         {
             SetSizeInternal(0);
-            _name = "Null[" + Index + "]";
+            _name = "[" + Index + "] Null";
             return false;
         }
 

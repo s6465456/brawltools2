@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using BrawlLib.Wii;
+using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class MSBinNode : ARCEntryNode
     {
         public override ResourceType ResourceType { get { return ResourceType.MSBin; } }
-        internal List<string> _strings = new List<string>();
-
-        //public List<string> Strings { get { return _strings; } set { _strings = value; } }
+        public List<string> _strings = new List<string>();
 
         protected override bool OnInitialize()
         {

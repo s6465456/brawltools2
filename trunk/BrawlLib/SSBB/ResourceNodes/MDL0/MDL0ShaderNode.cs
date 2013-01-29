@@ -16,10 +16,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MDL0ShaderNode : MDL0EntryNode
     {
         internal MDL0Shader* Header { get { return (MDL0Shader*)WorkingUncompressed.Address; } }
-
         public override ResourceType ResourceType { get { return ResourceType.MDL0Shader; } }
-
-        
 
         public List<string> Defaults = new List<string>();
 

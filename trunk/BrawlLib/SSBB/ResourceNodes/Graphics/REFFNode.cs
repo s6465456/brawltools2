@@ -15,15 +15,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal REFF* Header { get { return (REFF*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.REFF; } }
 
-        private float _version;
-
         private int _unk1, _unk2, _unk3, _dataLen, _dataOff;
         private int _TableLen;
         private short _TableEntries;
         private short _TableUnk1;
 
         [Category("REFF Data")]
-        public float Version { get { return _version; } }
+        public byte VersionMajor { get { return _major; } }
+        [Category("REFF Data")]
+        public byte VersionMinor { get { return _minor; } }
+        private byte _minor, _major;
+
         //[Category("REFF Data")]
         //public int DataLength { get { return _dataLen; } }
         //[Category("REFF Data")]
@@ -40,7 +42,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             REFF* header = Header;
 
-            _version = header->_header.Version;
+            _major = header->_header.VersionMajor;
+            _minor = header->_header.VersionMinor;
+
             _name = header->IdString;
             _dataLen = header->_dataLength;
             _dataOff = header->_dataOffset;

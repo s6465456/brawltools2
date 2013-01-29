@@ -62,7 +62,8 @@ namespace BrawlLib.OpenGL
             // Check for GLSL support
             string version = GL.GetString(OpenTK.Graphics.OpenGL.StringName.Version);
             _version = int.Parse(version[0].ToString());
-            if (_version < 2) _canUseShaders = false;
+            //if (_version < 2)
+                _canUseShaders = false;
 
             if (_canUseShaders)
             {

@@ -3,6 +3,7 @@ using BrawlLib.SSBB.ResourceNodes;
 using System.IO;
 using System.Diagnostics;
 using System.Collections;
+using BrawlLib;
 
 namespace System.Windows.Forms
 {
@@ -19,6 +20,10 @@ namespace System.Windows.Forms
         private ToolStripMenuItem mnuReplace;
         private ToolStripMenuItem mnuPath;
         private ColumnHeader clmType;
+        private ColumnHeader clmDataOffset;
+        private ColumnHeader clmAudioOffset;
+        private ColumnHeader clmEntryOffset;
+        private ToolStripMenuItem deleteToolStripMenuItem;
         private ColumnHeader clmPath;
 
         private void InitializeComponent()
@@ -29,10 +34,14 @@ namespace System.Windows.Forms
             this.clmPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.lstSets = new System.Windows.Forms.ListView();
             this.clmType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmDataOffset = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmAudioOffset = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmEntryOffset = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuExport = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuReplace = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuPath = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -59,7 +68,10 @@ namespace System.Windows.Forms
             this.clmIndex,
             this.clmType,
             this.clmName,
-            this.clmPath});
+            this.clmPath,
+            this.clmDataOffset,
+            this.clmAudioOffset,
+            this.clmEntryOffset});
             this.lstSets.ContextMenuStrip = this.contextMenuStrip1;
             this.lstSets.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lstSets.FullRowSelect = true;
@@ -69,53 +81,78 @@ namespace System.Windows.Forms
             this.lstSets.Location = new System.Drawing.Point(0, 0);
             this.lstSets.MultiSelect = false;
             this.lstSets.Name = "lstSets";
-            this.lstSets.Size = new System.Drawing.Size(414, 240);
+            this.lstSets.Size = new System.Drawing.Size(506, 253);
             this.lstSets.TabIndex = 0;
             this.lstSets.UseCompatibleStateImageBehavior = false;
             this.lstSets.View = System.Windows.Forms.View.Details;
             this.lstSets.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.lstSets_ColumnClick);
             this.lstSets.SelectedIndexChanged += new System.EventHandler(this.lstSets_SelectedIndexChanged);
             this.lstSets.DoubleClick += new System.EventHandler(this.lstSets_DoubleClick);
+            this.lstSets.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lstSets_KeyDown);
             // 
             // clmType
             // 
             this.clmType.Text = "Type";
             // 
+            // clmDataOffset
+            // 
+            this.clmDataOffset.Text = "Data Offset";
+            this.clmDataOffset.Width = 70;
+            // 
+            // clmAudioOffset
+            // 
+            this.clmAudioOffset.Text = "Audio Offset";
+            this.clmAudioOffset.Width = 70;
+            // 
+            // clmEntryOffset
+            // 
+            this.clmEntryOffset.Text = "Entry Offset";
+            this.clmEntryOffset.Width = 80;
+            // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuPath,
             this.mnuExport,
             this.mnuReplace,
-            this.mnuPath});
+            this.deleteToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(116, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 114);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // mnuExport
             // 
             this.mnuExport.Name = "mnuExport";
-            this.mnuExport.Size = new System.Drawing.Size(115, 22);
+            this.mnuExport.Size = new System.Drawing.Size(152, 22);
             this.mnuExport.Text = "Export";
             this.mnuExport.Click += new System.EventHandler(this.mnuExport_Click);
             // 
             // mnuReplace
             // 
             this.mnuReplace.Name = "mnuReplace";
-            this.mnuReplace.Size = new System.Drawing.Size(115, 22);
+            this.mnuReplace.Size = new System.Drawing.Size(152, 22);
             this.mnuReplace.Text = "Replace";
+            this.mnuReplace.Click += new System.EventHandler(this.mnuReplace_Click);
             // 
             // mnuPath
             // 
             this.mnuPath.Name = "mnuPath";
-            this.mnuPath.Size = new System.Drawing.Size(115, 22);
+            this.mnuPath.Size = new System.Drawing.Size(152, 22);
             this.mnuPath.Text = "Path...";
             this.mnuPath.Click += new System.EventHandler(this.mnuPath_Click);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deleteToolStripMenuItem.Text = "Delete";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // SoundPackControl
             // 
             this.Controls.Add(this.lstSets);
             this.Name = "SoundPackControl";
-            this.Size = new System.Drawing.Size(414, 240);
+            this.Size = new System.Drawing.Size(506, 253);
             this.DoubleClick += new System.EventHandler(this.lstSets_DoubleClick);
             this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -236,6 +273,37 @@ namespace System.Windows.Forms
             // Perform the sort with these new sort options.
             lstSets.Sort();
         }
+
+        private void lstSets_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                lstSets.SelectedItems.Clear();
+                if (_grid != null)
+                    _grid.SelectedObject = _targetNode;
+            }
+        }
+
+        private void mnuReplace_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog dlg = new OpenFileDialog())
+            {
+                dlg.Filter =
+                    "All File Types (*.brwsd, *.brbnk, *.brseq, *.brstm)|*.brwsd;*.brbnk;*.brseq;*.brstm|" +
+                    "Sound Stream (*.brwsd)|*.brwsd|" +
+                    "Sound Bank (*.brbnk)|*.brbnk|" +
+                    "Sound Sequence (*.brseq)|*.brseq|" +
+                    "Audio Stream (*.brstm)|*.brstm";
+                if (dlg.ShowDialog() == DialogResult.OK)
+                    _selectedItem._node.Replace(dlg.FileName);
+            }
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _selectedItem._node.Remove();
+            lstSets.Items.Remove(_selectedItem);
+        }
     }
 
     public class SoundPackItem : ListViewItem
@@ -256,6 +324,9 @@ namespace System.Windows.Forms
             int i = Helpers.FindFirst(file.Name, 0, ']');
             SubItems.Add(file.Name.Substring(i + 1));
             SubItems.Add(file.ExtPath);
+            SubItems.Add("0x" + file.DataOffset);
+            SubItems.Add("0x" + file.AudioOffset);
+            SubItems.Add("0x" + file.InfoHeaderOffset);
         }
     }
 
@@ -310,6 +381,8 @@ namespace System.Windows.Forms
 		    // Compare the two items
             if (ColumnToSort == 0)
                 compareResult = ObjectCompare.Compare(int.Parse(listviewX.SubItems[ColumnToSort].Text), int.Parse(listviewY.SubItems[ColumnToSort].Text));
+            else if (ColumnToSort >= 4)
+                compareResult = ObjectCompare.Compare(int.Parse(listviewX.SubItems[ColumnToSort].Text.Substring(2), Globalization.NumberStyles.HexNumber), int.Parse(listviewY.SubItems[ColumnToSort].Text.Substring(2), Globalization.NumberStyles.HexNumber));
             else 
 		        compareResult = ObjectCompare.Compare(listviewX.SubItems[ColumnToSort].Text,listviewY.SubItems[ColumnToSort].Text);
 			

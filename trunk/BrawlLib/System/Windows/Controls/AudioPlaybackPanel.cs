@@ -109,15 +109,8 @@ namespace System.Windows.Forms
         private bool _loop = false;
         private bool _isPlaying = false;
         private bool _isScrolling = false;
-        //private int _currentSample;
         private DateTime _sampleTime;
-
         private IAudioStream _targetStream;
-        //public IAudioStream TargetStream
-        //{
-        //    get { return _targetStream; }
-        //    set { TargetChanged(value); }
-        //}
 
         private IAudioSource _targetSource;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -271,11 +264,10 @@ namespace System.Windows.Forms
             if ((_isPlaying) && (_buffer != null))
             {
                 _buffer.Fill();
-                //_currentSample = _buffer.ReadSample;
 
                 trackBar1.Value = _buffer.ReadSample;
 
-                if (_buffer.ReadSample >= _targetStream.Samples)
+                if (_buffer.ReadSample >= _targetStream.Samples && !_loop)
                     Stop();
             }
         }

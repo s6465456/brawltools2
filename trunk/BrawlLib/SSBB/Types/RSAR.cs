@@ -272,8 +272,8 @@ namespace BrawlLib.SSBBTypes
         public byte _soundType;
         public byte _remoteFilter; //0x00
         public ruint _soundInfoRef; //dataType: 0 = null, 1 = SeqSoundInfo, 2 = StrmSoundInfo, 3 = WaveSoundInfo
-        public bint _userParam1; //0
-        public bint _userParam2; //0
+        public bint _userParam1;
+        public bint _userParam2;
         public byte _panMode;
         public byte _panCurve;
         public byte _actorPlayerId;

@@ -29,7 +29,7 @@ namespace BrawlLib.Wii.Audio
 
             //Mask entries
             _symbLen += 32; //Headers
-            _symbLen += (entries._count * 2 - 4) * 20; //Entries
+            _symbLen += (entries._strings.Count * 2 - 4) * 20; //Entries
 
             //Align
             _symbLen = _symbLen.Align(0x20);
@@ -97,7 +97,7 @@ namespace BrawlLib.Wii.Audio
         internal int EncodeSYMBBlock(SYMBHeader* header, RSAREntryList entries, RSARNode node)
         {
             int len = 0;
-            int count = entries._count;
+            int count = entries._strings.Count;
             VoidPtr baseAddr = (VoidPtr)header + 8, dataAddr;
             bint* strEntry = (bint*)(baseAddr + 0x18);
             PString pStr = (byte*)strEntry + (count << 2);
@@ -215,9 +215,11 @@ namespace BrawlLib.Wii.Audio
                 fileHdr->_entryNumber = -1;
                 if (file is RSARExtFileNode)
                 {
-                    if (file._extFileSize == 0)
-                        file.GetExtSize(); //Make an attempt to get file size
-                    fileHdr->_headerLen = file._extFileSize; //Shouldn't matter if 0
+                    //Make an attempt to get file size
+                    if (file._extFileSize == 0) file.GetExtSize();
+                    //Shouldn't matter if 0
+                    fileHdr->_headerLen = file._extFileSize; 
+
                     fileHdr->_dataLen = 0;
                     fileHdr->_stringOffset = (uint)((VoidPtr)list - (VoidPtr)baseAddr);
                     
@@ -237,11 +239,19 @@ namespace BrawlLib.Wii.Audio
                     list->_numEntries = file._groups.Count;
                     INFOFileEntry* fileEntries = (INFOFileEntry*)((VoidPtr)list + 4 + file._groups.Count * 8);
                     int z = 0;
+                    List<int> used = new List<int>();
                     foreach (RSARGroupNode g in file._groups)
                     {
                         list->Entries[z] = (uint)((VoidPtr)(&fileEntries[z]) - baseAddr);
                         fileEntries[z]._groupId = g._rebuildIndex;
-                        fileEntries[z++]._index = g._files.IndexOf(file);
+                        int[] all = g._files.FindAllOccurences(file);
+                        foreach (int i in all)
+                            if (!used.Contains(i))
+                            {
+                                fileEntries[z]._index = i;
+                                break;
+                            }
+                        z++;
                     }
                     dataAddr = (VoidPtr)fileEntries + file._groups.Count * INFOFileEntry.Size;
                 }
@@ -310,7 +320,7 @@ namespace BrawlLib.Wii.Audio
             //Build files - order by groups
             for (int x = 0; x <= entries._groups.Count; x++)
             {
-                RSARGroupNode g = x < entries._groups.Count ? ((RSAREntryState)entries._groups[x])._node as RSARGroupNode : node._nullGroup;
+                RSARGroupNode g = x == entries._groups.Count ? node._nullGroup : ((RSAREntryState)entries._groups[x])._node as RSARGroupNode;
                 int headerLen = 0, audioLen = 0;
                 int i = 0;
                 INFOGroupEntry* e = (INFOGroupEntry*)((VoidPtr)g._rebuildAddr + INFOGroupHeader.Size + 4 + g._files.Count * 8);
@@ -539,7 +549,6 @@ namespace BrawlLib.Wii.Audio
 
     public class RSAREntryList
     {
-        public int _count = 0;
         public int _stringLength = 0;
         public List<string> _strings = new List<string>();
         public List<RSARStringEntryState> _tempStrings = new List<RSARStringEntryState>();
@@ -555,9 +564,12 @@ namespace BrawlLib.Wii.Audio
             RSARStringEntryState str = new RSARStringEntryState();
 
             state._node = node;
-            str._name = path;
+            if (node._name != "<null>")
+                str._name = path;
+            else 
+                str._name = null;
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(str._name))
                 state._stringId = -1;
 
             int type = -1;
@@ -591,8 +603,6 @@ namespace BrawlLib.Wii.Audio
             state._index = group.Count;
             group.Add(state);
 
-            _count++;
-
             state._node._rebuildIndex = state._index;
         }
 
@@ -602,7 +612,6 @@ namespace BrawlLib.Wii.Audio
             _playerInfo.Clear();
             _groups.Clear();
             _banks.Clear();
-            _count = 0;
             _stringLength = 0;
             _strings = new List<string>();
             _tempStrings = new List<RSARStringEntryState>();
@@ -619,7 +628,8 @@ namespace BrawlLib.Wii.Audio
             {
                 if (s._type == type && s._index == index)
                 {
-                    _strings.Add(s._name);
+                    if (s._name != null && !s._name.Contains("<null>"))
+                        _strings.Add(s._name);
                     index++;
                     goto Top;
                 }

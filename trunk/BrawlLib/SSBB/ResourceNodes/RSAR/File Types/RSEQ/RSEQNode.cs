@@ -12,24 +12,27 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal RSEQHeader* Header { get { return (RSEQHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.RSEQ; } }
-        
-        public string Offset { get { if (RSARNode != null) return ((uint)((VoidPtr)Header - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
 
         [Category("RSEQ")]
-        public float Version { get { return _version; } }
-        private float _version;
+        public byte VersionMajor { get { return _major; } }
+        [Category("RSEQ")]
+        public byte VersionMinor { get { return _minor; } }
+        private byte _minor, _major;
 
         public MMLCommand[] _cmds;
         public MMLCommand[] Commands { get { return _cmds; } }
 
         DataSource _data;
-        
+
         protected override bool OnInitialize()
         {
             base.OnInitialize();
-            _version = Header->_header.Version;
             _data = new DataSource(Header->Data, Header->_dataLength);
             _cmds = MMLParser.Parse(Header->Data + 12);
+
+            _major = Header->_header.VersionMajor;
+            _minor = Header->_header.VersionMinor;
+
             return true;
         }
 

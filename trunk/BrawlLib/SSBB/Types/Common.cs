@@ -50,20 +50,8 @@ namespace BrawlLib.SSBBTypes
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
         public DataBlock DataBlock { get { return new DataBlock(Address, Size); } }
 
-        public float Version 
-        {
-            get 
-            {
-                short v = _version;
-                return float.Parse((v >> 8).ToString() + "." + (v & 0xFF).ToString().PadLeft(2, '0')); } 
-            set 
-            {
-                string s = value.ToString();
-                short major = short.Parse(s.Substring(0, s.IndexOf('.')));
-                short minor = short.Parse(s.Substring(s.IndexOf('.') + 1));
-                _version = ((short)((major << 8) | (minor & 0xFF))); 
-            } 
-        }
+        public byte VersionMajor { get { return ((byte*)_version.Address)[0]; } set { ((byte*)_version.Address)[0] = value; } }
+        public byte VersionMinor { get { return ((byte*)_version.Address)[1]; } set { ((byte*)_version.Address)[1] = value; } }
 
         public DataBlockCollection Entries { get { return new DataBlockCollection(DataBlock); } }
     }
@@ -346,9 +334,9 @@ namespace BrawlLib.SSBBTypes
     
     public enum WaveEncoding
     {
-        FORMAT_PCM8 = 0,
-        FORMAT_PCM16 = 1,
-        FORMAT_ADPCM = 2
+        PCM8 = 0,
+        PCM16 = 1,
+        ADPCM = 2
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

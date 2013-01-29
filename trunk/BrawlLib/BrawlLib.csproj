@@ -278,7 +278,6 @@
     <Compile Include="SSBB\ResourceNodes\RSAR\RSARExtFileNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\RSARFolderNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARGroupNode.cs" />
-    <None Include="SSBB\ResourceNodes\RSAR\RSARListNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\RSARNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\RSARFileNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File References\RSARSoundNode.cs" />

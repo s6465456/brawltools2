@@ -13,12 +13,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal RBNKHeader* Header { get { return (RBNKHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.RBNK; } }
 
-        //protected override void GetStrings(LabelBuilder builder)
-        //{
-        //    //foreach (RWSDDataNode node in Children[0].Children)
-        //    //    builder.Add(0, node._name);
-        //}
-
         public List<RSARBankNode> _rsarBankEntries = new List<RSARBankNode>();
         [Browsable(false)]
         public RSARBankNode[] Banks { get { return _rsarBankEntries.ToArray(); } }
@@ -38,61 +32,26 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _references.Remove(n.TreePath);
             }
         }
-        
+
         [Category("RBNK")]
-        public float Version { get { return _version; } }
-        private float _version;
+        public byte VersionMajor { get { return _major; } }
+        [Category("RBNK")]
+        public byte VersionMinor { get { return _minor; } }
+        private byte _minor, _major;
 
-        //Finds labels using LABL block between header and footer, also initializes array
-        protected bool GetLabels(int count)
-        {
-            RBNKHeader* header = (RBNKHeader*)WorkingUncompressed.Address;
-            int len = header->_header._length;
-            LABLHeader* labl = (LABLHeader*)((int)header + len);
-
-            if ((WorkingUncompressed.Length > len) && (labl->_tag == LABLHeader.Tag))
-            {
-                _labels = new LabelItem[count];
-                count = labl->_numEntries;
-                for (int i = 0; i < count; i++)
-                {
-                    LABLEntry* entry = labl->Get(i);
-                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_id };
-                }
-                return true;
-            }
-
-            return false;
-        }
         protected override bool OnInitialize()
         {
-            RSARNode parent = RSARNode;
-
-            //Find bank entry in rsar - only appears once
-            if (parent != null)
-            {
-                RSARHeader* rsar = parent.Header;
-                RuintList* list = rsar->INFOBlock->Banks;
-                VoidPtr offset = &rsar->INFOBlock->_collection;
-                SYMBHeader* symb = rsar->SYMBBlock;
-
-                int count = list->_numEntries;
-                for (int i = 0; i < count; i++)
-                {
-                    INFOBankEntry* bank = (INFOBankEntry*)list->Get(offset, i);
-                    if (bank->_fileId == _fileIndex)
-                    {
-                        _name = String.Format("[{0}] {1}", _fileIndex, symb->GetStringEntry(bank->_stringId));
-                        break;
-                    }
-                }
-            }
-
             base.OnInitialize();
 
-            _version = Header->_header.Version;
+            int len = Header->_header._length;
+            int total = WorkingUncompressed.Length;
 
-            ParseBlocks();
+            //Set data source
+            if (total > len)
+                _audioSource = new DataSource((VoidPtr)Header + len, total - len);
+
+            _major = Header->_header.VersionMajor;
+            _minor = Header->_header.VersionMinor;
 
             return true;
         }
@@ -102,32 +61,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             new RBNKDataGroupNode().Initialize(this, Header->Data, Header->_dataLength);
             if (Header->_waveOffset > 0)
                 new RBNKSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
-        }
-
-        private void ParseBlocks()
-        {
-            VoidPtr dataAddr = Header;
-            int len = Header->_header._length;
-            int total = WorkingUncompressed.Length;
-
-            //Look for labl block
-            LABLHeader* labl = (LABLHeader*)(dataAddr + len);
-            if ((total > len) && (labl->_tag == LABLHeader.Tag))
-            {
-                int count = labl->_numEntries;
-                _labels = new LabelItem[count];
-                count = labl->_numEntries;
-                for (int i = 0; i < count; i++)
-                {
-                    LABLEntry* entry = labl->Get(i);
-                    _labels[i] = new LabelItem() { String = entry->Name, Tag = entry->_id };
-                }
-                len += labl->_size;
-            }
-
-            //Set data source
-            if (total > len)
-                _audioSource = new DataSource(dataAddr + len, total - len);
         }
 
         protected override int OnCalculateSize(bool force)

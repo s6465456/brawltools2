@@ -21,13 +21,46 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.RWSDWaveEntry; } }
 
         public DataSource _audioSource;
+        public bool _replaced = false;
+
+        int _encoding;
+        int _channels;
+        bool _looped;
+        int _sampleRate;
+        int _loopStart;
+        int _numSamples;
+        uint _dataOffset;
+
+        [Category("Audio Stream")]
+        public WaveEncoding Encoding { get { return (WaveEncoding)_encoding; } }
+        [Category("Audio Stream")]
+        public int Channels { get { return _channels; } }
+        [Category("Audio Stream")]
+        public bool IsLooped { get { return _looped; } }
+        [Category("Audio Stream")]
+        public int SampleRate { get { return _sampleRate; } }
+        [Category("Audio Stream")]
+        public int LoopStartSample { get { return _loopStart; } }
+        [Category("Audio Stream")]
+        public int NumSamples { get { return _numSamples; } }
+        [Category("Audio Stream")]
+        public uint DataOffset { get { return _dataOffset; } }
 
         protected override bool OnInitialize()
         {
             if (_name == null)
                 _name = String.Format("Audio[{0}]", Index);
 
-            SetSizeInternal((WaveInfo.Size + Header->_format._channels * (4 + ChannelInfo.Size + (Header->_format._encoding == 2 ? ADPCMInfo.Size : 0))));
+            _encoding = Header->_format._encoding;
+            _channels = Header->_format._channels;
+            _looped = Header->_format._looped != 0;
+            _sampleRate = Header->_sampleRate;
+            _loopStart = Header->_loopStartSample;
+            _numSamples = Header->NumSamples;
+            _dataOffset = Header->_dataLocation;
+
+            if (!_replaced)
+                SetSizeInternal((WaveInfo.Size + Header->_format._channels * (4 + ChannelInfo.Size + (Header->_format._encoding == 2 ? ADPCMInfo.Size : 0))));
 
             return false;
         }
@@ -65,7 +98,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (dlg.ShowDialog(null) == DialogResult.OK)
                 {
                     //Name = Path.GetFileNameWithoutExtension(dlg.AudioSource);
+                    _replaced = true;
                     ReplaceRaw(dlg.AudioData);
+                    _replaced = false;
                 }
             }
             else
@@ -75,7 +110,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _audioSource = new DataSource(WorkingUncompressed.Address + Header->_dataLocation, (int)(WorkingUncompressed.Length - Header->_dataLocation));
 
             //Cut out the audio samples from the imported data
-            SetSizeInternal(WorkingUncompressed.Length - _audioSource.Length);
+            SetSizeInternal((int)Header->_dataLocation);
 
             stream = null;
 
@@ -116,16 +151,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     base.Export(outPath);
             }
-        }
-
-        protected override int OnCalculateSize(bool force)
-        {
-            return base.OnCalculateSize(force);
-        }
-
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
-        {
-            base.OnRebuild(address, length, force);
         }
     }
 }

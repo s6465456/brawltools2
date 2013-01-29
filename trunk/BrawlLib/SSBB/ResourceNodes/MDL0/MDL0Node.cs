@@ -933,11 +933,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_visible)
                 return;
 
-            //GL.Enable(EnableCap.Blend);
-            //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
-
-            //GL.Enable(EnableCap.AlphaTest);
-            //GL.AlphaFunc(AlphaFunction.Gequal, 0.1f);
+            GL.Disable(EnableCap.Blend);
 
             //if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
                 _mainWindow = mainWindow;
@@ -952,21 +948,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
-                try
-                {
-                    //Draw objects in the prioritized order of materials
-                    if (_matList != null)
-                        foreach (MDL0MaterialNode m in _matList)
-                            m.Render(ctx);
-                }
-                catch 
-                {
-                    Console.WriteLine();
-                }
+                //Draw objects in the prioritized order of materials
+                if (_matList != null)
+                    foreach (MDL0MaterialNode m in _matList)
+                        m.Render(ctx);
             }
 
             //Turn off the last bound shader program.
-            if (ctx._canUseShaders) { GL.UseProgram(0); GL.ActiveTexture(TextureUnit.Texture0); }
+            if (ctx._canUseShaders) { GL.UseProgram(0); GL.ClientActiveTexture(TextureUnit.Texture0); }
             
             if (_renderBones)
             {

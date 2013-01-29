@@ -2197,97 +2197,97 @@ namespace BrawlLib.SSBB.ResourceNodes
                         break;
                 }
 
-                if (_opaMaterial.EnableDepthTest)
-                {
-                    GL.Enable(EnableCap.DepthTest);
-                    DepthFunction depth = DepthFunction.Lequal;
-                    switch (_opaMaterial.DepthFunction)
-                    {
-                        case GXCompare.Never:
-                            depth = DepthFunction.Never; break;
-                        case GXCompare.Less:
-                            depth = DepthFunction.Less; break;
-                        case GXCompare.Equal:
-                            depth = DepthFunction.Equal; break;
-                        case GXCompare.LessOrEqual:
-                            depth = DepthFunction.Lequal; break;
-                        case GXCompare.Greater:
-                            depth = DepthFunction.Greater; break;
-                        case GXCompare.NotEqual:
-                            depth = DepthFunction.Notequal; break;
-                        case GXCompare.GreaterOrEqual:
-                            depth = DepthFunction.Gequal; break;
-                        case GXCompare.Always:
-                            depth = DepthFunction.Always; break;
-                    }
-                    GL.DepthFunc(depth);
-                }
-                else
-                    GL.Disable(EnableCap.DepthTest);
+                //if (_opaMaterial.EnableDepthTest)
+                //{
+                //    GL.Enable(EnableCap.DepthTest);
+                //    DepthFunction depth = DepthFunction.Lequal;
+                //    switch (_opaMaterial.DepthFunction)
+                //    {
+                //        case GXCompare.Never:
+                //            depth = DepthFunction.Never; break;
+                //        case GXCompare.Less:
+                //            depth = DepthFunction.Less; break;
+                //        case GXCompare.Equal:
+                //            depth = DepthFunction.Equal; break;
+                //        case GXCompare.LessOrEqual:
+                //            depth = DepthFunction.Lequal; break;
+                //        case GXCompare.Greater:
+                //            depth = DepthFunction.Greater; break;
+                //        case GXCompare.NotEqual:
+                //            depth = DepthFunction.Notequal; break;
+                //        case GXCompare.GreaterOrEqual:
+                //            depth = DepthFunction.Gequal; break;
+                //        case GXCompare.Always:
+                //            depth = DepthFunction.Always; break;
+                //    }
+                //    GL.DepthFunc(depth);
+                //}
+                //else
+                //    GL.Disable(EnableCap.DepthTest);
 
-                if (_opaMaterial._blendMode.EnableBlend)
-                {
-                    GL.Enable(EnableCap.Blend);
-                    BlendingFactorSrc src = BlendingFactorSrc.OneMinusSrcAlpha;
-                    switch (_opaMaterial._blendMode.SrcFactor)
-                    {
-                        case BlendFactor.DestinationAlpha:
-                            src = BlendingFactorSrc.DstAlpha; break;
-                        case BlendFactor.DestinationColor:
-                            src = BlendingFactorSrc.DstColor; break;
-                        case BlendFactor.InverseDestinationAlpha:
-                            src = BlendingFactorSrc.OneMinusDstAlpha; break;
-                        case BlendFactor.InverseDestinationColor:
-                            src = BlendingFactorSrc.OneMinusDstColor; break;
-                        case BlendFactor.InverseSourceAlpha:
-                            src = BlendingFactorSrc.OneMinusSrcAlpha; break;
-                        //case BlendFactor.InverseSourceColor:
-                        //    src = BlendingFactorSrc.ONE_MINUS_SRC_COLOR; break;
-                        case BlendFactor.One:
-                            src = BlendingFactorSrc.One; break;
-                        case BlendFactor.SourceAlpha:
-                            src = BlendingFactorSrc.SrcAlpha; break;
-                        //case BlendFactor.SourceColor:
-                        //    src = BlendingFactorSrc.SrcColor; break;
-                        case BlendFactor.Zero:
-                            src = BlendingFactorSrc.Zero; break;
-                    }
-                    BlendingFactorDest dst = BlendingFactorDest.OneMinusSrcAlpha;
-                    switch (_opaMaterial._blendMode.DstFactor)
-                    {
-                        case BlendFactor.DestinationAlpha:
-                            dst = BlendingFactorDest.DstAlpha; break;
-                        case BlendFactor.DestinationColor:
-                            dst = BlendingFactorDest.DstColor; break;
-                        case BlendFactor.InverseDestinationAlpha:
-                            dst = BlendingFactorDest.OneMinusDstAlpha; break;
-                        case BlendFactor.InverseDestinationColor:
-                            dst = BlendingFactorDest.OneMinusDstColor; break;
-                        case BlendFactor.InverseSourceAlpha:
-                            dst = BlendingFactorDest.OneMinusSrcAlpha; break;
-                        //case BlendFactor.InverseSourceColor:
-                        //    dst = BlendingFactorDest.ONE_MINUS_SRC_COLOR; break;
-                        case BlendFactor.One:
-                            dst = BlendingFactorDest.One; break;
-                        case BlendFactor.SourceAlpha:
-                            dst = BlendingFactorDest.SrcAlpha; break;
-                        //case BlendFactor.SourceColor:
-                        //    dst = BlendingFactorDest.SrcColor; break;
-                        case BlendFactor.Zero:
-                            dst = BlendingFactorDest.Zero; break;
-                    }
-                    GL.BlendFunc(src, dst);
-                }
-                else
-                    GL.Disable(EnableCap.Blend);
+                //if (_opaMaterial._blendMode.EnableBlend)
+                //{
+                //    GL.Enable(EnableCap.Blend);
+                //    BlendingFactorSrc src = BlendingFactorSrc.OneMinusSrcAlpha;
+                //    switch (_opaMaterial._blendMode.SrcFactor)
+                //    {
+                //        case BlendFactor.DestinationAlpha:
+                //            src = BlendingFactorSrc.DstAlpha; break;
+                //        case BlendFactor.DestinationColor:
+                //            src = BlendingFactorSrc.DstColor; break;
+                //        case BlendFactor.InverseDestinationAlpha:
+                //            src = BlendingFactorSrc.OneMinusDstAlpha; break;
+                //        case BlendFactor.InverseDestinationColor:
+                //            src = BlendingFactorSrc.OneMinusDstColor; break;
+                //        case BlendFactor.InverseSourceAlpha:
+                //            src = BlendingFactorSrc.OneMinusSrcAlpha; break;
+                //        //case BlendFactor.InverseSourceColor:
+                //        //    src = BlendingFactorSrc.ONE_MINUS_SRC_COLOR; break;
+                //        case BlendFactor.One:
+                //            src = BlendingFactorSrc.One; break;
+                //        case BlendFactor.SourceAlpha:
+                //            src = BlendingFactorSrc.SrcAlpha; break;
+                //        //case BlendFactor.SourceColor:
+                //        //    src = BlendingFactorSrc.SrcColor; break;
+                //        case BlendFactor.Zero:
+                //            src = BlendingFactorSrc.Zero; break;
+                //    }
+                //    BlendingFactorDest dst = BlendingFactorDest.OneMinusSrcAlpha;
+                //    switch (_opaMaterial._blendMode.DstFactor)
+                //    {
+                //        case BlendFactor.DestinationAlpha:
+                //            dst = BlendingFactorDest.DstAlpha; break;
+                //        case BlendFactor.DestinationColor:
+                //            dst = BlendingFactorDest.DstColor; break;
+                //        case BlendFactor.InverseDestinationAlpha:
+                //            dst = BlendingFactorDest.OneMinusDstAlpha; break;
+                //        case BlendFactor.InverseDestinationColor:
+                //            dst = BlendingFactorDest.OneMinusDstColor; break;
+                //        case BlendFactor.InverseSourceAlpha:
+                //            dst = BlendingFactorDest.OneMinusSrcAlpha; break;
+                //        //case BlendFactor.InverseSourceColor:
+                //        //    dst = BlendingFactorDest.ONE_MINUS_SRC_COLOR; break;
+                //        case BlendFactor.One:
+                //            dst = BlendingFactorDest.One; break;
+                //        case BlendFactor.SourceAlpha:
+                //            dst = BlendingFactorDest.SrcAlpha; break;
+                //        //case BlendFactor.SourceColor:
+                //        //    dst = BlendingFactorDest.SrcColor; break;
+                //        case BlendFactor.Zero:
+                //            dst = BlendingFactorDest.Zero; break;
+                //    }
+                //    GL.BlendFunc(src, dst);
+                //}
+                //else
+                //    GL.Disable(EnableCap.Blend);
 
-                if (_opaMaterial.EnableBlendLogic)
-                {
-                    GL.Enable(EnableCap.ColorLogicOp);
-                    GL.LogicOp((LogicOp)((int)LogicOp.Clear + (int)_opaMaterial.BlendLogicOp));
-                }
-                else
-                    GL.Disable(EnableCap.ColorLogicOp);
+                //if (_opaMaterial.EnableBlendLogic)
+                //{
+                //    GL.Enable(EnableCap.ColorLogicOp);
+                //    GL.LogicOp((LogicOp)((int)LogicOp.Clear + (int)_opaMaterial.BlendLogicOp));
+                //}
+                //else
+                //    GL.Disable(EnableCap.ColorLogicOp);
 
                 //if (_material.EnableAlphaFunction)
                 //{
