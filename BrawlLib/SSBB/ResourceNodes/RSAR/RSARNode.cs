@@ -15,7 +15,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.RSAR; } }
 
         [Category("Sound Archive")]
-        public float Version { get { return Header->_header.Version; } }
+        public byte VersionMajor { get { return Header->_header.VersionMajor; } }
+        [Category("Sound Archive")]
+        public byte VersionMinor { get { return Header->_header.VersionMinor; } }
         [Category("Sound Archive")]
         public ushort SeqSoundCount { get { return ftr._seqSoundCount; } set { ftr._seqSoundCount = value; SignalPropertyChange(); } }
         [Category("Sound Archive")]
@@ -123,6 +125,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
             ftr = *(INFOFooter*)((uint)baseAddr + typeList[5]);
+
+            foreach (RSARFileNode n in Files)
+                if (!(n is RSARExtFileNode))
+                    n.GetName();
 
             //bint* offsets = (bint*)((VoidPtr)symb + 12);
             //for (int i = 0; i < 4; i++)

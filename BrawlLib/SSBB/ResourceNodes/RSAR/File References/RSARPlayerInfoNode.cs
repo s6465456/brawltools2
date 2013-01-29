@@ -7,7 +7,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class RSARPlayerInfoNode : RSAREntryNode
     {
         internal INFOPlayerInfoEntry* Header { get { return (INFOPlayerInfoEntry*)WorkingUncompressed.Address; } }
-        internal override int StringId { get { return Header->_stringId; } }
+        [Browsable(false)]
+        internal override int StringId { get { return Header == null ? -1 : (int)Header->_stringId; } }
 
         public override ResourceType ResourceType { get { return ResourceType.RSARType; } }
 

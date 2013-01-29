@@ -187,7 +187,6 @@ namespace BrawlLib.SSBBTypes
         //}
     }
 
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct ADPCHeader
     {

@@ -12,9 +12,6 @@ namespace System
         public Vector2(float x, float y) { _x = x; _y = y; }
         public Vector2(float s) { _x = s; _y = s; }
 
-        public float X { get { return _x; } set { _x = value; } }
-        public float Y { get { return _y; } set { _y = value; } }
-
         public static Vector2 operator -(Vector2 v) { return new Vector2(-v._x, -v._y); }
         public static Vector2 operator +(Vector2 v1, Vector2 v2) { return new Vector2(v1._x + v2._x, v1._y + v2._y); }
         public static Vector2 operator -(Vector2 v1, Vector2 v2) { return new Vector2(v1._x - v2._x, v1._y - v2._y); }

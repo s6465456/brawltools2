@@ -11,14 +11,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal INFOSoundEntry* Header { get { return (INFOSoundEntry*)WorkingUncompressed.Address; } }
         
         [Browsable(false)]
-        internal override int StringId { get { return Header->_stringId; } }
+        internal override int StringId { get { return Header == null ? -1 : (int)Header->_stringId; } }
 
         public override ResourceType ResourceType { get { return ResourceType.RSARSound; } }
-
-        [Browsable(false)]
-        public int volume { get { return _volume; } set { _volume = (byte)value; } }
-        [Browsable(false)]
-        public int pan { get { return _panCurve; } set { _panCurve = (byte)value; } }
 
         Sound3DParam _sound3dParam;
         WaveSoundInfo _waveInfo = new WaveSoundInfo();
@@ -38,7 +33,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int _playerId;
         public byte _volume;
         public byte _playerPriority;
-        public byte _soundType;
+        public byte _soundType = 3;
         public byte _remoteFilter;
         public byte _panMode;
         public byte _panCurve;
@@ -117,6 +112,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         public PanCurve PanCurve { get { return (PanCurve)_panCurve; } set { _panCurve = (byte)value; SignalPropertyChange(); } }
         [Category("a RSAR Sound")]
         public byte ActorPlayerId { get { return _actorPlayerId; } set { _actorPlayerId = value; SignalPropertyChange(); } }
+        [Category("a RSAR Sound")]
+        public int UserParam1 { get { return _p1; } set { _p1 = value; SignalPropertyChange(); } }
+        [Category("a RSAR Sound")]
+        public int UserParam2 { get { return _p2; } set { _p2 = value; SignalPropertyChange(); } }
+
+        public int _p1, _p2;
 
         [Flags]
         public enum Sound3DFlags
@@ -203,16 +204,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("d RSAR Strm Sound Info")]
         public ushort AllocTrackFlag { get { return _strmInfo._allocTrackFlag; } set { _strmInfo._allocTrackFlag = value; SignalPropertyChange(); } }
 
-        ResourceNode _dataNode
-        {
-            get
-            {
-                if (SoundType == SndType.WAVE && _soundNode != null && !(_soundNode is RSARExtFileNode) && _soundNode.Children[0].Children.Count > _waveInfo._soundIndex && _waveInfo._soundIndex >= 0)
-                    return _soundNode.Children[0].Children[_waveInfo._soundIndex] as RWSDDataNode;
-                else 
-                    return null;
-            }
-        }
+        public RWSDDataNode _dataNode;
+
         [Category("e RSAR Wave Sound Info"), Browsable(true), TypeConverter(typeof(DropDownListRSARInfoSound))]
         public string SoundDataNode
         {
@@ -220,13 +213,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             set
             {
                 if (String.IsNullOrEmpty(value))
+                {
                     _waveInfo._soundIndex = -1;
+                    _dataNode._refs.Remove(this);
+                    _dataNode = null;
+                }
                 else
                 {
-                    if (SoundNode == null) return;
+                    if (SoundNode == null || SoundType != SndType.WAVE) return;
 
-                    ResourceNode node = null; int t = 0;
-                    foreach (ResourceNode r in SoundNode.Children[0].Children)
+                    RWSDDataNode node = null; int t = 0;
+                    foreach (RWSDDataNode r in SoundNode.Children[0].Children)
                     {
                         if (r.Name == value) { node = r; break; }
                         t++;
@@ -234,6 +231,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (node != null)
                     {
                         _waveInfo._soundIndex = t;
+                        _dataNode._refs.Remove(this);
+                        _dataNode = node;
+                        _dataNode._refs.Add(this);
                         SignalPropertyChange();
                     }
                 }
@@ -261,6 +261,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _panMode = Header->_panMode;
             _panCurve = Header->_panCurve;
             _actorPlayerId = Header->_actorPlayerId;
+            _p1 = Header->_userParam1;
+            _p2 = Header->_userParam2;
 
             INFOHeader* info = RSARNode.Header->INFOBlock;
             _sound3dParam = *Header->GetParam3dRef(&info->_collection);
@@ -286,6 +288,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (RSEQLabelNode r in SoundNode.Children)
                     if (_seqInfo._dataOffset == r.Id) { labl = r; break; }
 
+            if (SoundType == SndType.WAVE && _soundNode != null && !(_soundNode is RSARExtFileNode) && _soundNode.Children[0].Children.Count > _waveInfo._soundIndex && _waveInfo._soundIndex >= 0)
+            {
+                _dataNode = _soundNode.Children[0].Children[_waveInfo._soundIndex] as RWSDDataNode;
+                _dataNode._refs.Add(this);
+            }
             return false;
         }
 
@@ -337,6 +344,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_panCurve = _panCurve;
             header->_actorPlayerId = _actorPlayerId;
             header->_soundInfoRef = (uint)(addr - _rebuildBase);
+            header->_userParam1 = _p1;
+            header->_userParam2 = _p2;
             switch (SoundType)
             {
                 case RSARSoundNode.SndType.SEQ:

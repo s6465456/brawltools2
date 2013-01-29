@@ -3,6 +3,7 @@ using BrawlLib.SSBBTypes;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -16,6 +17,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         public RWSD_WSDEntry _part1;
         public RWSD_NoteEvent _part2;
         public RWSD_NoteInfo _part3;
+
+        public List<RSARSoundNode> _refs = new List<RSARSoundNode>();
+        public string[] References { get { return _refs.Select(x => x.TreePath).ToArray(); } }
 
         [Category("WSD Info")]
         public float Pitch { get { return _part1._pitch; } set { _part1._pitch = value; SignalPropertyChange(); } }
@@ -39,9 +43,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Note Event")]
         public uint Decay { get { return _part2.noteIndex; } set { _part2.noteIndex = value; } }
 
-        ResourceNode _soundNode;
+        WAVESoundNode _soundNode;
         [Browsable(false)]
-        public ResourceNode Sound
+        public WAVESoundNode Sound
         {
             get { return _soundNode; }
             set
@@ -60,9 +64,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     Sound = null;
                 else
                 {
-                    ResourceNode node = null;
+                    WAVESoundNode node = null;
                     int t = 0;
-                    foreach (ResourceNode r in Parent.Parent.Children[1].Children)
+                    foreach (WAVESoundNode r in Parent.Parent.Children[1].Children)
                     {
                         if (r.Name == value) { node = r; break; }
                         t++;
@@ -99,6 +103,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Note Info")]
         public float InfoPitch { get { return _part3._pitch; } set { _part3._pitch = value; } }
 
+        [Category("Audio Stream")]
+        public WaveEncoding Encoding { get { return _soundNode.Encoding; } }
+        [Category("Audio Stream")]
+        public int Channels { get { return _soundNode.Channels; } }
+        [Category("Audio Stream")]
+        public bool IsLooped { get { return _soundNode.IsLooped; } }
+        [Category("Audio Stream")]
+        public int SampleRate { get { return _soundNode.SampleRate; } }
+        [Category("Audio Stream")]
+        public int LoopStartSample { get { return _soundNode.LoopStartSample; } }
+        [Category("Audio Stream")]
+        public int NumSamples { get { return _soundNode.NumSamples; } }
+        [Category("Audio Stream")]
+        public uint DataOffset { get { return _soundNode.DataOffset; } }
+
         //[Category("Data Note Event")]
         //public List<RWSD_NoteEvent> Part2 { get { return _part2; } }
         //[Category("Data Note Info")]
@@ -122,7 +141,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _name = String.Format("Sound[{0}]", Index);
 
             if (Parent.Parent.Children.Count > 1 && _part3._waveIndex < Parent.Parent.Children[1].Children.Count)
-                _soundNode = Parent.Parent.Children[1].Children[_part3._waveIndex];
+                _soundNode = Parent.Parent.Children[1].Children[_part3._waveIndex] as WAVESoundNode;
 
             SetSizeInternal((RWSD_DATAEntry.Size + RWSD_WSDEntry.Size + 0x20 + RWSD_NoteEvent.Size + 12 + RWSD_NoteInfo.Size));
 

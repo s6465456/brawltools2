@@ -147,7 +147,6 @@ namespace System.Audio
             }
             else
                 _readSample += sampleDifference;
-
         }
 
         public virtual void Fill()
@@ -178,6 +177,5 @@ namespace System.Audio
             _writeOffset = (_writeOffset + byteCount) % _dataLength;
             _writeSample = source.SamplePosition;
         }
-
     }
 }

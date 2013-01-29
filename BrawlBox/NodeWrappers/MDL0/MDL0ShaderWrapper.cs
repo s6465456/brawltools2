@@ -40,7 +40,6 @@ namespace BrawlBox.NodeWrappers
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             MDL0ShaderWrapper w = GetInstance<MDL0ShaderWrapper>();
-            //_menu.Items[6].Enabled = w._resource.Children.Count < 8; //8 structures max!
             _menu.Items[6].Enabled = w._resource.Children.Count < 16; //16 stages max!
         }
         //private void CreateStruct()

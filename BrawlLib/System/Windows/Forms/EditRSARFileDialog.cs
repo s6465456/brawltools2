@@ -361,15 +361,16 @@ namespace System.Windows.Forms
             if (dataListBox.SelectedIndex < 0) return;
             ResourceNode r = dataListBox.Items[dataListBox.SelectedIndex] as ResourceNode;
             propertyGrid.SelectedObject = r;
+            int w;
             if (TargetNode is RWSDNode)
             {
-                int w = (r as RWSDDataNode)._part3._waveIndex;
+                w = (r as RWSDDataNode)._part3._waveIndex;
                 if (w < soundsListBox.Items.Count)
                     soundsListBox.SelectedIndex = w;
             } 
             else if (TargetNode is RBNKNode && r is RBNKDataInstParamNode)
             {
-                int w = (r as RBNKDataInstParamNode).hdr._waveIndex;
+                w = (r as RBNKDataInstParamNode).hdr._waveIndex;
                 if (w < soundsListBox.Items.Count)
                     soundsListBox.SelectedIndex = w;
             }

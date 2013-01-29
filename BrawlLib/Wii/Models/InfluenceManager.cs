@@ -246,11 +246,19 @@ namespace BrawlLib.Wii.Models
             return Bone.Name + " - Weight: " + Weight;
         }
 
-        public MDL0BoneNode Bone;
+        public MDL0BoneNode Bone 
+        { 
+            get { return _bone; } 
+            set 
+            {
+                _bone = value;
+            } 
+        }
+        public MDL0BoneNode _bone;
         public float Weight;
 
         public BoneWeight(MDL0BoneNode bone) : this(bone, 1.0f) { }
-        public BoneWeight(MDL0BoneNode bone, float weight) { Bone = bone; Weight = weight; }
+        public BoneWeight(MDL0BoneNode bone, float weight) { _bone = bone; Weight = weight; }
 
         public static bool operator ==(BoneWeight b1, BoneWeight b2) { return (b1.Bone == b2.Bone) && (b1.Weight - b2.Weight < 0.0001); }
         public static bool operator !=(BoneWeight b1, BoneWeight b2) { return !(b1 == b2); }

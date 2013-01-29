@@ -24,8 +24,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         private short _TableEntries;
         private short _TableUnk1;
 
-        [Category("REFF Data")]
-        public float Version { get { return _version; } }
+        [Category("REFT Data")]
+        public byte VersionMajor { get { return _major; } }
+        [Category("REFT Data")]
+        public byte VersionMinor { get { return _minor; } }
+        private byte _minor, _major;
+
         //[Category("REFT Data")]
         //public int DataLength { get { return _dataLen; } }
         //[Category("REFT Data")]
@@ -42,7 +46,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             REFT* header = Header;
 
-            _version = header->_header.Version;
+            _major = header->_header.VersionMajor;
+            _minor = header->_header.VersionMinor;
+
             _name = header->IdString;
             _dataLen = header->_dataLength;
             _dataOff = header->_dataOffset;

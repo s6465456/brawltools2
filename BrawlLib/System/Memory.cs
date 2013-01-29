@@ -10,7 +10,8 @@ namespace System
         {
             switch (Environment.OSVersion.Platform)
             {
-                case PlatformID.Win32NT: { Win32.MoveMemory(dst, src, size); break; }
+                case PlatformID.Win32NT: { Win32.MoveMemory(dst, src, size); 
+                    break; }
                 case PlatformID.MacOSX: { break; }
                 case PlatformID.Unix: { Linux.memmove(dst, src, size); break; }
             }
@@ -45,13 +46,9 @@ namespace System
             byte* ps = (byte*)src;
             byte* pd = (byte*)dst;
             if (ps > pd)
-            {
                 for (; count != 0; count--) *pd++ = *ps++;
-            }
             else if (ps < pd)
-            {
                 for (ps += count, pd += count; count != 0; count--) *--pd = *--ps;
-            }
         }
         // Frees a memory block.
         public static void Free(void* block)

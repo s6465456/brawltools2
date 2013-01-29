@@ -152,10 +152,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (WAVESoundNode r in Children)
             {
                 //Set offset and write header data
-                table[r.Index] = (uint)(addr - header->_list.Address);
-
-                //Write audio header
-                r.Rebuild(addr, r.WorkingUncompressed.Length, false);
+                table[r.Index] = (uint)(addr - address);
+                Memory.Move(addr, r.WorkingUncompressed.Address, (uint)r.WorkingUncompressed.Length);
 
                 //Set the offset to the audio samples
                 WaveInfo* wave = (WaveInfo*)addr;

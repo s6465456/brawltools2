@@ -13,16 +13,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal RWSDHeader* Header { get { return (RWSDHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.RWSD; } }
 
-        //public string Offset { get { if (RSARNode != null) return ((uint)((VoidPtr)Header - (VoidPtr)RSARNode.Header)).ToString("X"); else return null; } }
-
         [Category("RWSD")]
-        public float Version { get { return _version; } }
-        private float _version;
+        public byte VersionMajor { get { return _major; } }
+        [Category("RWSD")]
+        public byte VersionMinor { get { return _minor; } }
+        private byte _minor, _major;
 
         protected override void GetStrings(LabelBuilder builder)
         {
-            //foreach (RWSDDataNode node in Children[0].Children)
-            //    builder.Add(0, node._name);
+            foreach (RWSDDataNode node in Children[0].Children)
+                builder.Add(0, node._name);
         }
 
         //Finds labels using LABL block between header and footer, also initializes array
@@ -72,58 +72,59 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (total > len)
                 _audioSource = new DataSource(dataAddr + len, total - len);
         }
-        
+
+        public override void GetName()
+        {
+            base.GetName();
+            foreach (RWSDDataNode n in Children[0].Children)
+            {
+                string closestMatch = "";
+                foreach (string s in n.References)
+                {
+                    if (closestMatch == "")
+                        closestMatch = s;
+                    else
+                    {
+                        int one = closestMatch.Length;
+                        int two = s.Length;
+                        int min = Math.Min(one, two);
+                        for (int i = 0; i < min; i++)
+                            if (Char.ToLower(s[i]) != Char.ToLower(closestMatch[i]) && i > 1)
+                            {
+                                closestMatch = closestMatch.Substring(0, i - 1);
+                                break;
+                            }
+                    }
+                }
+                n._name = String.Format("{0}", closestMatch);
+            }
+        }
+
         protected override bool OnInitialize()
         {
             base.OnInitialize();
 
-            _version = Header->_header.Version;
-
             ParseBlocks();
+
+            _major = Header->_header.VersionMajor;
+            _minor = Header->_header.VersionMinor;
 
             return true;
         }
 
         protected override void OnPopulate()
         {
-            RSARNode rsar = RSARNode;
-            SYMBHeader* symb = null;
-            RuintList* soundList = null;
-            List<string> soundIndices = null;
-            VoidPtr soundOffset = null;
-            INFOSoundEntry* sEntry;
-            ResourceNode g;
             RWSDHeader* rwsd = Header;
             RWSD_DATAHeader* data = rwsd->Data;
             RuintList* list = &data->_list;
             int count = list->_numEntries;
 
-            if (_fileIndex == 86)
-                Console.WriteLine();
+            //if (_fileIndex == 86)
+            //    Console.WriteLine();
 
             new RWSDDataGroupNode().Initialize(this, Header->Data, Header->_dataLength);
             if (Header->_waveOffset > 0)
                 new RWSDSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
-
-            //Get sound info from RSAR (mainly for names)
-            if (rsar != null)
-            {
-                INFOHeader* info = rsar.Header->INFOBlock;
-                soundOffset = &rsar.Header->INFOBlock->_collection;
-
-                symb = rsar.Header->SYMBBlock;
-
-                soundList = rsar.Header->INFOBlock->Sounds;
-                soundIndices = new List<string>();
-                
-                //foreach (RSARSoundNode in _rsarSoundEntries)
-
-
-                //for (int i = 0; i < soundList->_numEntries; i++)
-                //    for (int x = 0; x < info->Sounds->_numEntries; x++)
-                //        if ((sEntry = info->GetSound(i))->_fileId == _fileIndex && sEntry->_soundType == 3)
-                //            soundIndices[((WaveSoundInfo*)sEntry->GetSoundInfoRef(soundOffset))->_soundIndex] = sEntry;
-            }
 
             for (int i = 0; i < count; i++)
             {
@@ -131,14 +132,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RWSDDataNode node = new RWSDDataNode();
                 node._offset = list;
                 node.Initialize(Children[0], entry, 0);
-
-                //Attach from INFO block
-                //if (soundIndices != null && (sEntry = soundIndices[i]) != null)
-                //    node._name = symb->GetStringEntry(sEntry->_stringId);
             }
-
-            //if (soundIndices != null)
-            //    Marshal.FreeHGlobal((IntPtr)soundIndices);
 
             //Get labels
             RSARNode parent;

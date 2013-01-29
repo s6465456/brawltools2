@@ -303,7 +303,7 @@ namespace BrawlBox
         }
 
         private static string _inFilter =
-        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.tpl;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.brstm;*.brsar;*.msbin;*.rwsd;*.rseq;*.rbnk;*.efls;*.breff;*.breft;*.arc;*.dol;*.rel;*.szs;*.mrg;*.mrgc|" +
+        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.tpl;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.brstm;*.brsar;*.msbin;*.brwsd;*.brseq;*.brbnk;*.efls;*.breff;*.breft;*.arc;*.dol;*.rel;*.szs;*.mrg;*.mrgc|" +
         "PAC File Archive (*.pac)|*.pac|" +
         "PCS Compressed File Archive (*.pcs)|*.pcs|" +
         "Resource Package (*.brres;*.brtex;*.brmdl)|*.brres;*.brtex;*.brmdl|" +
@@ -318,12 +318,12 @@ namespace BrawlBox
         "Visibility Sequence (*.vis0)|*.vis0|" +
         "Color Sequence (*.clr0)|*.clr0|" +
         "Scene Settings (*.scn0)|*.scn0|" +
+        "Message Pack (*.msbin)|*.msbin|" +
         "Audio Stream (*.brstm)|*.brstm|" +
         "Sound Archive (*.brsar)|*.brsar|" +
-        "Message Pack (*.msbin)|*.msbin|" +
-        "Sound Stream (*.rwsd)|*.rwsd|" +
-        "Sound Bank (*.rbnk)|*.rbnk|" +
-        "Sound Sequence (*.rseq)|*.rseq|" +
+        "Sound Stream (*.brwsd)|*.brwsd|" +
+        "Sound Bank (*.brbnk)|*.brbnk|" +
+        "Sound Sequence (*.brseq)|*.brseq|" +
         "Effect List (*.efls)|*.efls|" +
         "Effect Parameters (*.breff)|*.breff|" +
         "Effect Textures (*.breft)|*.breft|" +

@@ -82,7 +82,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 //Set offset and write header data
                 table[r.Index] = (uint)(addr - address);
-                r.Rebuild(addr, r.WorkingUncompressed.Length, false);
+                Memory.Move(addr, r.WorkingUncompressed.Address, (uint)r.WorkingUncompressed.Length);
 
                 //Set the offset to the audio samples
                 WaveInfo* wave = (WaveInfo*)addr;

@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using BrawlLib.IO;
+using System.Collections.ObjectModel;
 
 namespace System.Windows.Forms
 {
@@ -13,7 +14,7 @@ namespace System.Windows.Forms
         public const string FILTER = "Module files (*.rel)|*.rel";
 
         #region Definition of "Stage" inner class
-        private class Stage
+        public class Stage
         {
             private byte id;
             private string name;
@@ -30,20 +31,26 @@ namespace System.Windows.Forms
                 this.filename = filename;
             }
 
-            public override string ToString()
-            {
-                return name;
-            }
+            public override string ToString() { return name; }
         }
         #endregion
 
         private static List<Stage> stageList = new List<Stage>();
+		private static int[] indicesToIgnore = {
+			2959, // st_croll (PAL)
+			431, // st_onett, st_metalgear
+			387, // st_dxyorster
+			2519, // st_croll (NTSC)
+			419, // st_donkey
+			423, // st_halberd, st_jungle, st_mansion
+			};
+		public static ReadOnlyCollection<Stage> StageList { get { return stageList.AsReadOnly(); } }
+		public static ReadOnlyCollection<int> IndicesToIgnore { get { return Array.AsReadOnly(indicesToIgnore); } }
         private Label lblIDValue;
         private Label lblIDDesc;
         private Label label3;
         private ComboBox itemSelection;
         private Label lblItemDesc;
-        private static HashSet<int> indicesToIgnore = new HashSet<int>();
         static StageModuleConverter()
         {
             // static initializer
@@ -89,17 +96,7 @@ namespace System.Windows.Forms
 				52,53,54,55,56};
             #endregion
             for (int i = 0; i < ids.Length; i++)
-            {
                 stageList.Add(new Stage(ids[i], stagenames[i], filenames[i]));
-            }
-            #region Indices to ignore
-            indicesToIgnore.Add(2959); // st_croll (PAL)
-            indicesToIgnore.Add(431); // st_onett, st_metalgear
-            indicesToIgnore.Add(387); // st_dxyorster
-            indicesToIgnore.Add(2519); // st_croll (NTSC)
-            indicesToIgnore.Add(419); // st_donkey
-            indicesToIgnore.Add(423); // st_halberd, st_jungle, st_mansion
-            #endregion
         }
 
         #region Designer
@@ -720,7 +717,7 @@ namespace System.Windows.Forms
                 {
                     indexToCheck++;
                     if (indexToCheck == searchFor.Length)
-                        if (indicesToIgnore.Contains(i + 1))
+                        if (IndicesToIgnore.Contains(i + 1))
                         {
                             //MessageBox.Show("ignored " + (i + 1));
                             indexToCheck = 0;

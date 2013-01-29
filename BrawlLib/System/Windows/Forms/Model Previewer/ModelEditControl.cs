@@ -1297,15 +1297,14 @@ namespace System.Windows.Forms
             // 
             // chkShaders
             // 
-            this.chkShaders.Checked = true;
             this.chkShaders.CheckOnClick = true;
-            this.chkShaders.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkShaders.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkShaders.Image = ((System.Drawing.Image)(resources.GetObject("chkShaders.Image")));
             this.chkShaders.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.chkShaders.Name = "chkShaders";
             this.chkShaders.Size = new System.Drawing.Size(52, 21);
             this.chkShaders.Text = "Shaders";
+            this.chkShaders.Visible = false;
             this.chkShaders.CheckedChanged += new System.EventHandler(this.chkShaders_CheckedChanged);
             // 
             // chkVertices
@@ -3843,8 +3842,8 @@ namespace System.Windows.Forms
                 float e = 30.0f;
 
                 GL.Disable(EnableCap.CullFace);
-                GL.Disable(EnableCap.Blend);
-                GL.Disable(EnableCap.AlphaTest);
+                //GL.Disable(EnableCap.Blend);
+                //GL.Disable(EnableCap.AlphaTest);
                 GL.Disable(EnableCap.Lighting);
                 GL.Enable(EnableCap.DepthTest);
                 GL.PolygonMode(MaterialFace.Front, PolygonMode.Line);
