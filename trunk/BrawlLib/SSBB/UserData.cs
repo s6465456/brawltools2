@@ -13,7 +13,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         private UserDataCollection collection = null;
         private int index = -1;
-
+        
         public UserDataCollectionPropertyDescriptor(UserDataCollection coll, int idx) : base("#" + idx.ToString(), null)
         {
             this.collection = coll;
@@ -23,7 +23,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override AttributeCollection Attributes { get { return new AttributeCollection(null); } }
         public override bool CanResetValue(object component) { return true; }
         public override Type ComponentType { get { return this.collection.GetType(); } }
-        public override string DisplayName { get { return ((UserDataClass)this.collection[index]).ToString(); } }
+        public override string DisplayName { get { return index >= collection.Count || index < 0 ? null : ((UserDataClass)this.collection[index]).ToString(); } }
         public override string Description { get { return null; } }
         public override object GetValue(object component) { return this.collection[index]; }
         public override bool IsReadOnly { get { return true; } }
@@ -165,11 +165,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        public void Add(UserDataClass u) { this.List.Add(u); } 
+        public void Add(UserDataClass u) { this.List.Add(u); }
         public void Remove(UserDataClass u) { this.List.Remove(u); } 
         public UserDataClass this[int index] 
-        { 
-            get { return (UserDataClass)this.List[index]; }
+        {
+            get { return index >= List.Count || index < 0 ? null : (UserDataClass)this.List[index]; }
             set { this.List[index] = value; }
         }
 
@@ -321,7 +321,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public UserDataEntry(int entries, UserValueType type, int id)
         {
             _totalLen = 0;
-            _dataOffset = 0x18;
+            _dataOffset = type == UserValueType.String ? 0 : 0x18;
             _entryCount = entries;
             _type = (int)type;
             _stringOffset = 0;

@@ -121,7 +121,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
 
                 *pObj++ = new ColObject(cPlane, iPlane - cPlane, cPoint, iPoint - cPoint, obj._boxMin, obj._boxMax, obj._modelName, obj._boneName,
-                    obj._unk1, obj._unk2, obj._unk3, obj._unk4, obj._unk5, obj._unk6, obj._unk7);
+                    obj._unk1, obj._unk2, obj._unk3, obj._flags, obj._unk5, obj._unk6, obj._boneIndex);
 
             }
         }
@@ -172,7 +172,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         //internal CollisionNode _parent;
 
         internal Vector2 _boxMin, _boxMax;
-        internal int _unk1, _unk2, _unk3, _unk4, _unk5, _unk6, _unk7;
+        internal int _unk1, _unk2, _unk3, _unk5, _unk6, _boneIndex;
+        internal Bin16 _flags;
+
+        public enum Flags
+        {
+            None = 0,
+            Unknown = 1,
+            Independent = 2,
+            ModuleControlled = 4,
+            SSEUnknown = 8,
+        }
 
         //internal Matrix _transform, _inverseTransform;
 
@@ -190,10 +200,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             _unk1 = entry->_unk1;
             _unk2 = entry->_unk2;
             _unk3 = entry->_unk3;
-            _unk4 = entry->_unk4;
+            _flags = (ushort)entry->_flags;
             _unk5 = entry->_unk5;
             _unk6 = entry->_unk6;
-            _unk7 = entry->_unk7;
+            _boneIndex = entry->_boneIndex;
 
             int pointCount = entry->_pointCount;
             int pointOffset = entry->_pointOffset;
@@ -209,10 +219,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             //CollisionPlane plane;
             for (int i = 0; i < planeCount; i++)
-            {
                 if (pPlane->_point1 != pPlane->_point2)
                     new CollisionPlane(this, pPlane++, pointOffset);
-            }
         }
 
         //Calculate bounds, and reset indices
@@ -290,10 +298,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _parent._points.Add(this);
         }
 
-        internal CollisionLink Clone()
-        {
-            return new CollisionLink(_parent, _value);
-        }
+        internal CollisionLink Clone() { return new CollisionLink(_parent, _value); }
 
         //internal CollisionLink Splinter()
         //{
@@ -402,9 +407,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     plane2.Delete();
                 }
                 else
-                {
                     plane1.Delete();
-                }
             }
         }
 

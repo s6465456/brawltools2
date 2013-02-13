@@ -125,7 +125,7 @@ namespace BrawlLib.Wii.Audio
             if (_numSamples <= 0) return;
 
             _blockLen = (_numSamples.Align(14) / 14 * 8).Align(0x20);
-            _loopStartSample = (int)pWAVE->_loopStartSample;
+            _loopStartSample = (int)pWAVE->LoopSample;
             _loopEndSample = _numSamples;
 
             Init();

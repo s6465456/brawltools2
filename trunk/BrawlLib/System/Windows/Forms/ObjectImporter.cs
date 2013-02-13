@@ -115,19 +115,39 @@ namespace System.Windows.Forms
                     //(newNode._colorSet[i] = (MDL0ColorNode)_internalModel.ColorGroup.Children[_internalModel._colorList.Count - 1])._polygons.Add(newNode);
                 }
 
-            _internalModel._matGroup.AddChild(node._opaMaterial);
-            newNode.OpaMaterialNode = (MDL0MaterialNode)_internalModel.MaterialGroup.Children[_internalModel._matList.Count - 1];
-
-            _internalModel._shadGroup.AddChild(node._opaMaterial._shader);
-            newNode._opaMaterial.ShaderNode = (MDL0ShaderNode)_internalModel.ShaderGroup.Children[_internalModel._shadList.Count - 1];
-
-            foreach (MDL0MaterialRefNode r in newNode._opaMaterial.Children)
+            if (node.OpaMaterialNode != null)
             {
-                if (r._texture != null)
-                    (r._texture = _internalModel.FindOrCreateTexture(r.TextureNode.Name))._references.Add(r);
+                _internalModel._matGroup.AddChild(node.OpaMaterialNode);
+                newNode.OpaMaterialNode = (MDL0MaterialNode)_internalModel.MaterialGroup.Children[_internalModel._matList.Count - 1];
 
-                if (r._palette != null)
-                    (r._palette = _internalModel.FindOrCreatePalette(r.PaletteNode.Name))._references.Add(r);
+                _internalModel._shadGroup.AddChild(node.OpaMaterialNode._shader);
+                newNode.OpaMaterialNode.ShaderNode = (MDL0ShaderNode)_internalModel.ShaderGroup.Children[_internalModel._shadList.Count - 1];
+
+                foreach (MDL0MaterialRefNode r in newNode.OpaMaterialNode.Children)
+                {
+                    if (r._texture != null)
+                        (r._texture = _internalModel.FindOrCreateTexture(r.TextureNode.Name))._references.Add(r);
+
+                    if (r._palette != null)
+                        (r._palette = _internalModel.FindOrCreatePalette(r.PaletteNode.Name))._references.Add(r);
+                }
+            } 
+            if (node.XluMaterialNode != null)
+            {
+                _internalModel._matGroup.AddChild(node.XluMaterialNode);
+                newNode.XluMaterialNode = (MDL0MaterialNode)_internalModel.MaterialGroup.Children[_internalModel._matList.Count - 1];
+
+                _internalModel._shadGroup.AddChild(node.XluMaterialNode._shader);
+                newNode.XluMaterialNode.ShaderNode = (MDL0ShaderNode)_internalModel.ShaderGroup.Children[_internalModel._shadList.Count - 1];
+
+                foreach (MDL0MaterialRefNode r in newNode.XluMaterialNode.Children)
+                {
+                    if (r._texture != null)
+                        (r._texture = _internalModel.FindOrCreateTexture(r.TextureNode.Name))._references.Add(r);
+
+                    if (r._palette != null)
+                        (r._palette = _internalModel.FindOrCreatePalette(r.PaletteNode.Name))._references.Add(r);
+                }
             }
 
             if (node.Weighted)

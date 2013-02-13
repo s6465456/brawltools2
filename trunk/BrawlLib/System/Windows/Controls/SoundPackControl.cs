@@ -235,9 +235,16 @@ namespace System.Windows.Forms
 
         private void mnuExport_Click(object sender, EventArgs e)
         {
+            if (_selectedItem.SubItems[1].Text != "External")
             using (SaveFileDialog dlg = new SaveFileDialog())
             {
-                dlg.FileName = _selectedItem.SubItems[1].Text;
+                dlg.FileName = _selectedItem.SubItems[2].Text.Replace('/', '_');
+                switch (_selectedItem.SubItems[1].Text)
+                {
+                    case "RWSD": dlg.Filter = ExportFilters.RWSD; break;
+                    case "RBNK": dlg.Filter = ExportFilters.RBNK; break;
+                    case "RSEQ": dlg.Filter = ExportFilters.RSEQ; break;
+                }
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                     _selectedItem._node.Export(dlg.FileName);
             }

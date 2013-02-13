@@ -43,9 +43,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Note Event")]
         public uint Decay { get { return _part2.noteIndex; } set { _part2.noteIndex = value; } }
 
-        WAVESoundNode _soundNode;
+        RSARFileAudioNode _soundNode;
         [Browsable(false)]
-        public WAVESoundNode Sound
+        public RSARFileAudioNode Sound
         {
             get { return _soundNode; }
             set
@@ -64,9 +64,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     Sound = null;
                 else
                 {
-                    WAVESoundNode node = null;
+                    RSARFileAudioNode node = null;
                     int t = 0;
-                    foreach (WAVESoundNode r in Parent.Parent.Children[1].Children)
+                    foreach (RSARFileAudioNode r in Parent.Parent.Children[1].Children)
                     {
                         if (r.Name == value) { node = r; break; }
                         t++;
@@ -104,19 +104,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         public float InfoPitch { get { return _part3._pitch; } set { _part3._pitch = value; } }
 
         [Category("Audio Stream")]
-        public WaveEncoding Encoding { get { return _soundNode.Encoding; } }
+        public WaveEncoding Encoding { get { return _soundNode == null ? WaveEncoding.ADPCM : _soundNode.Encoding; } }
         [Category("Audio Stream")]
-        public int Channels { get { return _soundNode.Channels; } }
+        public int Channels { get { return _soundNode == null ? 0 : _soundNode.Channels; } }
         [Category("Audio Stream")]
-        public bool IsLooped { get { return _soundNode.IsLooped; } }
+        public bool IsLooped { get { return _soundNode == null ? false : _soundNode.IsLooped; } }
         [Category("Audio Stream")]
-        public int SampleRate { get { return _soundNode.SampleRate; } }
+        public int SampleRate { get { return _soundNode == null ? 0 : _soundNode.SampleRate; } }
         [Category("Audio Stream")]
-        public int LoopStartSample { get { return _soundNode.LoopStartSample; } }
+        public int LoopStartSample { get { return _soundNode == null ? 0 : _soundNode.LoopStartSample; } }
         [Category("Audio Stream")]
-        public int NumSamples { get { return _soundNode.NumSamples; } }
-        [Category("Audio Stream")]
-        public uint DataOffset { get { return _soundNode.DataOffset; } }
+        public int NumSamples { get { return _soundNode == null ? 0 : _soundNode.NumSamples; } }
 
         //[Category("Data Note Event")]
         //public List<RWSD_NoteEvent> Part2 { get { return _part2; } }
@@ -141,7 +139,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _name = String.Format("Sound[{0}]", Index);
 
             if (Parent.Parent.Children.Count > 1 && _part3._waveIndex < Parent.Parent.Children[1].Children.Count)
-                _soundNode = Parent.Parent.Children[1].Children[_part3._waveIndex] as WAVESoundNode;
+                _soundNode = Parent.Parent.Children[1].Children[_part3._waveIndex] as RSARFileAudioNode;
 
             SetSizeInternal((RWSD_DATAEntry.Size + RWSD_WSDEntry.Size + 0x20 + RWSD_NoteEvent.Size + 12 + RWSD_NoteInfo.Size));
 
@@ -198,6 +196,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             RWSD_NoteInfo* info = (RWSD_NoteInfo*)addr;
             *info = _part3;
             addr += RWSD_NoteInfo.Size;
+        }
+
+        public override void Remove()
+        {
+            foreach (RSARSoundNode n in _refs)
+                n.SoundDataNode = null;
+
+            base.Remove();
         }
     }
 }

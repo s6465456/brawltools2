@@ -13,12 +13,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal RWSDHeader* Header { get { return (RWSDHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.RWSD; } }
 
-        [Category("RWSD")]
-        public byte VersionMajor { get { return _major; } }
-        [Category("RWSD")]
-        public byte VersionMinor { get { return _minor; } }
-        private byte _minor, _major;
-
         protected override void GetStrings(LabelBuilder builder)
         {
             foreach (RWSDDataNode node in Children[0].Children)
@@ -106,9 +100,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             ParseBlocks();
 
-            _major = Header->_header.VersionMajor;
-            _minor = Header->_header.VersionMinor;
-
             return true;
         }
 
@@ -119,12 +110,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             RuintList* list = &data->_list;
             int count = list->_numEntries;
 
-            //if (_fileIndex == 86)
-            //    Console.WriteLine();
-
             new RWSDDataGroupNode().Initialize(this, Header->Data, Header->_dataLength);
-            if (Header->_waveOffset > 0)
+            if (Header->_waveOffset > 0 && VersionMinor < 3)
                 new RWSDSoundGroupNode().Initialize(this, Header->Wave, Header->_waveLength);
+            else if (VersionMinor >= 3)
+                new RWARNode() { _name = "Audio" }.Initialize(this, _audioSource.Address, _audioSource.Length);
 
             for (int i = 0; i < count; i++)
             {
@@ -176,7 +166,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_header._tag = RWSDHeader.Tag;
             header->_header._numEntries = 2;
             header->_header._firstOffset = 0x20;
-            header->_header._endian = -2;
+            header->_header.Endian = Endian.Big;
             header->_header._version = 0x102;
             header->_dataOffset = 0x20;
             header->_dataLength = Children[0]._calcSize;

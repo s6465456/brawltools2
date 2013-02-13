@@ -68,7 +68,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         RWSD = 0x0A00,
         RWSDDataEntry = 0x1800,
-        RWSDWaveEntry = 0x0800,
+        RSARFileAudioEntry = 0x0800,
 
         RBNK = 0x1B00,
         RSEQ = 0x0E00,
@@ -92,7 +92,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         RSARFolder = 0x0B01,
 
-        RWSDSoundGroup = 0x1101,
+        RSARFileSoundGroup = 0x1101,
         RWSDDataGroup = 0x1401,
         RSEQGroup = 0x1201,
         RBNKGroup = 0x1301,

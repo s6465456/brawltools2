@@ -77,6 +77,7 @@ namespace System.Audio
             _loopEnd = _numSamples;
 
             _source = (short*)dataAddr;
+            _samplePos = 0;
         }
 
         public int ReadSamples(VoidPtr destAddr, int numSamples)

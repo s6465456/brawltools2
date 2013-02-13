@@ -61,13 +61,6 @@ namespace System.Windows.Forms
         private TextBox txtBone;
         private Label label4;
         private CheckBox chkBones;
-        private NumericUpDown numObj6;
-        private NumericUpDown numObj5;
-        private NumericUpDown numObj4;
-        private NumericUpDown numObj3;
-        private NumericUpDown numObj2;
-        private NumericUpDown numObj1;
-        private NumericUpDown numObj7;
         private CheckBox chkLeftLedge;
         private ComboBox cboType;
         private TreeView modelTree;
@@ -80,6 +73,10 @@ namespace System.Windows.Forms
         private ToolStripButton btnUndo;
         private ToolStripButton btnRedo;
         private ToolStripSeparator toolStripSeparator3;
+        private CheckBox chkObjModule;
+        private CheckBox chkObjUnk;
+        private CheckBox chkObjIndep;
+        private CheckBox chkObjSSEUnk;
         private CheckedListBox lstObjects;
 
         private void InitializeComponent()
@@ -121,19 +118,15 @@ namespace System.Windows.Forms
             this.label1 = new System.Windows.Forms.Label();
             this.numX = new System.Windows.Forms.NumericInputBox();
             this.pnlObjProps = new System.Windows.Forms.Panel();
+            this.chkObjModule = new System.Windows.Forms.CheckBox();
+            this.chkObjUnk = new System.Windows.Forms.CheckBox();
             this.btnUnlink = new System.Windows.Forms.Button();
-            this.numObj7 = new System.Windows.Forms.NumericUpDown();
-            this.numObj6 = new System.Windows.Forms.NumericUpDown();
-            this.numObj5 = new System.Windows.Forms.NumericUpDown();
-            this.numObj4 = new System.Windows.Forms.NumericUpDown();
-            this.numObj3 = new System.Windows.Forms.NumericUpDown();
-            this.numObj2 = new System.Windows.Forms.NumericUpDown();
-            this.numObj1 = new System.Windows.Forms.NumericUpDown();
             this.btnRelink = new System.Windows.Forms.Button();
             this.txtBone = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.txtModel = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.chkObjIndep = new System.Windows.Forms.CheckBox();
             this._modelPanel = new System.Windows.Forms.ModelPanel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -151,6 +144,7 @@ namespace System.Windows.Forms
             this.btnResetSnap = new System.Windows.Forms.ToolStripButton();
             this.btnResetRot = new System.Windows.Forms.Button();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
+            this.chkObjSSEUnk = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.undoToolStrip)).BeginInit();
             this.undoToolStrip.Panel1.SuspendLayout();
             this.undoToolStrip.Panel2.SuspendLayout();
@@ -171,13 +165,6 @@ namespace System.Windows.Forms
             this.groupBox1.SuspendLayout();
             this.pnlPointProps.SuspendLayout();
             this.pnlObjProps.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj7)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj6)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj5)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj4)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj3)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj1)).BeginInit();
             this.panel1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
@@ -402,8 +389,8 @@ namespace System.Windows.Forms
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox2.Controls.Add(this.cboType);
             this.groupBox2.Controls.Add(this.chkTypeUnk2);
             this.groupBox2.Controls.Add(this.chkTypeUnk1);
@@ -450,8 +437,8 @@ namespace System.Windows.Forms
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox1.Controls.Add(this.chkLeftLedge);
             this.groupBox1.Controls.Add(this.chkNoWalljump);
             this.groupBox1.Controls.Add(this.chkRightLedge);
@@ -583,14 +570,11 @@ namespace System.Windows.Forms
             // 
             // pnlObjProps
             // 
+            this.pnlObjProps.Controls.Add(this.chkObjSSEUnk);
+            this.pnlObjProps.Controls.Add(this.chkObjIndep);
+            this.pnlObjProps.Controls.Add(this.chkObjModule);
+            this.pnlObjProps.Controls.Add(this.chkObjUnk);
             this.pnlObjProps.Controls.Add(this.btnUnlink);
-            this.pnlObjProps.Controls.Add(this.numObj7);
-            this.pnlObjProps.Controls.Add(this.numObj6);
-            this.pnlObjProps.Controls.Add(this.numObj5);
-            this.pnlObjProps.Controls.Add(this.numObj4);
-            this.pnlObjProps.Controls.Add(this.numObj3);
-            this.pnlObjProps.Controls.Add(this.numObj2);
-            this.pnlObjProps.Controls.Add(this.numObj1);
             this.pnlObjProps.Controls.Add(this.btnRelink);
             this.pnlObjProps.Controls.Add(this.txtBone);
             this.pnlObjProps.Controls.Add(this.label4);
@@ -603,6 +587,28 @@ namespace System.Windows.Forms
             this.pnlObjProps.TabIndex = 1;
             this.pnlObjProps.Visible = false;
             // 
+            // chkObjModule
+            // 
+            this.chkObjModule.AutoSize = true;
+            this.chkObjModule.Location = new System.Drawing.Point(10, 87);
+            this.chkObjModule.Name = "chkObjModule";
+            this.chkObjModule.Size = new System.Drawing.Size(111, 17);
+            this.chkObjModule.TabIndex = 14;
+            this.chkObjModule.Text = "Module Controlled";
+            this.chkObjModule.UseVisualStyleBackColor = true;
+            this.chkObjModule.CheckedChanged += new System.EventHandler(this.chkObjModule_CheckedChanged);
+            // 
+            // chkObjUnk
+            // 
+            this.chkObjUnk.AutoSize = true;
+            this.chkObjUnk.Location = new System.Drawing.Point(10, 51);
+            this.chkObjUnk.Name = "chkObjUnk";
+            this.chkObjUnk.Size = new System.Drawing.Size(72, 17);
+            this.chkObjUnk.TabIndex = 13;
+            this.chkObjUnk.Text = "Unknown";
+            this.chkObjUnk.UseVisualStyleBackColor = true;
+            this.chkObjUnk.CheckedChanged += new System.EventHandler(this.chkObjUnk_CheckedChanged);
+            // 
             // btnUnlink
             // 
             this.btnUnlink.Location = new System.Drawing.Point(177, 22);
@@ -612,132 +618,6 @@ namespace System.Windows.Forms
             this.btnUnlink.Text = "-";
             this.btnUnlink.UseVisualStyleBackColor = true;
             this.btnUnlink.Click += new System.EventHandler(this.btnUnlink_Click);
-            // 
-            // numObj7
-            // 
-            this.numObj7.Location = new System.Drawing.Point(18, 104);
-            this.numObj7.Maximum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            0});
-            this.numObj7.Minimum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            -2147483648});
-            this.numObj7.Name = "numObj7";
-            this.numObj7.Size = new System.Drawing.Size(86, 20);
-            this.numObj7.TabIndex = 11;
-            this.numObj7.ValueChanged += new System.EventHandler(this.numObj7_ValueChanged);
-            // 
-            // numObj6
-            // 
-            this.numObj6.Location = new System.Drawing.Point(110, 85);
-            this.numObj6.Maximum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            0});
-            this.numObj6.Minimum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            -2147483648});
-            this.numObj6.Name = "numObj6";
-            this.numObj6.Size = new System.Drawing.Size(86, 20);
-            this.numObj6.TabIndex = 10;
-            this.numObj6.ValueChanged += new System.EventHandler(this.numObj6_ValueChanged);
-            // 
-            // numObj5
-            // 
-            this.numObj5.Location = new System.Drawing.Point(18, 85);
-            this.numObj5.Maximum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            0});
-            this.numObj5.Minimum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            -2147483648});
-            this.numObj5.Name = "numObj5";
-            this.numObj5.Size = new System.Drawing.Size(86, 20);
-            this.numObj5.TabIndex = 9;
-            this.numObj5.ValueChanged += new System.EventHandler(this.numObj5_ValueChanged);
-            // 
-            // numObj4
-            // 
-            this.numObj4.Location = new System.Drawing.Point(110, 66);
-            this.numObj4.Maximum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            0});
-            this.numObj4.Minimum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            -2147483648});
-            this.numObj4.Name = "numObj4";
-            this.numObj4.Size = new System.Drawing.Size(86, 20);
-            this.numObj4.TabIndex = 8;
-            this.numObj4.ValueChanged += new System.EventHandler(this.numObj4_ValueChanged);
-            // 
-            // numObj3
-            // 
-            this.numObj3.Location = new System.Drawing.Point(18, 66);
-            this.numObj3.Maximum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            0});
-            this.numObj3.Minimum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            -2147483648});
-            this.numObj3.Name = "numObj3";
-            this.numObj3.Size = new System.Drawing.Size(86, 20);
-            this.numObj3.TabIndex = 7;
-            this.numObj3.ValueChanged += new System.EventHandler(this.numObj3_ValueChanged);
-            // 
-            // numObj2
-            // 
-            this.numObj2.Location = new System.Drawing.Point(110, 47);
-            this.numObj2.Maximum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            0});
-            this.numObj2.Minimum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            -2147483648});
-            this.numObj2.Name = "numObj2";
-            this.numObj2.Size = new System.Drawing.Size(86, 20);
-            this.numObj2.TabIndex = 6;
-            this.numObj2.ValueChanged += new System.EventHandler(this.numObj2_ValueChanged);
-            // 
-            // numObj1
-            // 
-            this.numObj1.Location = new System.Drawing.Point(18, 47);
-            this.numObj1.Maximum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            0});
-            this.numObj1.Minimum = new decimal(new int[] {
-            1410065407,
-            2,
-            0,
-            -2147483648});
-            this.numObj1.Name = "numObj1";
-            this.numObj1.Size = new System.Drawing.Size(86, 20);
-            this.numObj1.TabIndex = 5;
-            this.numObj1.ValueChanged += new System.EventHandler(this.numObj1_ValueChanged);
             // 
             // btnRelink
             // 
@@ -782,6 +662,17 @@ namespace System.Windows.Forms
             this.label3.TabIndex = 0;
             this.label3.Text = "Model:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // chkObjIndep
+            // 
+            this.chkObjIndep.AutoSize = true;
+            this.chkObjIndep.Location = new System.Drawing.Point(10, 69);
+            this.chkObjIndep.Name = "chkObjIndep";
+            this.chkObjIndep.Size = new System.Drawing.Size(86, 17);
+            this.chkObjIndep.TabIndex = 3;
+            this.chkObjIndep.Text = "Independent";
+            this.chkObjIndep.UseVisualStyleBackColor = true;
+            this.chkObjIndep.CheckedChanged += new System.EventHandler(this.chkObjIndep_CheckedChanged);
             // 
             // _modelPanel
             // 
@@ -963,6 +854,17 @@ namespace System.Windows.Forms
             this.trackBar1.TickStyle = System.Windows.Forms.TickStyle.None;
             this.trackBar1.Scroll += new System.EventHandler(this.trackBar1_Scroll);
             // 
+            // chkObjSSEUnk
+            // 
+            this.chkObjSSEUnk.AutoSize = true;
+            this.chkObjSSEUnk.Location = new System.Drawing.Point(10, 105);
+            this.chkObjSSEUnk.Name = "chkObjSSEUnk";
+            this.chkObjSSEUnk.Size = new System.Drawing.Size(96, 17);
+            this.chkObjSSEUnk.TabIndex = 15;
+            this.chkObjSSEUnk.Text = "SSE Unknown";
+            this.chkObjSSEUnk.UseVisualStyleBackColor = true;
+            this.chkObjSSEUnk.CheckedChanged += new System.EventHandler(this.chkObjSSEUnk_CheckedChanged);
+            // 
             // CollisionEditor
             // 
             this.BackColor = System.Drawing.Color.Lavender;
@@ -991,13 +893,6 @@ namespace System.Windows.Forms
             this.pnlPointProps.PerformLayout();
             this.pnlObjProps.ResumeLayout(false);
             this.pnlObjProps.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj7)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj6)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj5)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj4)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj3)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numObj1)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
@@ -1056,7 +951,6 @@ namespace System.Windows.Forms
             foreach (CollisionPlaneType t in Enum.GetValues(typeof(CollisionPlaneType)))
                 cboType.Items.Add(t);
         }
-
 
         private void TargetChanged(CollisionNode node)
         {
@@ -1136,13 +1030,10 @@ namespace System.Windows.Forms
             {
                 txtModel.Text = _selectedObject._modelName;
                 txtBone.Text = _selectedObject._boneName;
-                numObj1.Value = _selectedObject._unk1;
-                numObj2.Value = _selectedObject._unk2;
-                numObj3.Value = _selectedObject._unk3;
-                numObj4.Value = _selectedObject._unk4;
-                numObj5.Value = _selectedObject._unk5;
-                numObj6.Value = _selectedObject._unk6;
-                numObj7.Value = _selectedObject._unk7;
+                chkObjUnk.Checked = _selectedObject._flags[0];
+                chkObjIndep.Checked = _selectedObject._flags[1];
+                chkObjModule.Checked = _selectedObject._flags[2];
+                chkObjSSEUnk.Checked = _selectedObject._flags[3];
             }
             
             _updating = false;
@@ -1377,9 +1268,7 @@ namespace System.Windows.Forms
 
             //Move points
             foreach (CollisionLink p in _selectedLinks)
-            {
                 p._value += diff;
-            }
             
             _modelPanel.Invalidate();
 
@@ -1736,17 +1625,16 @@ namespace System.Windows.Forms
                 return;
 
             GL.Enable(EnableCap.DepthTest);
+            GL.Disable(EnableCap.CullFace);
 
             //Draw lines
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
             GL.Color4(0.0f, 0.0f, 1.0f, 0.5f);
-
             context.DrawBox(_selectStart, _selectEnd);
 
             //Draw box
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             GL.Color4(1.0f, 1.0f, 0.0f, 0.2f);
-
             context.DrawBox(_selectStart, _selectEnd);
         }
 
@@ -1981,18 +1869,6 @@ namespace System.Windows.Forms
 
         #endregion
 
-        #region Object Properties
-
-        private void numObj1_ValueChanged(object sender, EventArgs e) { if (!_updating && (_selectedObject != null))_selectedObject._unk1 = (int)numObj1.Value; }
-        private void numObj2_ValueChanged(object sender, EventArgs e) { if (!_updating && (_selectedObject != null))_selectedObject._unk2 = (int)numObj2.Value; }
-        private void numObj3_ValueChanged(object sender, EventArgs e) { if (!_updating && (_selectedObject != null))_selectedObject._unk3 = (int)numObj3.Value; }
-        private void numObj4_ValueChanged(object sender, EventArgs e) { if (!_updating && (_selectedObject != null))_selectedObject._unk4 = (int)numObj4.Value; }
-        private void numObj5_ValueChanged(object sender, EventArgs e) { if (!_updating && (_selectedObject != null))_selectedObject._unk5 = (int)numObj5.Value; }
-        private void numObj6_ValueChanged(object sender, EventArgs e) { if (!_updating && (_selectedObject != null))_selectedObject._unk6 = (int)numObj6.Value; }
-        private void numObj7_ValueChanged(object sender, EventArgs e) { if (!_updating && (_selectedObject != null))_selectedObject._unk7 = (int)numObj7.Value; }
-
-        #endregion
-
         private void btnSameX_Click(object sender, EventArgs e)
         {
             CreateUndo();
@@ -2086,6 +1962,7 @@ namespace System.Windows.Forms
                 return;
 
             txtBone.Text = _selectedObject._boneName = node.Text;
+            _selectedObject._boneIndex = ((MDL0BoneNode)node.Tag).BoneIndex;
             txtModel.Text = _selectedObject._modelName = node.Parent.Text;
         }
 
@@ -2209,6 +2086,30 @@ namespace System.Windows.Forms
 
             _modelPanel.Invalidate();
             UpdatePropPanels();
+        }
+
+        private void chkObjUnk_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_selectedObject == null || _updating) return;
+            _selectedObject._flags[0] = chkObjUnk.Checked;
+        }
+
+        private void chkObjIndep_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_selectedObject == null || _updating) return;
+            _selectedObject._flags[1] = chkObjIndep.Checked;
+        }
+
+        private void chkObjModule_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_selectedObject == null || _updating) return;
+            _selectedObject._flags[2] = chkObjModule.Checked;
+        }
+
+        private void chkObjSSEUnk_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_selectedObject == null || _updating) return;
+            _selectedObject._flags[3] = chkObjSSEUnk.Checked;
         }
     }
 }

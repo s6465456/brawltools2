@@ -9,7 +9,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack=1)]
     unsafe struct SHP0v3
     {
-        public const uint Tag = 0x30504853;
+        public const string Tag = "SHP0";
         public const int Size = 0x28;
 
         public BRESCommonHeader _header;
@@ -62,7 +62,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct SHP0v4
     {
-        public const uint Tag = 0x30504853;
+        public const string Tag = "SHP0";
         public const int Size = 0x2C;
 
         public BRESCommonHeader _header;

@@ -245,12 +245,17 @@ namespace BrawlLib.Wii.Audio
                         list->Entries[z] = (uint)((VoidPtr)(&fileEntries[z]) - baseAddr);
                         fileEntries[z]._groupId = g._rebuildIndex;
                         int[] all = g._files.FindAllOccurences(file);
+                        bool done = false;
                         foreach (int i in all)
                             if (!used.Contains(i))
                             {
                                 fileEntries[z]._index = i;
+                                used.Add(i);
+                                done = true;
                                 break;
                             }
+                        if (!done)
+                            fileEntries[z]._index = g._files.IndexOf(file);
                         z++;
                     }
                     dataAddr = (VoidPtr)fileEntries + file._groups.Count * INFOFileEntry.Size;

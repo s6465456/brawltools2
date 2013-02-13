@@ -9,7 +9,7 @@ using System.IO;
 
 namespace BrawlBox.NodeWrappers
 {
-    [NodeWrapper(ResourceType.RWSDSoundGroup)]
+    [NodeWrapper(ResourceType.RSARFileSoundGroup)]
     class RWSDSoundGroupWrapper : GenericWrapper
     {
         #region Menu
@@ -47,22 +47,19 @@ namespace BrawlBox.NodeWrappers
             string path;
             if (Program.OpenFile("PCM Audio (*.wav)|*.wav", out path) > 0)
             {
-                WAVESoundNode n = new WAVESoundNode();
+                RSARFileAudioNode n;
+
+                if ((_resource.Parent as NW4RNode).VersionMinor >= 3)
+                    n = new RWAVNode();
+                else
+                    n = new WAVESoundNode();
+
                 _resource.AddChild(n);
-                using (BrstmConverterDialog dlg = new BrstmConverterDialog())
-                {
-                    dlg.RSAR = true;
-                    dlg.AudioSource = path;
-                    if (dlg.ShowDialog(MainForm.Instance) == DialogResult.OK)
-                    {
-                        n.Name = Path.GetFileNameWithoutExtension(dlg.AudioSource);
-                        n.ReplaceRaw(dlg.AudioData);
-                        n._audioSource = new DataSource(n.WorkingUncompressed.Address + n.Header->_dataLocation, (int)(n.WorkingUncompressed.Length - n.Header->_dataLocation));
-                        BaseWrapper res = this.FindResource(n, true);
-                        res.EnsureVisible();
-                        res.TreeView.SelectedNode = res;
-                    }
-                }
+                n.Replace(path);
+                
+                BaseWrapper res = this.FindResource(n, true);
+                res.EnsureVisible();
+                res.TreeView.SelectedNode = res;
             }
         }
         #endregion

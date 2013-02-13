@@ -99,6 +99,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = VIS0v3.Size + 0x18 + Children.Count * 0x10;
             foreach (ResourceNode e in Children)
                 size += e.CalculateSize(force);
+            if (_version == 4)
             size += _userEntries.GetSize();
             return size;
         }
@@ -155,6 +156,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (VIS0EntryNode n in Children)
                 table.Add(n.Name);
 
+            if (_version == 4)
             foreach (UserDataClass s in _userEntries)
                 table.Add(s._name);
 

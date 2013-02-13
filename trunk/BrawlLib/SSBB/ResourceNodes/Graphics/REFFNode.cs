@@ -20,12 +20,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         private short _TableEntries;
         private short _TableUnk1;
 
-        [Category("REFF Data")]
-        public byte VersionMajor { get { return _major; } }
-        [Category("REFF Data")]
-        public byte VersionMinor { get { return _minor; } }
-        private byte _minor, _major;
-
         //[Category("REFF Data")]
         //public int DataLength { get { return _dataLen; } }
         //[Category("REFF Data")]
@@ -41,9 +35,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             base.OnInitialize();
 
             REFF* header = Header;
-
-            _major = header->_header.VersionMajor;
-            _minor = header->_header.VersionMinor;
 
             _name = header->IdString;
             _dataLen = header->_dataLength;
@@ -88,7 +79,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_dataLength = length - 0x18;
             header->_dataOffset = 0x48;
             header->_header._tag = header->_tag = REFF.Tag;
-            header->_header._endian = -2;
+            header->_header.Endian = Endian.Big;
             header->_header._version = 7;
             header->_header._firstOffset = 0x10;
             header->_header._numEntries = 1;

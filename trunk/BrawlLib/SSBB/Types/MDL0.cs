@@ -13,7 +13,7 @@ namespace BrawlLib.SSBBTypes
     public unsafe struct MDL0Header
     {
         public const uint Size = 16;
-        public const uint Tag = 0x304C444D;
+        public const string Tag = "MDL0";
 
         public BRESCommonHeader _header;
 
@@ -873,7 +873,7 @@ namespace BrawlLib.SSBBTypes
         public byte _enableAlphaTest;
         public sbyte _lightSet;
         public sbyte _fogSet;
-        public byte _pad1; //Use this as a temporary location to store the model version
+        public byte _pad; //Use this as a temporary location to store the model version
         public byte _indirectMethod1;
         public byte _indirectMethod2;
         public byte _indirectMethod3;

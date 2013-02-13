@@ -239,26 +239,29 @@ namespace BrawlLib.Wii.Models
         }
     }
 
-    public struct BoneWeight
+    public class BoneWeight
     {
-        public override string ToString()
-        {
-            return Bone.Name + " - Weight: " + Weight;
-        }
+        public override string ToString() { return Bone.Name + " - Weight: " + Weight; }
 
-        public MDL0BoneNode Bone 
-        { 
-            get { return _bone; } 
-            set 
-            {
-                _bone = value;
-            } 
-        }
-        public MDL0BoneNode _bone;
+        //public MDL0BoneNode Bone 
+        //{
+        //    get { return _bone; } 
+        //    set 
+        //    {
+        //        if (_bone == value)
+        //            return;
+        //        if (_bone != null)
+        //            _bone._weights.Remove(this);
+        //        if ((_bone = value) != null)
+        //            _bone._weights.Add(this);
+        //    } 
+        //}
+        public MDL0BoneNode Bone;
         public float Weight;
 
+        public BoneWeight() : this(null, 1.0f) { }
         public BoneWeight(MDL0BoneNode bone) : this(bone, 1.0f) { }
-        public BoneWeight(MDL0BoneNode bone, float weight) { _bone = bone; Weight = weight; }
+        public BoneWeight(MDL0BoneNode bone, float weight) { Bone = bone; Weight = weight; }
 
         public static bool operator ==(BoneWeight b1, BoneWeight b2) { return (b1.Bone == b2.Bone) && (b1.Weight - b2.Weight < 0.0001); }
         public static bool operator !=(BoneWeight b1, BoneWeight b2) { return !(b1 == b2); }

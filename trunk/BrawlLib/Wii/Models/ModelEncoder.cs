@@ -105,7 +105,7 @@ namespace BrawlLib.Wii.Models
                         {
                             mixLen += 4;
                             foreach (BoneWeight w in i._weights)
-                                if (i.NodeIndex < linker.NodeCache.Length)
+                                if (w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode)
                                     mixLen += 6;
                         }
                         foreach (MDL0BoneNode b in linker.BoneCache)
@@ -366,7 +366,7 @@ namespace BrawlLib.Wii.Models
             (linker._boneLen = boneLen) +
             (linker._assetLen = assetLen) +
             (linker._dataLen = dataLen) +
-            model._userEntries.GetSize();
+            (linker.Version > 9 ? model._userEntries.GetSize() : 0);
         }
 
         internal static unsafe void Build(ModelLinker linker, MDL0Header* header, int length, bool force) { Build(null, linker, header, length, force); }
@@ -518,12 +518,12 @@ namespace BrawlLib.Wii.Models
                     *(bushort*)&pData[1] = (ushort)i._index;
                     int g = 0;
                     foreach (BoneWeight w in i._weights)
-                        if (w.Bone._nodeIndex < linker.NodeCache.Length) g++;
+                        if (w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode) g++;
                     pData[3] = (byte)g;
                     pData += 4; //Advance
                     foreach (BoneWeight w in i._weights)
                     {
-                        if (w.Bone._nodeIndex >= linker.NodeCache.Length)
+                        if (w.Bone._nodeIndex >= linker.NodeCache.Length || w.Bone._nodeIndex < 0)
                             continue;
 
                         *(bushort*)pData = (ushort)w.Bone._nodeIndex;

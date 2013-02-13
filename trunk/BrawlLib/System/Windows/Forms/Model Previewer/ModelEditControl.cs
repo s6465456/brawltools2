@@ -2261,7 +2261,7 @@ namespace System.Windows.Forms
                     {
                         animEditors.Height =
                         panel3.Height = 78;
-                        panel3.Width = 542;
+                        panel3.Width = 483;
                         pnlKeyframes.SetEditType(0);
                     }
                     else if (_currentControl is SHP0Editor)

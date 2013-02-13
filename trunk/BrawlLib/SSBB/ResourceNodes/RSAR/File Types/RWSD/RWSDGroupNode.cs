@@ -42,7 +42,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class RWSDSoundGroupNode : ResourceNode
     {
         internal WAVEHeader* Header { get { return (WAVEHeader*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.RWSDSoundGroup; } }
+        public override ResourceType ResourceType { get { return ResourceType.RSARFileSoundGroup; } }
 
         public VoidPtr _audioAddr;
 

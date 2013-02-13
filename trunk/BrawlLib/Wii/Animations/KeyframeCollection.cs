@@ -25,21 +25,41 @@ namespace BrawlLib.Wii.Animations
         All = 0x90
     }
 
+    public interface IKeyframeHolder
+    {
+        KeyframeEntry GetKeyframe(KeyFrameMode mode, int index);
+        void SetKeyframe(KeyFrameMode mode, int index, float value);
+        void SetKeyframe(int index, AnimationFrame frame);
+        void SetKeyframeOnlyTrans(int index, AnimationFrame frame);
+        void SetKeyframeOnlyRot(int index, AnimationFrame frame);
+        void SetKeyframeOnlyScale(int index, AnimationFrame frame);
+        void SetKeyframeOnlyTrans(int index, Vector3 trans);
+        void SetKeyframeOnlyRot(int index, Vector3 rot);
+        void SetKeyframeOnlyScale(int index, Vector3 scale);
+        void RemoveKeyframe(KeyFrameMode mode, int index);
+        void RemoveKeyframe(int index);
+        void RemoveKeyframeOnlyTrans(int index);
+        void RemoveKeyframeOnlyRot(int index);
+        void RemoveKeyframeOnlyScale(int index);
+        AnimationFrame GetAnimFrame(int index);
+        int FrameCount { get; }
+    }
+
     public unsafe class KeyframeCollection
     {
         internal KeyframeEntry[] _keyRoots = new KeyframeEntry[9]{
         //Scale
-        new KeyframeEntry(-1, 1.0f), //X - Used by all (SHP0 == %)
-        new KeyframeEntry(-1, 1.0f), //Y - Not used by SHP0
-        new KeyframeEntry(-1, 1.0f), //Z - CHR0s only
+        new KeyframeEntry(-1, 1.0f),
+        new KeyframeEntry(-1, 1.0f),
+        new KeyframeEntry(-1, 1.0f),
         //Rotation
-        new KeyframeEntry(-1, 0.0f), //X - Not used by SHP0
-        new KeyframeEntry(-1, 0.0f), //Y - CHR0s only
-        new KeyframeEntry(-1, 0.0f), //Z - CHR0s only
+        new KeyframeEntry(-1, 0.0f),
+        new KeyframeEntry(-1, 0.0f),
+        new KeyframeEntry(-1, 0.0f),
         //Translation
-        new KeyframeEntry(-1, 0.0f), //X - Not used by SHP0
-        new KeyframeEntry(-1, 0.0f), //Y - Not used by SHP0
-        new KeyframeEntry(-1, 0.0f)};//Z - CHR0s only
+        new KeyframeEntry(-1, 0.0f),
+        new KeyframeEntry(-1, 0.0f),
+        new KeyframeEntry(-1, 0.0f)};
 
         internal int[] _keyCounts = new int[9];
 

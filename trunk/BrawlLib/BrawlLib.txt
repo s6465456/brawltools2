@@ -1,6 +1,6 @@
 ﻿
-BrawlLib Resource Library - Version 0.14b
-Copyright © 2009 - 2012 Bryan Moulton & BlackJax96
+BrawlLib Resource Library - Version 0.15
+Copyright © 2009 - 2013 Bryan Moulton & BlackJax96
 
 This program is provided as-is without any warranty, implied or otherwise.
 By using this program, the end user agrees to take full responsibility
@@ -11,6 +11,31 @@ they be held accountable for the manner in which it is used.
  ====================================
 |************ Change Log ************|
  ====================================
+
+ - v0.15- (TBA)
+	. Fixed "Null weights" MDL0 error
+	. "Export as Single Matrix" 3ds Max export setting for DAE models is not necessary to check anymore
+	. Added support for editing REFF files
+	. Updated UserData handling
+	. MDL0 Objects updated: now support both an OPA and XLU material, added "DrawPriority" value and added the ability to change linked vertex/normal/color/uv nodes.
+	. Updated BRRES "Edit All" dialog
+	. Added TPL support
+	. Added SCN0 & CLR0 editors to the model viewer (however, their effects cannot be literally displayed yet)
+	. SCN0 rebuilder bugfixes
+	. Added various model viewer buttons: take screenshot, save camera, model viewer help
+	. Began working on rendering materials & shaders using GLSL; all OpenGL coded has been modified to use OpenTK. This feature is not yet available for use.
+	. Added "Original Path" string value for all NW4R nodes.
+	. Edited animation editors in model viewer to be a bit more compact
+	. Finished RSAR rebuilder
+	. Added RSAR sound importer
+	. Added RSAR file viewer
+	. Made RSAR file list sortable by columns
+	. Fixed loop point retrieval for RSAR sounds
+	. Added support for stereo RSAR sounds
+	. Added support for modifying RWSD, RBNK, and RSEQ files. RSEQ MML code is not yet editable yet.
+	. Added support for RWAR and RWAV formats, located in other versions of RWSD and RBNK
+	. Created new class to handle format tags in a string format instead of hex
+	. Updated Stage Model Converter
 
  - v0.14b- (7/23/2012)
 	. Move up/down for events doesn't randomly throw an error

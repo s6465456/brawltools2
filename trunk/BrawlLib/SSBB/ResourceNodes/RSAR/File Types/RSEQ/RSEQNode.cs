@@ -27,11 +27,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override bool OnInitialize()
         {
             base.OnInitialize();
+
             _data = new DataSource(Header->Data, Header->_dataLength);
             _cmds = MMLParser.Parse(Header->Data + 12);
-
-            _major = Header->_header.VersionMajor;
-            _minor = Header->_header.VersionMinor;
 
             return true;
         }
@@ -40,6 +38,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             for (int i = 0; i < ((LABLHeader*)Header->Labl)->_numEntries; i++)
                 new RSEQLabelNode().Initialize(this, ((LABLHeader*)Header->Labl)->Get(i), 0);
+        }
+
+        protected override void GetStrings(LabelBuilder builder)
+        {
+            foreach (RSEQLabelNode node in Children[0].Children)
+                builder.Add(node.Id, node._name);
         }
 
         private LabelBuilder builder;
@@ -55,7 +59,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             RSEQHeader* header = (RSEQHeader*)address;
-            header->_header._endian = -2;
+            header->_header.Endian = Endian.Big;
             header->_header._tag = RSEQHeader.Tag;
             header->_header._version = 0x100;
             header->_header._length = length;

@@ -8,11 +8,11 @@ namespace System.Windows.Forms
     public class EditAllKeyframesDialog : Form
     {
         private KeyFrameMode _type;
-        private CHR0EntryNode _target;
+        private IKeyframeHolder _target;
 
         public EditAllKeyframesDialog() { InitializeComponent(); }
 
-        public DialogResult ShowDialog(IWin32Window owner, KeyFrameMode type, CHR0EntryNode target)
+        public DialogResult ShowDialog(IWin32Window owner, KeyFrameMode type, IKeyframeHolder target)
         {
             _target = target;
             _type = type;
@@ -137,7 +137,5 @@ namespace System.Windows.Forms
             if (comboBox1.SelectedIndex == 1)
                 label1.Text = "from all.";
         }
-
-
     }
 }

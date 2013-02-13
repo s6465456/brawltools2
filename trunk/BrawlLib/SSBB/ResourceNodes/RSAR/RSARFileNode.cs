@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class RSARFileNode : ResourceNode
+    public unsafe class RSARFileNode : NW4RNode
     {
         internal VoidPtr Data { get { return (VoidPtr)WorkingUncompressed.Address; } }
         internal DataSource _audioSource;
@@ -120,6 +120,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
+            base.OnInitialize();
             _groups = new List<RSARGroupNode>();
             if (_name == null)
                 if (_parent == null)

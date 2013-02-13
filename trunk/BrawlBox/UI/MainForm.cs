@@ -30,7 +30,10 @@ namespace BrawlBox
         public MainForm()
         {
             InitializeComponent();
-            this.Text = Program.AssemblyTitle;
+            Text = Program.AssemblyTitle;            
+            //#if DEBUG
+            //Text += " (Debug)";
+            //#endif
             soundPackControl1._grid = propertyGrid1;
             soundPackControl1.lstSets.SmallImageList = ResourceTree.Images;
             previewPanel1.Dock = 
@@ -91,9 +94,13 @@ namespace BrawlBox
         public void UpdateName()
         {
             if (Program.RootPath != null)
-                this.Text = String.Format("{0} - {1}", Program.AssemblyTitle, Program.RootPath);
+                Text = String.Format("{0} - {1}", Program.AssemblyTitle, Program.RootPath);
             else
-                this.Text = Program.AssemblyTitle;
+                Text = Program.AssemblyTitle;
+
+            //#if DEBUG
+            //Text += " (Debug)";
+            //#endif
         }
 
         public void TargetResource(ResourceNode n)

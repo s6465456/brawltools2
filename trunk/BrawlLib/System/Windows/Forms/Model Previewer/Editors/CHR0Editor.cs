@@ -592,7 +592,7 @@ namespace System.Windows.Forms
         public event EventHandler CreateUndo;
 
         internal NumericInputBox[] _transBoxes = new NumericInputBox[9];
-        private AnimationFrame _tempFrame = AnimationFrame.Neutral;
+        private AnimationFrame _tempFrame = AnimationFrame.Identity;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0BoneNode TargetBone { get { return _mainWindow._targetBone; } set { _mainWindow.TargetBone = value; } }

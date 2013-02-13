@@ -10,8 +10,8 @@ namespace BrawlLib.SSBBTypes
         public const uint Size = 0x10;
 
         public NW4RCommonHeader _header;
-        public buint _dataOffset;
-        public buint _dataSize;
+        public buint _dataBlockOffset;
+        public buint _dataBlockSize;
         
         //Align to 0x20
 
@@ -22,14 +22,14 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    unsafe struct RASDData
+    unsafe struct RASDDataBlock
     {
         public const uint Tag = 0x41544144;
 
         public uint _tag;
         public bint _length;
         public bint _frameSize;
-        public ruint _dataOffset;
+        public ruint _eventTableOffset;
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }

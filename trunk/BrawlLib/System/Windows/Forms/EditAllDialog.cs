@@ -110,7 +110,7 @@ namespace System.Windows.Forms
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(339, 379);
+            this.btnCancel.Location = new System.Drawing.Point(339, 375);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
@@ -121,7 +121,7 @@ namespace System.Windows.Forms
             // btnOkay
             // 
             this.btnOkay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOkay.Location = new System.Drawing.Point(258, 379);
+            this.btnOkay.Location = new System.Drawing.Point(258, 375);
             this.btnOkay.Name = "btnOkay";
             this.btnOkay.Size = new System.Drawing.Size(75, 23);
             this.btnOkay.TabIndex = 1;
@@ -137,13 +137,14 @@ namespace System.Windows.Forms
             this.checkBox1.TabIndex = 0;
             this.checkBox1.Text = "Enable Modifications";
             this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // vis
             // 
             this.vis.BackColor = System.Drawing.SystemColors.Control;
             this.vis.Location = new System.Drawing.Point(4, 25);
             this.vis.Name = "vis";
-            this.vis.Size = new System.Drawing.Size(410, 322);
+            this.vis.Size = new System.Drawing.Size(410, 344);
             this.vis.TabIndex = 4;
             this.vis.Text = "VIS0";
             // 
@@ -152,7 +153,7 @@ namespace System.Windows.Forms
             this.pat.BackColor = System.Drawing.SystemColors.Control;
             this.pat.Location = new System.Drawing.Point(4, 25);
             this.pat.Name = "pat";
-            this.pat.Size = new System.Drawing.Size(410, 322);
+            this.pat.Size = new System.Drawing.Size(410, 344);
             this.pat.TabIndex = 3;
             this.pat.Text = "PAT0";
             // 
@@ -161,7 +162,7 @@ namespace System.Windows.Forms
             this.shp.BackColor = System.Drawing.SystemColors.Control;
             this.shp.Location = new System.Drawing.Point(4, 25);
             this.shp.Name = "shp";
-            this.shp.Size = new System.Drawing.Size(410, 322);
+            this.shp.Size = new System.Drawing.Size(410, 344);
             this.shp.TabIndex = 2;
             this.shp.Text = "SHP0";
             // 
@@ -202,7 +203,7 @@ namespace System.Windows.Forms
             this.srt.Location = new System.Drawing.Point(4, 25);
             this.srt.Name = "srt";
             this.srt.Padding = new System.Windows.Forms.Padding(3);
-            this.srt.Size = new System.Drawing.Size(410, 322);
+            this.srt.Size = new System.Drawing.Size(410, 344);
             this.srt.TabIndex = 1;
             this.srt.Text = "SRT0";
             // 
@@ -509,6 +510,7 @@ namespace System.Windows.Forms
             // editAllCHR0Editor1
             // 
             this.editAllCHR0Editor1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.editAllCHR0Editor1.Enabled = false;
             this.editAllCHR0Editor1.Location = new System.Drawing.Point(3, 3);
             this.editAllCHR0Editor1.Name = "editAllCHR0Editor1";
             this.editAllCHR0Editor1.Size = new System.Drawing.Size(404, 338);
@@ -528,12 +530,13 @@ namespace System.Windows.Forms
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(418, 373);
             this.tabControl1.TabIndex = 39;
+            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // EditAllDialog
             // 
             this.AcceptButton = this.btnOkay;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(418, 409);
+            this.ClientSize = new System.Drawing.Size(418, 405);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.btnCancel);
@@ -553,21 +556,50 @@ namespace System.Windows.Forms
         }
         #endregion
 
+        public bool[] _enabled = new bool[5];
+
         private void btnOkay_Click(object sender, EventArgs e)
         {
-            editAllCHR0Editor1.Apply(_node);
+            if (_enabled[0])
+                editAllCHR0Editor1.Apply(_node);
             DialogResult = DialogResult.OK; 
             Close();
         }
 
-        #region Check Switches
-
-        #endregion
-
         public void ShowDialog(IWin32Window owner, ResourceNode resource)
         {
-            _node = resource;
+            _node = resource; 
+            _enabled = new bool[5];
             base.ShowDialog(owner);
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            checkBox1.Checked = _enabled[tabControl1.SelectedIndex];
+            switch (tabControl1.SelectedIndex)
+            {
+                case 0:
+                    editAllCHR0Editor1.Enabled = checkBox1.Checked;
+                    break;
+                //case 1:
+                //    editAllSRT0Editor1.Enabled = checkBox1.Checked;
+                //    break;
+                //case 2:
+                //    editAllSHP0Editor1.Enabled = checkBox1.Checked;
+                //    break;
+                //case 3:
+                //    editAllPAT0Editor1.Enabled = checkBox1.Checked;
+                //    break;
+                //case 4:
+                //    editAllVIS0Editor1.Enabled = checkBox1.Checked;
+                //    break;
+            }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            _enabled[tabControl1.SelectedIndex] = checkBox1.Checked;
+            tabControl1_SelectedIndexChanged(null, null);
         }
     }
 }

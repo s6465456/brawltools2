@@ -185,7 +185,8 @@ namespace System.Windows.Forms
             //Create buffer for stream
             _buffer = _provider.CreateBuffer(_targetStream);
 
-            _sampleTime = new DateTime((long)_targetStream.Samples * 10000000 / _targetStream.Frequency);
+            if (_targetStream.Frequency > 0)
+                _sampleTime = new DateTime((long)_targetStream.Samples * 10000000 / _targetStream.Frequency);
 
             trackBar1.Value = 0;
             trackBar1.TickStyle = TickStyle.None;
@@ -193,7 +194,8 @@ namespace System.Windows.Forms
             trackBar1.TickFrequency = _targetStream.Samples / 8;
             trackBar1.TickStyle = TickStyle.BottomRight;
 
-            UpdateTimeDisplay();
+            if (_targetStream.Frequency > 0)
+                UpdateTimeDisplay();
 
             Enabled = _targetStream.Samples > 0;
         }

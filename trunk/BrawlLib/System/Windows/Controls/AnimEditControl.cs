@@ -11,7 +11,7 @@ namespace System.Windows.Forms
         private int _numFrames;
 
         private int _currentPage = 1;
-        private AnimationFrame _currentFrame = AnimationFrame.Neutral;
+        private AnimationFrame _currentFrame = AnimationFrame.Identity;
         private NumericInputBox[] _boxes = new NumericInputBox[9];
         private Panel panel1;
 

@@ -112,13 +112,13 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class RBNKSoundGroupNode : ResourceNode
     {
         internal RBNK_WAVEHeader* Header { get { return (RBNK_WAVEHeader*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.RBNKGroup; } }
+        public override ResourceType ResourceType { get { return ResourceType.RSARFileSoundGroup; } }
 
         public VoidPtr _audioAddr;
 
         protected override bool OnInitialize()
         {
-            _name = "Banks";
+            _name = "Audio";
 
             return Header->_list._numEntries > 0;
         }
@@ -152,7 +152,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (WAVESoundNode r in Children)
             {
                 //Set offset and write header data
-                table[r.Index] = (uint)(addr - address);
+                table[r.Index] = (uint)(addr - header->_list.Address);
                 Memory.Move(addr, r.WorkingUncompressed.Address, (uint)r.WorkingUncompressed.Length);
 
                 //Set the offset to the audio samples

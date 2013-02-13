@@ -504,8 +504,8 @@ namespace BrawlLib.Modeling
             }
             count = prim._elementCount / stride;
 
-            if (poly._opaMaterial != null)
-                writer.WriteAttributeString("material", poly._opaMaterial.Name);
+            if (poly.UsableMaterialNode != null)
+                writer.WriteAttributeString("material", poly.UsableMaterialNode.Name);
 
             writer.WriteAttributeString("count", count.ToString());
 
@@ -595,7 +595,7 @@ namespace BrawlLib.Modeling
             //    boneSet.Add(b);
             //}
 
-            List<float> weightSet = new List<float>();
+            HashSet<float> temp = new HashSet<float>();
             Matrix m;
             bool first;
 
@@ -643,8 +643,8 @@ namespace BrawlLib.Modeling
                         //    boneSet.Add(w.Bone);
                         //    w.Bone._nodeIndex = index++;
                         //}
-                        if (!weightSet.Contains(w.Weight))
-                            weightSet.Add(w.Weight);
+                        //if (!weightSet.Contains(w.Weight))
+                            temp.Add(w.Weight);
                     }
                 }
                 else
@@ -657,10 +657,13 @@ namespace BrawlLib.Modeling
                             //    boneSet.Add(w.Bone);
                             //    w.Bone._nodeIndex = index++;
                             //}
-                            if (!weightSet.Contains(w.Weight))
-                                weightSet.Add(w.Weight);
+                            //if (!weightSet.Contains(w.Weight))
+                                temp.Add(w.Weight);
                         }
                 }
+
+                float[] weightSet = new float[temp.Count];
+                temp.CopyTo(weightSet);
 
                 //Write joint source
                 writer.WriteStartElement("source");
@@ -746,7 +749,7 @@ namespace BrawlLib.Modeling
 
                 writer.WriteStartElement("float_array");
                 writer.WriteAttributeString("id", poly.Name + "_WeightArr");
-                writer.WriteAttributeString("count", weightSet.Count.ToString());
+                writer.WriteAttributeString("count", weightSet.Length.ToString());
                 first = true;
 
                 foreach (float f in weightSet)
@@ -763,7 +766,7 @@ namespace BrawlLib.Modeling
                 writer.WriteStartElement("technique_common");
                 writer.WriteStartElement("accessor");
                 writer.WriteAttributeString("source", String.Format("#{0}_WeightArr", poly.Name));
-                writer.WriteAttributeString("count", weightSet.Count.ToString());
+                writer.WriteAttributeString("count", weightSet.Length.ToString());
                 writer.WriteStartElement("param");
                 writer.WriteAttributeString("type", "float");
                 writer.WriteEndElement(); //param
@@ -835,7 +838,7 @@ namespace BrawlLib.Modeling
                             //writer.WriteString(w.Bone._nodeIndex.ToString());
                             writer.WriteString(Array.IndexOf(bones, w.Bone).ToString());
                             writer.WriteString(" ");
-                            writer.WriteString(weightSet.IndexOf(w.Weight).ToString());
+                            writer.WriteString(Array.IndexOf(weightSet, w.Weight).ToString());
                         }
                 else
                     foreach (Vertex3 v in verts)
@@ -848,7 +851,7 @@ namespace BrawlLib.Modeling
                             //writer.WriteString(w.Bone._nodeIndex.ToString());
                             writer.WriteString(Array.IndexOf(bones, w.Bone).ToString());
                             writer.WriteString(" ");
-                            writer.WriteString(weightSet.IndexOf(w.Weight).ToString());
+                            writer.WriteString(Array.IndexOf(weightSet, w.Weight).ToString());
                         }
                     
                 writer.WriteEndElement(); //v
@@ -859,7 +862,7 @@ namespace BrawlLib.Modeling
                 writer.WriteEndElement(); //controller
 
                 //boneSet.Clear();
-                weightSet.Clear();
+                //weightSet.Clear();
             }
 
             writer.WriteEndElement();
@@ -930,15 +933,15 @@ namespace BrawlLib.Modeling
             //writer.WriteString("#" + poly.Model._linker.BoneCache[0].Name);
             //writer.WriteEndElement();
 
-            if (poly._opaMaterial != null)
+            if (poly.UsableMaterialNode != null)
             {
                 writer.WriteStartElement("bind_material");
                 writer.WriteStartElement("technique_common");
                 writer.WriteStartElement("instance_material");
-                writer.WriteAttributeString("symbol", poly._opaMaterial.Name);
-                writer.WriteAttributeString("target", "#" + poly._opaMaterial.Name);
+                writer.WriteAttributeString("symbol", poly.UsableMaterialNode.Name);
+                writer.WriteAttributeString("target", "#" + poly.UsableMaterialNode.Name);
 
-                foreach (MDL0MaterialRefNode mr in poly._opaMaterial.Children)
+                foreach (MDL0MaterialRefNode mr in poly.UsableMaterialNode.Children)
                 {
                     writer.WriteStartElement("bind_vertex_input");
                     writer.WriteAttributeString("semantic", "TEXCOORD" + (mr.TextureCoordId < 0 ? 0 : mr.TextureCoordId)); //Replace with true set id

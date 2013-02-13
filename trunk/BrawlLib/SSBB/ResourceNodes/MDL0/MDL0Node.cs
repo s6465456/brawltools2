@@ -594,6 +594,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _billboardBones = new List<MDL0BoneNode>();
             _errors = new List<string>();
+            _influences = new InfluenceManager();
 
             MDL0Header* header = Header;
 
@@ -683,8 +684,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         message += "\n - " + s;
                     MessageBox.Show(message);
                 }
-
-                Populate();
             }
         }
 
@@ -731,6 +730,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_hasOpa) table.Add("DrawOpa");
             if (_hasXlu) table.Add("DrawXlu");
 
+            if (_version > 9)
             foreach (UserDataClass s in _userEntries)
                 table.Add(s._name);
 

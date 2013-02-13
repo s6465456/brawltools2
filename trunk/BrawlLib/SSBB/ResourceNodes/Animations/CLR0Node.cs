@@ -117,8 +117,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (CLR0MaterialEntryNode e in n.Children)
                     if (e._numEntries != 0)
                         size += (e._colors.Count * 4);
-            }
-            size += _userEntries.GetSize();
+            } 
+            if (_version == 4)
+                size += _userEntries.GetSize();
             return size;
         }
 
@@ -199,6 +200,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (CLR0MaterialNode n in Children)
                 table.Add(n.Name);
 
+            if (_version == 4)
             foreach (UserDataClass s in _userEntries)
                 table.Add(s._name);
 

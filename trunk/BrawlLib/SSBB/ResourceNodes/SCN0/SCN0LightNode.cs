@@ -597,7 +597,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             int index = 0;
             for (int i = 0; i < 14; i++)
-                if (!(i == 4 || i == 7 || i == 10 || i == 12))
+                if (!(i == 3 || i == 7 || i == 10 || i == 12))
                     DecodeFrames(GetKeys(index), &values[i], (int)_flags1, (int)Ordered[index++]);
 
             return false;
@@ -688,7 +688,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 bint* values = (bint*)&header->_startPoint;
                 int index = 0;
                 for (int i = 0; i < 14; i++)
-                    if (!(i == 4 || i == 7 || i == 10 || i == 12))
+                    if (!(i == 3 || i == 7 || i == 10 || i == 12))
                         EncodeFrames(GetKeys(index), ref keyframeAddr, &values[i], ref newFlags, (int)Ordered[index++]);
 
                 header->_fixedFlags = _flags1 = (ushort)newFlags;

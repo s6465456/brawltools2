@@ -58,7 +58,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Matrix _frameMatrix = Matrix.Identity, _inverseFrameMatrix = Matrix.Identity;
 
         private Vector3 _bMin, _bMax;
-        internal int _nodeIndex, _weightCount, _refCount, _headerLen, _mdl0Offset, _stringOffset;
+        internal int _nodeIndex, _weightCount, _refCount, _headerLen, _mdl0Offset, _stringOffset, _parentOffset, _firstChildOffset, _prevOffset, _nextOffset, _userDataOffset;
 
         [Category("Bone"), Browsable(false)]
         public Matrix Matrix { get { return _frameMatrix; } }
@@ -80,13 +80,44 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public BoneWeight[] Weights { get { return _weightRef == null ? _weightRef = new BoneWeight[] { new BoneWeight(this, 1.0f) } : _weightRef; } }
 
-        [Category("Bone"), Browsable(false)]
-        public int HeaderLen { get { return _headerLen; } }
-        [Category("Bone"), Browsable(false)]
-        public int MDL0Offset { get { return _mdl0Offset; } }
-        [Category("Bone"), Browsable(false)]
-        public int StringOffset { get { return _stringOffset; } }
+        //public void TransferWeights(MDL0BoneNode n)
+        //{
+        //    foreach (BoneWeight w in Weights)
+        //    {
+        //        w._bone = n;
+        //        w._bone._weights.Add(w);
+        //    }
+        //    foreach (MDL0BoneNode b in Children)
+        //        b.TransferWeights(n);
+        //}
 
+        //public override void Remove()
+        //{
+        //    if (Parent == null)
+        //        return;
+        //    TransferWeights(Parent as MDL0BoneNode);
+        //    base.Remove();
+        //}
+
+        //#if DEBUG
+        //[Category("Bone")]
+        //public int HeaderLen { get { return _headerLen; } }
+        //[Category("Bone")]
+        //public int MDL0Offset { get { return _mdl0Offset; } }
+        //[Category("Bone")]
+        //public int StringOffset { get { return _stringOffset; } }
+        //[Category("Bone")]
+        //public int ParentOffset { get { return _parentOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int FirstChildOffset { get { return _firstChildOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int NextOffset { get { return _nextOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int PrevOffset { get { return _prevOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int UserDataOffset { get { return _userDataOffset; } }
+        //#endif
+        
         [Category("Bone")]
         public bool Visible
         {
@@ -280,17 +311,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Bone"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 BoxMax { get { return _bMax; } set { _bMax = value; SignalPropertyChange(); } }
 
-        //[Category("Bone")]
-        //public int ParentOffset { get { return Header->_parentOffset / 0xD0; } }
-        //[Category("Bone")]
-        //public int FirstChildOffset { get { return Header->_firstChildOffset / 0xD0; } }
-        //[Category("Bone")]
-        //public int NextOffset { get { return Header->_nextOffset / 0xD0; } }
-        //[Category("Bone")]
-        //public int PrevOffset { get { return Header->_prevOffset / 0xD0; } }
-        //[Category("Bone")]
-        //public int Part2Offset { get { return Header->_part2Offset; } }
-
         //[Category("Kinect Settings"), Browsable(true)]
         //public SkeletonJoint Joint
         //{
@@ -348,6 +368,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             _headerLen = header->_headerLen;
             _mdl0Offset = header->_mdl0Offset;
             _stringOffset = header->_stringOffset;
+            _parentOffset = header->_parentOffset;
+            _firstChildOffset = header->_firstChildOffset;
+            _nextOffset = header->_nextOffset;
+            _prevOffset = header->_prevOffset;
+            _userDataOffset = header->_userDataOffset;
 
             if (_flags2 != 0 && _flags1.HasFlag(BoneFlags.HasGeometry))
                 Model._billboardBones.Add(this); //Update mesh in T-Pose
@@ -672,7 +697,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             fixed (Matrix* m = &_frameState._transform)
                 GL.MultMatrix((float*)m);
 
-            if (BillboardSetting != 0)
+            if (BillboardSetting != 0 && _mainWindow != null)
             {
                 Vector3 center = _frameMatrix.GetPoint();
                 Vector3 cam = _mainWindow.modelPanel1._camera.GetPoint();
@@ -693,7 +718,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (MDL0BoneNode n in Children)
                 n.Render(ctx, _mainWindow);
 
-            if (BillboardSetting != 0)
+            if (BillboardSetting != 0 && _mainWindow != null)
                 GL.PopMatrix();
 
             GL.PopMatrix();
