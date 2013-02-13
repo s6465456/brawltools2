@@ -35,7 +35,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
         internal UserDataCollection _userEntries = new UserDataCollection();
 
-        internal int _dataLen, _mdl0Offset, _stringOffset;
+        internal int _dataLen, _mdl0Offset, _stringOffset, _shaderOffset, _matRefOffset, _userDataOffset, _furDataOffset, _dlOffset, _pad;
         internal byte _numTextures, _numLights, _indirectMethod1, _indirectMethod2, _indirectMethod3, _indirectMethod4;
         public sbyte _normMapRefLight1, _normMapRefLight2, _normMapRefLight3, _normMapRefLight4, _lSet, _fSet;
         internal Bin32 _usageFlags = new Bin32();
@@ -533,9 +533,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public sbyte LightSetIndex { get { return _lSet; } set { if (!CheckIfMetal()) { _lSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
         [Category("SCN0 References")]
         public sbyte FogIndex { get { return _fSet; } set { if (!CheckIfMetal()) { _fSet = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
-        //[Category("Material")]
-        //public byte Pad { get { return _unk1; } }//set { if (!CheckIfMetal()) { _unk1 = value; if (MetalMaterial != null) MetalMaterial.UpdateAsMetal(); } } }
-        
+
         public enum IndirectMethod
         {
             Warp = 0,
@@ -566,19 +564,22 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("SCN0 References")]
         public sbyte NormMapRefLight4 { get { return _normMapRefLight4; } set { if (!CheckIfMetal()) _normMapRefLight1 = value; } }
         
-        //[Category("Material")]
-        //public int NumTextures { get { return Header->_numTextures; } }
-        //[Category("Material"), Browsable(false)]
-        //public int ShaderOffset { get { return Header->_shaderOffset; } }
-        //[Category("Material"), Browsable(false)]
-        //public int MaterialRefOffset { get { return _matRefOffset; } }
-        //[Category("Material"), Browsable(false)]
-        //public int UserDataOffset { get { return _part2Offset; } }
-        //[Category("Material"), Browsable(false)]
-        //public int DisplayListOffset { get { return _dlOffset; } }
-        //[Category("Material")]
-        //public int Pad { get { return _pad2; } }
-
+//#if DEBUG
+//        [Category("Material")]
+//        public int NumTextures { get { return _numTextures; } }
+//        [Category("Material")]
+//        public int ShaderOffset { get { return _shaderOffset; } }
+//        [Category("Material")]
+//        public int MaterialRefOffset { get { return _matRefOffset; } }
+//        [Category("Material")]
+//        public int UserDataOffset { get { return _userDataOffset; } }
+//        [Category("Material")]
+//        public int DisplayListOffset { get { return _dlOffset; } }
+//        [Category("Material")]
+//        public int FurDataOffset { get { return _furDataOffset; } }
+//        [Category("Material")]
+//        public int Pad { get { return _pad; } }
+//#endif
         #endregion
 
         #region Metal
@@ -767,7 +768,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             MDL0Material* header = Header;
 
-            _initVersion = header->_pad1 != 0 && _replaced ? header->_pad1 : Model._version;
+            _initVersion = header->_pad != 0 && _replaced ? header->_pad : Model._version;
 
             if ((_name == null) && (header->_stringOffset != 0))
                 _name = header->ResourceString;
@@ -794,6 +795,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _mdl0Offset = header->_mdl0Offset;
             _stringOffset = header->_stringOffset;
+            _userDataOffset = header->UserDataOffset(_initVersion);
+            _shaderOffset = header->_shaderOffset;
+            _dlOffset = header->DisplayListOffset(_initVersion);
+            _furDataOffset = header->FurDataOffset(_initVersion);
+            _matRefOffset = header->_matRefOffset;
+            _pad = header->_pad;
 
             _dataLen = header->_dataLen;
             _numTextures = header->_numTexGens;
@@ -1061,7 +1068,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             header->_lightSet = _lSet;
             header->_fogSet = _fSet;
-            header->_pad1 = 0;
+            header->_pad = 0;
 
             header->_cull = (int)_cull;
             header->_usageFlags = _usageFlags._data;
@@ -2227,7 +2234,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     Rebuild(map.Address, dataLen, false);
                     table.WriteTable(map.Address + dataLen);
                     PostProcess(map.Address, map.Address, table);
-                    ((MDL0Material*)map.Address)->_pad1 = (byte)Model._version;
+                    ((MDL0Material*)map.Address)->_pad = (byte)Model._version;
                 }
             }
         }

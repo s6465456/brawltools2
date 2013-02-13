@@ -142,6 +142,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (SRT0EntryNode n in Children)
                 table.Add(n.Name);
 
+            if (_version == 5)
             foreach (UserDataClass s in _userEntries)
                 table.Add(s._name);
 
@@ -231,6 +232,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = (Version == 5 ? SRT0v5.Size : SRT0v4.Size) + 0x18 + Children.Count * 0x10;
             foreach (SRT0EntryNode entry in Children)
                 size += entry.CalculateSize(true);
+            if (_version == 5)
             size += _userEntries.GetSize();
             return size;
         }
@@ -392,7 +394,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class SRT0TextureNode : ResourceNode
+    public unsafe class SRT0TextureNode : ResourceNode, IKeyframeHolder
     {
         internal SRT0TextureEntry* Header { get { return (SRT0TextureEntry*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.SRT0Texture; } }
@@ -455,13 +457,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return;
 
             int index = Index;
-            if (_indirect == true && ((SRT0TextureNode)Parent.Children[Index + 1])._indirect == false)
-            {
-                doMoveDown();
-                if (index != Index)
-                    CheckNext();
-            }
-            else if (_textureIndex > ((SRT0TextureNode)Parent.Children[Index + 1])._textureIndex && _indirect == ((SRT0TextureNode)Parent.Children[Index + 1])._indirect)
+            if ((_indirect == true && ((SRT0TextureNode)Parent.Children[Index + 1])._indirect == false) ||
+                (_textureIndex > ((SRT0TextureNode)Parent.Children[Index + 1])._textureIndex && _indirect == ((SRT0TextureNode)Parent.Children[Index + 1])._indirect))
             {
                 doMoveDown();
                 if (index != Index)
@@ -475,13 +472,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return;
 
             int index = Index;
-            if (_indirect == false && ((SRT0TextureNode)Parent.Children[Index - 1])._indirect == true)
-            {
-                doMoveUp();
-                if (index != Index)
-                    CheckPrev();
-            }
-            else if (_textureIndex < ((SRT0TextureNode)Parent.Children[Index - 1])._textureIndex && _indirect == ((SRT0TextureNode)Parent.Children[Index - 1])._indirect)
+            if ((_indirect == false && ((SRT0TextureNode)Parent.Children[Index - 1])._indirect == true) ||
+                (_textureIndex < ((SRT0TextureNode)Parent.Children[Index - 1])._textureIndex && _indirect == ((SRT0TextureNode)Parent.Children[Index - 1])._indirect))
             {
                 doMoveUp();
                 if (index != Index)

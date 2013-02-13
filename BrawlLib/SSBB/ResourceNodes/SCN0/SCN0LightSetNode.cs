@@ -81,7 +81,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Category("Light Set"), TypeConverter(typeof(DropDownListSCN0Ambience))]
-        public string Ambience { get { return _ambientLight; } set { _ambientLight = value; SignalPropertyChange(); } }
+        public string Ambience
+        { 
+            get { return _ambientLight; } 
+            set
+            {
+                _ambient = ((SCN0Node)Parent.Parent).GetFolder<SCN0AmbientLightNode>().FindChild(value, false) as SCN0AmbientLightNode;
+                if (_ambient != null)
+                    _ambientLight = _ambient.Name; 
+                SignalPropertyChange();
+            } 
+        }
         
         [Category("Light Set"), TypeConverter(typeof(DropDownListSCN0Light))]
         public string Light0 

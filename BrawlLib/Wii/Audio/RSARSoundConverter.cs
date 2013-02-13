@@ -9,7 +9,7 @@ namespace BrawlLib.Wii.Audio
 {
     public static class RSARWaveConverter
     {
-        public static unsafe FileMap Encode(IAudioStream stream, IProgressTracker progress)
+        public static unsafe FileMap Encode(IAudioStream stream, IProgressTracker progress, bool RWAV)
         {
             int tmp;
             bool looped = stream.IsLooping;
@@ -44,7 +44,8 @@ namespace BrawlLib.Wii.Audio
             }
             else
             {
-                loopPadding = loopStart = 0;
+                loopPadding = 0;
+                loopStart = 2;
                 totalSamples = samples = stream.Samples;
 
                 blockLen = (samples.Align(14) / 14 * 8);
@@ -179,11 +180,8 @@ namespace BrawlLib.Wii.Audio
                         dPtr += blockLen;
                 }
 
-                if (progress != null)
-                {
-                    if ((sIndex % samplesPerBlock) == 0)
-                        progress.Update(progress.CurrentValue + (0x7000 * channels));
-                }
+                if (progress != null && (sIndex % samplesPerBlock) == 0)
+                    progress.Update(progress.CurrentValue + (0x7000 * channels));
             }
 
             //Reverse coefs

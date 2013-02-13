@@ -25,6 +25,12 @@ namespace BrawlLib.SSBBTypes
 
         internal VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
+        public string OrigPath { get { return new String((sbyte*)OrigPathAddress); } }
+        public VoidPtr OrigPathAddress
+        {
+            get { return Address + _origPathOffset; }
+            set { _origPathOffset = (int)value - (int)Address; }
+        }
         public string ResourceString { get { return new String((sbyte*)this.ResourceStringAddress); } }
         public VoidPtr ResourceStringAddress
         {
@@ -86,6 +92,12 @@ namespace BrawlLib.SSBBTypes
 
         internal VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
+        public string OrigPath { get { return new String((sbyte*)OrigPathAddress); } }
+        public VoidPtr OrigPathAddress
+        {
+            get { return Address + _origPathOffset; }
+            set { _origPathOffset = (int)value - (int)Address; }
+        }
         public UserData* UserData
         {
             get { return (UserData*)(Address + _userDataOffset); }

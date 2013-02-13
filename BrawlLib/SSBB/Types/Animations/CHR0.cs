@@ -11,7 +11,7 @@ namespace BrawlLib.SSBBTypes
     public unsafe struct CHR0v4_3
     {
         public const int Size = 0x28;
-        public const uint Tag = 0x30524843;
+        public const string Tag = "CHR0";
 
         public BRESCommonHeader _header;
         public bint _dataOffset;
@@ -59,8 +59,8 @@ namespace BrawlLib.SSBBTypes
     public unsafe struct CHR0v5
     {
         public const int Size = 0x2C;
-        public const uint Tag = 0x30524843;
-        
+        public const string Tag = "CHR0";
+
         public BRESCommonHeader _header;
         public bint _dataOffset;
         public bint _userDataOffset;

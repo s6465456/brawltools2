@@ -42,13 +42,13 @@ namespace BrawlLib
             "Uncompressed PCM (*.wav)|*.wav";
 
         public static string RWSD =
-            "Raw Sound Pack (*.rwsd)|*.rwsd";
+            "Raw Sound Pack (*.brwsd)|*.brwsd";
 
         public static string RBNK =
-            "Raw Sound Bank (*.rbnk)|*.rbnk";
+            "Raw Sound Bank (*.brbnk)|*.brbnk";
 
         public static string RSEQ =
-            "Raw Sound Requence (*.rseq)|*.rseq";
+            "Raw Sound Requence (*.brseq)|*.brseq";
 
         public static string CLR0 =
             "Color Sequence (*.clr0)|*.clr0";
@@ -102,5 +102,8 @@ namespace BrawlLib
         
         public static string WAV =
             "Uncompressed PCM (*.wav)|*.wav";
+
+        public static string RSAR = 
+            "Sound File Archive (*.brsar)|*.brsar";
     }
 }

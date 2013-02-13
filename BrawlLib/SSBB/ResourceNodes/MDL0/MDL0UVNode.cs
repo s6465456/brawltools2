@@ -14,40 +14,43 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0ObjectNode[] Objects { get { return _polygons.ToArray(); } }
         internal List<MDL0ObjectNode> _polygons = new List<MDL0ObjectNode>();
 
+        MDL0UVData hdr;
+
+        //#if DEBUG
         //[Category("UV Data")]
-        //public int TotalLen { get { return Header->_dataLen; } }
+        //public int TotalLen { get { return hdr._dataLen; } }
         //[Category("UV Data")]
-        //public int MDL0Offset { get { return Header->_mdl0Offset; } }
+        //public int MDL0Offset { get { return hdr._mdl0Offset; } }
         //[Category("UV Data")]
-        //public int DataOffset { get { return Header->_dataOffset; } }
+        //public int DataOffset { get { return hdr._dataOffset; } }
         //[Category("UV Data")]
-        //public int StringOffset { get { return Header->_stringOffset; } }
+        //public int StringOffset { get { return hdr._stringOffset; } }
+        //[Category("UV Data")]
+        //public int Pad1 { get { return hdr._pad1; } }
+        //[Category("UV Data")]
+        //public int Pad2 { get { return hdr._pad2; } }
+        //[Category("UV Data")]
+        //public int Pad3 { get { return hdr._pad3; } }
+        //[Category("UV Data")]
+        //public int Pad4 { get { return hdr._pad4; } }
+        //#endif
         [Category("UV Data")]
-        public int ID { get { return Header->_index; } }
+        public int ID { get { return hdr._index; } }
         [Category("UV Data")]
-        public bool IsST { get { return Header->_isST != 0; } }
+        public bool IsST { get { return hdr._isST != 0; } }
         [Category("UV Data")]
-        public WiiVertexComponentType Format { get { return (WiiVertexComponentType)(int)Header->_format; } }
+        public WiiVertexComponentType Format { get { return (WiiVertexComponentType)(int)hdr._format; } }
         [Category("UV Data")]
-        public byte Divisor { get { return Header->_divisor; } }
+        public byte Divisor { get { return hdr._divisor; } }
         [Category("UV Data")]
-        public byte EntryStride { get { return Header->_entryStride; } }
+        public byte EntryStride { get { return hdr._entryStride; } }
         [Category("UV Data")]
-        public int NumEntries { get { return Header->_numEntries; } }
+        public int NumEntries { get { return hdr._numEntries; } }
 
         [Category("UV Data")]
-        public Vector2 Min { get { return Header->_min; } }
+        public Vector2 Min { get { return hdr._min; } }
         [Category("UV Data")]
-        public Vector2 Max { get { return Header->_max; } }
-
-        //[Category("UV Data")]
-        //public int Pad1 { get { return Header->_pad1; } }
-        //[Category("UV Data")]
-        //public int Pad2 { get { return Header->_pad2; } }
-        //[Category("UV Data")]
-        //public int Pad3 { get { return Header->_pad3; } }
-        //[Category("UV Data")]
-        //public int Pad4 { get { return Header->_pad4; } }
+        public Vector2 Max { get { return hdr._max; } }
 
         public bool ForceRebuild { get { return _forceRebuild; } set { if (_forceRebuild != value) { _forceRebuild = value; SignalPropertyChange(); } } }
         public bool ForceFloat { get { return _forceFloat; } set { if (_forceFloat != value) { _forceFloat = value; } } }
@@ -61,6 +64,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
+            hdr = *Header;
+
             if ((_name == null) && (Header->_stringOffset != 0))
                 _name = Header->ResourceString;
 

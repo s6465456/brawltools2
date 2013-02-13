@@ -17,7 +17,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct VIS0v3
     {
-        public const uint Tag = 0x30534956;
+        public const string Tag = "VIS0";
         public const int Size = 0x24;
 
         public BRESCommonHeader _header;
@@ -63,7 +63,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct VIS0v4
     {
-        public const uint Tag = 0x30534956;
+        public const string Tag = "VIS0";
         public const int Size = 0x28;
 
         public BRESCommonHeader _header;

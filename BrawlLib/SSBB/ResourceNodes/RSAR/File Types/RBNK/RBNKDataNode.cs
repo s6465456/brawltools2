@@ -78,7 +78,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte SurroundPan { get { return hdr._surroundPan; } set { hdr._surroundPan = value; SignalPropertyChange(); } }
         [Category("Bank Data Entry")]
         public float Pitch { get { return hdr._pitch; } set { hdr._pitch = value; SignalPropertyChange(); } }
-        
+
+        [Category("Audio Stream")]
+        public WaveEncoding Encoding { get { return _soundNode == null ? WaveEncoding.ADPCM : _soundNode.Encoding; } }
+        [Category("Audio Stream")]
+        public int Channels { get { return _soundNode == null ? 0 : _soundNode.Channels; } }
+        [Category("Audio Stream")]
+        public bool IsLooped { get { return _soundNode == null ? false : _soundNode.IsLooped; } }
+        [Category("Audio Stream")]
+        public int SampleRate { get { return _soundNode == null ? 0 : _soundNode.SampleRate; } }
+        [Category("Audio Stream")]
+        public int LoopStartSample { get { return _soundNode == null ? 0 : _soundNode.LoopStartSample; } }
+        [Category("Audio Stream")]
+        public int NumSamples { get { return _soundNode == null ? 0 : _soundNode.NumSamples; } }
+
         protected override bool OnInitialize()
         {
             hdr = *Header;

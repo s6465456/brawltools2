@@ -347,7 +347,7 @@ namespace BrawlLib.Modeling
                         foreach (MDL0ObjectNode p in model._polyList)
                             foreach (MDL0MaterialNode m in model._matList)
                                 if (m.Children.Count > 0 && 
-                                    m.Children[0] != null && 
+                                    m.Children[0] != null &&
                                     p.OpaMaterialNode != null &&
                                     p.OpaMaterialNode.Children.Count > 0 &&
                                     p.OpaMaterialNode.Children[0] != null &&

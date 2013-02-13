@@ -9,11 +9,11 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct BRESHeader// : IEnumerable<VoidPtr>
     {
-        public const uint Tag = 0x73657262;
+        public const string Tag = "bres";
         public const int Size = 16;
 
-        public uint _tag; //bres
-        public bushort _endian; //0xFEFF
+        public BinTag _tag;
+        public bushort _endian;
         public bushort _version;
         public buint _fileSize; //Total size of resource package file
         public bushort _rootOffset; //Offset to root entry
@@ -51,9 +51,9 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct ROOTHeader
     {
-        public const int Tag = 0x746F6F72;
+        public const string Tag = "root";
 
-        public uint _tag;
+        public BinTag _tag;
         public bint _size;
         public ResourceGroup _master;
 
@@ -70,7 +70,7 @@ namespace BrawlLib.SSBBTypes
     {
         public const uint Size = 0x10;
 
-        public uint _tag;
+        public BinTag _tag;
         public bint _size;
         public bint _version;
         public bint _bresOffset;

@@ -8,16 +8,11 @@ using System.Linq;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class RSARNode : ResourceNode
+    public unsafe class RSARNode : NW4RNode
     {
         internal RSARHeader* Header { get { return (RSARHeader*)WorkingSource.Address; } }
-
         public override ResourceType ResourceType { get { return ResourceType.RSAR; } }
 
-        [Category("Sound Archive")]
-        public byte VersionMajor { get { return Header->_header.VersionMajor; } }
-        [Category("Sound Archive")]
-        public byte VersionMinor { get { return Header->_header.VersionMinor; } }
         [Category("Sound Archive")]
         public ushort SeqSoundCount { get { return ftr._seqSoundCount; } set { ftr._seqSoundCount = value; SignalPropertyChange(); } }
         [Category("Sound Archive")]
@@ -43,6 +38,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
+            base.OnInitialize();
+
             if (_name == null)
                 if (_origPath != null)
                     _name = Path.GetFileNameWithoutExtension(_origPath);

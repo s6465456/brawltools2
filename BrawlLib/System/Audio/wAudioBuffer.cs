@@ -32,6 +32,10 @@ namespace System.Audio
         internal wAudioBuffer(wAudioProvider parent, ref DS.DSBufferDesc desc)
         {
             _parent = parent;
+
+            if (desc.dwBufferBytes == 0)
+                return;
+
             _parent._ds8.CreateSoundBuffer(ref desc, out _dsb8, IntPtr.Zero);
 
             _format = desc.lpwfxFormat->wFormatTag;

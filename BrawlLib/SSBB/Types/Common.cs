@@ -5,6 +5,54 @@ using System.Runtime.InteropServices;
 
 namespace BrawlLib.SSBBTypes
 {
+    public enum Endian
+    {
+        Big = 0xFEFF,
+        Little = 0xFFFE
+    }
+
+    public unsafe struct BinTag
+    {
+        byte _1, _2, _3, _4;
+
+        public BinTag(string tag)
+        {
+            _1 = _2 = _3 = _4 = 0;
+            Set(tag);
+        }
+        public BinTag(uint tag, bool isLittleEndian)
+        {
+            _1 = _2 = _3 = _4 = 0;
+            if (isLittleEndian)
+                *(uint*)Address = tag;
+            else
+                *(buint*)Address = tag;
+        }
+        public uint Get(bool returnLittleEndian)
+        {
+            if (returnLittleEndian)
+                return *(uint*)Address;
+            else
+                return *(buint*)Address;
+        }
+
+        public string Get() { return new String(Address, 0, 4); }
+        public void Set(string tag)
+        {
+            if (tag.Length > 4)
+                tag.Substring(0, 4);
+            for (int i = 0; i < 4; i++)
+                tag.Write(Address);
+        }
+
+        public static implicit operator BinTag(string r) { return new BinTag(r); }
+        public static implicit operator string(BinTag r) { return r.Get(); }
+        public static implicit operator BinTag(uint r) { return new BinTag(r, true); }
+        public static implicit operator uint(BinTag r) { return r.Get(true); }
+
+        public sbyte* Address { get { fixed (void* ptr = &this)return (sbyte*)ptr; } }
+    }
+
     struct DataBlock
     {
         private VoidPtr _address;
@@ -40,8 +88,8 @@ namespace BrawlLib.SSBBTypes
     {
         public const uint Size = 0x10;
 
-        public uint _tag;
-        public short _endian;
+        public BinTag _tag;
+        public bshort _endian;
         public bshort _version;
         public bint _length;
         public bushort _firstOffset;
@@ -52,6 +100,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte VersionMajor { get { return ((byte*)_version.Address)[0]; } set { ((byte*)_version.Address)[0] = value; } }
         public byte VersionMinor { get { return ((byte*)_version.Address)[1]; } set { ((byte*)_version.Address)[1] = value; } }
+        public Endian Endian { get { return (Endian)(short)_endian; } set { _endian = (short)value; } }
 
         public DataBlockCollection Entries { get { return new DataBlockCollection(DataBlock); } }
     }
@@ -138,9 +187,9 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct SSBBEntryHeader
     {
-        public const uint Size = 0x08;
+        public const uint Size = 8;
 
-        public uint _tag;
+        public BinTag _tag;
         public bint _length;
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
@@ -328,56 +377,6 @@ namespace BrawlLib.SSBBTypes
                 ResourceEntry* entry = Address;
                 while (entry->_id != 0xFFFF) entry--;
                 return (ResourceGroup*)((uint)entry - 8);
-            }
-        }
-    }
-    
-    public enum WaveEncoding
-    {
-        PCM8 = 0,
-        PCM16 = 1,
-        ADPCM = 2
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct AudioFormatInfo
-    {
-        public byte _encoding;
-        public byte _looped;
-        public byte _channels;
-        public byte _sampleRate24;
-
-        public AudioFormatInfo(byte encoding, byte looped, byte channels, byte unk)
-        { _encoding = encoding; _looped = looped; _channels = channels; _sampleRate24 = unk; }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct ADPCMInfo
-    {
-        public const int Size = 0x30;
-
-        public fixed short _coefs[16];
-
-        public bushort _gain;
-        public bshort _ps; //Predictor and scale. This will be initialized to the predictor and scale value of the sample's first frame.
-        public bshort _yn1; //History data; used to maintain decoder state during sample playback.
-        public bshort _yn2; //History data; used to maintain decoder state during sample playback.
-        public bshort _lps; //Predictor/scale for the loop point frame. If the sample does not loop, this value is zero.
-        public bshort _lyn1; //History data for the loop point. If the sample does not loop, this value is zero.
-        public bshort _lyn2; //History data for the loop point. If the sample does not loop, this value is zero.
-
-        public short[] Coefs
-        {
-            get
-            {
-                short[] arr = new short[16];
-                fixed (short* ptr = _coefs)
-                {
-                    bshort* sPtr = (bshort*)ptr;
-                    for (int i = 0; i < 16; i++)
-                        arr[i] = sPtr[i];
-                }
-                return arr;
             }
         }
     }

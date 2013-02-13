@@ -382,15 +382,15 @@ namespace BrawlLib.Modeling
                                 address = addr;
                                 break;
                             case XFDataFormat.Index8:
-                                if ((_polygon._c0Changed && d.attr == GXAttr.GX_VA_CLR0) ||
-                                    (_polygon._c1Changed && d.attr == GXAttr.GX_VA_CLR1))
+                                if ((_polygon._c0Changed && d.attr == GXAttr.GX_VA_CLR0 && _polygon._colorSet[0] != null) ||
+                                    (_polygon._c1Changed && d.attr == GXAttr.GX_VA_CLR1 && _polygon._colorSet[1] != null))
                                     *(byte*)address++ = 0;
                                 else
                                     *(byte*)address++ = (byte)f.ColorIndex[(int)d.attr - 11];
                                 break;
                             case XFDataFormat.Index16:
-                                if ((_polygon._c0Changed && d.attr == GXAttr.GX_VA_CLR0) ||
-                                    (_polygon._c1Changed && d.attr == GXAttr.GX_VA_CLR1))
+                                if ((_polygon._c0Changed && d.attr == GXAttr.GX_VA_CLR0 && _polygon._colorSet[0] != null) ||
+                                    (_polygon._c1Changed && d.attr == GXAttr.GX_VA_CLR1 && _polygon._colorSet[1] != null))
                                     *(bushort*)address = 0;
                                 else
                                     *(bushort*)address = (ushort)f.ColorIndex[(int)d.attr - 11];
@@ -444,26 +444,30 @@ namespace BrawlLib.Modeling
 
             //Get counts for each primitive type, and assign face points
         NextPrimitive:
+            byte cmd = *pTemp++;
+            if (cmd <= 0x38 && cmd >= 0x20)
+            {
+                if (newGroup == false)
+                {
+                    _polygon.groups.Add(group);
+                    group = new PrimitiveGroup();
+                    newGroup = true;
+                }
+                if (!group.nodeIds.Contains(id = *(bushort*)pTemp) && id != ushort.MaxValue)
+                {
+                    group.nodeIds.Add(id);
+                    group._nodes.Add(_polygon.Model._linker.NodeCache[id]);
+
+                    if (!Nodes.ContainsKey(id))
+                        Nodes.Add(id, _polygon.Model._linker.NodeCache[id]);
+                }
+            }
             //Switch by primitive type and increment as well so we can read the count.
-            switch ((GXListCommand)(*pTemp++))
+            switch ((GXListCommand)cmd)
             {
                 //Fill weight cache
                 case GXListCommand.LoadIndexA: //Positions
-                    if (newGroup == false)
-                    {
-                        _polygon.groups.Add(group);
-                        group = new PrimitiveGroup();
-                        newGroup = true;
-                    }
-                    if (!group.nodeIds.Contains(id = *(bushort*)pTemp) && id != ushort.MaxValue)
-                    {
-                        group.nodeIds.Add(id);
-                        group._nodes.Add(_polygon.Model._linker.NodeCache[id]);
-
-                        if (!Nodes.ContainsKey(id))
-                            Nodes.Add(id, _polygon.Model._linker.NodeCache[id]);
-                    }
-
+                 
                     //Set weight node for facepoint extraction
                     desc.SetNode(ref pTemp, (byte*)pData);
                     goto NextPrimitive;
@@ -471,39 +475,11 @@ namespace BrawlLib.Modeling
                 //Not sure what to do here...
                 case GXListCommand.LoadIndexB: //Normals
                 case GXListCommand.LoadIndexC: //UVs
-                    if (newGroup == false)
-                    {
-                        _polygon.groups.Add(group);
-                        group = new PrimitiveGroup();
-                        newGroup = true;
-                    }
-                    if (!group.nodeIds.Contains(id = *(bushort*)pTemp) && id != ushort.MaxValue)
-                    {
-                        group.nodeIds.Add(id);
-                        group._nodes.Add(_polygon.Model._linker.NodeCache[id]);
-
-                        if (!Nodes.ContainsKey(id))
-                            Nodes.Add(id, _polygon.Model._linker.NodeCache[id]);
-                    }
 
                     desc.AddAddr(ref pTemp, (byte*)pData);
                     goto NextPrimitive;
 
                 case GXListCommand.LoadIndexD: //Lights
-                    if (newGroup == false)
-                    {
-                        _polygon.groups.Add(group);
-                        group = new PrimitiveGroup();
-                        newGroup = true;
-                    }
-                    if (!group.nodeIds.Contains(id = *(bushort*)pTemp) && id != ushort.MaxValue)
-                    {
-                        group.nodeIds.Add(id);
-                        group._nodes.Add(_polygon.Model._linker.NodeCache[id]);
-
-                        if (!Nodes.ContainsKey(id))
-                            Nodes.Add(id, _polygon.Model._linker.NodeCache[id]);
-                    }
 
                     pTemp += 4; //Skip
                     goto NextPrimitive;
@@ -827,14 +803,12 @@ namespace BrawlLib.Modeling
             byte* pOut = (byte*)_graphicsBuffer.Address;
             for (int i = 0; i < index; i++)
                 if (_faceData[i] != null)
-                {
                     if (i < 2)
                         pOut += 12;
                     else if (i < 4)
                         pOut += 4;
                     else
                         pOut += 8;
-                }
             
             ushort* pIndex = (ushort*)_indices.Address;
             if (index == 0) //Vertices
@@ -867,7 +841,7 @@ namespace BrawlLib.Modeling
             }
         }
 
-        public int _bufferHandle;
+        //public int _bufferHandle;
         internal unsafe void PrepareStream()
         {
             CalcStride();
@@ -978,7 +952,26 @@ namespace BrawlLib.Modeling
                 }
                 else
                 {
-
+                    if (texId < 0)
+                    { 		
+ 	                    switch (texId) 		
+ 	                    { 		
+ 	                        case -1: //Vertex coords 
+ 	                        case -2: //Normal coords 
+ 	                        case -3: //Color coords 	
+ 	                        case -4: //Binormal B coords 			
+ 	                        case -5: //Binormal T coords 		
+ 	                        default: 		
+                                GL.DisableClientState(ArrayCap.TextureCoordArray);
+                                GL.Disable(EnableCap.Texture2D);
+ 	                            break; 		
+ 	                    } 		
+ 	                } 		
+ 	                else 		
+ 	                {
+                        GL.DisableClientState(ArrayCap.TextureCoordArray);
+                        GL.Disable(EnableCap.Texture2D);
+ 	                }
                 }
             }
             else
@@ -1593,7 +1586,7 @@ namespace BrawlLib.Modeling
 
         internal unsafe PrimitiveManager Clone()
         {
-            return this.MemberwiseClone() as PrimitiveManager;
+            return MemberwiseClone() as PrimitiveManager;
         }
     }
 }

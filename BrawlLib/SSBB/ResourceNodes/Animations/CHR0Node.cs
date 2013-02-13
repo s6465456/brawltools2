@@ -393,6 +393,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (CHR0EntryNode n in Children)
                 table.Add(n.Name);
 
+            if (_version == 5)
             foreach (UserDataClass s in _userEntries)
                 table.Add(s._name);
 
@@ -405,7 +406,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             int size = (_version == 5 ? CHR0v5.Size : CHR0v4_3.Size) + 0x18 + (Children.Count * 0x10);
             foreach (CHR0EntryNode n in Children)
                 size += n.CalculateSize(true);
-            size += _userEntries.GetSize();
+            if (_version == 5)
+                size += _userEntries.GetSize();
             return size;
         }
 
@@ -506,7 +508,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal static ResourceNode TryParse(DataSource source) { return ((BRESCommonHeader*)source.Address)->_tag == CHR0v4_3.Tag ? new CHR0Node() : null; }
     }
 
-    public unsafe class CHR0EntryNode : ResourceNode
+    public unsafe class CHR0EntryNode : ResourceNode, IKeyframeHolder
     {
         internal CHR0Entry* Header { get { return (CHR0Entry*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.CHR0Entry; } }
@@ -518,7 +520,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal KeyframeCollection _keyframes;
         [Browsable(false)]
         public KeyframeCollection Keyframes 
-        { 
+        {
             get 
             {
                 if (_keyframes == null)
@@ -628,7 +630,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0x13; i < 0x16; i++)
                 SetKeyframe((KeyFrameMode)i, index, *v++);
         }
-
+        
         public void SetKeyframeOnlyScale(int index, AnimationFrame frame)
         {
             float* v = (float*)&frame.Scale;

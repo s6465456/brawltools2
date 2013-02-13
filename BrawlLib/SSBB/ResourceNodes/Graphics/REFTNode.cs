@@ -17,18 +17,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal REFT* Header { get { return (REFT*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.REFT; } }
 
-        private float _version;
-
         private int _unk1, _unk2, _unk3, _dataLen, _dataOff;
         private int _TableLen;
         private short _TableEntries;
         private short _TableUnk1;
-
-        [Category("REFT Data")]
-        public byte VersionMajor { get { return _major; } }
-        [Category("REFT Data")]
-        public byte VersionMinor { get { return _minor; } }
-        private byte _minor, _major;
 
         //[Category("REFT Data")]
         //public int DataLength { get { return _dataLen; } }
@@ -45,9 +37,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             base.OnInitialize();
 
             REFT* header = Header;
-
-            _major = header->_header.VersionMajor;
-            _minor = header->_header.VersionMinor;
 
             _name = header->IdString;
             _dataLen = header->_dataLength;
@@ -92,7 +81,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_dataLength = length - 0x18;
             header->_dataOffset = 0x48;
             header->_header._tag = header->_tag = REFT.Tag;
-            header->_header._endian = -2;
+            header->_header.Endian = Endian.Big;
             header->_header._version = 7;
             header->_header._firstOffset = 0x10;
             header->_header._numEntries = 1;

@@ -224,6 +224,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
+            base.OnInitialize();
             type = U8EntryHeader->_type;
             parent = (int)U8EntryHeader->_dataOffset;
             firstChild = (int)U8EntryHeader->_dataLength;

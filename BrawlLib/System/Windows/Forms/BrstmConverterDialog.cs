@@ -674,7 +674,7 @@ namespace System.Windows.Forms
 
             btnOkay.Enabled = true;
 
-            if (!RSAR)
+            if (_type == 0)
                 chkLoopEnable.Checked = true;
 
             UpdateTimeDisplay();
@@ -799,15 +799,24 @@ namespace System.Windows.Forms
         }
 
         private void btnCancel_Click(object sender, EventArgs e) { Close(); }
-        public bool RSAR = false;
+
+        public int Type { get { return _type; } set { _type = value; Text = String.Format("{0} Import", _type == 0 ? "Brstm" : "Wave"); } }
+        public int _type = 0;
+
         private void btnOkay_Click(object sender, EventArgs e)
         {
             Stop();
-            using(ProgressWindow progress = new ProgressWindow(this, "Brstm Converter", "Encoding, please wait...", false))
-            if (RSAR)
-                _audioData = RSARWaveConverter.Encode(_sourceStream, progress);
-            else
-                _audioData = RSTMConverter.Encode(_sourceStream, progress);
+            using(ProgressWindow progress = new ProgressWindow(this, String.Format("{0} Converter", _type == 0 ? "Brstm" : "Wave"), "Encoding, please wait...", false))
+                switch (_type)
+                {
+                    case 0:
+                        _audioData = RSTMConverter.Encode(_sourceStream, progress);
+                        break;
+                    default:
+                        _audioData = RSARWaveConverter.Encode(_sourceStream, progress, _type == 2);
+                        break;
+                }
+                
             DialogResult = DialogResult.OK;
             Close();
         }

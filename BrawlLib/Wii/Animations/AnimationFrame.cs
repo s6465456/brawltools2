@@ -6,7 +6,7 @@ namespace BrawlLib.Wii.Animations
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct AnimationFrame
     {
-        public static readonly AnimationFrame Neutral = new AnimationFrame(new Vector3(1.0f), new Vector3(), new Vector3());
+        public static readonly AnimationFrame Identity = new AnimationFrame(new Vector3(1.0f), new Vector3(), new Vector3());
         public static readonly AnimationFrame Empty = new AnimationFrame();
         
         public Vector3 Scale;

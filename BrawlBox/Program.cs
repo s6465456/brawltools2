@@ -217,7 +217,7 @@ namespace BrawlBox
                     else
                         Say(String.Format("Error: Unable to find node or path '{0}'!", args[1]));
                 }
-
+                
                 Application.Run(MainForm.Instance);
             }
             //catch (Exception x) { Program.Say(x.ToString()); }
@@ -267,8 +267,10 @@ namespace BrawlBox
             if (!Close())
                 return false;
 
-            try
-            {
+            //#if !DEBUG
+            //try
+            //{
+            //#endif
                 if ((_rootNode = NodeFactory.FromFile(null, _rootPath = path)) != null)
                 {
                     MainForm.Instance.Reset();
@@ -276,11 +278,12 @@ namespace BrawlBox
                 }
                 else
                     Say("Unable to recognize input file.");
-            }
+            //#if !DEBUG
+            //}
             //catch (Exception x) { Say(x.ToString()); }
-            finally { }
-
-            Close();
+            //finally { }
+            //#endif
+                Close();
             return false;
         }
 
@@ -288,16 +291,20 @@ namespace BrawlBox
         {
             if (_rootNode != null)
             {
+                //#if !DEBUG
                 //try
                 //{
+                //#endif
                     if (_rootPath == null)
                         return SaveAs();
 
                     _rootNode.Merge(Control.ModifierKeys == (Keys.Control | Keys.Shift));
                     _rootNode.Export(_rootPath);
                     return true;
+                //#if !DEBUG
                 //}
                 //catch (Exception x) { Say(x.Message); }
+                //#endif
             }
             return false;
         }
@@ -313,8 +320,10 @@ namespace BrawlBox
         public static int OpenFile(string filter, out string fileName, bool categorize)
         {
             _openDlg.Filter = filter;
+            //#if !DEBUG
             //try
             //{
+            //#endif
                 if (_openDlg.ShowDialog() == DialogResult.OK)
                 {
                     fileName = _openDlg.FileName;
@@ -323,8 +332,10 @@ namespace BrawlBox
                     else
                         return _openDlg.FilterIndex;
                 }
+            //#if !DEBUG
             //}
             //catch (Exception ex) { Say(ex.ToString()); }
+            //#endif
             fileName = null;
             return 0;
             
@@ -387,8 +398,10 @@ namespace BrawlBox
         {
             if (MainForm.Instance.RootNode is GenericWrapper)
             {
-                try
-                {
+                //#if !DEBUG
+                //try
+                //{
+                //#endif
                     GenericWrapper w = MainForm.Instance.RootNode as GenericWrapper;
                     string path = w.Export();
                     if (path != null)
@@ -397,9 +410,11 @@ namespace BrawlBox
                         MainForm.Instance.UpdateName();
                         return true;
                     }
-                }
+                //#if !DEBUG
+                //}
                 //catch (Exception x) { Say(x.Message); }
-                finally { }
+                //finally { }
+                //#endif
             }
             return false;
         }

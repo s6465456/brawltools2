@@ -23,16 +23,8 @@ namespace BrawlLib.SSBBTypes
             pad0 = pad1 = 0;
         }
 
-        public VoidPtr this[int index]
-        {
-            get { return (VoidPtr)((byte*)Address + Offsets(index)); }
-        }
-
-        public uint Offsets(int index)
-        {
-            return *(buint*)((byte*)Address + 0x10 + (index * 4));
-        }
-
+        public VoidPtr this[int index] { get { return (VoidPtr)((byte*)Address + Offsets(index)); } }
+        public uint Offsets(int index) { return *(buint*)((byte*)Address + 0x10 + (index * 4)); }
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 
@@ -43,21 +35,7 @@ namespace BrawlLib.SSBBTypes
         public byte _id2;
         public byte _echo;
         
-        public fixed float _values[64];
-
-        public float this[int index]
-        {
-            get
-            {
-                fixed (float* v = _values)
-                    return ((bfloat*)v)[index];
-            }
-            set
-            {
-                fixed (float* v = _values)
-                    ((bfloat*)v)[index] = value;
-            }
-        }
+        public fixed int _values[64];
 
         public STPMEntry(ushort id, byte echo, byte id2)
         {

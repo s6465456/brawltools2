@@ -70,6 +70,8 @@ namespace System.Windows.Forms
             this.lstLightType = new System.Windows.Forms.ComboBox();
             this.Fog = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
             this.label16 = new System.Windows.Forms.Label();
             this.numFogEndZ = new System.Windows.Forms.NumericInputBox();
             this.numFogStartZ = new System.Windows.Forms.NumericInputBox();
@@ -121,8 +123,10 @@ namespace System.Windows.Forms
             this.nodeType = new System.Windows.Forms.Label();
             this.nodeList = new System.Windows.Forms.ComboBox();
             this.btnRename = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
+            this.lightCut = new System.Windows.Forms.Button();
+            this.lightPaste = new System.Windows.Forms.Button();
+            this.lightCopy = new System.Windows.Forms.Button();
+            this.lightClear = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.LightSets.SuspendLayout();
             this.AmbLights.SuspendLayout();
@@ -410,6 +414,10 @@ namespace System.Windows.Forms
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.lightCut);
+            this.groupBox6.Controls.Add(this.lightPaste);
+            this.groupBox6.Controls.Add(this.lightCopy);
+            this.groupBox6.Controls.Add(this.lightClear);
             this.groupBox6.Controls.Add(this.label25);
             this.groupBox6.Controls.Add(this.label26);
             this.groupBox6.Controls.Add(this.numSpotBright);
@@ -805,6 +813,26 @@ namespace System.Windows.Forms
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Edit Frame";
             // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(311, 15);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(59, 20);
+            this.button3.TabIndex = 35;
+            this.button3.Text = "Paste";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(253, 15);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(59, 20);
+            this.button4.TabIndex = 34;
+            this.button4.Text = "Copy";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
             // label16
             // 
             this.label16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -1025,6 +1053,7 @@ namespace System.Windows.Forms
             this.btnCut.TabIndex = 30;
             this.btnCut.Text = "Cut";
             this.btnCut.UseVisualStyleBackColor = true;
+            this.btnCut.Click += new System.EventHandler(this.btnCut_Click);
             // 
             // btnPaste
             // 
@@ -1034,6 +1063,7 @@ namespace System.Windows.Forms
             this.btnPaste.TabIndex = 32;
             this.btnPaste.Text = "Paste";
             this.btnPaste.UseVisualStyleBackColor = true;
+            this.btnPaste.Click += new System.EventHandler(this.btnPaste_Click);
             // 
             // btnCopy
             // 
@@ -1043,6 +1073,7 @@ namespace System.Windows.Forms
             this.btnCopy.TabIndex = 31;
             this.btnCopy.Text = "Copy";
             this.btnCopy.UseVisualStyleBackColor = true;
+            this.btnCopy.Click += new System.EventHandler(this.btnCopy_Click);
             // 
             // btnClear
             // 
@@ -1052,6 +1083,7 @@ namespace System.Windows.Forms
             this.btnClear.TabIndex = 33;
             this.btnClear.Text = "Clear";
             this.btnClear.UseVisualStyleBackColor = true;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
             // numAimX
             // 
@@ -1316,6 +1348,7 @@ namespace System.Windows.Forms
             this.button1.TabIndex = 38;
             this.button1.Text = "Use Current Camera";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Visible = false;
             this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // groupBox1
@@ -1412,23 +1445,46 @@ namespace System.Windows.Forms
             this.btnRename.UseVisualStyleBackColor = true;
             this.btnRename.Click += new System.EventHandler(this.button1_Click);
             // 
-            // button3
+            // lightCut
             // 
-            this.button3.Location = new System.Drawing.Point(311, 15);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(59, 20);
-            this.button3.TabIndex = 35;
-            this.button3.Text = "Paste";
-            this.button3.UseVisualStyleBackColor = true;
+            this.lightCut.FlatAppearance.BorderColor = System.Drawing.Color.DimGray;
+            this.lightCut.Location = new System.Drawing.Point(162, 73);
+            this.lightCut.Name = "lightCut";
+            this.lightCut.Size = new System.Drawing.Size(59, 20);
+            this.lightCut.TabIndex = 39;
+            this.lightCut.Text = "Cut";
+            this.lightCut.UseVisualStyleBackColor = true;
+            this.lightCut.Click += new System.EventHandler(this.lightCut_Click);
             // 
-            // button4
+            // lightPaste
             // 
-            this.button4.Location = new System.Drawing.Point(253, 15);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(59, 20);
-            this.button4.TabIndex = 34;
-            this.button4.Text = "Copy";
-            this.button4.UseVisualStyleBackColor = true;
+            this.lightPaste.Location = new System.Drawing.Point(104, 73);
+            this.lightPaste.Name = "lightPaste";
+            this.lightPaste.Size = new System.Drawing.Size(59, 20);
+            this.lightPaste.TabIndex = 41;
+            this.lightPaste.Text = "Paste";
+            this.lightPaste.UseVisualStyleBackColor = true;
+            this.lightPaste.Click += new System.EventHandler(this.lightPaste_Click);
+            // 
+            // lightCopy
+            // 
+            this.lightCopy.Location = new System.Drawing.Point(46, 73);
+            this.lightCopy.Name = "lightCopy";
+            this.lightCopy.Size = new System.Drawing.Size(59, 20);
+            this.lightCopy.TabIndex = 40;
+            this.lightCopy.Text = "Copy";
+            this.lightCopy.UseVisualStyleBackColor = true;
+            this.lightCopy.Click += new System.EventHandler(this.lightCopy_Click);
+            // 
+            // lightClear
+            // 
+            this.lightClear.Location = new System.Drawing.Point(220, 73);
+            this.lightClear.Name = "lightClear";
+            this.lightClear.Size = new System.Drawing.Size(59, 20);
+            this.lightClear.TabIndex = 42;
+            this.lightClear.Text = "Clear";
+            this.lightClear.UseVisualStyleBackColor = true;
+            this.lightClear.Click += new System.EventHandler(this.lightClear_Click);
             // 
             // SCN0Editor
             // 
@@ -1580,6 +1636,10 @@ namespace System.Windows.Forms
         private Panel panel1;
         private Button button3;
         private Button button4;
+        private Button lightCut;
+        private Button lightPaste;
+        private Button lightCopy;
+        private Button lightClear;
 
         public FogType[] fogEnum = new FogType[] {         
         FogType.None,
@@ -1740,6 +1800,19 @@ namespace System.Windows.Forms
             _mainWindow.SetFrame(CurrentFrame);
         }
 
+        public void UpdateSelectedLightSets()
+        {
+            lstAmb.SelectedIndex = _lightSet._ambient != null ? _lightSet._ambient.Index + 1 : 0;
+            lstLight0.SelectedIndex = _lightSet._lights[0] != null ? _lightSet._lights[0].Index + 1 : 0;
+            lstLight1.SelectedIndex = _lightSet._lights[1] != null ? _lightSet._lights[1].Index + 1 : 0;
+            lstLight2.SelectedIndex = _lightSet._lights[2] != null ? _lightSet._lights[2].Index + 1 : 0;
+            lstLight3.SelectedIndex = _lightSet._lights[3] != null ? _lightSet._lights[3].Index + 1 : 0;
+            lstLight4.SelectedIndex = _lightSet._lights[4] != null ? _lightSet._lights[4].Index + 1 : 0;
+            lstLight5.SelectedIndex = _lightSet._lights[5] != null ? _lightSet._lights[5].Index + 1 : 0;
+            lstLight6.SelectedIndex = _lightSet._lights[6] != null ? _lightSet._lights[6].Index + 1 : 0;
+            lstLight7.SelectedIndex = _lightSet._lights[7] != null ? _lightSet._lights[7].Index + 1 : 0;
+        }
+
         private void nodeList_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (nodeList.SelectedItem == null)
@@ -1759,7 +1832,6 @@ namespace System.Windows.Forms
                     lstAmb.Items.Add("<null>");
                     foreach (SCN0AmbientLightNode s in SelectedAnimation.GetFolder<SCN0AmbientLightNode>().Children)
                         lstAmb.Items.Add(s);
-                    lstAmb.SelectedIndex = _lightSet._ambient != null ? _lightSet._ambient.Index + 1 : 0;
 
                     SCN0GroupNode lights = SelectedAnimation.GetFolder<SCN0LightNode>();
 
@@ -1767,49 +1839,43 @@ namespace System.Windows.Forms
                     lstLight0.Items.Add("<null>");
                     foreach (SCN0LightNode s in lights.Children)
                         lstLight0.Items.Add(s);
-                    lstLight0.SelectedIndex = _lightSet._lights[0] != null ? _lightSet._lights[0].Index + 1 : 0;
-
+                    
                     lstLight1.Items.Clear();
                     lstLight1.Items.Add("<null>");
                     foreach (SCN0LightNode s in lights.Children)
                         lstLight1.Items.Add(s);
-                    lstLight1.SelectedIndex = _lightSet._lights[1] != null ? _lightSet._lights[1].Index + 1 : 0;
-
+                    
                     lstLight2.Items.Clear();
                     lstLight2.Items.Add("<null>");
                     foreach (SCN0LightNode s in lights.Children)
                         lstLight2.Items.Add(s);
-                    lstLight2.SelectedIndex = _lightSet._lights[2] != null ? _lightSet._lights[2].Index + 1 : 0;
-
+                    
                     lstLight3.Items.Clear();
                     lstLight3.Items.Add("<null>");
                     foreach (SCN0LightNode s in lights.Children)
                         lstLight3.Items.Add(s);
-                    lstLight3.SelectedIndex = _lightSet._lights[3] != null ? _lightSet._lights[3].Index + 1 : 0;
-
+                    
                     lstLight4.Items.Clear();
                     lstLight4.Items.Add("<null>");
                     foreach (SCN0LightNode s in lights.Children)
                         lstLight4.Items.Add(s);
-                    lstLight4.SelectedIndex = _lightSet._lights[4] != null ? _lightSet._lights[4].Index + 1 : 0;
-
+                    
                     lstLight5.Items.Clear();
                     lstLight5.Items.Add("<null>");
                     foreach (SCN0LightNode s in lights.Children)
                         lstLight5.Items.Add(s);
-                    lstLight5.SelectedIndex = _lightSet._lights[5] != null ? _lightSet._lights[5].Index + 1 : 0;
 
                     lstLight6.Items.Clear();
                     lstLight6.Items.Add("<null>");
                     foreach (SCN0LightNode s in lights.Children)
                         lstLight6.Items.Add(s);
-                    lstLight6.SelectedIndex = _lightSet._lights[6] != null ? _lightSet._lights[6].Index + 1 : 0;
 
                     lstLight7.Items.Clear();
                     lstLight7.Items.Add("<null>");
                     foreach (SCN0LightNode s in lights.Children)
                         lstLight7.Items.Add(s);
-                    lstLight7.SelectedIndex = _lightSet._lights[7] != null ? _lightSet._lights[7].Index + 1 : 0;
+
+                    UpdateSelectedLightSets();
 
                     _mainWindow.pnlKeyframes.SetEditType(-1);
 
@@ -1954,47 +2020,47 @@ namespace System.Windows.Forms
 
         private void lstAmb_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Ambience = lstAmb.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void lstLight0_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Light0 = lstLight0.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void lstLight1_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Light1 = lstLight1.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void lstLight2_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Light2 = lstLight2.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void lstLight3_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Light3 = lstLight3.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void lstLight4_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Light4 = lstLight4.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void lstLight5_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Light5 = lstLight5.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void lstLight6_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Light6 = lstLight6.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void lstLight7_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            _lightSet.Light7 = lstLight7.SelectedItem.ToString(); UpdateSelectedLightSets();
         }
 
         private void button1_Click_1(object sender, EventArgs e)
@@ -2002,18 +2068,25 @@ namespace System.Windows.Forms
             //Get the position of the current camera
             Vector3 pos = _mainWindow.modelPanel1._camera.GetPoint();
             numPosX.Value = pos._x;
+            BoxChanged(numPosX, null);
             numPosY.Value = pos._y;
+            BoxChanged(numPosY, null);
             numPosZ.Value = pos._z;
+            BoxChanged(numPosZ, null);
             Vector3 rot = _mainWindow.modelPanel1._camera._rotation;
             if (_camera.Type == SCN0CameraType.Rotate)
             {
                 //Easy
                 numRotX.Value = rot._x;
+                BoxChanged(numRotX, null);
                 numRotY.Value = rot._y;
+                BoxChanged(numRotY, null);
                 numRotZ.Value = rot._z;
+                BoxChanged(numRotZ, null);
             }
             else
             {
+                //TODO
                 Vector3 m = _mainWindow.modelPanel1._camera.GetPoint();
                 Matrix r = Matrix.TransformMatrix(new Vector3(1), _mainWindow.modelPanel1._camera._rotation, m);
                 r.Translate(0, 0, 100);
@@ -2039,7 +2112,10 @@ namespace System.Windows.Forms
         private void lstCamType_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_camera != null)
+            {
                 _camera.Type = (SCN0CameraType)lstCamType.SelectedIndex;
+                button1.Visible = _camera.Type != SCN0CameraType.Aim;
+            }
         }
 
         private void lstLightType_SelectedIndexChanged(object sender, EventArgs e)
@@ -2088,6 +2164,126 @@ namespace System.Windows.Forms
         {
             if (_light != null)
                 _light.SpecularEnabled = chkLightSpec.Checked;
+        }
+        CameraAnimationFrame _tempCameraFrame;
+        private unsafe void btnCut_Click(object sender, EventArgs e)
+        {
+            CameraAnimationFrame frame = new CameraAnimationFrame();
+            float* p = (float*)&frame;
+
+            for (int i = 0; i < 15; i++)
+            {
+                p[i] = _transBoxes[2][i].Value;
+                _transBoxes[2][i].Value = float.NaN;
+                BoxChanged(_transBoxes[2][i], null);
+            }
+
+            _tempCameraFrame = frame;
+        }
+
+        private unsafe void btnCopy_Click(object sender, EventArgs e)
+        {
+            CameraAnimationFrame frame = new CameraAnimationFrame();
+            float* p = (float*)&frame;
+
+            for (int i = 0; i < 15; i++)
+                p[i] = _transBoxes[2][i].Value;
+
+            _tempCameraFrame = frame;
+        }
+
+        private unsafe void btnPaste_Click(object sender, EventArgs e)
+        {
+            CameraAnimationFrame frame = _tempCameraFrame;
+            float* p = (float*)&frame;
+
+            for (int i = 0; i < 15; i++)
+            {
+                if (_transBoxes[2][i].Value != p[i])
+                    _transBoxes[2][i].Value = p[i];
+                BoxChanged(_transBoxes[2][i], null);
+            }
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < 15; i++)
+            {
+                _transBoxes[2][i].Value = float.NaN;
+                BoxChanged(_transBoxes[2][i], null);
+            }
+        }
+        FogAnimationFrame _tempFogFrame;
+        private unsafe void button4_Click(object sender, EventArgs e)
+        {
+            FogAnimationFrame frame = new FogAnimationFrame();
+            float* p = (float*)&frame;
+
+            for (int i = 0; i < 2; i++)
+                p[i] = _transBoxes[1][i].Value;
+
+            _tempFogFrame = frame;
+        }
+
+        private unsafe void button3_Click(object sender, EventArgs e)
+        {
+            FogAnimationFrame frame = _tempFogFrame;
+            float* p = (float*)&frame;
+
+            for (int i = 0; i < 2; i++)
+            {
+                if (_transBoxes[1][i].Value != p[i])
+                    _transBoxes[1][i].Value = p[i];
+                BoxChanged(_transBoxes[1][i], null);
+            }
+        }
+        LightAnimationFrame _tempLightFrame;
+        private unsafe void lightCut_Click(object sender, EventArgs e)
+        {
+            LightAnimationFrame frame = new LightAnimationFrame();
+            float* p = (float*)&frame;
+
+            for (int i = 0; i < 10; i++)
+            {
+                p[i] = _transBoxes[0][i].Value;
+                _transBoxes[0][i].Value = float.NaN;
+                BoxChanged(_transBoxes[0][i], null);
+            }
+
+            _tempLightFrame = frame;
+        }
+
+        private unsafe void lightPaste_Click(object sender, EventArgs e)
+        {
+            LightAnimationFrame frame = _tempLightFrame;
+            float* p = (float*)&frame;
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (_transBoxes[0][i].Value != p[i])
+                    _transBoxes[0][i].Value = p[i];
+                BoxChanged(_transBoxes[0][i], null);
+            }
+        }
+
+        private unsafe void lightCopy_Click(object sender, EventArgs e)
+        {
+            LightAnimationFrame frame = new LightAnimationFrame();
+            float* p = (float*)&frame;
+
+            for (int i = 0; i < 10; i++)
+                p[i] = _transBoxes[0][i].Value;
+
+            _tempLightFrame = frame;
+        }
+
+        private void lightClear_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                _transBoxes[0][i].Value = float.NaN;
+                BoxChanged(_transBoxes[0][i], null);
+            }
         }
     }
 }

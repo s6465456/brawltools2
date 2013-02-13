@@ -623,7 +623,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(true), TypeConverter(typeof(DropDownListBones))]
         public string SingleBind
         {
-            get { return _singleBind == null ? "" : _singleBind.IsPrimaryNode ? ((MDL0BoneNode)_singleBind)._name : "(multiple)"; }
+            get { return _singleBind == null ? "(none)" : _singleBind.IsPrimaryNode ? ((MDL0BoneNode)_singleBind)._name : "(multiple)"; }
             set
             {
                 SingleBindInf = String.IsNullOrEmpty(value) ? null : Model.FindBone(value); 
@@ -688,6 +688,24 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     message += Name + "\n";
                 OpaMaterialNode = null;
+            }
+        }
+        [Browsable(false)]
+        public MDL0MaterialNode UsableMaterialNode
+        {
+            get
+            {
+                if (OpaMaterialNode != null)
+                    return OpaMaterialNode;
+                else
+                    return XluMaterialNode;
+            }
+            set
+            {
+                if (value.XLUMaterial)
+                    XluMaterialNode = value;
+                else 
+                    OpaMaterialNode = value;
             }
         }
 
@@ -1315,9 +1333,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             w("vec4 colors_0;\n");
             w("vec4 colors_1;\n");
 
-            if (OpaMaterialNode.Children.Count < 7)
+            if (UsableMaterialNode.Children.Count < 7)
             {
-                for (uint i = 0; i < OpaMaterialNode.Children.Count; i++)
+                for (uint i = 0; i < UsableMaterialNode.Children.Count; i++)
                     w("vec3 tex{0};\n", i);
                 w("vec4 clipPos;\n");
                 w("vec4 Normal;\n");
@@ -1394,10 +1412,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             tabs = 0;
 
             uint lightMask = 0;
-            if (OpaMaterialNode.LightChannels > 0)
-                lightMask |= (uint)OpaMaterialNode._chan1._color.Lights | (uint)OpaMaterialNode._chan1._alpha.Lights;
-            if (OpaMaterialNode.LightChannels > 1)
-                lightMask |= (uint)OpaMaterialNode._chan2._color.Lights | (uint)OpaMaterialNode._chan2._alpha.Lights;
+            if (UsableMaterialNode.LightChannels > 0)
+                lightMask |= (uint)UsableMaterialNode._chan1._color.Lights | (uint)UsableMaterialNode._chan1._alpha.Lights;
+            if (UsableMaterialNode.LightChannels > 1)
+                lightMask |= (uint)UsableMaterialNode._chan2._color.Lights | (uint)UsableMaterialNode._chan2._alpha.Lights;
 
 	        w("//Vertex Shader\n");
 
@@ -1527,7 +1545,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
 	        w("float4 mat, lacc;\nfloat3 ldir, h;\nfloat dist, dist2, attn;\n");
 
-            if (OpaMaterialNode.LightChannels == 0)
+            if (UsableMaterialNode.LightChannels == 0)
             {
                 if (_colorSet[0] != null)
                     w("o.colors_0 = color0;\n");
@@ -1538,7 +1556,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        // TODO: This probably isn't necessary if pixel lighting is enabled.
 	        tempShader += GenerateLightingShader(I_MATERIALS, I_LIGHTS, "color", "o.colors_");
 
-            if (OpaMaterialNode.LightChannels < 2)
+            if (UsableMaterialNode.LightChannels < 2)
             {
                 if (_colorSet[1] != null)
                     w("o.colors_1 = color1;\n");
@@ -1548,9 +1566,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
 	        // transform texcoords
 	        w("float4 coord = float4(0.0f, 0.0f, 1.0f, 1.0f);\n");
-	        for (int i = 0; i < OpaMaterialNode.Children.Count; i++) 
+	        for (int i = 0; i < UsableMaterialNode.Children.Count; i++) 
             {
-		        MDL0MaterialRefNode texgen = OpaMaterialNode.Children[i] as MDL0MaterialRefNode;
+		        MDL0MaterialRefNode texgen = UsableMaterialNode.Children[i] as MDL0MaterialRefNode;
 
                 w("{\n");
                 w("//Texgen " + i + "\n");
@@ -1658,7 +1676,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 	        }
 
 	        // clipPos/w needs to be done in pixel shader, not here
-	        if (OpaMaterialNode.Children.Count < 7) 
+	        if (UsableMaterialNode.Children.Count < 7) 
 		        w("o.clipPos = float4(pos.x,pos.y,o.pos.z,o.pos.w);\n");
             else 
             {
@@ -1670,14 +1688,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             //if(g_ActiveConfig.bEnablePixelLighting && ctx.bSupportsPixelLighting)
             //{
-                if (OpaMaterialNode.Children.Count < 7) 
+                if (UsableMaterialNode.Children.Count < 7) 
 			        w("o.Normal = float4(_norm0.x,_norm0.y,_norm0.z,pos.z);\n");
                 else 
                 {
 			        w("o.tex4.w = _norm0.x;\n");
 			        w("o.tex5.w = _norm0.y;\n");
 			        w("o.tex6.w = _norm0.z;\n");
-			        if (OpaMaterialNode.Children.Count < 8)
+			        if (UsableMaterialNode.Children.Count < 8)
 				        w("o.tex7 = pos.xyzz;\n");
 			        else
 				        w("o.tex7.w = pos.z;\n");
@@ -1717,13 +1735,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 		    // Will look better when we bind uniforms in GLSL 1.3
 		    // clipPos/w needs to be done in pixel shader, not here
 
-		    if (OpaMaterialNode.Children.Count < 7) 
+		    if (UsableMaterialNode.Children.Count < 7) 
             {
-			    for (uint i = 0; i < OpaMaterialNode.Children.Count; i++)
+			    for (uint i = 0; i < UsableMaterialNode.Children.Count; i++)
 				    w("gl_TexCoord[{0}].xyz = o.tex{0};\n", i);
-			    w("gl_TexCoord[{0}] = o.clipPos;\n", OpaMaterialNode.Children.Count);
+			    w("gl_TexCoord[{0}] = o.clipPos;\n", UsableMaterialNode.Children.Count);
 			    //if(g_ActiveConfig.bEnablePixelLighting && ctx.bSupportsPixelLighting)
-				    w("gl_TexCoord[{0}] = o.Normal;\n", OpaMaterialNode.Children.Count + 1);
+				    w("gl_TexCoord[{0}] = o.Normal;\n", UsableMaterialNode.Children.Count + 1);
 		    } 
             else 
             {
@@ -1845,10 +1863,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             string s = Tabs + "{\n";
             w(ref s, "//Lighting Section\n");
-            for (uint j = 0; j < OpaMaterialNode.LightChannels; j++)
+            for (uint j = 0; j < UsableMaterialNode.LightChannels; j++)
             {
-                LightChannelControl color = j == 0 ? OpaMaterialNode._chan1._color : OpaMaterialNode._chan2._color;
-                LightChannelControl alpha = j == 0 ? OpaMaterialNode._chan1._alpha : OpaMaterialNode._chan2._alpha;
+                LightChannelControl color = j == 0 ? UsableMaterialNode._chan1._color : UsableMaterialNode._chan2._color;
+                LightChannelControl alpha = j == 0 ? UsableMaterialNode._chan1._alpha : UsableMaterialNode._chan2._alpha;
 
                 if (color.MaterialSource == GXColorSrc.Vertex) 
                     if (_colorSet[j] != null)
@@ -2051,9 +2069,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             int currUniform = GL.GetUniformLocation(programHandle, I_LIGHTS);
             if (currUniform > -1)
             {
-                int frame = OpaMaterialNode.renderFrame;
+                int frame = UsableMaterialNode.renderFrame;
                 List<float> values = new List<float>();
-                foreach (SCN0LightNode l in OpaMaterialNode._lightSet._lights)
+                foreach (SCN0LightNode l in UsableMaterialNode._lightSet._lights)
                 {
                     //float4 col; float4 cosatt; float4 distatt; float4 pos; float4 dir;
 
@@ -2105,32 +2123,32 @@ namespace BrawlLib.SSBB.ResourceNodes
             currUniform = GL.GetUniformLocation(programHandle, I_MATERIALS);
             if (currUniform > -1) GL.Uniform4(currUniform, 4, new float[] 
             {
-                OpaMaterialNode.C1AmbientColor.R * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C1AmbientColor.G * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C1AmbientColor.B * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C1AmbientColor.A * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C1AmbientColor.R * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C1AmbientColor.G * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C1AmbientColor.B * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C1AmbientColor.A * RGBAPixel.ColorFactor,
 
-                OpaMaterialNode.C2AmbientColor.R * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C2AmbientColor.G * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C2AmbientColor.B * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C2AmbientColor.A * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C2AmbientColor.R * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C2AmbientColor.G * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C2AmbientColor.B * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C2AmbientColor.A * RGBAPixel.ColorFactor,
 
-                OpaMaterialNode.C1MaterialColor.R * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C1MaterialColor.G * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C1MaterialColor.B * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C1MaterialColor.A * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C1MaterialColor.R * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C1MaterialColor.G * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C1MaterialColor.B * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C1MaterialColor.A * RGBAPixel.ColorFactor,
 
-                OpaMaterialNode.C2MaterialColor.R * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C2MaterialColor.G * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C2MaterialColor.B * RGBAPixel.ColorFactor,
-                OpaMaterialNode.C2MaterialColor.A * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C2MaterialColor.R * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C2MaterialColor.G * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C2MaterialColor.B * RGBAPixel.ColorFactor,
+                UsableMaterialNode.C2MaterialColor.A * RGBAPixel.ColorFactor,
             });
             currUniform = GL.GetUniformLocation(programHandle, I_TEXMATRICES);
             if (currUniform > -1)
             {
                 List<float> mtxValues = new List<float>();
                 int i = 0;
-                foreach (MDL0MaterialRefNode m in OpaMaterialNode.Children)
+                foreach (MDL0MaterialRefNode m in UsableMaterialNode.Children)
                 {
                     for (int x = 0; x < 12; x++)
                         mtxValues.Add(m.EffectMatrix[x]);
@@ -2176,9 +2194,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.MultMatrix((float*)&m);
             }
 
-            if (_opaMaterial != null)
+            if (UsableMaterialNode != null)
             {
-                switch ((int)_opaMaterial.CullMode)
+                switch ((int)UsableMaterialNode.CullMode)
                 {
                     case 0: //None
                         GL.Disable(EnableCap.CullFace);
@@ -2355,7 +2373,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 //_renderUpdate = MaterialNode._renderUpdate = MaterialNode.ShaderNode._renderUpdate = true;
 
-                bool updateProgram = _renderUpdate || OpaMaterialNode._renderUpdate || OpaMaterialNode.ShaderNode._renderUpdate;
+                bool updateProgram = _renderUpdate || UsableMaterialNode._renderUpdate || UsableMaterialNode.ShaderNode._renderUpdate;
                 if (updateProgram)
                 {
                     temp = true;
@@ -2386,9 +2404,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                         else
                             GL.AttachShader(shaderProgramHandle, vertexShaderHandle);
                     }
-                    if (_renderUpdate || OpaMaterialNode._renderUpdate || OpaMaterialNode.ShaderNode._renderUpdate)
+                    if (_renderUpdate || UsableMaterialNode._renderUpdate || UsableMaterialNode.ShaderNode._renderUpdate)
                     {
-                        fragmentShaderSource = OpaMaterialNode.GeneratePixelShaderCode(this, MDL0MaterialNode.PSGRENDER_MODE.PSGRENDER_NORMAL, ctx);
+                        fragmentShaderSource = UsableMaterialNode.GeneratePixelShaderCode(this, MDL0MaterialNode.PSGRENDER_MODE.PSGRENDER_NORMAL, ctx);
 
                         GL.ShaderSource(fragmentShaderHandle, fragmentShaderSource);
                         GL.CompileShader(fragmentShaderHandle);
@@ -2404,7 +2422,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         else
                             GL.AttachShader(shaderProgramHandle, fragmentShaderHandle);
 
-                        OpaMaterialNode._renderUpdate = OpaMaterialNode.ShaderNode._renderUpdate = false;
+                        UsableMaterialNode._renderUpdate = UsableMaterialNode.ShaderNode._renderUpdate = false;
                     }
 
                     _renderUpdate = false;
@@ -2417,9 +2435,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (temp)
                 {
                     SetUniforms(shaderProgramHandle);
-                    OpaMaterialNode.SetUniforms(shaderProgramHandle);
+                    UsableMaterialNode.SetUniforms(shaderProgramHandle);
                 }
-                if (OpaMaterialNode._lightSet != null)
+                if (UsableMaterialNode._lightSet != null)
                     SetLightUniforms(shaderProgramHandle);
             }
 
@@ -2427,16 +2445,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             PreRender();
 
-            if (_opaMaterial != null)
-                if (_opaMaterial.Children.Count == 0) _manager.RenderTexture(null);
-                else foreach (MDL0MaterialRefNode mr in _opaMaterial.Children)
+            if (UsableMaterialNode != null)
+                if (UsableMaterialNode.Children.Count == 0) _manager.RenderTexture(null);
+                else foreach (MDL0MaterialRefNode mr in UsableMaterialNode.Children)
                 {
                     if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
                         continue;
-
-                    //if (ctx._canUseShaders)
-                        //GL.ClientActiveTexture(TextureUnit.Texture0 + mr.Index);
-                        //GL.ActiveTexture(TextureUnit.Texture0 + mr.Index);
 
                     GL.MatrixMode(MatrixMode.Texture);
 
@@ -2499,10 +2513,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             _render = (_bone != null ? _bone._flags1.HasFlag(BoneFlags.Visible) ? true : false : true);
 
-            vertexShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.VertexShader);
-            fragmentShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
+            if (ctx._canUseShaders)
+            {
+                vertexShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.VertexShader);
+                fragmentShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
 
-            _renderUpdate = true;
+                _renderUpdate = true;
+            }
         }
         internal override void Unbind() 
         {
@@ -2522,58 +2539,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Etc
 
-        public MDL0ObjectNode Clone()
-        {
-            MDL0ObjectNode node = this.MemberwiseClone() as MDL0ObjectNode;
-            //node._parent = Parent;
-            //node.Name = Name;
-            //node.SingleBindInf = SingleBindInf;
-            //node.BoneNode = BoneNode;
-            //node.MaterialNode = MaterialNode;
-            //node._vertexNode = _vertexNode;
-            //node._normalNode = _normalNode;
-            //for (int i = 0; i < 2; i++)
-            //    node._colorSet[i] = _colorSet[i];
-            //for (int i = 0; i < 8; i++)
-            //    node._uvSet[i] = _uvSet[i];
-            //node.groups = groups;
-            //node.UVATGroups = UVATGroups;
-            //node._vertexFormat = VertexFormat;
-            //node._vertexSpecs = VertexSpecs;
-            //node._defFlags = _defFlags;
-            //node._defSize = _defSize;
-            //node._manager = _manager.Clone();
-            ////node._manager = new PrimitiveManager();
-            ////node._manager._faceData = _manager._faceData;
-            ////node._manager._graphicsBuffer = _manager._graphicsBuffer;
-            //for (int i = 0; i < 12; i++)
-            //{
-            //    node._elementIndices[i] = _elementIndices[i];
-            //    //if (node._elementIndices[i] != -1)
-            //    //    node._manager._dirty[i] = true;
-            //}
-            ////node._manager._vertices = _manager._vertices;
-            //node._manager._polygon = node;
-            ////node._manager._faces = _manager._faces;
-            ////node._manager._lines = _manager._lines;
-            ////node._manager._points = _manager._points;
-            ////node._manager._indices = _manager._indices;
-            ////node._manager.Nodes = _manager.Nodes;
-            ////node._manager._desc = _manager._desc;
-            //node._nodeId = _nodeId;
-            //if (node.Weighted)
-            //{
-            //    foreach (Vertex3 vert in node._manager._vertices)
-            //        if (vert._influence != null && vert._influence is Influence)
-            //            vert._influence = Model._influences.AddOrCreateInf((Influence)vert._influence);
-            //}
-            //else if (node.SingleBindInf != null && node.SingleBindInf is Influence)
-            //    node.SingleBindInf = Model._influences.AddOrCreateInf((Influence)node.SingleBindInf);
-            //node._rebuild = true;
-            //node.SignalPropertyChange();
-            ////node.Rebuild(true);
-            return node;
-        }
+        public MDL0ObjectNode Clone() { return MemberwiseClone() as MDL0ObjectNode; }
 
         public override void Remove()
         {

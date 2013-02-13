@@ -305,17 +305,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                     BitmapData data = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                     try
                     {
-                        //GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-                        using (UnsafeBuffer buffer = new UnsafeBuffer(size << 2))
-                        {
-                            ARGBPixel* sPtr = (ARGBPixel*)data.Scan0;
-                            ABGRPixel* dPtr = (ABGRPixel*)buffer.Address;
+                        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                        //using (UnsafeBuffer buffer = new UnsafeBuffer(size << 2))
+                        //{
+                        //    ARGBPixel* sPtr = (ARGBPixel*)data.Scan0;
+                        //    ABGRPixel* dPtr = (ABGRPixel*)buffer.Address;
 
-                            for (int i = 0; i < size; i++)
-                                *dPtr++ = (ABGRPixel)(*sPtr++);
+                        //    for (int i = 0; i < size; i++)
+                        //        *dPtr++ = (ABGRPixel)(*sPtr++);
 
-                            OpenTK.Graphics.Glu.Build2DMipmap(OpenTK.Graphics.TextureTarget.Texture2D, 4, w, h, OpenTK.Graphics.PixelFormat.Rgba, OpenTK.Graphics.PixelType.UnsignedByte, (IntPtr)buffer.Address);
-                        }
+                        //    OpenTK.Graphics.Glu.Build2DMipmap(OpenTK.Graphics.TextureTarget.Texture2D, 4, w, h, OpenTK.Graphics.PixelFormat.Rgba, OpenTK.Graphics.PixelType.UnsignedByte, (IntPtr)buffer.Address);
+                        //}
                     }
                     finally
                     {

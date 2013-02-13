@@ -36,6 +36,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int LevelOfDetail { get { return _lod; } }
         [Category("Texture")]
         public bool HasPalette { get { return _hasPalette; } }
+        [Category("Texture")]
+        public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
+        public string _originalPath;
+
+        [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
+        public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
+        internal UserDataCollection _userEntries = new UserDataCollection();
 
         public PLT0Node GetPaletteNode() { return ((_parent == null) || (!HasPalette)) ? null : _parent._parent.FindChild("Palettes(NW4R)/" + this.Name, false) as PLT0Node; }
 
@@ -53,7 +60,22 @@ namespace BrawlLib.SSBB.ResourceNodes
             _hasPalette = Header1->HasPalette;
             _version = Header1->_header._version;
 
+            if (_version == 3)
+                (_userEntries = new UserDataCollection()).Read(Header3->UserData);
+
             return false;
+        }
+
+        internal override void GetStrings(StringTable table)
+        {
+            table.Add(Name);
+
+            if (_version == 3)
+            foreach (UserDataClass s in _userEntries)
+                table.Add(s._name);
+
+            if (!String.IsNullOrEmpty(_originalPath))
+                table.Add(_originalPath);
         }
 
         [Browsable(false)]
@@ -89,6 +111,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             TEX0v1* header = (TEX0v1*)dataAddress;
             header->ResourceStringAddress = stringTable[Name] + 4;
+            if (!String.IsNullOrEmpty(_originalPath))
+                header->OrigPathAddress = stringTable[_originalPath] + 4;
         }
 
         public void Replace(Bitmap bmp)

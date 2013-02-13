@@ -109,6 +109,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (SHP0EntryNode n in Children)
                 table.Add(n.Name);
 
+            if (_version == 4)
             foreach (UserDataClass s in _userEntries)
                 table.Add(s._name);
 
@@ -226,6 +227,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 size += entry.CalculateSize(true);
             }
             size += _strings.Count * 4;
+            if (_version == 4)
             size += _userEntries.GetSize();
             return size;
         }

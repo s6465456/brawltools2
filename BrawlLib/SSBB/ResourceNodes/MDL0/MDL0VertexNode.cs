@@ -17,34 +17,39 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0ObjectNode[] Objects { get { return _polygons.ToArray(); } }
         internal List<MDL0ObjectNode> _polygons = new List<MDL0ObjectNode>();
 
+        MDL0VertexData hdr = new MDL0VertexData();
+
+        //#if DEBUG
         //[Category("Vertex Data")]
-        //public int TotalLen { get { return Header->_dataLen; } }
+        //public int TotalLen { get { return hdr._dataLen; } }
         //[Category("Vertex Data")]
-        //public int MDL0Offset { get { return Header->_mdl0Offset; } }
+        //public int MDL0Offset { get { return hdr._mdl0Offset; } }
         //[Category("Vertex Data")]
-        //public int DataOffset { get { return Header->_dataOffset; } }
+        //public int DataOffset { get { return hdr._dataOffset; } }
         //[Category("Vertex Data")]
-        //public int StringOffset { get { return Header->_stringOffset; } }
-        [Category("Vertex Data")]
-        public int ID { get { return Header->_index; } }
-        [Category("Vertex Data")]
-        public bool IsXYZ { get { return Header->_isXYZ != 0; } }
-        [Category("Vertex Data")]
-        public WiiVertexComponentType Format { get { return (WiiVertexComponentType)(int)Header->_type; } }
-        [Category("Vertex Data")]
-        public byte Divisor { get { return Header->_divisor; } }
-        [Category("Vertex Data")]
-        public byte EntryStride { get { return Header->_entryStride; } }
-        [Category("Vertex Data")]
-        public short NumVertices { get { return Header->_numVertices; } }
-        [Category("Vertex Data")]
-        public Vector3 EMin { get { return Header->_eMin; } }
-        [Category("Vertex Data")]
-        public Vector3 EMax { get { return Header->_eMax; } }
+        //public int StringOffset { get { return hdr._stringOffset; } }
         //[Category("Vertex Data")]
-        //public int Pad1 { get { return Header->_pad1; } }
+        //public int Pad1 { get { return hdr._pad1; } }
         //[Category("Vertex Data")]
-        //public int Pad2 { get { return Header->_pad2; } }
+        //public int Pad2 { get { return hdr._pad2; } }
+        //#endif
+        [Category("Vertex Data")]
+        public int ID { get { return hdr._index; } }
+        [Category("Vertex Data")]
+        public bool IsXYZ { get { return hdr._isXYZ != 0; } }
+        [Category("Vertex Data")]
+        public WiiVertexComponentType Format { get { return (WiiVertexComponentType)(int)hdr._type; } }
+        [Category("Vertex Data")]
+        public byte Divisor { get { return hdr._divisor; } }
+        [Category("Vertex Data")]
+        public byte EntryStride { get { return hdr._entryStride; } }
+        [Category("Vertex Data")]
+        public short NumVertices { get { return hdr._numVertices; } }
+        [Category("Vertex Data")]
+        public Vector3 EMin { get { return hdr._eMin; } }
+        [Category("Vertex Data")]
+        public Vector3 EMax { get { return hdr._eMax; } }
+
 
         public bool ForceRebuild { get { return _forceRebuild; } set { if (_forceRebuild != value) { _forceRebuild = value; SignalPropertyChange(); } } }
         public bool ForceFloat { get { return _forceFloat; } set { if (_forceFloat != value) { _forceFloat = value; } } }
@@ -58,10 +63,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
-            MDL0VertexData* header = Header;
+            hdr = *Header;
             base.OnInitialize();
 
-            SetSizeInternal(header->_dataLen);
+            SetSizeInternal(hdr._dataLen);
 
             if ((_name == null) && (Header->_stringOffset != 0))
                 _name = Header->ResourceString;

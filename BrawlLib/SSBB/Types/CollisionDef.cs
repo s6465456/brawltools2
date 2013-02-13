@@ -79,33 +79,33 @@ namespace BrawlLib.SSBBTypes
         public bint _unk1; //0
         public bint _unk2; //0
         public bint _unk3; //0
-        public bshort _unk4; //2
+        public bushort _flags; //2
         public bshort _unk5; //0
         public BVec2 _boxMin;
         public BVec2 _boxMax;
         public bshort _pointOffset;
         public bshort _pointCount;
         public bshort _unk6; //0
-        public bshort _unk7; //-1
+        public bshort _boneIndex;
         public fixed byte _modelName[32];
         public fixed byte _boneName[32];
 
         public ColObject(int planeIndex, int planeCount, int pointOffset, int pointCount, Vector2 boxMin, Vector2 boxMax, string modelName, string boneName,
-            int unk1, int unk2, int unk3, int unk4, int unk5, int unk6, int unk7)
+            int unk1, int unk2, int unk3, int flags, int unk5, int unk6, int boneIndex)
         {
             _planeIndex = (short)planeIndex;
             _planeCount = (short)planeCount;
             _unk1 = unk1;
             _unk2 = unk2;
             _unk3 = unk3;
-            _unk4 = (short)unk4;
+            _flags = (ushort)flags;
             _unk5 = (short)unk5;
             _boxMin = boxMin;
             _boxMax = boxMax;
             _pointOffset = (short)pointOffset;
             _pointCount = (short)pointCount;
             _unk6 = (short)unk6;
-            _unk7 = (short)unk7;
+            _boneIndex = (short)boneIndex;
 
             fixed (byte* p = _modelName)
                 SetStr(p, modelName);
@@ -121,7 +121,7 @@ namespace BrawlLib.SSBBTypes
             _unk1 = 0;
             _unk2 = 0;
             _unk3 = 0;
-            _unk4 = 0;
+            _flags = 0;
             _boxMin = boxMin;
             _boxMax = boxMax;
             _unk5 = 0;
@@ -164,30 +164,36 @@ namespace BrawlLib.SSBBTypes
 
     public enum CollisionPlaneMaterial : byte
     {
-        Footstep1 = 0,
-        Footstep2 = 1,
-        Footstep3 = 2,
-        Footstep4 = 3,
-        Footstep5 = 4,
-        Footstep6 = 5,
-        Footstep7 = 6,
-        Footstep8 = 7,
-        Footstep9 = 8,
-        Footstep10 = 9,
+        Brick = 0,
+        Rock = 1,
+        Grass = 2,
+        Soil = 3,
+        Wood = 4,
+        NibuIron = 5,
+        Iron = 6,
+        Carpet = 7,
+        Fence = 8,
+        Unknown1 = 9,
         Water = 0x0A,
         Bubbles = 0x0B,
         Ice = 0x0C,
         Snow = 0x0D,
         SnowIce = 0x0E,
-        Footstep11 = 0x0F,
+        GameWatch = 0x0F,
         Ice2 = 0x10,
-        Footstep12 = 0x11,
+        Danbouru = 0x11,
         Crash1 = 0x12,
         Crash2 = 0x13,
         Crash3 = 0x14,
         LargeBubbles = 0x15,
-        Footstep13 = 0x16,
-        Footstep14 = 0x17,
+        Cloud = 0x16,
+        Subspace = 0x17,
+        Stone2 = 0x18,
+        Unknown2 = 0x19,
+        NES8Bit = 0x1A,
+        Metal2 = 0x1B,
+        Sand = 0x1C,
+        Homerun = 0x1D
     }
 
     public enum CollisionPlaneType
