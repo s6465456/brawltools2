@@ -857,8 +857,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Rendering
-
-        internal bool _bound = false;
+        
+        internal bool _isTargetModel = false;
         internal bool _renderPolygons = true;
         internal bool _renderPolygonsWireframe = false;
         internal bool _renderBones = true;
@@ -872,21 +872,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Vector4 Diffuse = new Vector4(0.8f, 0.8f, 0.8f, 1);
         public Vector4 Specular = new Vector4(0.5f, 0.5f, 0.5f, 1);
 
-        internal bool _canUndo = false;
-        internal bool _canRedo = false;
-        internal bool _primarySave = true;
-        public List<SaveState> Saves = new List<SaveState>();
-        public int _currentSave;
-        public int _saveIndex = 0;
         public Dictionary<string, List<int>> VIS0Indices;
-
-        public void ResetSaves()
-        {
-            Saves.Clear();
-            _saveIndex = 0;
-            _primarySave = true;
-            _canUndo = _canRedo = false;
-        }
 
         public void Attach(TKContext ctx)
         {
@@ -933,6 +919,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_visible)
                 return;
 
+            GL.InitNames();
+
             GL.Disable(EnableCap.Blend);
 
             //if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
@@ -944,7 +932,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.Enable(EnableCap.DepthTest);
 
                 if (_renderPolygonsWireframe)
+                {
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+                    GL.LineWidth(0.1f);
+                }
                 else
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
@@ -968,21 +959,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                         bone.Render(ctx, mainWindow);
             }
 
-            //if (_renderVertices)
-            //{
-            //    ctx.glDisable((uint)GLEnableCap.Lighting);
-            //    if (polyIndex != -1)
-            //    {
-            //        ctx.glDisable((uint)GLEnableCap.DepthTest);
-            //        ((MDL0PolygonNode)_polyList[polyIndex])._manager.RenderVerts(ctx, ((MDL0PolygonNode)_polyList[polyIndex])._singleBind);
-            //    }
-            //    else
-            //    {
-            //        ctx.glEnable(GLEnableCap.DepthTest);
-            //        foreach (MDL0PolygonNode p in _polyList)
-            //            p._manager.RenderVerts(ctx, p._singleBind);
-            //    }
-            //}
+            if (_renderVertices)
+            {
+                GL.Disable(EnableCap.Lighting);
+                if (polyIndex != -1)
+                {
+                    GL.Disable(EnableCap.DepthTest);
+                    ((MDL0ObjectNode)_polyList[polyIndex])._manager.RenderVerts(ctx, ((MDL0ObjectNode)_polyList[polyIndex])._singleBind, _mainWindow);
+                }
+                else
+                {
+                    GL.Enable(EnableCap.DepthTest);
+                    foreach (MDL0ObjectNode p in _polyList)
+                        p._manager.RenderVerts(ctx, p._singleBind, _mainWindow);
+                }
+            }
 
             if (_billboardBones.Count > 0)
             {
@@ -1165,28 +1156,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_polyList != null)
                 foreach (MDL0ObjectNode poly in _polyList)
                     poly.UnWeightVertices();
-        }
-        public void Undo()
-        {
-            Saves[_saveIndex].redo = true;
-            Saves[_saveIndex].undo = false;
-            _saveIndex--;
-            if (_saveIndex < 0)
-                _saveIndex = 0;
-            Saves[_saveIndex].redo = false;
-            Saves[_saveIndex].undo = true;
-            _canRedo = true;
-        }
-        public void Redo()
-        {
-            Saves[_saveIndex].redo = false;
-            Saves[_saveIndex].undo = true;
-            _saveIndex++;
-            if (_saveIndex >= Saves.Count)
-                _saveIndex = Saves.Count - 1;
-            Saves[_saveIndex].redo = true;
-            Saves[_saveIndex].undo = false;
-            _canUndo = true;
         }
 
         public Matrix shadowMatrix(Vector4 groundplane, Vector4 lightpos)

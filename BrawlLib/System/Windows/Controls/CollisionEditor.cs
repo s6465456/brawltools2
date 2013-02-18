@@ -930,9 +930,9 @@ namespace System.Windows.Forms
         private Vector3 _selectStart, _selectLast, _selectEnd;
         private bool _creating;
 
-        private SaveState2 save;
-        private List<SaveState2> undoSaves = new List<SaveState2>();
-        private List<SaveState2> redoSaves = new List<SaveState2>();
+        private SaveState save;
+        private List<SaveState> undoSaves = new List<SaveState>();
+        private List<SaveState> redoSaves = new List<SaveState>();
         private int saveIndex = 0;
         private bool hasMoved = false;
 
@@ -1307,10 +1307,7 @@ namespace System.Windows.Forms
             _modelPanel.Invalidate();
             UpdatePropPanels();
         }
-        private void FinishHover()
-        {
-            _hovering = false;
-        }
+        private void FinishHover() { _hovering = false; }
         private void BeginSelection(Vector3 point, bool inverse)
         {
             if (_selecting)
@@ -1560,7 +1557,7 @@ namespace System.Windows.Forms
             {
                 if (saveIndex != 0)
                 {
-                    if (undoSaves[saveIndex - 1].collisionLinks[0]._value.ToString() == undoSaves[saveIndex - 1].vectors_2[0].ToString())//If equal to starting point, remove.
+                    if (undoSaves[saveIndex - 1]._collisionLinks[0]._value.ToString() == undoSaves[saveIndex - 1]._linkVectors[0].ToString())//If equal to starting point, remove.
                     {
                         undoSaves.RemoveAt(saveIndex - 1);
                         saveIndex--;
@@ -2003,12 +2000,12 @@ namespace System.Windows.Forms
                 redoSaves.Clear();
             }
 
-            save = new SaveState2();
-            save.collisionLinks = new List<CollisionLink>();
-            save.vectors_2 = new List<Vector2>();
+            save = new SaveState();
+            save._collisionLinks = new List<CollisionLink>();
+            save._linkVectors = new List<Vector2>();
 
             foreach (CollisionLink l in _selectedLinks)
-            { save.collisionLinks.Add(l); save.vectors_2.Add(l._value); }
+            { save._collisionLinks.Add(l); save._linkVectors.Add(l._value); }
 
             undoSaves.Add(save);
             btnUndo.Enabled = true;
@@ -2037,19 +2034,19 @@ namespace System.Windows.Forms
         {
             _selectedLinks.Clear();
             
-            save = new SaveState2();
+            save = new SaveState();
 
-            if (undoSaves[saveIndex - 1].vectors_2 != null)     //XY Positions changed.
+            if (undoSaves[saveIndex - 1]._linkVectors != null)     //XY Positions changed.
             {
-                save.collisionLinks = new List<CollisionLink>();
-                save.vectors_2 = new List<Vector2>();
+                save._collisionLinks = new List<CollisionLink>();
+                save._linkVectors = new List<Vector2>();
 
-                for (int i = 0; i < undoSaves[saveIndex - 1].collisionLinks.Count; i++)
+                for (int i = 0; i < undoSaves[saveIndex - 1]._collisionLinks.Count; i++)
                 {
-                    _selectedLinks.Add(undoSaves[saveIndex - 1].collisionLinks[i]);
-                    save.collisionLinks.Add(undoSaves[saveIndex - 1].collisionLinks[i]);
-                    save.vectors_2.Add(undoSaves[saveIndex - 1].collisionLinks[i]._value);
-                    _selectedLinks[i]._value = undoSaves[saveIndex - 1].vectors_2[i];
+                    _selectedLinks.Add(undoSaves[saveIndex - 1]._collisionLinks[i]);
+                    save._collisionLinks.Add(undoSaves[saveIndex - 1]._collisionLinks[i]);
+                    save._linkVectors.Add(undoSaves[saveIndex - 1]._collisionLinks[i]._value);
+                    _selectedLinks[i]._value = undoSaves[saveIndex - 1]._linkVectors[i];
                 }
             }
 
@@ -2071,10 +2068,10 @@ namespace System.Windows.Forms
         {
             _selectedLinks.Clear();
 
-            for (int i = 0; i < redoSaves[undoSaves.Count - saveIndex - 1].collisionLinks.Count; i++)
+            for (int i = 0; i < redoSaves[undoSaves.Count - saveIndex - 1]._collisionLinks.Count; i++)
             {
-                _selectedLinks.Add(redoSaves[undoSaves.Count - saveIndex - 1].collisionLinks[i]);
-                _selectedLinks[i]._value = redoSaves[undoSaves.Count - saveIndex - 1].vectors_2[i];
+                _selectedLinks.Add(redoSaves[undoSaves.Count - saveIndex - 1]._collisionLinks[i]);
+                _selectedLinks[i]._value = redoSaves[undoSaves.Count - saveIndex - 1]._linkVectors[i];
             }
 
             redoSaves.RemoveAt(undoSaves.Count - saveIndex - 1);

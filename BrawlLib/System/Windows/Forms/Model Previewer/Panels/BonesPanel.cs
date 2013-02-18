@@ -262,7 +262,8 @@ namespace System.Windows.Forms
                     if (TargetBone != null)
                         if (TargetModel != TargetBone.Model)
                         {
-                            _mainWindow.resetcam = false;
+                            //The user selected a bone from another model.
+                            _mainWindow._resetCam = false;
                             TargetModel = TargetBone.Model;
                         }
                         //else { }

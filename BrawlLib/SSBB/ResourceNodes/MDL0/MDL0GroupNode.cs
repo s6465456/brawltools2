@@ -168,14 +168,32 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     //Iterate through weights, adding each to the influence
                                     //Here, we are referring back to the NodeCache to grab the bone.
                                     //Note that the weights do not reference other influences, only bones. There is a good reason for this.
+                                    MDL0BoneNode b = null;
+                                    List<int> nullIndices = new List<int>();
                                     for (int i = 0; i < count; i++, nEntry++)
-                                        if (nEntry->_id < linker.NodeCache.Length && (linker.NodeCache[nEntry->_id] as MDL0BoneNode) != null)
-                                            inf._weights[i] = new BoneWeight(linker.NodeCache[nEntry->_id] as MDL0BoneNode, nEntry->_value);
+                                        if (nEntry->_id < linker.NodeCache.Length && (b = (linker.NodeCache[nEntry->_id] as MDL0BoneNode)) != null)
+                                            inf._weights[i] = new BoneWeight(b, nEntry->_value);
                                         else
+                                        {
+                                            nullIndices.Add(i);
                                             nullCount++;
+                                        }
+
+                                    bool d = false;
+                                    if (nullIndices.Count > 0)
+                                    {
+                                        List<BoneWeight> newWeights = new List<BoneWeight>();
+                                        for (int i = 0; i < inf._weights.Length; i++)
+                                            if (!nullIndices.Contains(i))
+                                                newWeights.Add(inf._weights[i]);
+                                        if (newWeights.Count == 0)
+                                            d = true;
+                                        else
+                                            inf._weights = newWeights.ToArray();
+                                    }
 
                                     //Add influence to model object, while adding it to the cache.
-                                    linker.NodeCache[index] = model._influences.AddOrCreate(inf);
+                                    if (!d) linker.NodeCache[index] = model._influences.AddOrCreate(inf);
 
                                     //Move data pointer to next entry
                                     pData = (byte*)nEntry;

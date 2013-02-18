@@ -181,78 +181,7 @@ namespace System
             set { fixed (Vector3* p = &this) ((float*)p)[index] = value; }
         }
 
-        public void Morph(Vector3 to, float percent) 
-        {
-            _x += ((to._x - _x) * percent);
-            _y += ((to._y - _y) * percent);
-            _z += ((to._z - _z) * percent);
-        }
-
-        public Vector3 Interpolate(Vector3 _nextValue, int offset, bool linear, float _tangent, float _nextTangent, int _nextIndex, int _index)
-        {
-            if (offset == 0)
-                return this;
-
-            int span = _nextIndex - _index;
-            if (offset == span)
-                return _nextValue;
-
-            Vector3 diff = _nextValue - this;
-            if (linear)
-                return this + (diff / span * offset);
-
-            float time = (float)offset / span;
-            float inv = time - 1.0f;
-
-            return (offset * inv * ((inv * _tangent) + (time * _nextTangent)))
-                + ((time * time) * (3.0f - 2.0f * time) * diff)
-                + this;
-        }
-
-        public void FromQuaternion(Quaternion pvec4Quat)
-        {
-            double x2 = pvec4Quat._x + pvec4Quat._x;
-            double y2 = pvec4Quat._y + pvec4Quat._y;
-            double z2 = pvec4Quat._z + pvec4Quat._z;
-            double xz2 = pvec4Quat._x * z2;
-            double wy2 = pvec4Quat._w * y2;
-            double temp = -(xz2 - wy2);
-
-            if (temp >= 1.0)
-                temp = 1.0;
-            else if (temp <= -1.0)
-                temp = -1.0;
-
-            double yRadian = Math.Sin(temp);
-
-            double xx2 = pvec4Quat._x * x2;
-            double xy2 = pvec4Quat._x * y2;
-            double zz2 = pvec4Quat._z * z2;
-            double wz2 = pvec4Quat._w * z2;
-
-            if (yRadian < Maths._halfPif)
-                if (yRadian > -Maths._halfPif)
-                {
-                    double yz2 = pvec4Quat._y * z2;
-                    double wx2 = pvec4Quat._w * x2;
-                    double yy2 = pvec4Quat._y * y2;
-                    this._x = (float)Math.Atan2(yz2 + wx2, (1.0f - (xx2 + yy2)));
-                    this._y = (float)yRadian;
-                    this._z = (float)Math.Atan2((xy2 + wz2), (1.0f - (yy2 + zz2)));
-                }
-                else
-                {
-                    this._x = (float)-Math.Atan2((xy2 - wz2), (1.0f - (xx2 + zz2)));
-                    this._y = (float)yRadian;
-                    this._z = 0.0f;
-                }
-            else
-            {
-                this._x = (float)Math.Atan2((xy2 - wz2), (1.0f - (xx2 + zz2)));
-                this._y = (float)yRadian;
-                this._z = 0.0f;
-            }
-        }
+        public void Morph(Vector3 dest, float percent) { this += ((dest - this) * percent); }
 
         public int CompareTo(object obj)
         {

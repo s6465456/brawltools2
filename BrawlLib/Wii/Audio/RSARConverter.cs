@@ -215,8 +215,11 @@ namespace BrawlLib.Wii.Audio
                 fileHdr->_entryNumber = -1;
                 if (file is RSARExtFileNode)
                 {
-                    //Make an attempt to get file size
-                    if (file._extFileSize == 0) file.GetExtSize();
+                    //Make an attempt to get current file size
+                    uint s = 0;
+                    if (file.ExternalFileInfo.Exists)
+                        s = (uint)file.ExternalFileInfo.Length;
+                    if (file._extFileSize != s && s != 0) file._extFileSize = s;
                     //Shouldn't matter if 0
                     fileHdr->_headerLen = file._extFileSize; 
 
@@ -367,10 +370,116 @@ namespace BrawlLib.Wii.Audio
             return len;
         }
 
+        static void GenIds(SYMBHeader* symb, SYMBMaskHeader* header, int index, ushort allowedBit)
+        {
+            //Pants.
+
+            SYMBMaskEntry* main = &header->Entries[index];
+            string mainName = symb->GetStringEntry(main->_stringId);
+
+            for (int i = 1; i < header->_numEntries; i += (i == 0 ? 1 : 2))
+            {
+                SYMBMaskEntry* leafMatchEntry = &header->Entries[i];
+                SYMBMaskEntry* nonLeafMatchEntry = &header->Entries[i + 1];
+
+                if (i == index || nonLeafMatchEntry->_bit != allowedBit)
+                    continue;
+
+                string compName = symb->GetStringEntry(leafMatchEntry->_stringId);
+                
+                int bitIndex = -1, bit = 0, b;
+                int min = Math.Min(mainName.Length, compName.Length);
+                for (b = 0; b < Math.Max(mainName.Length, compName.Length); b++)
+                {
+                    if (min <= b)
+                    {
+                        //Case where one string is longer but they match for as long as the shortest string
+                        bitIndex = min * 8;
+                        break;
+                    }
+
+                    bool brk = false;
+                    byte b1 = (byte)mainName[b];
+                    byte b2 = (byte)compName[b];
+
+                    for (bit = 0; bit < 8; bit++)
+                        if ((b1 >> (8 - bit) & 1) != (b2 >> (8 - bit) & 1))
+                        {
+                            bitIndex = b * 8 + bit - 1;
+                            brk = true;
+                            break;
+                        }
+                    if (brk)
+                        break;
+                }
+                
+                if (bitIndex >= 0)
+                {
+                    //Set the bit index
+                    nonLeafMatchEntry->_bit = (ushort)bitIndex;
+
+                    bool leftFound = false, rightFound = false;
+
+                    //Keeping looking down the list for the left and right entries
+                    for (int x = i + 2; x < header->_numEntries; x += 2)
+                    {
+                        SYMBMaskEntry* compEntryLeafed = &header->Entries[x];
+                        SYMBMaskEntry* compEntryNonLeafed = &header->Entries[x + 1];
+                        compName = symb->GetStringEntry(compEntryLeafed->_stringId);
+
+                        if (x == index || compEntryNonLeafed->_bit != allowedBit)
+                            continue;
+
+                        byte b1 = 0, b2 = 0;
+                        bool forceLeft = false;
+
+                        if (mainName.Length <= b || compName.Length <= b)
+                            forceLeft = true;
+                        else
+                        {
+                            b1 = (byte)mainName[b];
+                            b2 = (byte)compName[b];
+                        }
+
+                        if (forceLeft || (((b1 >> (8 - bit)) & 1) == ((b2 >> (8 - bit)) & 1)))
+                        {
+                            if (leftFound) 
+                                continue;
+
+                            leftFound = true;
+
+                            nonLeafMatchEntry->_leftId = compEntryLeafed->_index;
+                            GenIds(symb, header, compEntryLeafed->_index, compEntryNonLeafed->_bit);
+                        }
+                        else
+                        {
+                            if (rightFound)
+                                continue;
+
+                            rightFound = true;
+
+                            nonLeafMatchEntry->_rightId = compEntryLeafed->_index;
+                            GenIds(symb, header, compEntryLeafed->_index, compEntryNonLeafed->_bit);
+                        }
+                    }
+
+                    if (!leftFound) //No strings matched
+                        nonLeafMatchEntry->_leftId = leafMatchEntry->_index;
+                    else if (!rightFound) //All strings matched
+                        nonLeafMatchEntry->_rightId = leafMatchEntry->_index;
+
+                    //For the next bit you find that MATCHES write it’s non-leafed entry id into LEFT ID. 
+                    //If no string matches, then write the leafed entry id into it.
+                    //For the next bit you find that DOESN’T match, write it’s non-leafed entry id into RIGHT ID. 
+                    //If all strings match, then write the leafed entry id into it.
+                    //Break when done
+                    break;
+                }
+            }
+        }
+
         private static int EncodeMaskGroup(SYMBHeader* symb, SYMBMaskHeader* header, List<RSAREntryState> group)
         {
-            header->_rootId = 0;
-            header->_numEntries = group.Count * 2 - 1;
             SYMBMaskEntry* entry = header->Entries;
             foreach (RSAREntryState s in group)
             {
@@ -378,22 +487,32 @@ namespace BrawlLib.Wii.Audio
                 if (s._index != 0)
                     *entry++ = new SYMBMaskEntry(0, 0, 0, 0, -1, -1);
             }
-            return (int)entry - (int)header;
 
-            //SYMBBinaryStringTable t = new SYMBBinaryStringTable(group);
-            //t.Write(header);
-            ////header->_rootId = 0xA;
-            ////header->_numEntries = group.Count * 2 - 1;
-            ////SYMBMaskEntry* entry = header->Entries;
-            ////foreach (RSAREntryState s in group)
-            ////    SYMBMaskEntry.Build(symb, header, s._stringId, s._index);
-            //return 8 + header->_numEntries * SYMBMaskEntry.Size;
+            header->_numEntries = group.Count * 2 - 1;
+
+            GenIds(symb, header, 0, 0);
+
+            int lowestBit = int.MaxValue;
+            int rootId = 0;
+            for (int i = 2; i < group.Count; i += 2)
+            {
+                SYMBMaskEntry* pEntry = &header->Entries[i];
+                if (pEntry->_bit < lowestBit)
+                {
+                    lowestBit = pEntry->_bit;
+                    rootId = pEntry->_index;
+                }
+            }
+
+            header->_rootId = rootId;
+            
+            return (int)((VoidPtr)entry - (VoidPtr)header);
         }
 
         public unsafe class SYMBBinaryStringTable
         {
             private List<SYMBBinaryStringEntry> _entries = new List<SYMBBinaryStringEntry>();
-            private SYMBBinaryStringEntry _root = new SYMBBinaryStringEntry("", 0, -1);
+            private SYMBBinaryStringEntry _root = new SYMBBinaryStringEntry("", 0, -1, true);
 
             public List<SYMBBinaryStringEntry> Entries { get { return _entries; } }
             public SYMBBinaryStringEntry RootEntry { get { return _root; } }
@@ -401,20 +520,23 @@ namespace BrawlLib.Wii.Audio
             public SYMBBinaryStringTable() { _entries.Add(_root); }
             public SYMBBinaryStringTable(List<RSAREntryState> group) 
             {
-                //_entries.Add(_root);
                 foreach (RSAREntryState e in group)
-                {
-                    if (e._index == 0)
-                        _root = new SYMBBinaryStringEntry(e._node.Name, 0, e._stringId);
                     Add(e._node.Name, e._stringId);
-                }
             }
 
             public void Add(string s, int stringId)
             {
-                SYMBBinaryStringEntry entry = new SYMBBinaryStringEntry(s, _entries.Count, stringId);
+                SYMBBinaryStringEntry entry = new SYMBBinaryStringEntry(s, _entries.Count, stringId, true);
                 _entries.Add(entry);
                 Traverse(entry);
+                if (_entries.Count == 1)
+                    _root = entry;
+                else
+                {
+                    entry = new SYMBBinaryStringEntry("", _entries.Count, -1, false);
+                    _entries.Add(entry);
+                    Traverse(entry);
+                }
             }
 
             private void Traverse(SYMBBinaryStringEntry entry)
@@ -422,9 +544,9 @@ namespace BrawlLib.Wii.Audio
                 SYMBBinaryStringEntry current = _root._left, prev = _root;
                 bool isRight = false;
 
-                while (entry._id <= current._id)
+                while (entry._bit <= current._bit)
                 {
-                    if (entry._id == current._id)
+                    if (entry._bit == current._bit)
                         entry.GenerateId(current);
 
                     isRight = current.IsRight(entry);
@@ -432,7 +554,7 @@ namespace BrawlLib.Wii.Audio
                     prev = current;
                     current = (isRight) ? current._right : current._left;
 
-                    if (prev._id <= current._id)
+                    if (prev._bit <= current._bit)
                         break;
                 }
 
@@ -444,36 +566,44 @@ namespace BrawlLib.Wii.Audio
                 _root = prev;
             }
 
-            public int GetTotalSize() { return (_entries.Count * 2 - 1) * SYMBMaskEntry.Size + 8; }
+            public int GetTotalSize() { return _entries.Count * SYMBMaskEntry.Size + 8; }
             public void Write(VoidPtr address)
             {
                 SYMBMaskHeader* group = (SYMBMaskHeader*)address;
-                group->_numEntries = _entries.Count * 2 - 1;
-
+                group->_numEntries = _entries.Count;
+                int lowestBit = int.MaxValue;
+                int rootId = 0;
                 SYMBMaskEntry* pEntry = group->Entries;
                 foreach (SYMBBinaryStringEntry e in _entries)
                 {
-                    *pEntry++ = e.GetEntry1();
-                    if (e._index != 0)
-                        *pEntry++ = e.GetEntry2();
+                    *pEntry = e.GetEntry();
+                    if (pEntry->_bit < lowestBit)
+                    {
+                        lowestBit = pEntry->_bit;
+                        rootId = pEntry->_index;
+                    }
+                    pEntry++;
                 }
+                group->_rootId = rootId;
             }
         }
 
         public class SYMBBinaryStringEntry
         {
+            public bool _leafNode;
             public string _name;
-            public int _id, _index;
+            public int _bit, _index;
             public SYMBBinaryStringEntry _left, _right;
             public int _stringId;
             
-            public SYMBBinaryStringEntry(string name, int index, int stringId)
+            public SYMBBinaryStringEntry(string name, int index, int stringId, bool leaf)
             {
+                _leafNode = leaf;
                 _stringId = stringId;
                 _name = name;
                 _index = index;
                 _left = _right = this;
-                _id = (name == "") ? -1 : ((name.Length - 1) << 3) | CompareBits(name[name.Length - 1], 0);
+                _bit = (name == "") ? -1 : ((name.Length - 1) << 3) | CompareBits(name[name.Length - 1], 0);
             }
 
             public void InsertLeft(SYMBBinaryStringEntry entry)
@@ -501,7 +631,7 @@ namespace BrawlLib.Wii.Audio
                 for (int i = _name.Length; i-- > 0; )
                     if (_name[i] != comparison._name[i])
                     {
-                        _id = (i << 3) | CompareBits(_name[i], comparison._name[i]);
+                        _bit = (i << 3) | CompareBits(_name[i], comparison._name[i]);
                         if (IsRight(comparison))
                         {
                             _left = this;
@@ -512,16 +642,21 @@ namespace BrawlLib.Wii.Audio
                             _left = comparison;
                             _right = this;
                         }
-                        return _id;
+                        return _bit;
                     }
 
                 return 0;
             }
 
-            public bool IsRight(SYMBBinaryStringEntry entry) { return (_name.Length != entry._name.Length) ? false : ((entry._name[(_id >> 3)] >> (_id & 7)) & 1) != 0; }
+            public bool IsRight(SYMBBinaryStringEntry entry) { return (_name.Length != entry._name.Length) ? false : ((entry._name[(_bit >> 3)] >> (_bit & 7)) & 1) != 0; }
 
-            internal SYMBMaskEntry GetEntry1() { return new SYMBMaskEntry(1, 0xFFFF, -1, -1, _stringId, _index); }
-            internal SYMBMaskEntry GetEntry2() { return new SYMBMaskEntry(0, (ushort)_id, _left._index, _right._index, -1, -1); }
+            internal SYMBMaskEntry GetEntry() 
+            {
+                if (_leafNode)
+                    return new SYMBMaskEntry(1, 0xFFFF, -1, -1, _stringId, _index);
+                else 
+                    return new SYMBMaskEntry(0, (ushort)_bit, _left._index, _right._index, -1, -1);
+            }
             
             private static int CompareBits(int b1, int b2)
             {
@@ -541,7 +676,8 @@ namespace BrawlLib.Wii.Audio
 
         public static int Compare(RSAREntryState n1, RSAREntryState n2)
         {
-            return n2._node.InfoIndex < n1._node.InfoIndex ? 1 : n2._node.InfoIndex > n1._node.InfoIndex ? -1 : 0;
+            //return n2._node.InfoIndex < n1._node.InfoIndex ? 1 : n2._node.InfoIndex > n1._node.InfoIndex ? -1 : 0;
+            return n2._stringId < n1._stringId ? 1 : n2._stringId > n1._stringId ? -1 : 0;
         }
     }
 
@@ -648,10 +784,10 @@ namespace BrawlLib.Wii.Audio
             foreach (string s in _strings)
                 _stringLength += s.Length + 1;
 
-            _sounds.Sort(RSAREntryState.Compare);
-            _playerInfo.Sort(RSAREntryState.Compare);
-            _groups.Sort(RSAREntryState.Compare);
-            _banks.Sort(RSAREntryState.Compare);
+            //_sounds.Sort(RSAREntryState.Compare);
+            //_playerInfo.Sort(RSAREntryState.Compare);
+            //_groups.Sort(RSAREntryState.Compare);
+            //_banks.Sort(RSAREntryState.Compare);
 
             foreach (RSAREntryState s in _sounds)
                 s._node._rebuildStringId = s._stringId = _strings.IndexOf(s._node._fullPath);
@@ -661,6 +797,11 @@ namespace BrawlLib.Wii.Audio
                 s._node._rebuildStringId = s._stringId = _strings.IndexOf(s._node._fullPath);
             foreach (RSAREntryState s in _banks)
                 s._node._rebuildStringId = s._stringId = _strings.IndexOf(s._node._fullPath);
+
+            _sounds.Sort(RSAREntryState.Compare);
+            _playerInfo.Sort(RSAREntryState.Compare);
+            _groups.Sort(RSAREntryState.Compare);
+            _banks.Sort(RSAREntryState.Compare);
         }
     }
 }

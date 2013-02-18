@@ -98,7 +98,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct SYMBMaskHeader
     {
-        public bint _rootId;
+        public bint _rootId; //index of the first entry with the lowest bit value
         public bint _numEntries;
 
         private VoidPtr Address { get { fixed (SYMBMaskHeader* ptr = &this)return ptr; } }
@@ -128,79 +128,79 @@ namespace BrawlLib.SSBBTypes
             _index = index; 
         }
 
-        public int CharIndex { get { return _bit >> 3; } set { _bit = (ushort)((value << 3) | (_bit & 0x7)); } }
-        public int CharShift { get { return _bit & 0x7; } set { _bit = (ushort)((value & 0x7) | (_bit & 0xFFF8)); } }
+        //public int CharIndex { get { return _bit >> 3; } set { _bit = (ushort)((value << 3) | (_bit & 0x7)); } }
+        //public int CharShift { get { return _bit & 0x7; } set { _bit = (ushort)((value & 0x7) | (_bit & 0xFFF8)); } }
 
         private SYMBMaskEntry* Address { get { fixed (SYMBMaskEntry* ptr = &this)return ptr; } }
 
-        //Builds both entries per string
-        public static void Build(SYMBHeader* hdr, SYMBMaskHeader* group, int strId, int index)
-        {
-            SYMBMaskEntry* list = group->Entries;
-            SYMBMaskEntry* entry = &list[index == 0 ? 0 : 1 + (index - 1) * 2];
+        ////Builds both entries per string
+        //public static void Build(SYMBHeader* hdr, SYMBMaskHeader* group, int strId, int index)
+        //{
+        //    SYMBMaskEntry* list = group->Entries;
+        //    SYMBMaskEntry* entry = &list[index == 0 ? 0 : 1 + (index - 1) * 2];
 
-            *entry++ = new SYMBMaskEntry(1, 0xFFFF, -1, -1, strId, index);
-            if (index == 0) return;
+        //    *entry++ = new SYMBMaskEntry(1, 0xFFFF, -1, -1, strId, index);
+        //    if (index == 0) return;
 
-            SYMBMaskEntry* prev = &list[2];
-            SYMBMaskEntry* current = &list[2];
+        //    SYMBMaskEntry* prev = &list[2];
+        //    SYMBMaskEntry* current = &list[2];
 
-            int currentIndex = 2;
-            bool isRight = false;
+        //    int currentIndex = 2;
+        //    bool isRight = false;
 
-            int strLen = hdr->GetStringEntry(strId).Length;
-            byte* pChar = (byte*)hdr->GetStringEntryAddr(strId), sChar;
+        //    int strLen = hdr->GetStringEntry(strId).Length;
+        //    byte* pChar = (byte*)hdr->GetStringEntryAddr(strId), sChar;
 
-            int eIndex = strLen - 1, eBits = pChar[eIndex].CompareBits(0), val;
-            *entry = new SYMBMaskEntry(0, (ushort)((eIndex << 3) | eBits), index, index, -1, -1);
+        //    int eIndex = strLen - 1, eBits = pChar[eIndex].CompareBits(0), val;
+        //    *entry = new SYMBMaskEntry(0, (ushort)((eIndex << 3) | eBits), index, index, -1, -1);
 
-            //Continue while the previous id is greater than the current. Loop backs will stop the processing.
-            //Continue while the entry id is less than or equal the current id. Being higher than the current id means we've found a place to insert.
-            while ((entry->_bit <= current->_bit) && (prev->_bit > current->_bit))
-            {
-                if (entry->_bit == current->_bit)
-                {
-                    sChar = (byte*)hdr->GetStringEntryAddr(current->_stringId);
+        //    //Continue while the previous id is greater than the current. Loop backs will stop the processing.
+        //    //Continue while the entry id is less than or equal the current id. Being higher than the current id means we've found a place to insert.
+        //    while ((entry->_bit <= current->_bit) && (prev->_bit > current->_bit))
+        //    {
+        //        if (entry->_bit == current->_bit)
+        //        {
+        //            sChar = (byte*)hdr->GetStringEntryAddr(current->_stringId);
 
-                    //Rebuild new id relative to current entry
-                    for (eIndex = strLen; (eIndex-- > 0) && (pChar[eIndex] == sChar[eIndex]); ) ;
-                    eBits = pChar[eIndex].CompareBits(sChar[eIndex]);
+        //            //Rebuild new id relative to current entry
+        //            for (eIndex = strLen; (eIndex-- > 0) && (pChar[eIndex] == sChar[eIndex]); ) ;
+        //            eBits = pChar[eIndex].CompareBits(sChar[eIndex]);
 
-                    entry->_bit = (ushort)((eIndex << 3) | eBits);
+        //            entry->_bit = (ushort)((eIndex << 3) | eBits);
 
-                    if (((sChar[eIndex] >> eBits) & 1) != 0)
-                    {
-                        entry->_leftId = (ushort)index;
-                        entry->_rightId = currentIndex;
-                    }
-                    else
-                    {
-                        entry->_leftId = currentIndex;
-                        entry->_rightId = (ushort)index;
-                    }
-                }
+        //            if (((sChar[eIndex] >> eBits) & 1) != 0)
+        //            {
+        //                entry->_leftId = (ushort)index;
+        //                entry->_rightId = currentIndex;
+        //            }
+        //            else
+        //            {
+        //                entry->_leftId = currentIndex;
+        //                entry->_rightId = (ushort)index;
+        //            }
+        //        }
 
-                //Is entry to the right or left of current?
-                isRight = ((val = current->_bit >> 3) < strLen) && (((pChar[val] >> (current->_bit & 7)) & 1) != 0);
+        //        //Is entry to the right or left of current?
+        //        isRight = ((val = current->_bit >> 3) < strLen) && (((pChar[val] >> (current->_bit & 7)) & 1) != 0);
 
-                prev = current;
-                currentIndex = (isRight) ? current->_rightId : current->_leftId;
-                current = &list[1 + (currentIndex - 1) * 2 + 1];
-            }
+        //        prev = current;
+        //        currentIndex = (isRight) ? current->_rightId : current->_leftId;
+        //        current = &list[1 + (currentIndex - 1) * 2 + 1];
+        //    }
 
-            sChar = (current->_stringId < 0) ? null : (byte*)hdr->GetStringEntryAddr(current->_stringId);
-            val = sChar == null ? 0 : (int)hdr->GetStringEntry(current->_stringId).Length;
+        //    sChar = (current->_stringId < 0) ? null : (byte*)hdr->GetStringEntryAddr(current->_stringId);
+        //    val = sChar == null ? 0 : (int)hdr->GetStringEntry(current->_stringId).Length;
 
-            if ((val == strLen) && (((sChar[eIndex] >> eBits) & 1) != 0))
-                entry->_rightId = currentIndex;
-            else
-                entry->_leftId = currentIndex;
+        //    if ((val == strLen) && (((sChar[eIndex] >> eBits) & 1) != 0))
+        //        entry->_rightId = currentIndex;
+        //    else
+        //        entry->_leftId = currentIndex;
 
-            if (isRight)
-                prev->_rightId = (ushort)index;
-            else
-                prev->_leftId = (ushort)index;
-        }
+        //    if (isRight)
+        //        prev->_rightId = (ushort)index;
+        //    else
+        //        prev->_leftId = (ushort)index;
+        //}
 
         public SYMBMaskHeader* Parent
         {

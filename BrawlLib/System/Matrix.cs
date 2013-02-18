@@ -62,6 +62,12 @@ namespace System
                 return new Vector3(p[12], p[13], p[14]);
         }
 
+        public Vector3 GetScale()
+        {
+            fixed (float* p = _values)
+                return new Vector3(p[0], p[5], p[10]);
+        }
+
         public static Matrix ScaleMatrix(float x, float y, float z)
         {
             Matrix m = new Matrix();

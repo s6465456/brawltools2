@@ -1776,7 +1776,7 @@ namespace System.Windows.Forms
             foreach (MDL0BoneNode bone in _mainWindow.boneCollisions)
                 bone._nodeColor = bone._boneColor = Color.Transparent;
             _mainWindow.boneCollisions = new List<MDL0BoneNode>();
-            _mainWindow.hurtBoxType = 0;
+            _mainWindow._hurtBoxType = 0;
 
             if (TargetModel != null && TargetModel._polyList != null && _mainMoveset != null)
             {

@@ -431,7 +431,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     offensiveCollisions.Add(bubble1);
                     break;
                 case 0x06050100: //Body Collision
-                    _mainWindow.hurtBoxType = (int)(e.EventData.parameters[0]._data);
+                    _mainWindow._hurtBoxType = (int)(e.EventData.parameters[0]._data);
                     break;
                 case 0x06080200: //Bone Collision
                     int id = (int)(e.EventData.parameters[0]._data);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 
@@ -27,8 +27,9 @@ namespace BrawlLib.SSBBTypes
     unsafe struct RWARDataBlock
     {
         public const string Tag = "DATA";
+        public const int Size = 0x20;
 
-        SSBBEntryHeader _header;
+        public SSBBEntryHeader _header;
         public fixed uint _padding[6];
 
         public RWAV* GetEntry(uint offset) { return (RWAV*)(Address + offset); }
@@ -48,7 +49,7 @@ namespace BrawlLib.SSBBTypes
     {
         public const string Tag = "TABL";
 
-        SSBBEntryHeader _header;
+        public SSBBEntryHeader _header;
         public buint _entryCount;
 
         public TableItem* Entries { get { return (TableItem*)(Address + 12); } }

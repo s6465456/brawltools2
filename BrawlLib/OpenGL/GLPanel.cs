@@ -38,6 +38,7 @@ namespace BrawlLib.OpenGL
             //}
             if (_ctx != null)
             {
+                _ctx.Unbind();
                 _ctx.Dispose();
                 _ctx = null;
             }
@@ -48,12 +49,12 @@ namespace BrawlLib.OpenGL
 
         protected override void OnLoad(EventArgs e)
         {
-            //_context = GLContext.Attach(this);
-
             _ctx = new TKContext(this);
 
             GL.ClearColor(1.0f, 1.0f, 1.0f, 0.0f);
             GL.ClearDepth(1.0f);
+
+            _ctx.Capture();
 
             OnInit(_ctx);
 
@@ -93,8 +94,6 @@ namespace BrawlLib.OpenGL
             {
                 try
                 {
-                    _ctx.Capture();
-
                     RenderBG();
 
                     //Set projection
@@ -113,7 +112,7 @@ namespace BrawlLib.OpenGL
                         }
                     }
 
-                    OnRender(_ctx, _scn0);
+                    OnRender(_ctx, _scn0, e);
                     GL.Finish();
                     _ctx.Swap();
                 }
@@ -133,11 +132,7 @@ namespace BrawlLib.OpenGL
         //    base.OnHandleDestroyed(e);
         //}
 
-        internal protected virtual void OnInit(TKContext ctx)
-        {
-            GL.ClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-            GL.ClearDepth(1.0f);
-        }
+        internal protected virtual void OnInit(TKContext ctx) { }
 
         public float _fovY = 45.0f, _nearZ = 1.0f, _farZ = 20000.0f, _aspect;
 
@@ -159,19 +154,20 @@ namespace BrawlLib.OpenGL
             return (Vector3)(_camera._matrixInverse * _projectionInverse * v);
         }
 
-        public Vector3 Project(Vector3 point) { return Project(point._x, point._y, point._z); }
-        public Vector3 Project(float x, float y, float z)
+        public Vector3 Project(float x, float y, float z) { return Project(new Vector3(x, y, z)); }
+        public Vector3 Project(Vector3 source)
         {
             if (_camera == null)
                 return new Vector3();
 
-            Vector4 v;
-            v._x = (Width + 1) * x / 2;
-            v._y = (Height + y) / 2 * Height + 1;
-            v._z = (z + 1) / 2;
-            v._w = 1.0f;
+            Vector3 t = (Vector3)(_camera._matrixInverse * _projectionMatrix * source);
 
-            return (Vector3)(_camera._matrix * _projectionMatrix * v);
+            Vector3 v;
+            v._x = (t._x + 1.0f) * 0.5f * Width;
+            v._y = (-t._y + 1.0f) * 0.5f * Height;
+            v._z = t._z;
+
+            return v;
         }
 
         public Vector3 TraceZ(Vector3 point, float z)
@@ -231,44 +227,6 @@ namespace BrawlLib.OpenGL
             return point;
         }
 
-        public void GetScreenPointRay(Vector2 screenPoint, out Vector3 ray1, out Vector3 ray2)
-        {
-            ray1 = new Vector3();
-            ray2 = new Vector3();
-
-            if (_camera == null) return;
-
-            //Get ray points
-            Vector4 v = new Vector4(2 * screenPoint._x / Width - 1, 2 * (Height - screenPoint._y) / Height - 1, -1.0f, 1.0f);
-            ray1 = (Vector3)(_camera._matrixInverse * _projectionInverse * v);
-            v._z = 1.0f;
-            ray2 = (Vector3)(_camera._matrixInverse * _projectionInverse * v);
-        }
-
-        public Vector3 ProjectCameraPlanes(Vector2 screenPoint, Vector3 center, float radius)
-        {
-            if (_camera == null)
-                return new Vector3();
-
-            Vector3 point1, point2, point3;
-
-            //Get ray points
-            Vector4 v = new Vector4(2 * screenPoint._x / Width - 1, 2 * (Height - screenPoint._y) / Height - 1, -1.0f, 1.0f);
-            Vector3 ray1 = (Vector3)(_camera._matrixInverse * _projectionInverse * v);
-            v._z = 1.0f;
-            Vector3 ray2 = (Vector3)(_camera._matrixInverse * _projectionInverse * v);
-
-            Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(0.0f, 0.0f, 1.0f).Normalize(center), out point1);
-            Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(0.0f, 1.0f, 0.0f).Normalize(center), out point2);
-            Maths.LinePlaneIntersect(ray1, ray2, center, new Vector3(1.0f, 0.0f, 0.0f).Normalize(center), out point3);
-
-            float x = point3.Dot();
-            float y = point2.Dot();
-            float z = point1.Dot();
-
-            return new Vector3();
-        }
-
         protected void CalculateProjection()
         {
             _projectionMatrix = Matrix.ProjectionMatrix(_fovY, _aspect, _nearZ, _farZ);
@@ -280,7 +238,7 @@ namespace BrawlLib.OpenGL
             if (_ctx == null)
                 return;
 
-            _ctx.Update();
+            //_ctx.Update();
 
             _aspect = (float)Width / Height;
             CalculateProjection();
@@ -350,7 +308,7 @@ namespace BrawlLib.OpenGL
             }
         }
 
-        internal protected virtual void OnRender(TKContext ctx, SCN0Node scn)
+        internal protected virtual void OnRender(TKContext ctx, SCN0Node scn, PaintEventArgs e)
         {
             GL.Clear(OpenTK.Graphics.OpenGL.ClearBufferMask.ColorBufferBit | OpenTK.Graphics.OpenGL.ClearBufferMask.DepthBufferBit);
         }

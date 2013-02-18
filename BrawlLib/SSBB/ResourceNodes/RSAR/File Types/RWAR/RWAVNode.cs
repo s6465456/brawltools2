@@ -1,4 +1,5 @@
-﻿using System;
+
+using System;
 using BrawlLib.SSBBTypes;
 using System.Audio;
 using BrawlLib.Wii.Audio;
@@ -62,6 +63,45 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 return stream = new PCMStream(Info, _audioSource.Address);
         }
+
+        //public int GetSize(bool RWAR)
+        //{
+        //    if (RWAR)
+        //    {
+        //        if (!(this is RWAVNode))
+        //        {
+
+        //        }
+        //        else
+        //        {
+        //            return WorkingUncompressed.Length;
+        //        }
+        //    }
+        //    else
+        //    {
+
+        //    }
+        //}
+
+        //public int CalcSizeAsRWAV()
+        //{
+
+        //}
+
+        //public int CalcSizeAsRSARSound()
+        //{
+
+        //}
+
+        //public void RebuildAsRWAV(VoidPtr address, int length)
+        //{
+            
+        //}
+
+        //public void RebuildAsRSARSound(VoidPtr address, int length)
+        //{
+            
+        //}
     }
 
     public unsafe class RWAVNode : RSARFileAudioNode
@@ -94,9 +134,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else
                 base.Replace(fileName);
-
-            //Get the audio source
-            _audioSource = new DataSource(Header->Data->Data, Header->Data->_header._length);
 
             stream = null;
 

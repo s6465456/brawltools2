@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 
@@ -27,7 +27,7 @@ namespace BrawlLib.SSBBTypes
     unsafe struct RWAVInfo
     {
         public const string Tag = "INFO";
-        
+
         public SSBBEntryHeader _header;
         public WaveInfo _info;
 
@@ -73,9 +73,12 @@ namespace BrawlLib.SSBBTypes
         public ChannelInfo* GetChannelInfo(int index) { return (ChannelInfo*)(Address + OffsetTable[index]); }
         public ADPCMInfo* GetADPCMInfo(int index) { return (ADPCMInfo*)(Address + GetChannelInfo(index)->_adpcmInfoOffset); }
 
-        public int NumSamples { get { return (_nibbles / 16 * 14) + ((_nibbles % 16) - 2); } }
-        public int LoopSample { get { return (_loopStartSample / 16 * 14) + ((_loopStartSample % 16) - 2); } }
+        public int NumSamples { get { return _format._encoding == 2 ? (_nibbles / 16 * 14) + ((_nibbles % 16) - 2) : (int)_nibbles; } }
+        public int LoopSample { get { return _format._encoding == 2 ? (_loopStartSample / 16 * 14) + ((_loopStartSample % 16) - 2) : (int)_loopStartSample; } }
+        
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+
+        public int GetSize() { return Size + _format._channels * (0x20 + _format._encoding == 2 ? 0x30 : 0); }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

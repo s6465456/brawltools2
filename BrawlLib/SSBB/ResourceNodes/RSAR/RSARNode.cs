@@ -135,13 +135,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //    for (int x = 0; x < hdr->_numEntries; x++)
             //    {
             //        SYMBMaskEntry* e = &hdr->Entries[x];
-            //        if (x == 0)
-            //            Console.WriteLine(String.Format("[{3}] {0}, {1}, {2} - {4}", -1, -1, -1, e->_index, new string(offset + stringOffsets[e->_stringId])));
-            //        else if (x % 2 != 0)
-            //        {
-            //            SYMBMaskEntry* e2 = &hdr->Entries[x + 1];
-            //            Console.WriteLine(String.Format("[{3}] {0}, {1}, {2} - {4}", e2->_bit, e2->_leftId, e2->_rightId, e->_index, new string(offset + stringOffsets[e->_stringId])));
-            //        }
+            //        Console.WriteLine(String.Format("[{3}] {0}, {1}, {2} - {4}", e->_bit, e->_leftId, e->_rightId, e->_index, new string(offset + stringOffsets[e->_stringId])));
             //    }
             //}
             //Sort(true);

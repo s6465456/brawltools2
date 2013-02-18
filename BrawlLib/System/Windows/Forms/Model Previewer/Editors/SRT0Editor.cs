@@ -608,17 +608,17 @@ namespace System.Windows.Forms
                 box.BackColor = Color.White;
             }
         }
-        public unsafe void Undo(SaveState2 save)
+        public unsafe void Undo(SaveState save)
         {
-            numTransX.Value = save.frameState._translate._x;
+            numTransX.Value = save._frameState._translate._x;
             BoxChanged(numTransX, null);
-            numTransY.Value = save.frameState._translate._y;
+            numTransY.Value = save._frameState._translate._y;
             BoxChanged(numTransY, null);
-            numRot.Value = save.frameState._rotate._x;
+            numRot.Value = save._frameState._rotate._x;
             BoxChanged(numRot, null);
-            numScaleX.Value = save.frameState._scale._x;
+            numScaleX.Value = save._frameState._scale._x;
             BoxChanged(numScaleX, null);
-            numScaleY.Value = save.frameState._scale._y;
+            numScaleY.Value = save._frameState._scale._y;
             BoxChanged(numScaleY, null);
         }
         internal unsafe void BoxChangedCreateUndo(object sender, EventArgs e)

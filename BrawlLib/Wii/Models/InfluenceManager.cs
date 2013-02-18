@@ -263,7 +263,7 @@ namespace BrawlLib.Wii.Models
         public BoneWeight(MDL0BoneNode bone) : this(bone, 1.0f) { }
         public BoneWeight(MDL0BoneNode bone, float weight) { Bone = bone; Weight = weight; }
 
-        public static bool operator ==(BoneWeight b1, BoneWeight b2) { return (b1.Bone == b2.Bone) && (b1.Weight - b2.Weight < 0.0001); }
+        public static bool operator ==(BoneWeight b1, BoneWeight b2) { try { return (b1.Bone == b2.Bone) && (b1.Weight - b2.Weight < 0.0001); } catch { return false; } }
         public static bool operator !=(BoneWeight b1, BoneWeight b2) { return !(b1 == b2); }
         public override bool Equals(object obj)
         {

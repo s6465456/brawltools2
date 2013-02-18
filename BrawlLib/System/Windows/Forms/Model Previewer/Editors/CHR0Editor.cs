@@ -17,11 +17,11 @@ namespace System.Windows.Forms
         private Button btnCopy;
         private Button btnCut;
         private Label lblTrans;
-        private NumericInputBox numScaleZ;
+        internal NumericInputBox numScaleZ;
         internal NumericInputBox numTransX;
-        private NumericInputBox numScaleY;
+        internal NumericInputBox numScaleY;
         private Label lblRot;
-        private NumericInputBox numScaleX;
+        internal NumericInputBox numScaleX;
         private Label lblScale;
         internal NumericInputBox numRotZ;
         internal NumericInputBox numRotY;
@@ -674,55 +674,16 @@ namespace System.Windows.Forms
                 box.BackColor = Color.White;
             }
         }
-        public unsafe void Undo(SaveState2 save)
+        public unsafe void Undo(SaveState save)
         {
-            if (numTransX.Value != save.frameState._translate._x)
-            {
-                numTransX.Value = save.frameState._translate._x;
-                BoxChanged(numTransX, null);
-            }
-            if (numTransY.Value != save.frameState._translate._y)
-            {
-                numTransY.Value = save.frameState._translate._y;
-                BoxChanged(numTransY, null);
-            }
-            if (numTransZ.Value != save.frameState._translate._z)
-            {
-                numTransZ.Value = save.frameState._translate._z;
-                BoxChanged(numTransZ, null);
-            }
-
-            if (numRotX.Value != save.frameState._rotate._x)
-            {
-                numRotX.Value = save.frameState._rotate._x;
-                BoxChanged(numRotX, null);
-            }
-            if (numRotY.Value != save.frameState._rotate._y)
-            {
-                numRotY.Value = save.frameState._rotate._y;
-                BoxChanged(numRotY, null);
-            }
-            if (numRotZ.Value != save.frameState._rotate._z)
-            {
-                numRotZ.Value = save.frameState._rotate._z;
-                BoxChanged(numRotZ, null);
-            }
-
-            if (numRotX.Value != save.frameState._rotate._x)
-            {
-                numRotX.Value = save.frameState._rotate._x;
-                BoxChanged(numRotX, null);
-            }
-            if (numRotY.Value != save.frameState._rotate._y)
-            {
-                numRotY.Value = save.frameState._rotate._y;
-                BoxChanged(numRotY, null);
-            }
-            if (numRotZ.Value != save.frameState._rotate._z)
-            {
-                numRotZ.Value = save.frameState._rotate._z;
-                BoxChanged(numRotZ, null);
-            }
+            FrameState state = save._frameState;
+            float* p = (float*)&state;
+            for (int i = 0; i < 9; i++)
+                if (_transBoxes[i].Value != p[i])
+                {
+                    _transBoxes[i].Value = p[i];
+                    BoxChanged(_transBoxes[i], null);
+                }
         }
         internal unsafe void BoxChangedCreateUndo(object sender, EventArgs e)
         {
