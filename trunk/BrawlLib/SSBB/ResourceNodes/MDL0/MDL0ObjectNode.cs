@@ -2367,6 +2367,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_render)
                 return;
 
+            GL.PushName(Index);
+
             if (ctx._canUseShaders)
             {
                 bool temp = false;
@@ -2499,6 +2501,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (_singleBind != null)
                 GL.PopMatrix();
+
+            GL.PopName();
         }
 
         public bool _renderUpdate = false;

@@ -812,11 +812,14 @@ namespace System.Windows.Forms
                     case 0:
                         _audioData = RSTMConverter.Encode(_sourceStream, progress);
                         break;
-                    default:
-                        _audioData = RSARWaveConverter.Encode(_sourceStream, progress, _type == 2);
+                    case 1:
+                        _audioData = RSARWaveConverter.Encode(_sourceStream, progress);
+                        break;
+                    case 2:
+                        _audioData = RWAVConverter.Encode(_sourceStream, progress);
                         break;
                 }
-                
+
             DialogResult = DialogResult.OK;
             Close();
         }

@@ -42,7 +42,7 @@ namespace System.Windows.Forms
             OnResized();
         }
 
-        protected internal unsafe override void OnRender(TKContext ctx, SCN0Node scn)
+        protected internal unsafe override void OnRender(TKContext ctx, SCN0Node scn, PaintEventArgs e)
         {
             GLTexture _bgTex = ctx.FindOrCreate<GLTexture>("TexBG", CreateBG);
             _bgTex.Bind();

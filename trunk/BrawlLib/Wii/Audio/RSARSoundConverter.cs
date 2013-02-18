@@ -9,7 +9,7 @@ namespace BrawlLib.Wii.Audio
 {
     public static class RSARWaveConverter
     {
-        public static unsafe FileMap Encode(IAudioStream stream, IProgressTracker progress, bool RWAV)
+        public static unsafe FileMap Encode(IAudioStream stream, IProgressTracker progress)
         {
             int tmp;
             bool looped = stream.IsLooping;
@@ -71,12 +71,12 @@ namespace BrawlLib.Wii.Audio
             }
             
             //Get section sizes
-            int waveSize = 0x1C;
-            int tableSize = channels * 4;
-            int channelSize = channels * 0x1C;
-            int adpcmInfoSize = channels * 0x30;
-            int entrySize = waveSize + tableSize + channelSize + adpcmInfoSize;
-            int dataSize = (((blocks - 1) * blockLen + lbTotal) * channels);
+            int waveSize = 0x1C,
+            tableSize = channels * 4,
+            channelSize = channels * 0x1C,
+            adpcmInfoSize = channels * 0x30,
+            entrySize = waveSize + tableSize + channelSize + adpcmInfoSize,
+            dataSize = (((blocks - 1) * blockLen + lbTotal) * channels);
 
             //Create file map
             FileMap map = FileMap.FromTempFile(waveSize + channelSize + tableSize + adpcmInfoSize + dataSize);

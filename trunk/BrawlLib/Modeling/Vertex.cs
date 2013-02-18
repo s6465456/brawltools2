@@ -22,8 +22,8 @@ namespace BrawlLib.Modeling
 
         internal IMatrixNode _influence;
 
-        public RGBAPixel[] Color = new RGBAPixel[2];
-        public Vector2[] UV = new Vector2[8];
+        public RGBAPixel[] _colors = new RGBAPixel[2];
+        public Vector2[] _uvs = new Vector2[8];
 
         public int Index = 0;
 
@@ -70,62 +70,62 @@ namespace BrawlLib.Modeling
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(RGBAStringConverter))]
         public RGBAPixel Color1
         {
-            get { return Color[0]; }
-            set { Color[0] = value; }
+            get { return _colors[0]; }
+            set { _colors[0] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(RGBAStringConverter))]
         public RGBAPixel Color2
         {
-            get { return Color[1]; }
-            set { Color[1] = value; }
+            get { return _colors[1]; }
+            set { _colors[1] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 UV1
         {
-            get { return UV[0]; }
-            set { UV[0] = value; }
+            get { return _uvs[0]; }
+            set { _uvs[0] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 UV2
         {
-            get { return UV[1]; }
-            set { UV[1] = value; }
+            get { return _uvs[1]; }
+            set { _uvs[1] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 UV3
         {
-            get { return UV[2]; }
-            set { UV[2] = value; }
+            get { return _uvs[2]; }
+            set { _uvs[2] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 UV4
         {
-            get { return UV[3]; }
-            set { UV[3] = value; }
+            get { return _uvs[3]; }
+            set { _uvs[3] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 UV5
         {
-            get { return UV[4]; }
-            set { UV[4] = value; }
+            get { return _uvs[4]; }
+            set { _uvs[4] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 UV6
         {
-            get { return UV[5]; }
-            set { UV[5] = value; }
+            get { return _uvs[5]; }
+            set { _uvs[5] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 UV7
         {
-            get { return UV[6]; }
-            set { UV[6] = value; }
+            get { return _uvs[6]; }
+            set { _uvs[6] = value; }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 UV8
         {
-            get { return UV[7]; }
-            set { UV[7] = value; }
+            get { return _uvs[7]; }
+            set { _uvs[7] = value; }
         }
         [Browsable(true), Category("Normal"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 WeightedNormal
@@ -163,8 +163,8 @@ namespace BrawlLib.Modeling
             Position = position;
             Inf = influence;
             Normal = normal;
-            Color = color;
-            UV = uv;
+            _colors = color;
+            _uvs = uv;
         }
 
         //Pre-multiply vertex and normal using influence.
@@ -172,19 +172,39 @@ namespace BrawlLib.Modeling
         public void Weight()
         {
             _weightedPosition = (_influence != null) ? _influence.Matrix * Position : Position;
-            _weightedNormal = (_influence != null) ? _influence.Matrix.GetRotationMatrix() * Normal : Normal;
+            //_weightedNormal = (_influence != null) ? _influence.Matrix.GetRotationMatrix() * Normal : Normal;
         }
         //Need to do this to put the vertices back in their raw positions if they were moved.
         public void UnWeight()
         {
-            //_position = (_influence != null) ? _influence.Matrix.Divide(Position, WeightedPosition) : Position;
-            //_position = (_influence != null) ? _influence.InverseBindMatrix * WeightedPosition : Position;
+            
         }
 
-        public void Morph(Vector3 to, float percent)
+        public void Morph(Vector3 dest, float percent) { _weightedPosition.Morph(dest, percent); }
+
+        public Color GetWeightColor(MDL0BoneNode targetBone)
         {
-            _weightedPosition.Morph(to, percent);
+            float weight = -1;
+            if (_influence == null || targetBone == null) 
+                return Color.Transparent;
+            if (_influence is MDL0BoneNode)
+                if (_influence == targetBone)
+                    weight = 1.0f;
+                else
+                    return Color.Transparent;
+            else 
+                foreach (BoneWeight b in ((Influence)_influence)._weights)
+                    if (b.Bone == targetBone)
+                    {
+                        weight = b.Weight;
+                        break;
+                    }
+            if (weight == -1)
+                return Color.Transparent;
+            int r = ((int)(weight * 255.0f)).Clamp(0, 0xFF);
+            return Color.FromArgb(r, 0, 0xFF - r);
         }
+
         public bool Equals(Vertex3 v)
         {
             if (object.ReferenceEquals(this, v))

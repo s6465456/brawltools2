@@ -82,7 +82,7 @@ namespace BrawlLib.OpenGL
 
         public void Share(TKContext ctx)
         {
-
+            throw new NotImplementedException();
         }
 
         public void Dispose() 

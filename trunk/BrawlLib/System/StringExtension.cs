@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace System
 {
@@ -39,6 +40,17 @@ namespace System
             for (int i = 0; i < s.Length; i++)
                 *ptr++ = (sbyte)s[i];
             ptr++; //Null terminator
+        }
+        public static bool[] ToBinaryArray(this string s)
+        {
+            List<bool> values = new List<bool>();
+            for (int i = 0; i < s.Length; i++)
+            {
+                byte c = (byte)s[i];
+                for (int x = 0; x < 8; x++)
+                    values.Add((c >> (8 - x)) != 0);
+            }
+            return values.ToArray();
         }
     }
 }

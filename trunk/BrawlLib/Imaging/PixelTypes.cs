@@ -533,7 +533,6 @@ namespace BrawlLib.Imaging
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct GXColorS10
     {
-        //Color factor stays the same. Final value can be greater than 1.0
         public const float ColorFactor = 1.0f / 255.0f;
 
         public short R, G, B, A;

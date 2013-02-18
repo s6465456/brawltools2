@@ -8,6 +8,7 @@ using BrawlLib.OpenGL;
 using System.Drawing;
 using BrawlLib.SSBB.ResourceNodes;
 using OpenTK.Graphics.OpenGL;
+using System.Windows.Forms;
 
 namespace BrawlLib.Modeling
 {
@@ -782,11 +783,11 @@ namespace BrawlLib.Modeling
                     case 2:
                     case 3:
                         for (int x = 0; x < _pointCount; x++, pIn += 4)
-                            _vertices[*pIndex++].Color[i - 2] = *(RGBAPixel*)pIn;
+                            _vertices[*pIndex++]._colors[i - 2] = *(RGBAPixel*)pIn;
                         break;
                     default:
                         for (int x = 0; x < _pointCount; x++, pIn += 8)
-                            _vertices[*pIndex++].UV[i - 4] = *(Vector2*)pIn;
+                            _vertices[*pIndex++]._uvs[i - 4] = *(Vector2*)pIn;
                         break;
                 }
             }
@@ -1505,64 +1506,47 @@ namespace BrawlLib.Modeling
         #region Rendering
 
         public static Color DefaultVertColor = Color.FromArgb(0, 128, 0);
-        public static Color DefaultNodeColor = Color.FromArgb(100, 0, 255);
-
         internal Color _vertColor = Color.Transparent;
-        internal Color _nodeColor = Color.Transparent;
 
         public const float _nodeRadius = 0.05f;
         const float _nodeAdj = 0.01f;
 
         public bool _render = true;
-        //internal unsafe void RenderVerts(GLContext ctx, IMatrixNode _singleBind)
-        //{
-        //    if (!_render)
-        //        return;
+        internal unsafe void RenderVerts(TKContext ctx, IMatrixNode _singleBind, ModelEditControl _mainWindow)
+        {
+            if (!_render)
+                return;
 
-        //    //GLDisplayList vertex = new GLDisplayList(ctx);
-        //    //GL.Enable(GLEnableCap.POINT_SMOOTH);
-        //    //vertex.Begin();
-        //    //GL.Color4(0.0f, 1.0f, 0.0f);
-        //    //GL.PointSize(10);
-        //    //vertex.End();
+            GL.PushMatrix();
 
-        //    foreach (Vertex3 v in _vertices)
-        //    {
-        //        if (_vertColor != Color.Transparent)
-        //            GL.Color4(_vertColor.R, _vertColor.G, _vertColor.B, _vertColor.A);
-        //        else
-        //            GL.Color4(DefaultVertColor.R, DefaultVertColor.G, DefaultVertColor.B, DefaultVertColor.A);
+            if (_singleBind != null)
+            {
+                Matrix m = _singleBind.Matrix;
+                GL.MultMatrix((float*)&m);
+            }
 
-        //        if (_singleBind != null)
-        //        {
-        //            GL.PushMatrix();
+            foreach (Vertex3 v in _vertices)
+            {
+                Color w = (_singleBind != null && _singleBind == _mainWindow.TargetBone) ? Color.Red : v.GetWeightColor(_mainWindow.TargetBone);
+                if (w != Color.Transparent)
+                    GL.Color4(w);
+                else
+                    GL.Color4(DefaultVertColor);
 
-        //            Matrix m = _singleBind.Matrix;
-        //            GL.MultMatrix((float*)&m);
+                if (_mainWindow != null)
+                {
+                    float d = _mainWindow.modelPanel1._camera.GetPoint().DistanceTo(_singleBind == null ? v.WeightedPosition : _singleBind.Matrix * v.WeightedPosition);
+                    if (d == 0) d = 0.000000000001f;
+                    GL.PointSize((1000 / d).Clamp(1.0f, 7.0f));
+                }
 
-        //            GL.Translate(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
-        //        }
-        //        else
-        //        {
-        //            //GL.Begin(GLPrimitiveType.Points);
-        //            //GL.Vertex3(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
-        //            //GL.End();
+                GL.Begin(BeginMode.Points);
+                GL.Vertex3(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
+                GL.End();
+            }
 
-        //            GL.PushMatrix();
-
-        //            GL.Translate(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);
-        //        }
-
-        //        if (_nodeColor != Color.Transparent)
-        //            GL.Color4(_nodeColor.R, _nodeColor.G, _nodeColor.B, _nodeColor.A);
-        //        else
-        //            GL.Color4(DefaultNodeColor.R, DefaultNodeColor.G, DefaultNodeColor.B, DefaultNodeColor.A);
-
-        //        DrawNodeOrients(ctx);
-
-        //        GL.PopMatrix();
-        //    }
-        //}
+            GL.PopMatrix();
+        }
 
         //private static void DrawNodeOrients(GLContext ctx)
         //{

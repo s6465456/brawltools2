@@ -436,18 +436,33 @@ namespace System.Windows.Forms
         {
             _camera.Translate(x, y, z);
             _scrolling = false;
-            this.Invalidate();
+            Invalidate();
         }
         private void Rotate(float x, float y)
         {
             _camera.Pivot(_viewDistance, x, y);
-            this.Invalidate();
+            Invalidate();
         }
         private void Rotate(float x, float y, float z)
         {
             _camera.Rotate(x, y, z);
-            this.Invalidate();
+            Invalidate();
         }
+
+        int[] _selectedIndices;
+        public void StartSelection(float x, float y, MDL0Node target, TKContext ctx)
+        {
+            GL.SelectBuffer(0, _selectedIndices);
+            GL.MatrixMode(MatrixMode.Projection);
+            GL.PushMatrix();
+            GL.LoadIdentity();
+            int* viewport = stackalloc int[4];
+            GL.GetInteger(GetPName.Viewport, viewport);
+            OpenTK.Graphics.Glu.PickMatrix(x, viewport[3] - y, 5, 5, viewport);
+            OnResized();
+            target.Render(ctx, _mainWindow);
+        }
+
         public void RecalcLight(SCN0Node scn)
         {
             GL.Light(LightName.Light0, LightParameter.SpotCutoff, _spotCutoff);
@@ -518,6 +533,11 @@ namespace System.Windows.Forms
             //GL.Enable(EnableCap.AlphaTest);
             //GL.AlphaFunc(AlphaFunction.Gequal, 0.1f);
 
+            GL.PointSize(3.0f);
+            GL.Enable(EnableCap.PointSmooth);
+            GL.Enable(EnableCap.PolygonSmooth);
+            GL.Enable(EnableCap.LineSmooth);
+
             RecalcLight(null);
 
             GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Modulate);
@@ -526,7 +546,7 @@ namespace System.Windows.Forms
             ctx._states["_Node_Refs"] = _resourceList;
         }
 
-        protected internal override void OnRender(TKContext ctx, SCN0Node scn)
+        protected internal override void OnRender(TKContext ctx, SCN0Node scn, PaintEventArgs e)
         {
             if (_mainWindow != null)
             {

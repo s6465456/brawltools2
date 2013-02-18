@@ -24,7 +24,7 @@ namespace System.Windows.Forms
                     model.Items.Add(m);
             if (_models.Count != 0 && form.TargetModel != null)
                 model.SelectedIndex = form._targetModels.IndexOf(form.TargetModel);
-            if (form.hide)
+            if (form._hide)
                 hide.Checked = true;
             return base.ShowDialog(owner);
         }
@@ -34,11 +34,11 @@ namespace System.Windows.Forms
             if (_models.Count != 0)
                 if (!Delete.Checked)
                 {
-                    form.resetcam = false;
-                    form.hide = hide.Checked;
+                    form._resetCam = false;
+                    form._hide = hide.Checked;
                     form.TargetModel = (MDL0Node)model.SelectedItem;
                     for (int i = 0; i < form._targetModels.Count; i++)
-                        if (form.hide && form._targetModels[i] != null)
+                        if (form._hide && form._targetModels[i] != null)
                             form.modelPanel1.RemoveTarget(form._targetModels[i]);
                         else
                             if (form._targetModels[i] != null)

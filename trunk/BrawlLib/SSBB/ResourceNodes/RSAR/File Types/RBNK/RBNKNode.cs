@@ -60,11 +60,22 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             _audioLen = 0;
             _headerLen = RBNKHeader.Size;
-            foreach (ResourceNode g in Children)
-                _headerLen += g.CalculateSize(true);
-            foreach (WAVESoundNode s in Children[1].Children)
-                _audioLen += s._audioSource.Length;
+            if (VersionMinor >= 2)
+            {
+                _headerLen = Children[0].CalculateSize(true);
 
+                int size = (RWAR.Size + 12 + Children[1].Children.Count * 12).Align(0x20) + RWARDataBlock.Size;
+                foreach (RSARFileAudioNode n in Children[1].Children)
+                    size += n.WorkingUncompressed.Length;
+                _audioLen = size.Align(0x20);
+            }
+            else
+            {
+                foreach (ResourceNode g in Children)
+                    _headerLen += g.CalculateSize(true);
+                foreach (WAVESoundNode s in Children[1].Children)
+                    _audioLen += s._audioSource.Length;
+            }
             return _headerLen + _audioLen;
         }
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)

@@ -616,7 +616,7 @@ namespace BrawlLib.Modeling
                 *Indices++ = i;
                 *pTri++ = (ushort)index++;
                 *Normals++ = p._manager._vertices[i]._normal;
-                *UVs++ = p._manager._vertices[i].UV[0];
+                *UVs++ = p._manager._vertices[i]._uvs[0];
             }
             model._polyList.Add(p);
 

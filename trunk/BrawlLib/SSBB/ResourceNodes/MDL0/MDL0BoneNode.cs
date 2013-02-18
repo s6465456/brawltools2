@@ -667,6 +667,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 GL.Color4(DefaultBoneColor.R, DefaultBoneColor.G, DefaultBoneColor.B, DefaultBoneColor.A);
 
+            if (_mainWindow != null)
+            {
+                //Adjust line width using distance from camera
+                float d = _mainWindow.modelPanel1._camera.GetPoint().DistanceTo(_frameMatrix.GetPoint());
+                if (d == 0) d = 0.000000000001f;
+                GL.LineWidth(1 / d);
+
+                //Draw name
+                //Vector3 x = _mainWindow.modelPanel1.Project(_frameMatrix.GetPoint());
+            }
+
             Vector3 v = _frameState._translate;
 
             GL.Begin(BeginMode.Lines);
