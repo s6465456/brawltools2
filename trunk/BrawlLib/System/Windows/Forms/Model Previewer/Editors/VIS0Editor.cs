@@ -36,7 +36,7 @@ namespace System.Windows.Forms
 
         #endregion
 
-        private ListBox listBox1;
+        public ListBox listBox1;
 
         public ModelEditControl _mainWindow;
 
@@ -61,6 +61,9 @@ namespace System.Windows.Forms
             set { _mainWindow.SelectedVIS0 = value; }
         }
 
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public VIS0EntryNode TargetVisEntry { get { return _mainWindow._targetVisEntry; } set { _mainWindow.TargetVisEntry = value; } }
+        
         public void UpdateAnimation()
         {
             listBox1.Items.Clear();
@@ -74,9 +77,9 @@ namespace System.Windows.Forms
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            VIS0EntryNode n = (VIS0EntryNode)(_mainWindow.pnlKeyframes.TargetSequence = listBox1.Items[listBox1.SelectedIndex] as ResourceNode);
-            _mainWindow.pnlKeyframes.chkConstant.Checked = n._flags.HasFlag(VIS0Flags.Constant);
-            _mainWindow.pnlKeyframes.chkEnabled.Checked = n._flags.HasFlag(VIS0Flags.Enabled);
+            TargetVisEntry = listBox1.Items[listBox1.SelectedIndex] as VIS0EntryNode;
+            if (_mainWindow._animFrame > 0 && _mainWindow._animFrame < _mainWindow.pnlKeyframes.visEditor.listBox1.Items.Count)
+                _mainWindow.pnlKeyframes.visEditor.listBox1.SelectedIndex = _mainWindow._animFrame;
         }
 
         public void UpdateEntry()

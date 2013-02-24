@@ -272,7 +272,7 @@ namespace System.Windows.Forms
                 lstBones.SelectedItem = TargetBone;
                 _mainWindow.chr0Editor.UpdatePropDisplay();
 
-                if (_mainWindow._chr0 != null && TargetBone != null)
+                if (_mainWindow._chr0 != null && TargetBone != null && _mainWindow.pnlAssets.fileType.SelectedIndex == 0)
                     _mainWindow.pnlKeyframes.TargetSequence = _mainWindow._chr0.FindChild(TargetBone.Name, false);
             } 
         }

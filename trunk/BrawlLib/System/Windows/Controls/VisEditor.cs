@@ -255,7 +255,7 @@ namespace System.Windows.Forms
 
                 g.DrawString(String.Format(" [{0:d2}]", index), _renderFont, Brushes.Black, 4.0f, e.Bounds.Y - 4);
 
-                r.X += 210;
+                r.X += 100;
                 r.Width = 30;
 
                 if ((bool)listBox1.Items[index])
@@ -280,7 +280,7 @@ namespace System.Windows.Forms
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_mainWindow != null && !_updating)
-                _mainWindow._mainWindow.SetFrame(listBox1.SelectedIndex + 1);
+                _mainWindow._mainWindow.SetFrame(listBox1.SelectedIndex);
         }
     }
 }

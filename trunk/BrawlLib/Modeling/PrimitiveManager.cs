@@ -823,8 +823,8 @@ namespace BrawlLib.Modeling
             {
                 Vector3* pIn = (Vector3*)_faceData[index].Address;
                 for (int i = 0; i < _pointCount; i++, pOut += _stride)
-                    if (*pIndex < _vertices.Count && _vertices[*pIndex]._influence != null)
-                        *(Vector3*)pOut = _vertices[*pIndex++]._influence.Matrix.GetRotationMatrix() * *pIn++;
+                    if (*pIndex < _vertices.Count && _vertices[*pIndex]._matrixNode != null)
+                        *(Vector3*)pOut = _vertices[*pIndex++]._matrixNode.Matrix.GetRotationMatrix() * *pIn++;
                     else
                         *(Vector3*)pOut = *pIn++;
             }
@@ -1548,29 +1548,8 @@ namespace BrawlLib.Modeling
             GL.PopMatrix();
         }
 
-        //private static void DrawNodeOrients(GLContext ctx)
-        //{
-        //    GL.Begin(BeginMode.Lines);
-
-        //    GL.Color4(1.0f, 0.0f, 0.0f, 1.0f);
-        //    GL.Vertex3(0.0f, 0.0f, 0.0f);
-        //    GL.Vertex3(_nodeRadius * 2, 0.0f, 0.0f);
-
-        //    GL.Color4(0.0f, 1.0f, 0.0f, 1.0f);
-        //    GL.Vertex3(0.0f, 0.0f, 0.0f);
-        //    GL.Vertex3(0.0f, _nodeRadius * 2, 0.0f);
-
-        //    GL.Color4(0.0f, 0.0f, 1.0f, 1.0f);
-        //    GL.Vertex3(0.0f, 0.0f, 0.0f);
-        //    GL.Vertex3(0.0f, 0.0f, _nodeRadius * 2);
-
-        //    GL.End();
-        //}
         #endregion
 
-        internal unsafe PrimitiveManager Clone()
-        {
-            return MemberwiseClone() as PrimitiveManager;
-        }
+        internal unsafe PrimitiveManager Clone() { return MemberwiseClone() as PrimitiveManager; }
     }
 }

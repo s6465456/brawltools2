@@ -21,7 +21,7 @@ namespace BrawlLib.Modeling
 
         public int[] UVIndex = new int[8];
 
-        public int NodeId { get { return Vertex != null && Vertex.Inf != null ? Vertex.Inf.NodeIndex : Node != null ? Node.NodeIndex : -1; } }
+        public int NodeId { get { return Vertex != null && Vertex.MatrixNode != null ? Vertex.MatrixNode.NodeIndex : Node != null ? Node.NodeIndex : -1; } }
         
         public IMatrixNode Node = null;
     }

@@ -411,7 +411,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class SHP0VertexSetNode : ResourceNode
+    public unsafe class SHP0VertexSetNode : ResourceNode, IKeyframeArrayHolder
     {
         internal SHP0KeyframeEntries* Header { get { return (SHP0KeyframeEntries*)WorkingUncompressed.Address; } }
         public int _dataLen;

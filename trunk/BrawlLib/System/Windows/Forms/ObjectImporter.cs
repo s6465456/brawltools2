@@ -48,10 +48,11 @@ namespace System.Windows.Forms
             {
                 MDL0ObjectNode poly = res as MDL0ObjectNode;
                 foreach (Vertex3 v in poly._manager._vertices)
-                    if (v._influence == ext)
+                    if (v._matrixNode == ext)
                     {
-                        v._influence = main;
+                        v._matrixNode = main;
                         main.ReferenceCount++;
+                        main.References.Add(v);
                     }
             }
             else if (res is MDL0Node)
@@ -59,10 +60,11 @@ namespace System.Windows.Forms
                 MDL0Node mdl = res as MDL0Node;
                 foreach (MDL0ObjectNode poly in mdl.FindChild("Objects", true).Children)
                     foreach (Vertex3 v in poly._manager._vertices)
-                        if (v._influence == ext)
+                        if (v._matrixNode == ext)
                         {
-                            v._influence = main;
+                            v._matrixNode = main;
                             main.ReferenceCount++;
+                            main.References.Add(v);
                         }
             }
             foreach (MDL0BoneNode b2 in ext.Children)
@@ -153,11 +155,11 @@ namespace System.Windows.Forms
             if (node.Weighted)
             {
                 foreach (Vertex3 vert in node._manager._vertices)
-                    if (vert._influence != null && vert._influence is Influence)
-                        vert._influence = _internalModel._influences.AddOrCreateInf((Influence)vert._influence);
+                    if (vert._matrixNode != null && vert._matrixNode is Influence)
+                        vert._matrixNode = _internalModel._influences.AddOrCreateInf((Influence)vert._matrixNode);
             }
-            else if (node.SingleBindInf != null && node.SingleBindInf is Influence)
-                node.SingleBindInf = _internalModel._influences.AddOrCreateInf((Influence)node.SingleBindInf);
+            else if (node.MatrixNode != null && node.MatrixNode is Influence)
+                node.MatrixNode = _internalModel._influences.AddOrCreateInf((Influence)node.MatrixNode);
 
             newNode.RecalcIndices();
             newNode._bone = (MDL0BoneNode)_internalModel.BoneGroup.Children[0];
@@ -213,7 +215,7 @@ namespace System.Windows.Forms
                     _baseInf = (IMatrixNode)temp.Parent;
                 }
             }
-            else _baseInf = node.SingleBindInf;
+            else _baseInf = node.MatrixNode;
 
             if (_baseInf is Influence)
             {

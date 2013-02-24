@@ -586,16 +586,16 @@ namespace BrawlLib.Modeling
                     weight2.Bone = BoneCache[m.BoneNum[1]];
                 }
                 if (weight2.Bone != null)
-                    inf = new Influence(new BoneWeight[] { weight1, weight2 });
+                    inf = new Influence(new List<BoneWeight> { weight1, weight2 });
                 else
-                    inf = new Influence(new BoneWeight[] { weight1 });
+                    inf = new Influence(new List<BoneWeight> { weight1 });
                 
                 Vector3 t = new Vector3();
                 Vertex3 v;
                 t._x = m.Pos[0];
                 t._y = m.Pos[1];
                 t._z = m.Pos[2];
-                if (inf._weights.Length > 1)
+                if (inf._weights.Count > 1)
                 {
                     inf = model._influences.AddOrCreate(inf);
                     v = new Vertex3(Matrix.Identity * t, inf);

@@ -12,7 +12,7 @@ using BrawlLib.Imaging;
 
 namespace BrawlLib.Modeling
 {
-    public class Vertex3
+    public class Vertex3 : IMatrixNodeUser
     {
         public Vector3 _position;
         public Vector3 _weightedPosition;
@@ -20,33 +20,57 @@ namespace BrawlLib.Modeling
         public Vector3 _normal;
         public Vector3 _weightedNormal;
 
-        internal IMatrixNode _influence;
+        internal IMatrixNode _matrixNode;
 
         public RGBAPixel[] _colors = new RGBAPixel[2];
         public Vector2[] _uvs = new Vector2[8];
 
+        public MDL0ObjectNode _object;
+
         public int Index = 0;
+
+        public Vector3 GetPoint()
+        {
+            if (_object.MatrixNode == null)
+                return WeightedPosition;
+            else
+                return _object.MatrixNode.Matrix * Position;
+        }
+
+        public Matrix GetMatrix()
+        {
+            if (_object.MatrixNode == null)
+                return MatrixNode.Matrix;
+            else
+                return _object.MatrixNode.Matrix;
+        }
 
         [Browsable(true)]
         public string Influence
         {
-            get { return Inf == null ? "(none)" : Inf.IsPrimaryNode ? ((MDL0BoneNode)Inf)._name : "(multiple)"; }
+            get { return MatrixNode == null ? "(none)" : MatrixNode.IsPrimaryNode ? ((MDL0BoneNode)MatrixNode)._name : "(multiple)"; }
             //set { Inf = String.IsNullOrEmpty(value) ? null : Model.FindOrCreateBone(value); Model.SignalPropertyChange(); }
         }
         [Browsable(false)]
-        public IMatrixNode Inf
+        public IMatrixNode MatrixNode
         {
-            get { return _influence; }
+            get { return _matrixNode; }
             set
             {
-                if (_influence == value)
+                if (_matrixNode == value)
                     return;
 
-                if (_influence != null)
-                    _influence.ReferenceCount--;
+                if (_matrixNode != null)
+                {
+                    _matrixNode.ReferenceCount--;
+                    _matrixNode.References.Remove(this);
+                }
 
-                if ((_influence = value) != null)
-                    _influence.ReferenceCount++;
+                if ((_matrixNode = value) != null)
+                {
+                    _matrixNode.ReferenceCount++;
+                    _matrixNode.References.Add(this);
+                }
             }
         }
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector3StringConverter))]
@@ -148,20 +172,20 @@ namespace BrawlLib.Modeling
         public Vertex3(Vector3 position, IMatrixNode influence)
         {
             Position = position;
-            Inf = influence;
+            MatrixNode = influence;
         }
 
         public Vertex3(Vector3 position, Vector3 normal, IMatrixNode influence)
         {
             Position = position;
             Normal = normal;
-            Inf = influence;
+            MatrixNode = influence;
         }
 
         public Vertex3(Vector3 position, IMatrixNode influence, Vector3 normal, RGBAPixel[] color, Vector2[] uv)
         {
             Position = position;
-            Inf = influence;
+            MatrixNode = influence;
             Normal = normal;
             _colors = color;
             _uvs = uv;
@@ -171,7 +195,7 @@ namespace BrawlLib.Modeling
         //Influences must have already been calculated.
         public void Weight()
         {
-            _weightedPosition = (_influence != null) ? _influence.Matrix * Position : Position;
+            _weightedPosition = (_matrixNode != null) ? _matrixNode.Matrix * Position : Position;
             //_weightedNormal = (_influence != null) ? _influence.Matrix.GetRotationMatrix() * Normal : Normal;
         }
         //Need to do this to put the vertices back in their raw positions if they were moved.
@@ -185,15 +209,15 @@ namespace BrawlLib.Modeling
         public Color GetWeightColor(MDL0BoneNode targetBone)
         {
             float weight = -1;
-            if (_influence == null || targetBone == null) 
+            if (_matrixNode == null || targetBone == null) 
                 return Color.Transparent;
-            if (_influence is MDL0BoneNode)
-                if (_influence == targetBone)
+            if (_matrixNode is MDL0BoneNode)
+                if (_matrixNode == targetBone)
                     weight = 1.0f;
                 else
                     return Color.Transparent;
             else 
-                foreach (BoneWeight b in ((Influence)_influence)._weights)
+                foreach (BoneWeight b in ((Influence)_matrixNode)._weights)
                     if (b.Bone == targetBone)
                     {
                         weight = b.Weight;
@@ -210,7 +234,7 @@ namespace BrawlLib.Modeling
             if (object.ReferenceEquals(this, v))
                 return true;
 
-            return (Position == v.Position) && (_influence == v._influence);
+            return (Position == v.Position) && (_matrixNode == v._matrixNode);
         }
     }
 

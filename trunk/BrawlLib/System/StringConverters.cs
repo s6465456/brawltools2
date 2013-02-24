@@ -8,6 +8,33 @@ using BrawlLib.SSBBTypes;
 
 namespace System
 {
+    public class Vector4StringConverter : TypeConverter
+    {
+        private static char[] delims = new char[] { ',', '(', ')', ' ' };
+
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) { return destinationType == typeof(Vector4); }
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) { return value.ToString(); }
+
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) { return sourceType == typeof(string); }
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            Vector4 v = new Vector4();
+
+            string s = value.ToString();
+            string[] arr = s.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+
+            if (arr.Length == 4)
+            {
+                float.TryParse(arr[0], out v._x);
+                float.TryParse(arr[1], out v._y);
+                float.TryParse(arr[2], out v._z);
+                float.TryParse(arr[3], out v._w);
+            }
+
+            return v;
+        }
+    }
+
     public class Vector3StringConverter : TypeConverter
     {
         private static char[] delims = new char[] { ',', '(', ')', ' ' };

@@ -198,10 +198,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         else
                             *lightAddr++ = new RGBAPixel();
                 }
-                else if (_colors.Count == 1)
-                    header->_lighting = (RGBAPixel)_colors[0];
                 else
-                    header->_lighting = new RGBAPixel();
+                    header->_lighting = (RGBAPixel)_solidColor;
             }
         }
 
