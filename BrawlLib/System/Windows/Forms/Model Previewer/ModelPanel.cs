@@ -89,7 +89,7 @@ namespace System.Windows.Forms
                 Invalidate();
             }
         }
-
+        [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 Ambient
         {
             get { return _ambient; }
@@ -106,7 +106,7 @@ namespace System.Windows.Forms
                 Invalidate();
             }
         }
-
+        [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 LightPosition
         {
             get { return _position; }
@@ -128,7 +128,7 @@ namespace System.Windows.Forms
                 GL.Light(LightName.Light0, LightParameter.SpotDirection, (float*)&SpotDirectionLight);
             }
         }
-
+        [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 Diffuse
         {
             get { return _diffuse; }
@@ -145,7 +145,7 @@ namespace System.Windows.Forms
                 Invalidate();
             }
         }
-
+        [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 Specular
         {
             get { return _specular; }
@@ -516,8 +516,7 @@ namespace System.Windows.Forms
             GL.Enable(EnableCap.Light0);
             GL.Enable(EnableCap.ColorMaterial);
 
-            Vector3 v = (Vector3)BackColor;
-            GL.ClearColor(v._x, v._y, v._z, 0.0f);
+            GL.ClearColor(BackColor);
             GL.ClearDepth(1.0f);
 
             GL.Enable(EnableCap.DepthTest);
@@ -527,11 +526,11 @@ namespace System.Windows.Forms
 
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
 
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+            //GL.Enable(EnableCap.Blend);
+            //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             //GL.Enable(EnableCap.AlphaTest);
-            //GL.AlphaFunc(AlphaFunction.Gequal, 0.1f);
+            //GL.AlphaFunc(AlphaFunction.Lequal, 0.1f);
 
             GL.PointSize(3.0f);
             GL.Enable(EnableCap.PointSmooth);

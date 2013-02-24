@@ -45,6 +45,14 @@ namespace BrawlLib.Wii.Animations
         int FrameCount { get; }
     }
 
+    public interface IKeyframeArrayHolder
+    {
+        KeyframeEntry GetKeyframe(int index);
+        void SetKeyframe(int index, float value);
+        void RemoveKeyframe(int index);
+        int FrameCount { get; }
+    }
+
     public unsafe class KeyframeCollection
     {
         internal KeyframeEntry[] _keyRoots = new KeyframeEntry[9]{

@@ -549,9 +549,9 @@ namespace System.Windows.Forms
         public bool _syncPat0 = false;
 
         private bool _updating = false;
-        private object _targetObject;
+        private MDL0ObjectNode _targetObject;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public object TargetObject
+        public MDL0ObjectNode TargetObject
         {
             get { return _targetObject; }
             set { _targetObject = value; }
@@ -574,7 +574,8 @@ namespace System.Windows.Forms
             get { return _mainWindow._targetTexRef; }
             set
             {
-                _mainWindow.TargetTexRef = value; if (_mainWindow._srt0 != null && TargetTexRef != null)
+                _mainWindow.TargetTexRef = value; 
+                if (_mainWindow._srt0 != null && TargetTexRef != null)
                     _mainWindow.pnlKeyframes.TargetSequence = _mainWindow.srt0Editor.TexEntry;
             }
         }
@@ -968,7 +969,7 @@ namespace System.Windows.Forms
             if (_selectedTexture != null)
                 _selectedTexture.Selected = false;
 
-            if ((_targetObject = _selectedTexture = lstTextures.SelectedItem as MDL0TextureNode) != null)
+            if ((_selectedTexture = lstTextures.SelectedItem as MDL0TextureNode) != null)
             {
                 _selectedTexture.Selected = true;
 
@@ -1264,7 +1265,7 @@ namespace System.Windows.Forms
                 portToolStripMenuItem.Visible = true;
             else
                 portToolStripMenuItem.Visible = false;
-            _mainWindow.setCurrentControl();
+            _mainWindow.SetCurrentControl();
         }
 
         #region Animation Context Menu

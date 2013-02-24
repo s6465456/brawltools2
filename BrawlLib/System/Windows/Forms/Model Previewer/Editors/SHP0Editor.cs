@@ -181,6 +181,7 @@ namespace System.Windows.Forms
             this.button4.Text = "Add";
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Visible = false;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
             // splitter1
             // 
@@ -310,6 +311,17 @@ namespace System.Windows.Forms
             set { _mainWindow.SelectedCHR0 = value; }
         }
 
+        public SHP0VertexSetNode VertexSetDest
+        {
+            get
+            {
+                if (VertexSet == null || SelectedDestination == null) return null;
+                ResourceNode set = SelectedAnimation.FindChild(VertexSet.Name, false);
+                if (set == null) return null;
+                return set.FindChild(SelectedDestination.Name, false) as SHP0VertexSetNode;
+            }
+        }
+
         public void UpdateVertexSetList()
         {
             //listBox1.Items.Clear();
@@ -412,8 +424,7 @@ namespace System.Windows.Forms
                 KeyframeEntry e = v.Keyframes.GetKeyframe(CurrentFrame - 1);
                 if (e == null)
                 {
-                    float val = v.Keyframes[CurrentFrame - 1];
-                    textBox1.Value = val.Clamp(0, 1) * 100.0f;
+                    textBox1.Value = v.Keyframes[CurrentFrame - 1].Clamp(0, 1) * 100.0f;
                     textBox1.BackColor = Color.White;
                 }
                 else
@@ -441,12 +452,14 @@ namespace System.Windows.Forms
         private void listBox1_SelectedValueChanged(object sender, EventArgs e)
         {
             VertexSet = listBox1.SelectedItem as MDL0VertexNode;
+            _mainWindow.pnlKeyframes.TargetSequence = VertexSetDest;
         }
 
         private void listBox2_SelectedValueChanged(object sender, EventArgs e)
         {
             button2.Enabled = listBox2.SelectedItem != null;
             SelectedDestination = listBox2.SelectedItem as MDL0VertexNode;
+            _mainWindow.pnlKeyframes.TargetSequence = VertexSetDest;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -464,6 +477,11 @@ namespace System.Windows.Forms
         {
             get { return _mainWindow._enableTransform; }
             set { this.Enabled = (_mainWindow.EnableTransformEdit = value) && (SelectedAnimation != null); }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

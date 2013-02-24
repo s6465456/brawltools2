@@ -171,6 +171,24 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Functions
 
+        public void RemoveBone(MDL0BoneNode bone)
+        {
+            foreach (MDL0BoneNode b in bone.Children)
+                RemoveBone(b);
+
+            _influences.RemoveBone(bone);
+            foreach (MDL0ObjectNode o in _polyList)
+                if (o.MatrixNode == bone)
+                    o.MatrixNode = bone.Parent as MDL0BoneNode;
+
+        Top:
+            if (bone.References.Count != 0)
+            {
+                bone.References[bone.References.Count - 1].MatrixNode = bone.Parent as MDL0BoneNode;
+                goto Top;
+            }
+        }
+
         public void CheckTextures()
         {
             foreach (MDL0TextureNode t in _texList)
@@ -923,6 +941,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             GL.Disable(EnableCap.Blend);
 
+            //GL.Enable(EnableCap.Blend);
+            //GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
             //if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
                 _mainWindow = mainWindow;
 
@@ -941,8 +962,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 //Draw objects in the prioritized order of materials
                 if (_matList != null)
+                {
                     foreach (MDL0MaterialNode m in _matList)
-                        m.Render(ctx);
+                        if (m.XLUMaterial)
+                            m.Render(ctx);
+                    foreach (MDL0MaterialNode m in _matList)
+                        if (!m.XLUMaterial)
+                            m.Render(ctx);
+                }
             }
 
             //Turn off the last bound shader program.
@@ -1128,7 +1155,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                         Vertex3 v3 = poly._manager._vertices[i];
 
                                         //Create weighted vertex from the vertex set this object is being morphed to
-                                        Vector3 weightedExtV = v3._influence != null ? v3._influence.Matrix * vNode.Vertices[*pMap++] : vNode.Vertices[*pMap++];
+                                        Vector3 weightedExtV = v3._matrixNode != null ? v3._matrixNode.Matrix * vNode.Vertices[*pMap++] : vNode.Vertices[*pMap++];
                                         
                                         //Now morph the vertex
                                         v3.Morph(weightedExtV, percent);

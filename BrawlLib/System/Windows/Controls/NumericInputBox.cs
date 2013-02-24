@@ -6,8 +6,6 @@ namespace System.Windows.Forms
 {
     public class NumericInputBox : TextBox
     {
-        public float _oldValue;
-        private bool check = true;
         public float _value;
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public float Value
@@ -15,21 +13,20 @@ namespace System.Windows.Forms
             get { return _value; }
             set
             {
-                if (_value == value) return;
-
-                if (check == false) float.TryParse(Text, out _oldValue);
-
-                _value = value;
+                float val = value.Clamp(MinValue, MaxValue);
+                if (_value == val) return;
+                _value = val;
 
                 UpdateText();
-
-                if (check == true) { float.TryParse(Text, out _oldValue); check = false; }
-
                 Apply();
             }
         }
 
         public NumericInputBox() { UpdateText(); }
+
+        public float MinValue = float.MinValue;
+        public float MaxValue = float.MaxValue;
+        public bool Integral = false;
 
         public event EventHandler ValueChanged;
 
@@ -193,21 +190,37 @@ namespace System.Windows.Forms
         private void Apply()
         {
             float val = _value;
+            int val2 = (int)_value;
 
             if (val.ToString() == Text)
                 return;
 
             if (Text == "")
                 val = float.NaN;
-            else
+            else if (!Integral)
                 float.TryParse(Text, out val);
+            else
+                int.TryParse(Text, out val2);
 
-            if (_value != val)
+            if (!Integral)
             {
-                _value = val;
-                if (ValueChanged != null)
-                    ValueChanged(this, null);
+                if (_value != val)
+                {
+                    _value = val;
+                    if (ValueChanged != null)
+                        ValueChanged(this, null);
+                }
             }
+            else
+            {
+                if (_value != val2)
+                {
+                    _value = val2;
+                    if (ValueChanged != null)
+                        ValueChanged(this, null);
+                }
+            }
+            
             UpdateText();
         }
     }

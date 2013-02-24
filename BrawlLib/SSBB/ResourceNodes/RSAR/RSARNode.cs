@@ -127,17 +127,17 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (!(n is RSARExtFileNode))
                     n.GetName();
 
-            //bint* offsets = (bint*)((VoidPtr)symb + 12);
-            //for (int i = 0; i < 4; i++)
-            //{
-            //    SYMBMaskHeader* hdr = (SYMBMaskHeader*)((VoidPtr)symb + 8 + offsets[i]);
-            //    Console.WriteLine("Root Index = " + hdr->_rootId);
-            //    for (int x = 0; x < hdr->_numEntries; x++)
-            //    {
-            //        SYMBMaskEntry* e = &hdr->Entries[x];
-            //        Console.WriteLine(String.Format("[{3}] {0}, {1}, {2} - {4}", e->_bit, e->_leftId, e->_rightId, e->_index, new string(offset + stringOffsets[e->_stringId])));
-            //    }
-            //}
+            bint* offsets = (bint*)((VoidPtr)symb + 12);
+            for (int i = 0; i < 4; i++)
+            {
+                SYMBMaskHeader* hdr = (SYMBMaskHeader*)((VoidPtr)symb + 8 + offsets[i]);
+                Console.WriteLine("Root Index = " + hdr->_rootId);
+                for (int x = 0; x < hdr->_numEntries; x++)
+                {
+                    SYMBMaskEntry* e = &hdr->Entries[x];
+                    Console.WriteLine(String.Format("[{5}] {0}, {1}, {2} - {4}", e->_bit != 65535 ? e->_bit.ToString().PadLeft(3) : "   ", e->_leftId != -1 ? e->_leftId.ToString().PadLeft(3) : "   ", e->_rightId != -1 ? e->_rightId.ToString().PadLeft(3) : "   ", e->_index != -1 ? e->_index.ToString().PadLeft(3) : "   ", new string(offset + stringOffsets[e->_stringId]), x.ToString().PadLeft(3)));
+                }
+            }
             //Sort(true);
         }
 

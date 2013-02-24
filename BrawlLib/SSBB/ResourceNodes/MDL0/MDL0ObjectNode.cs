@@ -13,7 +13,12 @@ using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MDL0ObjectNode : MDL0EntryNode
+    public interface IMatrixNodeUser
+    {
+        IMatrixNode MatrixNode { get; set; }
+    }
+
+    public unsafe class MDL0ObjectNode : MDL0EntryNode, IMatrixNodeUser
     {
         internal MDL0Object* Header { get { return (MDL0Object*)WorkingUncompressed.Address; } }
 
@@ -626,7 +631,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return _singleBind == null ? "(none)" : _singleBind.IsPrimaryNode ? ((MDL0BoneNode)_singleBind)._name : "(multiple)"; }
             set
             {
-                SingleBindInf = String.IsNullOrEmpty(value) ? null : Model.FindBone(value); 
+                MatrixNode = String.IsNullOrEmpty(value) ? null : Model.FindBone(value); 
                 Model.SignalPropertyChange();
                 //Model._rebuildAllObj = true;
                 Model.Rebuild(false);
@@ -634,7 +639,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         internal IMatrixNode _singleBind;
         [Browsable(false)]
-        public IMatrixNode SingleBindInf
+        public IMatrixNode MatrixNode
         {
             get { return _singleBind; }
             set
@@ -795,7 +800,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void attachSingleBind()
         {
-            SingleBindInf = (_nodeId >= 0 && _nodeId < Model._linker.NodeCache.Length) ? Model._linker.NodeCache[_nodeId] : null;
+            MatrixNode = (_nodeId >= 0 && _nodeId < Model._linker.NodeCache.Length) ? Model._linker.NodeCache[_nodeId] : null;
         }
 
         protected override bool OnInitialize()
@@ -875,7 +880,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 int i = 0;
                 _manager = new PrimitiveManager(header, Model._assets, linker.NodeCache, this);
                 foreach (Vertex3 v in _manager._vertices)
+                {
                     v.Index = i++;
+                    v._object = this;
+                }
             }
 
             //Get polygon UVAT groups
@@ -952,8 +960,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Create node table
             HashSet<int> nodes = new HashSet<int>();
             foreach (Vertex3 v in _manager._vertices)
-                if (v._influence != null)
-                    nodes.Add(v._influence.NodeIndex);
+                if (v._matrixNode != null)
+                    nodes.Add(v._matrixNode.NodeIndex);
 
             //Copy to array and sort
             _nodeCache = new int[nodes.Count];
@@ -980,24 +988,24 @@ namespace BrawlLib.SSBB.ResourceNodes
                         {
                             if (first)
                             {
-                                if (v._influence != null)
+                                if (v._matrixNode != null)
                                 {
-                                    _singleBind = Model._linker.NodeCache[v._influence.NodeIndex];
+                                    _singleBind = Model._linker.NodeCache[v._matrixNode.NodeIndex];
                                     if (_singleBind is MDL0BoneNode)
                                         ((MDL0BoneNode)_singleBind)._infPolys.Add(this);
                                 }
                                 first = false;
                             }
-                            v._influence = null;
+                            v._matrixNode = null;
                         }
                     }
 
                     _manager.Nodes = new Dictionary<int, IMatrixNode>();
                     foreach (Vertex3 v in _manager._vertices)
                     {
-                        if (v._influence != null)
-                            if (!_manager.Nodes.ContainsKey(v._influence.NodeIndex))
-                                _manager.Nodes.Add(v._influence.NodeIndex, v._influence);
+                        if (v._matrixNode != null)
+                            if (!_manager.Nodes.ContainsKey(v._matrixNode.NodeIndex))
+                                _manager.Nodes.Add(v._matrixNode.NodeIndex, v._matrixNode);
                     }
                 }
 
@@ -2538,7 +2546,34 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (shaderProgramHandle != 0)
                 GL.DeleteProgram(shaderProgramHandle);
         }
+        public unsafe void RenderVertexOrbs(GLDisplayList list, Vector3 cam)
+        {
+            //Rendering using sphere is inefficient and slows down the program.
+            //Render using a quad and rotate it to face the camera instead.
 
+            Matrix m = Matrix.Identity;
+            GL.PushMatrix();
+            if (_singleBind != null)
+            {
+                m = _singleBind.Matrix;
+                GL.MultMatrix((float*)&m);
+            }
+
+            foreach (Vertex3 v in _manager._vertices)
+            {
+                Vector3 pos = m * v.WeightedPosition;
+                Vector3 rot = pos.LookatAngles(cam) * Maths._rad2degf;
+
+                Matrix x = Matrix.TransformMatrix(new Vector3(0.10f), rot, v.WeightedPosition);
+                
+                GL.PushMatrix();
+                GL.MultMatrix((float*)&x);
+
+                list.Call();
+                GL.PopMatrix();
+            } 
+            GL.PopMatrix();
+        }
         #endregion
 
         #region Etc
@@ -2579,7 +2614,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         _uvSet[i].Remove();
                     else _uvSet[i]._polygons.Remove(this);
 
-            SingleBindInf = null;
+            MatrixNode = null;
             BoneNode = null;
             OpaMaterialNode = null;
             XluMaterialNode = null;
@@ -2587,8 +2622,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_manager != null)
             {
                 foreach (Vertex3 v in _manager._vertices)
-                    if (v._influence != null)
-                        v._influence.ReferenceCount--;
+                    if (v._matrixNode != null)
+                        v._matrixNode.ReferenceCount--;
             }
 
             base.Remove();

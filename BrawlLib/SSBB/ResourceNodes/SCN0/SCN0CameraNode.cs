@@ -185,7 +185,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             int newFlags1 = 0;
 
-            bint* values = (bint*)&Data->_position;
+            bint* values = (bint*)&header->_position;
             for (int i = 0; i < 15; i++)
                 EncodeFrames(GetKeys(i), ref keyframeAddr, &values[i], ref newFlags1, (int)Ordered[i]);
 

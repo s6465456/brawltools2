@@ -281,7 +281,7 @@ namespace BrawlLib.Modeling
                         foreach (MDL0ObjectNode poly in model._polyList)
                         {
                             poly._nodeId = 0;
-                            poly.SingleBindInf = (MDL0BoneNode)model._boneGroup._children[0]._children[0];
+                            poly.MatrixNode = (MDL0BoneNode)model._boneGroup._children[0]._children[0];
                         }
                 }
                 else
@@ -294,12 +294,12 @@ namespace BrawlLib.Modeling
                             bool singlebind = true;
 
                             foreach (Vertex3 v in p._manager._vertices)
-                                if (v._influence != null)
+                                if (v._matrixNode != null)
                                 {
                                     if (node == null)
-                                        node = v._influence;
+                                        node = v._matrixNode;
 
-                                    if (v._influence != node)
+                                    if (v._matrixNode != node)
                                     {
                                         singlebind = false;
                                         break;
@@ -309,12 +309,12 @@ namespace BrawlLib.Modeling
                             if (singlebind && p._singleBind == null)
                             {
                                 //Increase reference count ahead of time for rebuild
-                                if (p._manager._vertices[0]._influence != null)
-                                    p._manager._vertices[0]._influence.ReferenceCount++;
+                                if (p._manager._vertices[0]._matrixNode != null)
+                                    p._manager._vertices[0]._matrixNode.ReferenceCount++;
 
                                 foreach (Vertex3 v in p._manager._vertices)
-                                    if (v._influence != null)
-                                        v._influence.ReferenceCount--;
+                                    if (v._matrixNode != null)
+                                        v._matrixNode.ReferenceCount--;
                                 
                                 p._nodeId = -2; //Continued on polygon rebuild
                             }
@@ -459,7 +459,7 @@ namespace BrawlLib.Modeling
 
                     //Attach single-bind
                     if (parent != null && parent is MDL0BoneNode)
-                        poly.SingleBindInf = (MDL0BoneNode)parent;
+                        poly.MatrixNode = (MDL0BoneNode)parent;
                     
                     //Attach material
                     if (inst._material != null)

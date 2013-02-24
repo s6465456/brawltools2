@@ -108,7 +108,7 @@ namespace BrawlLib.Modeling
             {
                 //Create influence
                 int iCount = skin._weights[i].Length / cmdCount;
-                Influence inf = new Influence(iCount);
+                Influence inf = new Influence(/*iCount*/);
                 fixed (int* p = skin._weights[i])
                 {
                     int* iPtr = p;
@@ -134,7 +134,7 @@ namespace BrawlLib.Modeling
                 Error = "There was a problem creating a vertex from the geometry entry " + geo._name + ".\nMake sure that all the vertices are weighted properly.";
 
                 Vertex3 v;
-                if (inf._weights.Length > 1)
+                if (inf._weights.Count > 1)
                 {
                     //Match with manager
                     inf = infManager.AddOrCreate(inf);
@@ -172,11 +172,11 @@ namespace BrawlLib.Modeling
                 Vertex3 v = null;
                 if (*pVInd < vertList.Count)
                     v = vertList[*pVInd];
-                if (v != null && v._influence != null)
-                    if (v._influence.Weights.Length > 1)
+                if (v != null && v._matrixNode != null)
+                    if (v._matrixNode.Weights.Count > 1)
                         pNorms[i] = skin._bindMatrix.GetRotationMatrix() * pNorms[i];
                     else
-                        pNorms[i] = skin._bindMatrix.GetRotationMatrix() * v._influence.Weights[0].Bone._inverseBindMatrix.GetRotationMatrix() * pNorms[i];
+                        pNorms[i] = skin._bindMatrix.GetRotationMatrix() * v._matrixNode.Weights[0].Bone._inverseBindMatrix.GetRotationMatrix() * pNorms[i];
             }
 
             remap.Dispose();
@@ -579,7 +579,7 @@ namespace BrawlLib.Modeling
             {
                 //Create influence
                 int iCount = skin._weights.Length / cmdCount;
-                Influence inf = new Influence(iCount);
+                Influence inf = new Influence(/*iCount*/);
                 fixed (int* p = skin._weights[i])
                 {
                     int* iPtr = p;

@@ -153,6 +153,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         protected override bool OnInitialize()
         {
+            if (!_replaced)
             if ((_name == null) && (Header->_stringOffset != 0))
                 _name = Header->ResourceString;
             else

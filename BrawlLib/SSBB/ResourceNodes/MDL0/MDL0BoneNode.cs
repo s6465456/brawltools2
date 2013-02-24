@@ -76,9 +76,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public bool IsPrimaryNode { get { return true; } }
 
-        private BoneWeight[] _weightRef;
+        private List<BoneWeight> _weightRef;
         [Browsable(false)]
-        public BoneWeight[] Weights { get { return _weightRef == null ? _weightRef = new BoneWeight[] { new BoneWeight(this, 1.0f) } : _weightRef; } }
+        public List<BoneWeight> Weights { get { return _weightRef == null ? _weightRef = new List<BoneWeight> { new BoneWeight(this, 1.0f) } : _weightRef; } }
+
+        [Browsable(false)]
+        public List<IMatrixNodeUser> References { get { return _references; } }
+        internal List<IMatrixNodeUser> _references = new List<IMatrixNodeUser>();
 
         //public void TransferWeights(MDL0BoneNode n)
         //{
@@ -91,32 +95,32 @@ namespace BrawlLib.SSBB.ResourceNodes
         //        b.TransferWeights(n);
         //}
 
-        //public override void Remove()
-        //{
-        //    if (Parent == null)
-        //        return;
-        //    TransferWeights(Parent as MDL0BoneNode);
-        //    base.Remove();
-        //}
+        public override void Remove()
+        {
+            if (Parent == null)
+                return;
+            Model.RemoveBone(this);
+            base.Remove();
+        }
 
-        //#if DEBUG
-        //[Category("Bone")]
-        //public int HeaderLen { get { return _headerLen; } }
-        //[Category("Bone")]
-        //public int MDL0Offset { get { return _mdl0Offset; } }
-        //[Category("Bone")]
-        //public int StringOffset { get { return _stringOffset; } }
-        //[Category("Bone")]
-        //public int ParentOffset { get { return _parentOffset / 0xD0; } }
-        //[Category("Bone")]
-        //public int FirstChildOffset { get { return _firstChildOffset / 0xD0; } }
-        //[Category("Bone")]
-        //public int NextOffset { get { return _nextOffset / 0xD0; } }
-        //[Category("Bone")]
-        //public int PrevOffset { get { return _prevOffset / 0xD0; } }
-        //[Category("Bone")]
-        //public int UserDataOffset { get { return _userDataOffset; } }
-        //#endif
+//#if DEBUG
+//        [Category("Bone")]
+//        public int HeaderLen { get { return _headerLen; } }
+//        [Category("Bone")]
+//        public int MDL0Offset { get { return _mdl0Offset; } }
+//        [Category("Bone")]
+//        public int StringOffset { get { return _stringOffset; } }
+//        [Category("Bone")]
+//        public int ParentOffset { get { return _parentOffset / 0xD0; } }
+//        [Category("Bone")]
+//        public int FirstChildOffset { get { return _firstChildOffset / 0xD0; } }
+//        [Category("Bone")]
+//        public int NextOffset { get { return _nextOffset / 0xD0; } }
+//        [Category("Bone")]
+//        public int PrevOffset { get { return _prevOffset / 0xD0; } }
+//        [Category("Bone")]
+//        public int UserDataOffset { get { return _userDataOffset; } }
+//#endif
         
         [Category("Bone")]
         public bool Visible

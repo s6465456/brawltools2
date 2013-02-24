@@ -120,6 +120,7 @@ namespace BrawlBox
                     {
                         MDL0BoneNode.DefaultNodeColor = (Color)settings->_orbColor;
                         MDL0BoneNode.DefaultBoneColor = (Color)settings->_lineColor;
+                        ModelEditControl._floorHue = (Color)settings->_floorColor;
                         if (settings->CameraSet)
                         {
                             modelEditControl1.btnSaveCam.Text = "Clear Camera";

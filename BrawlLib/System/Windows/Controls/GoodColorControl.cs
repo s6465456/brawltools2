@@ -442,7 +442,13 @@ namespace System.Windows.Forms
             if ((index > 2) && (index < 6))
                 _hsv = (HSVPixel)_rgb;
 
-            OnColorChanged();
+            //OnColorChanged();
+
+            pnlColorBox.Invalidate();
+            pnlColorBar.Invalidate();
+
+            if (ColorChanged != null)
+                ColorChanged(this, null);
         }
 
         protected virtual void OnColorChanged()

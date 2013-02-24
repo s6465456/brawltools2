@@ -60,40 +60,44 @@ namespace System.Windows.Forms
         private Label lblCol1Color;
         private Label lblCol1Text;
         private Label label24;
+        private NumericInputBox maxUndoCount;
+        private Label label18;
         private ModelEditControl form;
 
-        public ModelViewerSettingsDialog() { InitializeComponent(); _dlgColor = new GoodColorDialog(); }
+        public ModelViewerSettingsDialog() { InitializeComponent(); _dlgColor = new GoodColorDialog(); maxUndoCount.Integral = true; }
 
         public DialogResult ShowDialog(ModelEditControl owner)
         {
             form = owner;
 
-            ax.Text = form.modelPanel1.Ambient._x.ToString();
-            ay.Text = form.modelPanel1.Ambient._y.ToString();
-            az.Text = form.modelPanel1.Ambient._z.ToString();
-            aw.Text = form.modelPanel1.Ambient._w.ToString();
+            ax.Value = form.modelPanel1.Ambient._x;
+            ay.Value = form.modelPanel1.Ambient._y;
+            az.Value = form.modelPanel1.Ambient._z;
+            aw.Value = form.modelPanel1.Ambient._w;
 
-            radius.Text = form.modelPanel1.LightPosition._x.ToString();
-            azimuth.Text = form.modelPanel1.LightPosition._y.ToString();
-            elevation.Text = form.modelPanel1.LightPosition._z.ToString();
+            radius.Value = form.modelPanel1.LightPosition._x;
+            azimuth.Value = form.modelPanel1.LightPosition._y;
+            elevation.Value = form.modelPanel1.LightPosition._z;
 
-            dx.Text = form.modelPanel1.Diffuse._x.ToString();
-            dy.Text = form.modelPanel1.Diffuse._y.ToString();
-            dz.Text = form.modelPanel1.Diffuse._z.ToString();
-            dw.Text = form.modelPanel1.Diffuse._w.ToString();
+            dx.Value = form.modelPanel1.Diffuse._x;
+            dy.Value = form.modelPanel1.Diffuse._y;
+            dz.Value = form.modelPanel1.Diffuse._z;
+            dw.Value = form.modelPanel1.Diffuse._w;
 
-            sx.Text = form.modelPanel1.Specular._x.ToString();
-            sy.Text = form.modelPanel1.Specular._y.ToString();
-            sz.Text = form.modelPanel1.Specular._z.ToString();
-            sw.Text = form.modelPanel1.Specular._w.ToString();
+            sx.Value = form.modelPanel1.Specular._x;
+            sy.Value = form.modelPanel1.Specular._y;
+            sz.Value = form.modelPanel1.Specular._z;
+            sw.Value = form.modelPanel1.Specular._w;
 
-            tScale.Text = form.modelPanel1.TranslationScale.ToString();
-            rScale.Text = form.modelPanel1.RotationScale.ToString();
-            zScale.Text = form.modelPanel1.ZoomScale.ToString();
+            tScale.Value = form.modelPanel1.TranslationScale;
+            rScale.Value = form.modelPanel1.RotationScale;
+            zScale.Value = form.modelPanel1.ZoomScale;
 
-            yFov.Text = form.modelPanel1._fovY.ToString();
-            nearZ.Text = form.modelPanel1._nearZ.ToString();
-            farZ.Text = form.modelPanel1._farZ.ToString();
+            yFov.Value = form.modelPanel1._fovY;
+            nearZ.Value = form.modelPanel1._nearZ;
+            farZ.Value = form.modelPanel1._farZ;
+
+            maxUndoCount.Value = form._allowedUndos;
 
             UpdateOrb();
             UpdateLine();
@@ -104,69 +108,84 @@ namespace System.Windows.Forms
 
         private unsafe void btnOkay_Click(object sender, EventArgs e)
         {
-            Vector4 Ambient = new Vector4();
-            if (!float.TryParse(ax.Text, out Ambient._x))
-                Ambient._x = 0.2f;
-            if (!float.TryParse(ay.Text, out Ambient._y))
-                Ambient._y = 0.2f;
-            if (!float.TryParse(az.Text, out Ambient._z))
-                Ambient._z = 0.2f;
-            if (!float.TryParse(aw.Text, out Ambient._w))
-                Ambient._w = 1;
-            form.modelPanel1.Ambient = Ambient;
+            form.modelPanel1.Ambient = new Vector4(ax.Value, ay.Value, az.Value, aw.Value);
+            form.modelPanel1.LightPosition = new Vector4(radius.Value, azimuth.Value, elevation.Value, 1.0f);
+            form.modelPanel1.Diffuse = new Vector4(dx.Value, dy.Value, dz.Value, dw.Value);
+            form.modelPanel1.Specular = new Vector4(sx.Value, sy.Value, sz.Value, sw.Value);
 
-            Vector4 Light = new Vector4();
-            if (!float.TryParse(radius.Text, out Light._x))
-                Light._x = 0;
-            if (!float.TryParse(azimuth.Text, out Light._y))
-                Light._y = 6;
-            if (!float.TryParse(elevation.Text, out Light._z))
-                Light._z = 6;
-            Light._w = 1;
-            form.modelPanel1.LightPosition = Light;
+            form.modelPanel1.TranslationScale = tScale.Value;
+            form.modelPanel1.RotationScale = rScale.Value;
+            form.modelPanel1.ZoomScale = zScale.Value;
 
-            Vector4 Diffuse = new Vector4();
-            if (!float.TryParse(dx.Text, out Diffuse._x))
-                Diffuse._x = 0.8f;
-            if (!float.TryParse(dy.Text, out Diffuse._y))
-                Diffuse._y = 0.8f;
-            if (!float.TryParse(dz.Text, out Diffuse._z))
-                Diffuse._z = 0.8f;
-            if (!float.TryParse(dw.Text, out Diffuse._w))
-                Diffuse._w = 1;
-            form.modelPanel1.Diffuse = Diffuse;
+            form.modelPanel1._fovY = yFov.Value;
+            form.modelPanel1._nearZ = nearZ.Value;
+            form.modelPanel1._farZ = farZ.Value;
 
-            Vector4 Specular = new Vector4();
-            if (!float.TryParse(sx.Text, out Specular._x))
-                Specular._x = 0.5f;
-            if (!float.TryParse(sy.Text, out Specular._y))
-                Specular._y = 0.5f;
-            if (!float.TryParse(sz.Text, out Specular._z))
-                Specular._z = 0.5f;
-            if (!float.TryParse(sw.Text, out Specular._w))
-                Specular._w = 1;
-            form.modelPanel1.Specular = Specular;
+            form._allowedUndos = (int)maxUndoCount.Value;
 
-            float val;
-            if (!float.TryParse(tScale.Text, out val))
-                val = 0.05f;
-            form.modelPanel1.TranslationScale = val;
-            if (!float.TryParse(rScale.Text, out val))
-                val = 0.1f;
-            form.modelPanel1.RotationScale = val;
-            if (!float.TryParse(zScale.Text, out val))
-                val = 2.5f;
-            form.modelPanel1.ZoomScale = val;
+            //Vector4 Ambient = new Vector4();
+            //if (!float.TryParse(ax.Text, out Ambient._x))
+            //    Ambient._x = 0.2f;
+            //if (!float.TryParse(ay.Text, out Ambient._y))
+            //    Ambient._y = 0.2f;
+            //if (!float.TryParse(az.Text, out Ambient._z))
+            //    Ambient._z = 0.2f;
+            //if (!float.TryParse(aw.Text, out Ambient._w))
+            //    Ambient._w = 1;
+            //form.modelPanel1.Ambient = Ambient;
 
-            if (!float.TryParse(yFov.Text, out val))
-                val = 45.0f;
-            form.modelPanel1._fovY = val;
-            if (!float.TryParse(nearZ.Text, out val))
-                val = 1.0f;
-            form.modelPanel1._nearZ = val;
-            if (!float.TryParse(farZ.Text, out val))
-                val = 20000.0f;
-            form.modelPanel1._farZ = val;
+            //Vector4 Light = new Vector4();
+            //if (!float.TryParse(radius.Text, out Light._x))
+            //    Light._x = 0;
+            //if (!float.TryParse(azimuth.Text, out Light._y))
+            //    Light._y = 6;
+            //if (!float.TryParse(elevation.Text, out Light._z))
+            //    Light._z = 6;
+            //Light._w = 1;
+            //form.modelPanel1.LightPosition = Light;
+
+            //Vector4 Diffuse = new Vector4();
+            //if (!float.TryParse(dx.Text, out Diffuse._x))
+            //    Diffuse._x = 0.8f;
+            //if (!float.TryParse(dy.Text, out Diffuse._y))
+            //    Diffuse._y = 0.8f;
+            //if (!float.TryParse(dz.Text, out Diffuse._z))
+            //    Diffuse._z = 0.8f;
+            //if (!float.TryParse(dw.Text, out Diffuse._w))
+            //    Diffuse._w = 1;
+            //form.modelPanel1.Diffuse = Diffuse;
+
+            //Vector4 Specular = new Vector4();
+            //if (!float.TryParse(sx.Text, out Specular._x))
+            //    Specular._x = 0.5f;
+            //if (!float.TryParse(sy.Text, out Specular._y))
+            //    Specular._y = 0.5f;
+            //if (!float.TryParse(sz.Text, out Specular._z))
+            //    Specular._z = 0.5f;
+            //if (!float.TryParse(sw.Text, out Specular._w))
+            //    Specular._w = 1;
+            //form.modelPanel1.Specular = Specular;
+
+            //float val;
+            //if (!float.TryParse(tScale.Text, out val))
+            //    val = 0.05f;
+            //form.modelPanel1.TranslationScale = val;
+            //if (!float.TryParse(rScale.Text, out val))
+            //    val = 0.1f;
+            //form.modelPanel1.RotationScale = val;
+            //if (!float.TryParse(zScale.Text, out val))
+            //    val = 2.5f;
+            //form.modelPanel1.ZoomScale = val;
+
+            //if (!float.TryParse(yFov.Text, out val))
+            //    val = 45.0f;
+            //form.modelPanel1._fovY = val;
+            //if (!float.TryParse(nearZ.Text, out val))
+            //    val = 1.0f;
+            //form.modelPanel1._nearZ = val;
+            //if (!float.TryParse(farZ.Text, out val))
+            //    val = 20000.0f;
+            //form.modelPanel1._farZ = val;
 
             form.modelPanel1._projectionChanged = true;
 
@@ -237,6 +256,8 @@ namespace System.Windows.Forms
             this.lblCol1Color = new System.Windows.Forms.Label();
             this.lblCol1Text = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
+            this.maxUndoCount = new System.Windows.Forms.NumericInputBox();
+            this.label18 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -247,7 +268,7 @@ namespace System.Windows.Forms
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(231, 375);
+            this.btnCancel.Location = new System.Drawing.Point(231, 400);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
@@ -258,7 +279,7 @@ namespace System.Windows.Forms
             // btnOkay
             // 
             this.btnOkay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOkay.Location = new System.Drawing.Point(150, 375);
+            this.btnOkay.Location = new System.Drawing.Point(150, 400);
             this.btnOkay.Name = "btnOkay";
             this.btnOkay.Size = new System.Drawing.Size(75, 23);
             this.btnOkay.TabIndex = 1;
@@ -822,11 +843,31 @@ namespace System.Windows.Forms
             this.label24.Text = "Color:";
             this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // maxUndoCount
+            // 
+            this.maxUndoCount.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.maxUndoCount.Location = new System.Drawing.Point(240, 374);
+            this.maxUndoCount.Name = "maxUndoCount";
+            this.maxUndoCount.Size = new System.Drawing.Size(66, 20);
+            this.maxUndoCount.TabIndex = 37;
+            this.maxUndoCount.Text = "0";
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(120, 376);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(114, 13);
+            this.label18.TabIndex = 39;
+            this.label18.Text = "Undo Buffer Maximum:";
+            // 
             // ModelViewerSettingsDialog
             // 
             this.AcceptButton = this.btnOkay;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(315, 407);
+            this.ClientSize = new System.Drawing.Size(315, 432);
+            this.Controls.Add(this.maxUndoCount);
+            this.Controls.Add(this.label18);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox1);
@@ -846,6 +887,7 @@ namespace System.Windows.Forms
             this.groupBox3.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
         #endregion

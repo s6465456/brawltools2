@@ -33,15 +33,14 @@ namespace System.Windows.Forms
             this.listKeyframes = new System.Windows.Forms.ListBox();
             this.visEditor = new System.Windows.Forms.VisEditor();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
             this.chkEnabled = new System.Windows.Forms.CheckBox();
             this.chkConstant = new System.Windows.Forms.CheckBox();
             this.panel3 = new System.Windows.Forms.Panel();
             this.clrControl = new System.Windows.Forms.CLRControl();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.panel6 = new System.Windows.Forms.Panel();
             this.chkClrEnabled = new System.Windows.Forms.CheckBox();
             this.chkClrConst = new System.Windows.Forms.CheckBox();
-            this.panel6 = new System.Windows.Forms.Panel();
             this.lstTypes = new System.Windows.Forms.ComboBox();
             this.grpKeys.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -54,9 +53,9 @@ namespace System.Windows.Forms
             // 
             this.grpKeys.Controls.Add(this.listKeyframes);
             this.grpKeys.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grpKeys.Location = new System.Drawing.Point(0, 0);
+            this.grpKeys.Location = new System.Drawing.Point(0, 23);
             this.grpKeys.Name = "grpKeys";
-            this.grpKeys.Size = new System.Drawing.Size(279, 384);
+            this.grpKeys.Size = new System.Drawing.Size(279, 361);
             this.grpKeys.TabIndex = 22;
             this.grpKeys.TabStop = false;
             this.grpKeys.Text = "Keyframes";
@@ -70,14 +69,14 @@ namespace System.Windows.Forms
             this.listKeyframes.ItemHeight = 14;
             this.listKeyframes.Location = new System.Drawing.Point(3, 16);
             this.listKeyframes.Name = "listKeyframes";
-            this.listKeyframes.Size = new System.Drawing.Size(273, 365);
+            this.listKeyframes.Size = new System.Drawing.Size(273, 342);
             this.listKeyframes.TabIndex = 18;
             this.listKeyframes.SelectedIndexChanged += new System.EventHandler(this.listKeyframes_SelectedIndexChanged);
             // 
             // visEditor
             // 
             this.visEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.visEditor.Location = new System.Drawing.Point(0, 23);
+            this.visEditor.Location = new System.Drawing.Point(0, 0);
             this.visEditor.Name = "visEditor";
             this.visEditor.Size = new System.Drawing.Size(279, 361);
             this.visEditor.TabIndex = 19;
@@ -85,21 +84,12 @@ namespace System.Windows.Forms
             // panel1
             // 
             this.panel1.Controls.Add(this.visEditor);
-            this.panel1.Controls.Add(this.panel2);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 0);
+            this.panel1.Location = new System.Drawing.Point(0, 23);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(279, 384);
+            this.panel1.Size = new System.Drawing.Size(279, 361);
             this.panel1.TabIndex = 23;
             this.panel1.Visible = false;
-            // 
-            // panel2
-            // 
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(0, 0);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(279, 23);
-            this.panel2.TabIndex = 20;
             // 
             // chkEnabled
             // 
@@ -128,15 +118,14 @@ namespace System.Windows.Forms
             // 
             this.panel3.Controls.Add(this.clrControl);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel3.Location = new System.Drawing.Point(0, 0);
+            this.panel3.Location = new System.Drawing.Point(0, 23);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(279, 384);
+            this.panel3.Size = new System.Drawing.Size(279, 361);
             this.panel3.TabIndex = 24;
             this.panel3.Visible = false;
             // 
             // clrControl
             // 
-            this.clrControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.clrControl.Location = new System.Drawing.Point(0, 0);
             this.clrControl.Name = "clrControl";
             this.clrControl.Size = new System.Drawing.Size(279, 384);
@@ -151,6 +140,18 @@ namespace System.Windows.Forms
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(279, 23);
             this.panel4.TabIndex = 20;
+            // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.chkClrEnabled);
+            this.panel6.Controls.Add(this.chkClrConst);
+            this.panel6.Controls.Add(this.chkEnabled);
+            this.panel6.Controls.Add(this.chkConstant);
+            this.panel6.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel6.Location = new System.Drawing.Point(90, 0);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(189, 23);
+            this.panel6.TabIndex = 3;
             // 
             // chkClrEnabled
             // 
@@ -174,18 +175,6 @@ namespace System.Windows.Forms
             this.chkClrConst.UseVisualStyleBackColor = true;
             this.chkClrConst.CheckedChanged += new System.EventHandler(this.chkClrConst_CheckedChanged);
             // 
-            // panel6
-            // 
-            this.panel6.Controls.Add(this.chkClrEnabled);
-            this.panel6.Controls.Add(this.chkClrConst);
-            this.panel6.Controls.Add(this.chkEnabled);
-            this.panel6.Controls.Add(this.chkConstant);
-            this.panel6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel6.Location = new System.Drawing.Point(90, 0);
-            this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(189, 23);
-            this.panel6.TabIndex = 3;
-            // 
             // lstTypes
             // 
             this.lstTypes.Dock = System.Windows.Forms.DockStyle.Left;
@@ -205,10 +194,10 @@ namespace System.Windows.Forms
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.panel4);
-            this.Controls.Add(this.panel3);
-            this.Controls.Add(this.panel1);
             this.Controls.Add(this.grpKeys);
+            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.panel3);
+            this.Controls.Add(this.panel4);
             this.Name = "UserControl1";
             this.Size = new System.Drawing.Size(279, 384);
             this.grpKeys.ResumeLayout(false);
@@ -227,7 +216,6 @@ namespace System.Windows.Forms
         public VisEditor visEditor;
         public GroupBox grpKeys;
         private Panel panel1;
-        private Panel panel2;
         public CheckBox chkEnabled;
         public CheckBox chkConstant;
         private Panel panel3;

@@ -16,10 +16,7 @@ namespace System.Windows.Forms
     {
         public ModelEditControl _mainWindow;
 
-        public UserControl1()
-        {
-            InitializeComponent();
-        }
+        public UserControl1() { InitializeComponent(); }
 
         private int _currentPage = 1;
         private ResourceNode _target;
@@ -29,8 +26,8 @@ namespace System.Windows.Forms
             get { return _target; }
             set
             {
-                if (_target == value)
-                    return;
+                //if (_target == value)
+                //    return;
 
                 _target = value;
                 UpdateTarget();
@@ -40,20 +37,25 @@ namespace System.Windows.Forms
         public bool panelEnabled = false;
         public void SetEditType(int type)
         {
-            panelEnabled = type != -1;
-            grpKeys.Visible = type == 0;
-            panel1.Visible = type == 1;
-            panel4.Visible = type == 2;
+            lstTypes.Items.Clear();
+
+            //Visible = panelEnabled = type != -1;
+            grpKeys.Visible = type == 0; //Keyframes
+            panel4.Visible = type != 0 && type != 2;
+            panel6.Visible = panel1.Visible = type == 1; //Vis
+            panel3.Visible = type == 2; //Colors
 
             lstTypes.Visible = false;
         }
 
         public void SetEditTypes(bool keys, bool clr, bool vis, bool enabled)
         {
-            panelEnabled = enabled;
+            lstTypes.Items.Clear();
+
+            //Visible = panelEnabled = enabled;
             grpKeys.Visible = keys;
-            panel1.Visible = vis;
-            panel4.Visible = clr;
+            panel1.Visible = panel6.Visible = vis;
+            panel3.Visible = clr;
 
             lstTypes.Visible = (keys && vis) || (vis && clr) || (clr && keys);
 
@@ -67,10 +69,12 @@ namespace System.Windows.Forms
 
         public void SetEditTypes2(bool keys, bool clr, bool spec, bool vis, bool enabled)
         {
-            panelEnabled = enabled;
+            lstTypes.Items.Clear();
+
+            //Visible = panelEnabled = enabled;
             grpKeys.Visible = keys;
-            panel1.Visible = vis;
-            panel4.Visible = clr || spec;
+            panel1.Visible = panel6.Visible = vis;
+            panel3.Visible = clr || spec;
 
             lstTypes.Visible = (keys && vis) || (vis && (clr || spec)) || ((clr || spec) && keys);
 
@@ -85,6 +89,9 @@ namespace System.Windows.Forms
 
         private void UpdateTarget()
         {
+            clrControl.ColorSource = null;
+            visEditor.TargetNode = null;
+
             if (_target is IColorSource)
                 clrControl.ColorSource = _target as IColorSource;
             else if (_target is IBoolArrayNode)
@@ -274,7 +281,7 @@ namespace System.Windows.Forms
 
         private void lstTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            //Display panels 
         }
     }
 }

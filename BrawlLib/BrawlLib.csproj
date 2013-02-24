@@ -408,6 +408,9 @@
     <Compile Include="System\Windows\Forms\Model Previewer\Editors\CLR0Editor.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\Editors\WeightEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\ModelViewerHelp.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -720,6 +723,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\CLR0Editor.resx">
       <DependentUpon>CLR0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\WeightEditor.resx">
+      <DependentUpon>WeightEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelViewerHelp.resx">
       <DependentUpon>ModelViewerHelp.cs</DependentUpon>
