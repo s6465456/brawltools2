@@ -9,10 +9,12 @@ namespace BrawlLib.Modeling
 {
     public interface IMatrixNode
     {
-        List<IMatrixNodeUser> References { get; }
+        List<IMatrixNodeUser> Users { get; set; }
         int ReferenceCount { get; set; }
         int NodeIndex { get; }
         Matrix Matrix { get; }
+        Matrix InverseMatrix { get; }
+        Matrix BindMatrix { get; }
         Matrix InverseBindMatrix { get; }
         bool IsPrimaryNode { get; }
         List<BoneWeight> Weights { get; }

@@ -51,8 +51,12 @@ namespace BrawlBox
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.donateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
+            this.modelPanel1 = new System.Windows.Forms.ModelPanel();
+            this.previewPanel2 = new BrawlBox.PreviewPanel();
+            this.ppcDisassembler1 = new System.Windows.Forms.PPCDisassembler();
             this.scN0FogEditControl1 = new System.Windows.Forms.SCN0FogEditControl();
             this.scN0LightEditControl1 = new System.Windows.Forms.SCN0LightEditControl();
             this.scN0CameraEditControl1 = new System.Windows.Forms.SCN0CameraEditControl();
@@ -69,9 +73,6 @@ namespace BrawlBox
             this.clrControl = new System.Windows.Forms.CLRControl();
             this.soundPackControl1 = new System.Windows.Forms.SoundPackControl();
             this.msBinEditor1 = new System.Windows.Forms.MSBinEditor();
-            this.previewPanel1 = new System.Windows.Forms.GoodPictureBox();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.ppcDisassembler1 = new System.Windows.Forms.PPCDisassembler();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -98,7 +99,7 @@ namespace BrawlBox
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
             this.splitContainer1.Size = new System.Drawing.Size(617, 411);
-            this.splitContainer1.SplitterDistance = 229;
+            this.splitContainer1.SplitterDistance = 214;
             this.splitContainer1.TabIndex = 1;
             // 
             // resourceTree
@@ -111,7 +112,7 @@ namespace BrawlBox
             this.resourceTree.Name = "resourceTree";
             this.resourceTree.SelectedImageIndex = 0;
             this.resourceTree.ShowIcons = true;
-            this.resourceTree.Size = new System.Drawing.Size(229, 387);
+            this.resourceTree.Size = new System.Drawing.Size(214, 387);
             this.resourceTree.TabIndex = 0;
             this.resourceTree.SelectionChanged += new System.EventHandler(this.resourceTree_SelectionChanged);
             // 
@@ -124,7 +125,7 @@ namespace BrawlBox
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(229, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(214, 24);
             this.menuStrip1.TabIndex = 2;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -245,14 +246,15 @@ namespace BrawlBox
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.settingsToolStripMenuItem.Text = "&Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click_1);
             // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.aboutToolStripMenuItem});
+            this.aboutToolStripMenuItem,
+            this.donateToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "&Help";
@@ -260,9 +262,16 @@ namespace BrawlBox
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
             this.aboutToolStripMenuItem.Text = "&About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // donateToolStripMenuItem
+            // 
+            this.donateToolStripMenuItem.Name = "donateToolStripMenuItem";
+            this.donateToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.donateToolStripMenuItem.Text = "Donate";
+            this.donateToolStripMenuItem.Click += new System.EventHandler(this.donateToolStripMenuItem_Click);
             // 
             // splitContainer2
             // 
@@ -277,6 +286,8 @@ namespace BrawlBox
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.modelPanel1);
+            this.splitContainer2.Panel2.Controls.Add(this.previewPanel2);
             this.splitContainer2.Panel2.Controls.Add(this.ppcDisassembler1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0FogEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0LightEditControl1);
@@ -294,9 +305,8 @@ namespace BrawlBox
             this.splitContainer2.Panel2.Controls.Add(this.clrControl);
             this.splitContainer2.Panel2.Controls.Add(this.soundPackControl1);
             this.splitContainer2.Panel2.Controls.Add(this.msBinEditor1);
-            this.splitContainer2.Panel2.Controls.Add(this.previewPanel1);
-            this.splitContainer2.Size = new System.Drawing.Size(384, 411);
-            this.splitContainer2.SplitterDistance = 238;
+            this.splitContainer2.Size = new System.Drawing.Size(399, 411);
+            this.splitContainer2.SplitterDistance = 205;
             this.splitContainer2.TabIndex = 3;
             // 
             // propertyGrid1
@@ -306,9 +316,43 @@ namespace BrawlBox
             this.propertyGrid1.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid1.Name = "propertyGrid1";
             this.propertyGrid1.PropertySort = System.Windows.Forms.PropertySort.Categorized;
-            this.propertyGrid1.Size = new System.Drawing.Size(384, 238);
+            this.propertyGrid1.Size = new System.Drawing.Size(399, 205);
             this.propertyGrid1.TabIndex = 2;
             this.propertyGrid1.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.propertyGrid1_SelectedGridItemChanged);
+            // 
+            // modelPanel1
+            // 
+            this.modelPanel1.InitialYFactor = 100;
+            this.modelPanel1.InitialZoomFactor = 5;
+            this.modelPanel1.Location = new System.Drawing.Point(0, 0);
+            this.modelPanel1.Name = "modelPanel1";
+            this.modelPanel1.RotationScale = 0.4F;
+            this.modelPanel1.Size = new System.Drawing.Size(381, 169);
+            this.modelPanel1.TabIndex = 15;
+            this.modelPanel1.TranslationScale = 0.05F;
+            this.modelPanel1.ZoomScale = 2.5F;
+            // 
+            // previewPanel2
+            // 
+            this.previewPanel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.previewPanel2.CurrentIndex = 0;
+            this.previewPanel2.Location = new System.Drawing.Point(0, 0);
+            this.previewPanel2.Name = "previewPanel2";
+            this.previewPanel2.RenderingTarget = null;
+            this.previewPanel2.Size = new System.Drawing.Size(368, 134);
+            this.previewPanel2.TabIndex = 16;
+            this.previewPanel2.Visible = false;
+            // 
+            // ppcDisassembler1
+            // 
+            this.ppcDisassembler1.Location = new System.Drawing.Point(0, 0);
+            this.ppcDisassembler1.Name = "ppcDisassembler1";
+            this.ppcDisassembler1.Size = new System.Drawing.Size(384, 169);
+            this.ppcDisassembler1.TabIndex = 14;
+            this.ppcDisassembler1.TargetNode = null;
+            this.ppcDisassembler1.Visible = false;
             // 
             // scN0FogEditControl1
             // 
@@ -371,7 +415,7 @@ namespace BrawlBox
             this.eventDescription1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.eventDescription1.Location = new System.Drawing.Point(0, 0);
             this.eventDescription1.Name = "eventDescription1";
-            this.eventDescription1.Size = new System.Drawing.Size(384, 169);
+            this.eventDescription1.Size = new System.Drawing.Size(399, 202);
             this.eventDescription1.TabIndex = 1;
             this.eventDescription1.Visible = false;
             // 
@@ -380,7 +424,7 @@ namespace BrawlBox
             this.attributeControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.attributeControl.Location = new System.Drawing.Point(0, 0);
             this.attributeControl.Name = "attributeControl";
-            this.attributeControl.Size = new System.Drawing.Size(384, 169);
+            this.attributeControl.Size = new System.Drawing.Size(399, 202);
             this.attributeControl.TabIndex = 0;
             this.attributeControl.Visible = false;
             // 
@@ -398,6 +442,7 @@ namespace BrawlBox
             this.audioPlaybackPanel1.Name = "audioPlaybackPanel1";
             this.audioPlaybackPanel1.Size = new System.Drawing.Size(70, 111);
             this.audioPlaybackPanel1.TabIndex = 4;
+            this.audioPlaybackPanel1.TargetStreams = null;
             this.audioPlaybackPanel1.Visible = false;
             // 
             // movesetEditor1
@@ -406,7 +451,7 @@ namespace BrawlBox
             this.movesetEditor1.Location = new System.Drawing.Point(0, 0);
             this.movesetEditor1.Name = "movesetEditor1";
             this.movesetEditor1.Padding = new System.Windows.Forms.Padding(1);
-            this.movesetEditor1.Size = new System.Drawing.Size(384, 169);
+            this.movesetEditor1.Size = new System.Drawing.Size(399, 202);
             this.movesetEditor1.TabIndex = 0;
             this.movesetEditor1.Visible = false;
             // 
@@ -443,23 +488,6 @@ namespace BrawlBox
             this.msBinEditor1.TabIndex = 2;
             this.msBinEditor1.Visible = false;
             // 
-            // previewPanel1
-            // 
-            this.previewPanel1.Location = new System.Drawing.Point(0, 0);
-            this.previewPanel1.Name = "previewPanel1";
-            this.previewPanel1.Picture = null;
-            this.previewPanel1.Size = new System.Drawing.Size(98, 86);
-            this.previewPanel1.TabIndex = 0;
-            // 
-            // ppcDisassembler1
-            // 
-            this.ppcDisassembler1.Location = new System.Drawing.Point(0, 0);
-            this.ppcDisassembler1.Name = "ppcDisassembler1";
-            this.ppcDisassembler1.Size = new System.Drawing.Size(384, 169);
-            this.ppcDisassembler1.TabIndex = 14;
-            this.ppcDisassembler1.TargetNode = null;
-            this.ppcDisassembler1.Visible = false;
-            // 
             // MainForm
             // 
             this.AllowDrop = true;
@@ -492,12 +520,10 @@ namespace BrawlBox
         public ResourceTree resourceTree;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private GoodPictureBox previewPanel1;
-        private System.Windows.Forms.MenuStrip menuStrip1;
+        public System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
@@ -517,7 +543,6 @@ namespace BrawlBox
         private AudioPlaybackPanel audioPlaybackPanel1;
         private CLRControl clrControl;
         private VisEditor visEditor;
-        private Timer timer1;
         private ScriptEditor movesetEditor1;
         private EventDescription eventDescription1;
         private TexAnimEditControl texAnimEditControl;
@@ -530,6 +555,10 @@ namespace BrawlBox
         private SCN0FogEditControl scN0FogEditControl1;
         private ToolStripMenuItem u8FileArchiveToolStripMenuItem;
         private PPCDisassembler ppcDisassembler1;
+        public ModelPanel modelPanel1;
+        private PreviewPanel previewPanel2;
+        private ToolStripMenuItem donateToolStripMenuItem;
+        public ToolStripMenuItem editToolStripMenuItem;
     }
 }
 

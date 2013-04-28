@@ -4,6 +4,7 @@ using BrawlLib.SSBB.ResourceNodes;
 using System.Drawing;
 using BrawlLib.Wii.Animations;
 using System.Collections.Generic;
+using BrawlLib.Modeling;
 
 namespace System.Windows.Forms
 {
@@ -30,6 +31,7 @@ namespace System.Windows.Forms
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -210,8 +212,19 @@ namespace System.Windows.Forms
             this.panel2.Size = new System.Drawing.Size(520, 49);
             this.panel2.TabIndex = 17;
             // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(472, 5);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(55, 20);
+            this.button5.TabIndex = 18;
+            this.button5.Text = "Set";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
             // SHP0Editor
             // 
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button4);
@@ -256,6 +269,7 @@ namespace System.Windows.Forms
         private Splitter splitter1;
         private Panel panel1;
         private Panel panel2;
+        private Button button5;
 
         public ModelEditControl _mainWindow;
 
@@ -284,7 +298,7 @@ namespace System.Windows.Forms
         public MDL0VertexNode SelectedDestination
         {
             get { return _selectedDest; }
-            set { _selectedDest = value; }
+            set { _selectedDest = value; ResetBox(); }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrame
@@ -482,6 +496,15 @@ namespace System.Windows.Forms
         private void button4_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private unsafe void button5_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show(this, "Are you sure you want to continue?\nThis will edit the model and make the selected object's vertices default to the current morph.", "Are you sure?", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                return;
+
+            MDL0ObjectNode poly = VertexSet._polygons[0];
+            poly.SetVerticesFromWeighted();
         }
     }
 }

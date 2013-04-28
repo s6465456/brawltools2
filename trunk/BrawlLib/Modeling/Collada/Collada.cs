@@ -277,7 +277,7 @@ namespace BrawlLib.Modeling
                 else
                     writer.WriteString(" ");
 
-                Vector3 p = singleBind == null ? v.WeightedPosition : singleBind.Matrix * v.WeightedPosition;
+                Vector3 p = v.WeightedPosition;
                 writer.WriteString(String.Format("{0} {1} {2}", p._x, p._y, p._z));
             }
 
@@ -331,8 +331,8 @@ namespace BrawlLib.Modeling
                 else
                     writer.WriteString(" ");
 
-                if (weight && p._vertices[*pIndex]._matrixNode != null)
-                    v = p._vertices[*pIndex++]._matrixNode.Matrix.GetRotationMatrix() * *pData++;
+                if (weight && *pIndex < p._vertices.Count)
+                    v = p._vertices[*pIndex++].GetMatrix().GetRotationMatrix() * *pData++;
                 else
                     v = *pData++;
 
@@ -634,9 +634,9 @@ namespace BrawlLib.Modeling
                 //Get list of used bones and weights
 
                 //int index = 0;
-                if (poly._singleBind != null)
+                if (poly._matrixNode != null)
                 {
-                    foreach (BoneWeight w in poly._singleBind.Weights)
+                    foreach (BoneWeight w in poly._matrixNode.Weights)
                     {
                         //if (!boneSet.Contains(w.Bone))
                         //{
@@ -803,14 +803,14 @@ namespace BrawlLib.Modeling
 
                 writer.WriteStartElement("vcount");
                 first = true;
-                if (poly._singleBind != null)
+                if (poly._matrixNode != null)
                     for (int i = 0; i < verts.Count; i++)
                     {
                         if (first)
                             first = false;
                         else
                             writer.WriteString(" ");
-                        writer.WriteString(poly._singleBind.Weights.Count.ToString());
+                        writer.WriteString(poly._matrixNode.Weights.Count.ToString());
                     }
                 else
                     foreach (Vertex3 v in verts)
@@ -827,9 +827,9 @@ namespace BrawlLib.Modeling
                 writer.WriteStartElement("v");
 
                 first = true;
-                if (poly._singleBind != null)
+                if (poly._matrixNode != null)
                     for (int i = 0; i < verts.Count; i++)
-                        foreach (BoneWeight w in poly._singleBind.Weights)
+                        foreach (BoneWeight w in poly._matrixNode.Weights)
                         {
                             if (first)
                                 first = false;

@@ -425,6 +425,13 @@ namespace BrawlLib.Wii.Models
             else
                 return null;
         }
+        public static Vector3[] ExtractVertices(MDL0FurPosData* vertices)
+        {
+            if (vertices != null)
+                return ExtractVertices(vertices->Data, vertices->_numVertices, vertices->_isXYZ != 0, vertices->Type, (float)(1 << vertices->_divisor));
+            else
+                return null;
+        }
         public static Vector3[] ExtractNormals(MDL0NormalData* normals)
         {
             return ExtractVertices(normals->Data, normals->_numVertices, true, normals->Type, (float)(1 << normals->_divisor));

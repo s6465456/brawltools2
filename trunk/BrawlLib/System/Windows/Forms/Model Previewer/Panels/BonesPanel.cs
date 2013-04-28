@@ -24,16 +24,13 @@ namespace System.Windows.Forms
         private FolderBrowserDialog folderBrowserDialog1;
         private Panel pnlKeyframes;
         private ImageList imageList1;
-        public KeyframePanel bgLayer;
         private Splitter spltBones;
-        private CheckedListBox lstBones;
+        public CheckedListBox lstBones;
         private ContextMenuStrip ctxBones;
         private ToolStripMenuItem boneIndex;
         private ToolStripMenuItem renameBoneToolStripMenuItem;
         private CheckBox chkAllBones;
         private Panel pnlBones;
-        private KeyframePanel playLayer;
-        private KeyframePanel keyLayer;
 
         private void InitializeComponent()
         {
@@ -49,9 +46,6 @@ namespace System.Windows.Forms
             this.boneIndex = new System.Windows.Forms.ToolStripMenuItem();
             this.renameBoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.chkAllBones = new System.Windows.Forms.CheckBox();
-            this.playLayer = new System.Windows.Forms.KeyframePanel();
-            this.keyLayer = new System.Windows.Forms.KeyframePanel();
-            this.bgLayer = new System.Windows.Forms.KeyframePanel();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.pnlKeyframes.SuspendLayout();
             this.pnlBones.SuspendLayout();
@@ -64,9 +58,6 @@ namespace System.Windows.Forms
             this.pnlKeyframes.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pnlKeyframes.Controls.Add(this.spltBones);
             this.pnlKeyframes.Controls.Add(this.pnlBones);
-            this.pnlKeyframes.Controls.Add(this.playLayer);
-            this.pnlKeyframes.Controls.Add(this.keyLayer);
-            this.pnlKeyframes.Controls.Add(this.bgLayer);
             this.pnlKeyframes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlKeyframes.Location = new System.Drawing.Point(0, 0);
             this.pnlKeyframes.Name = "pnlKeyframes";
@@ -106,7 +97,6 @@ namespace System.Windows.Forms
             this.lstBones.Size = new System.Drawing.Size(372, 374);
             this.lstBones.TabIndex = 8;
             this.lstBones.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.lstBones_ItemCheck_1);
-            this.lstBones.SelectedIndexChanged += new System.EventHandler(this.lstBones_SelectedIndexChanged);
             this.lstBones.SelectedValueChanged += new System.EventHandler(this.lstBones_SelectedValueChanged_1);
             this.lstBones.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lstBones_KeyDown_1);
             this.lstBones.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lstBones_MouseDown);
@@ -148,36 +138,6 @@ namespace System.Windows.Forms
             this.chkAllBones.UseVisualStyleBackColor = false;
             this.chkAllBones.CheckStateChanged += new System.EventHandler(this.chkAllBones_CheckStateChanged_1);
             // 
-            // playLayer
-            // 
-            this.playLayer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.playLayer.Location = new System.Drawing.Point(0, 0);
-            this.playLayer.Name = "playLayer";
-            this.playLayer.Size = new System.Drawing.Size(372, 394);
-            this.playLayer.TabIndex = 1;
-            this.playLayer.Visible = false;
-            // 
-            // keyLayer
-            // 
-            this.keyLayer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.keyLayer.Location = new System.Drawing.Point(0, 0);
-            this.keyLayer.Name = "keyLayer";
-            this.keyLayer.Size = new System.Drawing.Size(372, 394);
-            this.keyLayer.TabIndex = 0;
-            this.keyLayer.Visible = false;
-            // 
-            // bgLayer
-            // 
-            this.bgLayer.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(80)))));
-            this.bgLayer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.bgLayer.Location = new System.Drawing.Point(0, 0);
-            this.bgLayer.Name = "bgLayer";
-            this.bgLayer.Size = new System.Drawing.Size(372, 394);
-            this.bgLayer.TabIndex = 27;
-            this.bgLayer.Visible = false;
-            this.bgLayer.Paint += new System.Windows.Forms.PaintEventHandler(this.keyframes_Paint);
-            this.bgLayer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.keyframes_MouseDown);
-            // 
             // imageList1
             // 
             this.imageList1.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
@@ -206,11 +166,6 @@ namespace System.Windows.Forms
             set { _mainWindow = value; }
         }
 
-        //public ResourceNode _externalNode;
-        //internal NumericInputBox[] _transBoxes = new NumericInputBox[9];
-        //internal NumericInputBox[] _texBoxes = new NumericInputBox[4];
-        //private AnimationFrame _tempFrame = AnimationFrame.Neutral;
-
         private object _targetObject;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public object TargetObject
@@ -219,9 +174,6 @@ namespace System.Windows.Forms
             set { _targetObject = value; }
         }
 
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0BoneNode TargetBone { get { return _mainWindow._targetBone; } set { _mainWindow.TargetBone = value; } }
-        
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
 
@@ -244,36 +196,10 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0BoneNode SelectedBone 
         {
-            get { return TargetBone; } 
+            get { return _mainWindow.SelectedBone; } 
             set
             {
-                if (TargetBone != null)
-                    TargetBone._boneColor = TargetBone._nodeColor = Color.Transparent;
-                TargetBone = value;
-                if (TargetBone != null)
-                {
-                    TargetBone._boneColor = Color.FromArgb(0, 128, 255);
-                    TargetBone._nodeColor = Color.FromArgb(255, 128, 0);
-                    _mainWindow.chr0Editor.labelBone.Text = TargetBone.Name;
-                }
-                else
-                    _mainWindow.chr0Editor.labelBone.Text = "";
-                if (_mainWindow.models.SelectedItem != null & !(_mainWindow.models.SelectedItem is MDL0Node) && _mainWindow.models.SelectedItem.ToString() == "All")
-                    if (TargetBone != null)
-                        if (TargetModel != TargetBone.Model)
-                        {
-                            //The user selected a bone from another model.
-                            _mainWindow._resetCam = false;
-                            TargetModel = TargetBone.Model;
-                        }
-                        //else { }
-                    //else
-                    //    TargetModel = null;
-                lstBones.SelectedItem = TargetBone;
-                _mainWindow.chr0Editor.UpdatePropDisplay();
-
-                if (_mainWindow._chr0 != null && TargetBone != null && _mainWindow.pnlAssets.fileType.SelectedIndex == 0)
-                    _mainWindow.pnlKeyframes.TargetSequence = _mainWindow._chr0.FindChild(TargetBone.Name, false);
+                _mainWindow.SelectedBone = value;
             } 
         }
 
@@ -292,93 +218,6 @@ namespace System.Windows.Forms
                 else
                     lstBones.ContextMenuStrip = null;
             }
-        }
-
-        private void keyframes_Paint(object sender, PaintEventArgs e)
-        {
-            //Nonstop paint?
-
-            //if (_mainWindow == null)
-                return;
-
-            KeyframeEntry kfe;
-            CHR0EntryNode entry = null;
-
-            int cellDims = 0, keyDims = 0;
-
-            Pen pen = new Pen(Color.LightBlue, 1);
-
-            if (lstBones.Items.Count > 0)
-            {
-                cellDims = lstBones.PreferredHeight / lstBones.Items.Count;
-                keyDims = cellDims - 2;
-            }
-
-            int rectX = -(keyDims / 2), rectY = -2;
-
-            //Keyframes lie on column lines, but in between row lines
-            if (SelectedCHR0 != null && TargetModel != null && lstBones.Items.Count != 0)
-            {
-                bgLayer.Width = SelectedCHR0.FrameCount * cellDims;
-
-                //For frames
-                e.Graphics.DrawRectangle(pen, 0, 0, bgLayer.Width, 20);
-
-                //Columns
-                for (int frame = 0; frame < SelectedCHR0.FrameCount; frame++)
-                {
-
-                }
-
-                int x = 0, y = 0;
-
-                //Rows
-                foreach (MDL0BoneNode b in lstBones.Items)
-                {
-                    //Get line color
-                    if (TargetBone != null && TargetBone.Name == b.Name)
-                        pen.Color = Color.Green; //Selected bone
-                    else if (SelectedCHR0 != null && (entry = SelectedCHR0.FindChild(b.Name, false) as CHR0EntryNode) != null)
-                        if (b._render)
-                            pen.Color = Color.Blue; //Rendered bone has keyframe
-                        else
-                            pen.Color = Color.Red; //Unrendered bone has keyframe
-                    else
-                        pen.Color = Color.Orange; //Bone doesn't have keyframe regardless
-
-                    //Draw Line
-                    e.Graphics.DrawLine(pen, new Point(0, y), new Point(bgLayer.Width, y));
-
-                    //Change pen back to black for keyframes
-                    pen.Color = Color.Black;
-
-                    int offset = cellDims;
-
-                    e.Graphics.RotateTransform(45);
-
-                    //Mark keyframe spots
-                    if (entry != null)
-                        for (int frame = 0; frame < SelectedCHR0.FrameCount; frame++, offset += cellDims, x++)
-                            for (int i = 0x10; i < 0x19; i++)
-                                if ((kfe = entry.GetKeyframe((KeyFrameMode)i, frame)) != null)
-                                {
-                                    e.Graphics.DrawRectangle(pen, x + rectX, y + rectY, keyDims, keyDims);
-                                    break; //Only one keyframe needs to be marked
-                                }
-
-                    e.Graphics.RotateTransform(-45);
-                    entry = null;
-                    y += cellDims;
-                    x = 0;
-                }
-            }
-        }
-
-        private void keyframes_MouseDown(object sender, MouseEventArgs e)
-        {
-            //Did the user click a keyframe?
-            //Use panel coordinates to determine what to do
-
         }
 
         public bool _updating;
@@ -405,7 +244,7 @@ namespace System.Windows.Forms
 
             }
 
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
 
         private void lstBones_KeyDown_1(object sender, KeyEventArgs e)
@@ -428,7 +267,7 @@ namespace System.Windows.Forms
 
             _updating = false;
 
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
 
         private void lstBones_ItemCheck_1(object sender, ItemCheckEventArgs e)
@@ -438,22 +277,12 @@ namespace System.Windows.Forms
             bone._render = e.NewValue == CheckState.Checked;
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void renameBoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
             new RenameDialog().ShowDialog(this, lstBones.SelectedItem as MDL0BoneNode);
         }
-
-        private void lstBones_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-    }
-
-    public class KeyframePanel : Panel
-    {
-        public KeyframePanel() { this.SetStyle(ControlStyles.UserPaint, true); }
     }
 }

@@ -32,13 +32,6 @@ namespace System.Audio
 
         public abstract void Attach(Control owner);
 
-        public virtual AudioBuffer CreateBuffer(IAudioStream target)
-        {
-            int size = AudioBuffer.DefaultBufferSpan * target.Frequency * target.Channels * target.BitsPerSample / 8;
-            AudioBuffer buffer = CreateBuffer(target.Format, target.Channels, target.BitsPerSample, target.Frequency, size);
-            buffer._source = target;
-            return buffer;
-        }
-        public abstract AudioBuffer CreateBuffer(WaveFormatTag format, int channels, int bps, int frequency, int size);
+        public abstract AudioBuffer CreateBuffer(IAudioStream target);
     }
 }

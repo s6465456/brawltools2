@@ -1378,7 +1378,7 @@ namespace BrawlLib.SSBBTypes
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public string TextureName { get { return new String((sbyte*)this.TextureNameAddress); } }
+        public string TextureName { get { return (_texOffset == 0) ? null : new String((sbyte*)this.TextureNameAddress); } }
         public VoidPtr TextureNameAddress
         {
             get { return (VoidPtr)this.Address + _texOffset; }
@@ -1465,8 +1465,8 @@ namespace BrawlLib.SSBBTypes
         public fixed short _uids[8];
 
         //ids used in v10+ only
-        //public bshort _furVectorId;
-        //public bshort _furLayerCoordId;
+        public short _furVectorId { get { return *(bshort*)(Address + 0x60); } }
+        public short _furLayerCoordId { get { return *(bshort*)(Address + 0x62); } }
 
         public bint _nodeTableOffset;
 

@@ -14,6 +14,8 @@ namespace System
         public UnsafeBuffer(int size) { _data = Marshal.AllocHGlobal(size); _length = size; }
         ~UnsafeBuffer() { Dispose(); }
 
+        public VoidPtr this[int count, int stride] { get { return _data[count, stride]; } }
+
         public void Dispose()
         {
             if (_data)

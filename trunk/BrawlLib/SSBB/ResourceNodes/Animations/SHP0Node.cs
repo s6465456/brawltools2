@@ -437,7 +437,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if (_keyframes == null)
                 {
-                    _keyframes = new KeyframeArray(_numFrames);
+                    _keyframes = new KeyframeArray(_numFrames) { _linear = true };
                     if (Header != null)
                     {
                         int fCount = Header->_numEntries;

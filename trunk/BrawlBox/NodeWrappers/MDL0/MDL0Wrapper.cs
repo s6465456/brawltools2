@@ -30,7 +30,6 @@ namespace BrawlBox.NodeWrappers
             _menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUpAction, Keys.Control | Keys.Up));
             _menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDownAction, Keys.Control | Keys.Down));
             _menu.Items.Add(new ToolStripMenuItem("Re&name", null, RenameAction, Keys.Control | Keys.N));
-            //_menu.Items.Add(new ToolStripMenuItem("Automatic Brawl Metal", null, MetalAction, Keys.Control | Keys.U));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("Add New S&hader", null, NewShaderAction, Keys.Control | Keys.H));
             _menu.Items.Add(new ToolStripMenuItem("Add New &Material", null, NewMaterialAction, Keys.Control | Keys.M));
@@ -51,7 +50,7 @@ namespace BrawlBox.NodeWrappers
         protected static void ImportObjectAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().ImportObject(); }
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            _menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[10].Enabled = _menu.Items[11].Enabled = _menu.Items[16].Enabled = true;
+            _menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[10].Enabled = _menu.Items[16].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
@@ -64,7 +63,6 @@ namespace BrawlBox.NodeWrappers
                 _menu.Items[10].Enabled = (((MDL0Node)w._resource)._shadList.Count < ((MDL0Node)w._resource)._matList.Count);
             else
                 _menu.Items[10].Enabled = false;
-            _menu.Items[11].Enabled = (((MDL0Node)w._resource)._matGroup != null);
         }
         #endregion
 
@@ -80,32 +78,75 @@ namespace BrawlBox.NodeWrappers
 
         public void NewShader()
         {
-            if (((MDL0Node)_resource)._shadList != null && ((MDL0Node)_resource)._matList != null)
-            if (((MDL0Node)_resource)._shadList.Count < ((MDL0Node)_resource)._matList.Count)
+            if (_modelViewerOpen)
+                return;
+
+            MDL0Node model = ((MDL0Node)_resource);
+
+            if (model._shadGroup == null)
+            {
+                MDL0GroupNode g = model._shadGroup;
+                if (g == null)
+                {
+                    model.AddChild(g = new MDL0GroupNode(MDLResourceType.Shaders), true);
+                    model._shadGroup = g; model._shadList = g.Children;
+                }
+            }
+
+            if (model._shadList != null && model._matList != null)
+            if (model._shadList.Count < model._matList.Count)
             {
                 MDL0ShaderNode shader = new MDL0ShaderNode();
-                ((MDL0Node)_resource)._shadGroup.AddChild(shader);
+                model._shadGroup.AddChild(shader);
                 shader.Default();
                 shader.Rebuild(true);
 
-                FindResource(shader, true).EnsureVisible();
+                BaseWrapper b = FindResource(shader, true);
+                if (b != null)
+                    b.EnsureVisible();
             }
         }
 
         public void NewMaterial()
         {
-            if (((MDL0Node)_resource)._matGroup != null)
-            {
-                MDL0MaterialNode mat = new MDL0MaterialNode();
-                ((MDL0Node)_resource)._matGroup.AddChild(mat);
-                mat.Name = "Material" + mat.Index;
-                mat.New = true;
-                mat.ShaderNode = (MDL0ShaderNode)mat.Model._shadList[0];
-                mat.AddChild(new MDL0MaterialRefNode() { Name = "MatRef0" });
-                mat.Rebuild(true);
+            if (_modelViewerOpen)
+                return;
 
-                FindResource(mat, true).EnsureVisible();
+            MDL0Node model = ((MDL0Node)_resource);
+
+            if (model._matGroup == null)
+            {
+                MDL0GroupNode g = model._matGroup;
+                if (g == null)
+                {
+                    model.AddChild(g = new MDL0GroupNode(MDLResourceType.Materials), true);
+                    model._matGroup = g; model._matList = g.Children;
+                }
             }
+
+            MDL0MaterialNode mat = new MDL0MaterialNode();
+            model._matGroup.AddChild(mat);
+            mat.Name = "Material" + mat.Index;
+            mat.New = true;
+            if (model._shadGroup == null)
+            {
+                MDL0GroupNode g = model._shadGroup;
+                if (g == null)
+                {
+                    model.AddChild(g = new MDL0GroupNode(MDLResourceType.Shaders), true);
+                    model._shadGroup = g; model._shadList = g.Children;
+                }
+            }
+            if (model._shadList.Count == 0)
+                NewShader();
+            
+            mat.ShaderNode = (MDL0ShaderNode)model._shadList[0];
+            mat.AddChild(new MDL0MaterialRefNode() { Name = "MatRef0" });
+            mat.Rebuild(true);
+
+            BaseWrapper b = FindResource(mat, true);
+            if (b != null)
+                b.EnsureVisible();
         }
 
         //public void AutoMetal()
@@ -115,11 +156,19 @@ namespace BrawlBox.NodeWrappers
 
         public void NewColor()
         {
-            MDL0GroupNode g = ((MDL0Node)_resource)._colorGroup;
-            if (g == null)
-                ((MDL0Node)_resource).AddChild(g = new MDL0GroupNode(MDLResourceType.Colors), true);
+            if (_modelViewerOpen)
+                return;
 
-            MDL0ColorNode node = new MDL0ColorNode() { Name = "ColorGroup" + ((MDL0Node)_resource)._colorList.Count };
+            MDL0Node model = ((MDL0Node)_resource);
+
+            MDL0GroupNode g = model._colorGroup;
+            if (g == null)
+            {
+                model.AddChild(g = new MDL0GroupNode(MDLResourceType.Colors), true);
+                model._colorGroup = g; model._colorList = g.Children;
+            }
+
+            MDL0ColorNode node = new MDL0ColorNode() { Name = "ColorSet" + ((MDL0Node)_resource)._colorList.Count };
             node.Colors = new RGBAPixel[] { new RGBAPixel() { A = 255, R = 128, G = 128, B = 128 } };
             g.AddChild(node, true);
 
@@ -131,9 +180,17 @@ namespace BrawlBox.NodeWrappers
 
         public void NewVertex()
         {
-            MDL0GroupNode g = ((MDL0Node)_resource)._vertGroup;
+            if (_modelViewerOpen)
+                return;
+
+            MDL0Node model = ((MDL0Node)_resource);
+
+            MDL0GroupNode g = model._vertGroup;
             if (g == null)
-                ((MDL0Node)_resource).AddChild(g = new MDL0GroupNode(MDLResourceType.Vertices), true);
+            {
+                model.AddChild(g = new MDL0GroupNode(MDLResourceType.Vertices), true);
+                model._vertGroup = g; model._vertList = g.Children;
+            }
 
             MDL0VertexNode node = new MDL0VertexNode() { Name = "VertexSet" + ((MDL0Node)_resource)._vertList.Count };
             node.Vertices = new Vector3[] { new Vector3(0) };
@@ -147,6 +204,9 @@ namespace BrawlBox.NodeWrappers
 
         public void ImportObject()
         {
+            if (_modelViewerOpen)
+                return;
+
             MDL0Node external = null;
             OpenFileDialog o = new OpenFileDialog();
             o.Filter = "MDL0 Raw Model (*.mdl0)|*.mdl0";

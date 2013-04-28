@@ -228,19 +228,19 @@ namespace System.Windows.Forms
             this.toolStripMenuItem1,
             this.toolStripMenuItem2});
             this.ctxSounds.Name = "contextMenuStrip1";
-            this.ctxSounds.Size = new System.Drawing.Size(153, 70);
+            this.ctxSounds.Size = new System.Drawing.Size(116, 48);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(115, 22);
             this.toolStripMenuItem1.Text = "Replace";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(115, 22);
             this.toolStripMenuItem2.Text = "Export";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
@@ -439,7 +439,7 @@ namespace System.Windows.Forms
             using (SaveFileDialog dlg = new SaveFileDialog())
             {
                 dlg.FileName = r.Name;
-                dlg.Filter = ExportFilters.Raw + "|" + ExportFilters.WAV;
+                dlg.Filter = ExportFilters.WAV + "|" + ExportFilters.Raw;
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                     r.Export(dlg.FileName);
             }

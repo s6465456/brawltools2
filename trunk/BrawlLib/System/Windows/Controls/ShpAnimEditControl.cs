@@ -130,7 +130,7 @@ namespace System.Windows.Forms
                     }
 
                     _target.RemoveKeyframe(_currentPage);
-                    val = _target.GetKeyframe(_currentPage)._value;
+                    val = _target.Keyframes.GetFrameValue(_currentPage);
                     box.Value = val * 100.0f;
                 }
                 else

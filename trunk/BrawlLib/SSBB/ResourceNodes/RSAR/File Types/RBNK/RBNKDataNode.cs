@@ -149,6 +149,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     default:
                         e = new RBNKNullNode();
                         (e as RBNKDataEntryNode)._key = _keys[i];
+                        (e as RBNKNullNode)._invalid = true;
                         break;
                     case 1: //InstParam
                         e = new RBNKDataInstParamNode();
@@ -159,6 +160,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                         break;
                     case 3: //IndexTable
                         e = new RBNKDataIndexTableNode();
+                        break;
+                    case 4:
+                        e = new RBNKNullNode();
+                        (e as RBNKNullNode)._key = _keys[i];
                         break;
                 }
                 if (e != null)
@@ -201,6 +206,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     default:
                         e = new RBNKNullNode();
                         (e as RBNKNullNode)._key = i;
+                        (e as RBNKNullNode)._invalid = true;
                         break;
                     case 1: //InstParam
                         e = new RBNKDataInstParamNode();
@@ -211,6 +217,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                         break;
                     case 3: //IndexTable
                         e = new RBNKDataIndexTableNode();
+                        break;
+                    case 4:
+                        e = new RBNKNullNode();
+                        (e as RBNKNullNode)._key = i;
                         break;
                 }
                 if (e != null)
@@ -309,10 +319,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class RBNKNullNode : RBNKDataEntryNode
     {
+        public bool _invalid = false;
         protected override bool OnInitialize()
         {
             SetSizeInternal(0);
-            _name = "[" + Index + "] Null";
+            _name = "[" + Index + "] " + (_invalid ? "Invalid" : "Null");
             return false;
         }
 

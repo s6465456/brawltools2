@@ -1,4 +1,3 @@
-
 using System;
 using BrawlLib.SSBBTypes;
 using System.Audio;
@@ -10,26 +9,26 @@ using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class RSARFileAudioNode : RSARFileEntryNode, IAudioSource
+    public unsafe class RSARFileAudioNode : RSARFileEntryNode, IAudioSource, IDisposable
     {
         public override ResourceType ResourceType { get { return ResourceType.RSARFileAudioEntry; } }
         
         [Browsable(false)]
-        public WaveInfo* Info 
+        public WaveInfo Info 
         {
             get { return _info; }
             set 
             {
                 _info = value;
-                _encoding = _info->_format._encoding;
-                _channels = _info->_format._channels;
-                _looped = _info->_format._looped != 0;
-                _sampleRate = _info->_sampleRate;
-                _loopStart = _info->LoopSample;
-                _numSamples = _info->NumSamples;
+                _encoding = _info._format._encoding;
+                _channels = _info._format._channels;
+                _looped = _info._format._looped != 0;
+                _sampleRate = _info._sampleRate;
+                _loopStart = _info.LoopSample;
+                _numSamples = _info.NumSamples;
             }
         }
-        WaveInfo* _info;
+        private WaveInfo _info;
 
         public DataSource _audioSource;
 
@@ -53,15 +52,52 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Audio Stream")]
         public int NumSamples { get { return _numSamples; } }
 
-        internal IAudioStream stream;
-        public IAudioStream CreateStream()
+        internal IAudioStream _stream;
+        internal UnsafeBuffer _streamBuffer;
+
+        ~RSARFileAudioNode() { Dispose(); }
+
+        public override void Dispose()
         {
-            if (stream != null)
-                return stream;
-            if (Info->_format._encoding == 2)
-                return stream = new ADPCMStream(Info, _audioSource.Address);
+            if (_audioSource != null)
+                _audioSource.Close();
+
+            if (_stream != null)
+            {
+                _stream.Dispose();
+                _stream = null;
+            }
+
+            if (_streamBuffer != null)
+            {
+                _streamBuffer.Dispose();
+                _streamBuffer = null;
+            }
+
+            base.Dispose();
+        }
+
+        public void Init(VoidPtr strmAddr, int strmLen, WaveInfo* info)
+        {
+            Info = *info;
+
+            _streamBuffer = new UnsafeBuffer(strmLen);
+            byte* sPtr = (byte*)strmAddr;
+            byte* dPtr = (byte*)_streamBuffer.Address;
+            for (int i = 0; i < strmLen; i++)
+                *dPtr++ = *sPtr++;
+
+            _audioSource = new DataSource(_streamBuffer.Address, _streamBuffer.Length);
+
+            //_dataBuffer = new UnsafeBuffer(WorkingUncompressed.Length);
+            //Memory.Move(_dataBuffer.Address, WorkingUncompressed.Address, (uint)WorkingUncompressed.Length);
+
+            //MoveRaw(_dataBuffer.Address, _dataBuffer.Length);
+
+            if (info->_format._encoding == 2)
+                _stream = new ADPCMStream(info, _audioSource.Address);
             else
-                return stream = new PCMStream(Info, _audioSource.Address);
+                _stream = new PCMStream(info, _audioSource.Address);
         }
 
         //public int GetSize(bool RWAR)
@@ -102,6 +138,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         //{
             
         //}
+
+        public virtual IAudioStream[] CreateStreams() { return new IAudioStream[] { _stream }; }
     }
 
     public unsafe class RWAVNode : RSARFileAudioNode
@@ -113,9 +151,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_name == null)
                 _name = String.Format("Audio[{0}]", Index);
 
-            Info = &Header->Info->_info;
-
-            _audioSource = new DataSource(Header->Data->Data, Header->Data->_header._length);
+            Init(Header->Data->Data, Header->Data->_header._length, &Header->Info->_info);
 
             SetSizeInternal(Header->_header._length);
 
@@ -135,16 +171,19 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 base.Replace(fileName);
 
-            stream = null;
+            //Init(Header->Data->Data, Header->Data->_header._length, &Header->Info->_info);
 
             UpdateCurrentControl();
             SignalPropertyChange();
+            Parent.Parent.SignalPropertyChange();
+            if (RSARNode != null)
+                RSARNode.SignalPropertyChange();
         }
 
         public override unsafe void Export(string outPath)
         {
             if (outPath.EndsWith(".wav"))
-                WAV.ToFile(CreateStream(), outPath);
+                WAV.ToFile(CreateStreams()[0], outPath);
             else
                 base.Export(outPath);
         }

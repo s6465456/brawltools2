@@ -244,7 +244,7 @@ namespace BrawlBox
             if (path == null)
                 return;
 
-            ExportAllAskFormat dialog = new ExportAllAskFormat();
+            ExportAllFormatDialog dialog = new ExportAllFormatDialog();
 
             if (dialog.ShowDialog() == DialogResult.OK)
                 ((BRESNode)_resource).ExportToFolder(path, dialog.SelectedExtension);
@@ -262,7 +262,7 @@ namespace BrawlBox
             if (path == null)
                 return;
 
-            ExportAllAskFormat dialog = new ExportAllAskFormat();
+            ExportAllFormatDialog dialog = new ExportAllFormatDialog();
             dialog.label1.Text = "Input format for textures:";
 
             if (dialog.ShowDialog() == DialogResult.OK)

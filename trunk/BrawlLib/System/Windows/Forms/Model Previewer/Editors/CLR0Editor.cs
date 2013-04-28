@@ -65,6 +65,7 @@ namespace System.Windows.Forms
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(156, 40);
             this.listBox1.TabIndex = 4;
+            this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
             // panel1
             // 
@@ -128,6 +129,7 @@ namespace System.Windows.Forms
             listBox1.EndUpdate();
             if (listBox1.Items.Count > 0)
                 listBox1.SelectedIndex = 0;
+            lstTarget.SelectedIndex = 0;
         }
         public CLR0MaterialNode _mat;
         public CLR0MaterialEntryNode _entry;
@@ -149,13 +151,13 @@ namespace System.Windows.Forms
         {
             if (_mat == null)
             {
-                _mainWindow.pnlKeyframes.chkClrEnabled.Checked = false;
-                _mainWindow.pnlKeyframes.chkClrConst.Checked = false;
+                _mainWindow.pnlKeyframes.chkEnabled.Checked = false;
+                _mainWindow.pnlKeyframes.chkConstant.Checked = false;
                 return;
             }
             _entry = _mat.FindChild(lstTarget.SelectedItem as string, false) as CLR0MaterialEntryNode;
-            _mainWindow.pnlKeyframes.chkClrEnabled.Checked = _entry != null;
-            _mainWindow.pnlKeyframes.chkClrConst.Checked = _entry != null ? _entry.Constant : false;
+            _mainWindow.pnlKeyframes.chkEnabled.Checked = _entry != null;
+            _mainWindow.pnlKeyframes.chkConstant.Checked = _entry != null ? _entry.Constant : false;
             _mainWindow.pnlKeyframes.TargetSequence = _entry;
         }
     }

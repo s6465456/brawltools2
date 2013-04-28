@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.IO;
+using System.IO.Compression;
 
 namespace BrawlLib.Wii.Compression
 {
@@ -20,34 +22,37 @@ namespace BrawlLib.Wii.Compression
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct CompressionHeader
     {
-        private uint _data;
-        private uint _size;
-
-        private VoidPtr Address { get { fixed (void* p = &this)return p; } }
-
+        private Bin8 _algorithm;
+        private UInt24 _size;
+        private uint _extSize;
+        
         public CompressionType Algorithm
         {
-            get { return (CompressionType)(_data >> 4 & 0xF); }
-            set { _data = (_data & 0xFFFFFF0F) | (((uint)value & 0x0F) << 4); }
+            get { return (CompressionType)_algorithm[4, 4]; }
+            set { _algorithm[4, 4] = (byte)value; }
         }
         public int Parameter
         {
-            get { return (int)(_data & 0x0F); }
-            set { _data = (_data & 0xFFFFFFF0) | ((uint)value & 0x0F); }
+            get { return (int)_algorithm[0, 4]; }
+            set { _algorithm[0, 4] = (byte)value; }
         }
-        public bool LargeSize { get { return (_data >> 8) == 0; } }
+        public bool LargeSize { get { return (uint)_size == 0; } }
         public int ExpandedSize
         {
-            get { return (int)(LargeSize ? (int)_size : (int)(_data >> 8)); }
+            get { return (int)(LargeSize ? (int)_extSize : (int)_size); }
             set 
             {
-                if ((value & 0xFFFFFF) != value)
-                    _size = (uint)value;
+                if ((value & 0xFFFFFF) != value) //Use extended header for sizes > 24 bits
+                {
+                    _extSize = (uint)value;
+                    _size = (UInt24)0;
+                }
                 else
-                    _data = ((uint)(value & 0xFFFFFF) << 8) | (_data & 0xFF);
+                    _size = (UInt24)value;
             }
         }
 
+        private VoidPtr Address { get { fixed (void* p = &this)return p; } }
         public VoidPtr Data { get { return Address + 4 + (LargeSize ? 4 : 0); } }
     }
 }

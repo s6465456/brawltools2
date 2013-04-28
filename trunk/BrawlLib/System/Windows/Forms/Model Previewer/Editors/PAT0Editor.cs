@@ -139,7 +139,7 @@ namespace System.Windows.Forms
         public PAT0Editor() { InitializeComponent(); }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0BoneNode TargetBone { get { return _mainWindow._targetBone; } set { _mainWindow.TargetBone = value; } }
+        public MDL0BoneNode TargetBone { get { return _mainWindow.SelectedBone; } set { _mainWindow.SelectedBone = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
@@ -268,7 +268,7 @@ namespace System.Windows.Forms
             TargetModel.ApplyPAT(SelectedAnimation, CurrentFrame);
             ResetTexture();
             ResetPalette();
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

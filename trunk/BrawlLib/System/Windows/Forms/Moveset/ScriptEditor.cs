@@ -867,7 +867,8 @@ namespace System.Windows.Forms
             string s = "";
             foreach (int i in EventList.SelectedIndices)
                 s += EventList.Items[i].ToString() + Environment.NewLine;
-            Clipboard.SetText(s);
+            if (!String.IsNullOrEmpty(s))
+                Clipboard.SetText(s);
         }
 
         private void btnCut_Click(object sender, EventArgs e)

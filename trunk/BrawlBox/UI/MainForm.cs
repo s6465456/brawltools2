@@ -13,6 +13,8 @@ using System.Reflection;
 using BrawlLib.IO;
 using System.Audio;
 using BrawlLib.Wii.Audio;
+using BrawlLib.OpenGL;
+using System.Diagnostics;
 
 namespace BrawlBox
 {
@@ -26,35 +28,35 @@ namespace BrawlBox
 
         private SettingsDialog _settings;
         private SettingsDialog Settings { get { return _settings == null ? _settings = new SettingsDialog() : _settings; } }
-
+        
         public MainForm()
         {
             InitializeComponent();
-            Text = Program.AssemblyTitle;            
-            //#if DEBUG
-            //Text += " (Debug)";
-            //#endif
+            Text = Program.AssemblyTitle;
             soundPackControl1._grid = propertyGrid1;
             soundPackControl1.lstSets.SmallImageList = ResourceTree.Images;
-            previewPanel1.Dock = 
-            msBinEditor1.Dock = 
-            animEditControl.Dock = 
-            texAnimEditControl.Dock = 
-            shpAnimEditControl.Dock = 
-            soundPackControl1.Dock = 
-            audioPlaybackPanel1.Dock = 
-            clrControl.Dock = 
-            visEditor.Dock = 
-            offsetEditor1.Dock = 
-            attributeControl.Dock = 
+            msBinEditor1.Dock =
+            animEditControl.Dock =
+            texAnimEditControl.Dock =
+            shpAnimEditControl.Dock =
+            soundPackControl1.Dock =
+            audioPlaybackPanel1.Dock =
+            clrControl.Dock =
+            visEditor.Dock =
+            offsetEditor1.Dock =
+            attributeControl.Dock =
             articleAttributeGrid.Dock =
             scN0CameraEditControl1.Dock =
             scN0LightEditControl1.Dock =
-            scN0FogEditControl1.Dock = 
-            ppcDisassembler1.Dock = 
+            scN0FogEditControl1.Dock =
+            ppcDisassembler1.Dock =
+            modelPanel1.Dock =
+            previewPanel2.Dock =
             movesetEditor1.Dock = DockStyle.Fill;
             m_DelegateOpenFile = new DelegateOpenFile(Program.Open);
             _instance = this;
+            modelPanel1._forceNoSelection = true;
+            _currentControl = modelPanel1;
         }
 
         private delegate bool DelegateOpenFile(String s);
@@ -97,10 +99,6 @@ namespace BrawlBox
                 Text = String.Format("{0} - {1}", Program.AssemblyTitle, Program.RootPath);
             else
                 Text = Program.AssemblyTitle;
-
-            //#if DEBUG
-            //Text += " (Debug)";
-            //#endif
         }
 
         public void TargetResource(ResourceNode n)
@@ -113,13 +111,6 @@ namespace BrawlBox
         private Control _secondaryControl = null;
         public void resourceTree_SelectionChanged(object sender, EventArgs e)
         {
-            Image img = previewPanel1.Picture;
-            if (img != null)
-            {
-                previewPanel1.Picture = null;
-                img.Dispose();
-            }
-
             audioPlaybackPanel1.TargetSource = null;
             articleAttributeGrid.TargetNode = null;
             animEditControl.TargetSequence = null;
@@ -136,6 +127,9 @@ namespace BrawlBox
             scN0LightEditControl1.TargetSequence = null;
             scN0FogEditControl1.TargetSequence = null;
             ppcDisassembler1.TargetNode = null;
+            previewPanel2.RenderingTarget = null;
+            modelPanel1.ClearTargets();
+            //modelPanel1.ResetCamera();
 
             Control newControl = null;
             Control newControl2 = null;
@@ -149,8 +143,8 @@ namespace BrawlBox
 
                 if (node is IImageSource)
                 {
-                    previewPanel1.Picture = ((IImageSource)node).GetImage(0);
-                    newControl = previewPanel1;
+                    previewPanel2.RenderingTarget = ((IImageSource)node);
+                    newControl = previewPanel2;
                 }
                 else if (node is MSBinNode)
                 {
@@ -180,7 +174,8 @@ namespace BrawlBox
                 else if (node is IAudioSource)
                 {
                     audioPlaybackPanel1.TargetSource = node as IAudioSource;
-                    if (audioPlaybackPanel1.TargetSource.CreateStream() != null)
+                    IAudioStream[] sources = audioPlaybackPanel1.TargetSource.CreateStreams();
+                    if (sources != null && sources.Length > 0 && sources[0] != null)
                         newControl = audioPlaybackPanel1;
                 }
                 else if (node is VIS0EntryNode)
@@ -246,6 +241,27 @@ namespace BrawlBox
                     ppcDisassembler1.TargetNode = node as ModuleDataNode;
                     newControl = ppcDisassembler1;
                 }
+                else if (node is IRenderedObject)
+                {
+                    if (node is MDL0Node)
+                    {
+                        MDL0Node m = node as MDL0Node;
+                        m._renderBones = false;
+                        m._renderPolygons = true;
+                        m._renderPolygonsWireframe = false;
+                        m._renderVertices = false;
+                        m._renderBox = false;
+                    }
+
+                    modelPanel1.ClearAll();
+                    modelPanel1.AddTarget((IRenderedObject)node);
+
+                    Vector3 min, max;
+                    ((IRenderedObject)node).GetBox(out min, out max);
+                    modelPanel1.SetCamWithBox(min, max);
+
+                    newControl = modelPanel1;
+                }
 
                 if (node is IColorSource && !disable2nd)
                 {
@@ -305,7 +321,9 @@ namespace BrawlBox
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            if (!Program.Close()) e.Cancel = true;
+            if (!Program.Close()) 
+                e.Cancel = true;
+
             base.OnClosing(e);
         }
 
@@ -432,6 +450,11 @@ namespace BrawlBox
                 e.Effect = DragDropEffects.Copy;
             else
                 e.Effect = DragDropEffects.None;
+        }
+
+        private void donateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3T2HNHK5BM8LL&lc=US&item_name=Brawlbox&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted");
         }
     }
 }

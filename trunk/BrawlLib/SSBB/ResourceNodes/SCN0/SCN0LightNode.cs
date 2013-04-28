@@ -199,7 +199,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void MakeList(int id)
         {
             _constants[id] = false;
-            int entries = ((SCN0Node)_parent._parent).FrameCount + 1;
+            int entries = ((SCN0Node)Parent._parent).FrameCount + 1;
             _numEntries[id] = GetColors(id).Count;
             SetNumEntries(id, entries);
         }
@@ -345,8 +345,24 @@ namespace BrawlLib.SSBB.ResourceNodes
             ShininessConstant = 0x8000
         }
         
-        [Category("Specular Color")]
-        public int NonSpecularLightID { get { return _nonSpecLightId; } set { _nonSpecLightId = value; SignalPropertyChange(); } }
+        [Category("SCN0 Entry")]
+        public int NonSpecularLightID 
+        { 
+            get
+            {
+                if (!SpecularEnabled) 
+                    return 0;
+                int i = 0; 
+                foreach (SCN0LightNode n in Parent.Children) 
+                {
+                    if (n.Index == Index)
+                        return Parent.Children.Count + i;
+                    if (n.SpecularEnabled && n.Index != Index)
+                        i++;
+                }
+                return 0;
+            } 
+        }
 
         [Category("Light")]
         public LightType LightType { get { return (LightType)(_flags2 & 3); } set { _flags2 = (ushort)((_flags2 & 60) | ((ushort)value & 3)); SignalPropertyChange(); } }
@@ -401,7 +417,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         public SpotFn SpotFunction { get { return (SpotFn)_spotFunc; } set { _spotFunc = (int)value; SignalPropertyChange(); } }
 
         [Browsable(false)]
-        public int FrameCount { get { return ((SCN0Node)Parent.Parent).FrameCount; } }
+        internal int FrameCount 
+        {
+            get 
+            {
+                return ((SCN0Node)Parent.Parent).FrameCount; 
+            }
+            set
+            {
+                int x = value + 1;
+                SetNumEntries(0, x);
+                SetNumEntries(1, x);
+            }
+        }
 
         public Vector3 GetStart(int frame)
         {
@@ -634,7 +662,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (_name != "<null>")
             {
-                header->_nonSpecLightId = _nonSpecLightId;
+                header->_nonSpecLightId = NonSpecularLightID;
                 header->_part2Offset = _part2Offset;
                 header->_visOffset = _enableOffset;
                 header->_distFunc = _distFunc;

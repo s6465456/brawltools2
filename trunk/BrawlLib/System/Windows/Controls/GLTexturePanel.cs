@@ -42,7 +42,7 @@ namespace System.Windows.Forms
             OnResized();
         }
 
-        protected internal unsafe override void OnRender(TKContext ctx, SCN0Node scn, PaintEventArgs e)
+        protected internal unsafe override void OnRender(TKContext ctx, PaintEventArgs e)
         {
             GLTexture _bgTex = ctx.FindOrCreate<GLTexture>("TexBG", CreateBG);
             _bgTex.Bind();
@@ -64,7 +64,7 @@ namespace System.Windows.Forms
             GL.End();
 
             //Draw texture
-            if ((_currentTexture != null) && (_currentTexture._id != 0))
+            if ((_currentTexture != null) && (_currentTexture._texId != 0))
             {
                 float tAspect = (float)_currentTexture.Width / _currentTexture.Height;
                 float wAspect = (float)Width / Height;
@@ -87,7 +87,7 @@ namespace System.Windows.Forms
                     points[2] = points[4] = 1.0f - points[0];
                 }
 
-                GL.BindTexture(TextureTarget.Texture2D, _currentTexture._id);
+                GL.BindTexture(TextureTarget.Texture2D, _currentTexture._texId);
 
                 GL.Begin(BeginMode.Quads);
 

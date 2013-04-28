@@ -47,6 +47,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     default:
                         e = new RBNKNullNode();
+                        if (list != null)
+                            (e as RBNKNullNode)._key = (byte)list[i].Tag;
+                        (e as RBNKNullNode)._invalid = true;
                         break;
                     case 1: //InstParam
                         e = new RBNKDataInstParamNode();
@@ -58,6 +61,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                         break;
                     case 3: //IndexTable
                         e = new RBNKDataIndexTableNode();
+                        break;
+                    case 4:
+                        e = new RBNKNullNode();
+                        (e as RBNKNullNode)._key = (byte)list[i].Tag;
                         break;
                 }
                 if (e != null)
@@ -90,18 +97,33 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (RBNKEntryNode g in Children)
             {
                 g._rebuildBase = header->_list.Address;
-                header->_list.Entries[g.Index] = (int)(addr - header->_list.Address);
 
                 if (g is RBNKDataInstParamNode)
+                {
+                    header->_list.Entries[g.Index] = (int)(addr - header->_list.Address);
                     header->_list.Entries[g.Index]._dataType = 1;
+                }
                 else if (g is RBNKDataRangeTableNode)
+                {
+                    header->_list.Entries[g.Index] = (int)(addr - header->_list.Address);
                     header->_list.Entries[g.Index]._dataType = 2;
+                }
                 else if (g is RBNKDataIndexTableNode)
+                {
+                    header->_list.Entries[g.Index] = (int)(addr - header->_list.Address);
                     header->_list.Entries[g.Index]._dataType = 3;
-                else if (g is RBNKNullNode)
+                }
+                else if (g is RBNKNullNode && !(g as RBNKNullNode)._invalid)
+                {
+                    header->_list.Entries[g.Index] = 0;
                     header->_list.Entries[g.Index]._dataType = 4;
+                }
                 else
+                {
+                    header->_list.Entries[g.Index] = 0;
                     header->_list.Entries[g.Index]._dataType = 0;
+                    header->_list.Entries[g.Index]._refType = 0;
+                }
 
                 g.Rebuild(addr, g._calcSize, false);
                 addr += g._calcSize;
@@ -153,7 +175,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 //Set offset and write header data
                 table[r.Index] = (uint)(addr - header->_list.Address);
-                Memory.Move(addr, r.WorkingUncompressed.Address, (uint)r.WorkingUncompressed.Length);
+
+                r.MoveRaw(addr, r.WorkingUncompressed.Length);
+                //Memory.Move(addr, r.WorkingSource.Address, (uint)r.WorkingSource.Length);
 
                 //Set the offset to the audio samples
                 WaveInfo* wave = (WaveInfo*)addr;

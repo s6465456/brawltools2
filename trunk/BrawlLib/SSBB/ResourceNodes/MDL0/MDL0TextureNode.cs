@@ -228,7 +228,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (Texture != null)
                 Texture.Delete();
-            Texture = new GLTexture(0, 0);
+            Texture = new GLTexture();
             Texture.Bind(index, program, _context);
 
             //ctx._states[String.Format("{0}_TexRef", Name)] = Texture;
@@ -253,9 +253,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                     {
                         Source = tNode;
                         if (palette != null)
-                            bmp = tNode.GetImage(0, palette);
+                            Texture.Attach(tNode, palette);
                         else
-                            bmp = tNode.GetImage(0);
+                            Texture.Attach(tNode);
+                        return;
                     }
                     else
                     {
@@ -305,8 +306,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     BitmapData data = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                     try
                     {
-                        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Four, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-                        GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
+                        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                        //GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
                         //using (UnsafeBuffer buffer = new UnsafeBuffer(size << 2))
                         //{
                         //    ARGBPixel* sPtr = (ARGBPixel*)data.Scan0;
@@ -347,7 +349,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal override void Unbind()
         {
             if (Texture != null) 
-            { 
+            {
                 Texture.Delete();
                 Texture = null;
             }

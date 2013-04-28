@@ -53,7 +53,7 @@ namespace BrawlLib.Wii.Graphics
     //0000 0000 0000 0000 0011 0000 0000 0000     - Tex6 format
     //0000 0000 0000 0000 1100 0000 0000 0000     - Tex7 format
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct CPVertexFormat
     {
         public buint _lo, _hi;

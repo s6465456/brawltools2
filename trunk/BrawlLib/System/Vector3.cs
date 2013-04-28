@@ -106,6 +106,11 @@ namespace System
         public Vector3 Cross(Vector3 v) { return new Vector3(_y * v._z - v._y * _z, _z * v._x - v._z * _x, _x * v._y - v._x * _y); }
         public static Vector3 Cross(Vector3 v1, Vector3 v2) { return new Vector3(v1._y * v2._z - v2._y * v1._z, v1._z * v2._x - v2._z * v1._x, v1._x * v2._y - v2._x * v1._y); }
 
+        public Vector3 Round(int places)
+        {
+            return new Vector3((float)Math.Round(_x, places), (float)Math.Round(_y, places), (float)Math.Round(_z, places));
+        }
+
         public static Vector3 Truncate(Vector3 v)
         {
             return new Vector3(
@@ -182,7 +187,8 @@ namespace System
         }
 
         public void Morph(Vector3 dest, float percent) { this += ((dest - this) * percent); }
-
+        public Vector3 ReturnMorph(Vector3 dest, float percent) { return this + ((dest - this) * percent); }
+        
         public int CompareTo(object obj)
         {
             if (obj is Vector3)
@@ -203,6 +209,29 @@ namespace System
                 return 0;
             }
             return 1;
+        }
+
+        public Vector4 ToQuat()
+        {
+            Vector4 q = new Vector4();
+
+            double
+                xRadian = _x / 2.0f,
+                yRadian = _y / 2.0f,
+                zRadian = _z / 2.0f,
+                sinX = Math.Sin(xRadian),
+                cosX = Math.Cos(xRadian),
+                sinY = Math.Sin(yRadian),
+                cosY = Math.Cos(yRadian),
+                sinZ = Math.Sin(zRadian),
+                cosZ = Math.Cos(zRadian);
+
+            q._x = (float)(cosX * cosY * cosZ + sinX * sinY * sinZ);
+            q._y = (float)(sinX * cosY * cosZ - cosX * sinY * sinZ);
+            q._z = (float)(cosX * sinY * cosZ + sinX * cosY * sinZ);
+            q._w = (float)(cosX * cosY * sinZ - sinX * sinY * cosZ);
+
+            return q;
         }
     }
 }

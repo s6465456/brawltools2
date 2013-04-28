@@ -1691,7 +1691,6 @@ namespace System.Windows.Forms
             _transBoxes[2][12] = numTwist; numTwist.Tag = 12;
             _transBoxes[2][13] = numFovY; numFovY.Tag = 13;
             _transBoxes[2][14] = numHeight; numHeight.Tag = 14;
-
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -1702,7 +1701,7 @@ namespace System.Windows.Forms
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0BoneNode TargetBone { get { return _mainWindow._targetBone; } set { _mainWindow.TargetBone = value; } }
+        public MDL0BoneNode TargetBone { get { return _mainWindow.SelectedBone; } set { _mainWindow.SelectedBone = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
@@ -2066,14 +2065,14 @@ namespace System.Windows.Forms
         private void button1_Click_1(object sender, EventArgs e)
         {
             //Get the position of the current camera
-            Vector3 pos = _mainWindow.modelPanel1._camera.GetPoint();
+            Vector3 pos = _mainWindow.modelPanel._camera.GetPoint();
             numPosX.Value = pos._x;
             BoxChanged(numPosX, null);
             numPosY.Value = pos._y;
             BoxChanged(numPosY, null);
             numPosZ.Value = pos._z;
             BoxChanged(numPosZ, null);
-            Vector3 rot = _mainWindow.modelPanel1._camera._rotation;
+            Vector3 rot = _mainWindow.modelPanel._camera._rotation;
             if (_camera.Type == SCN0CameraType.Rotate)
             {
                 //Easy
@@ -2086,14 +2085,23 @@ namespace System.Windows.Forms
             }
             else
             {
-                //TODO
-                Vector3 m = _mainWindow.modelPanel1._camera.GetPoint();
-                Matrix r = Matrix.TransformMatrix(new Vector3(1), _mainWindow.modelPanel1._camera._rotation, m);
-                r.Translate(0, 0, 100);
-                Vector3 d = r.GetPoint();
-                numAimX.Value = d._x;
-                numAimY.Value = d._y;
-                numAimZ.Value = d._z;
+                Vector3 cam = _mainWindow.modelPanel._camera.GetPoint();
+
+                Vector3 aim = new Vector3(
+                    _camera.GetFrameValue(CameraKeyframeMode.AimX, _mainWindow.CurrentFrame - 1),
+                    _camera.GetFrameValue(CameraKeyframeMode.AimY, _mainWindow.CurrentFrame - 1),
+                    _camera.GetFrameValue(CameraKeyframeMode.AimZ, _mainWindow.CurrentFrame - 1));
+
+                float dist = cam.DistanceTo(aim);
+
+                Vector3 point = _mainWindow.modelPanel.UnProject(_mainWindow.modelPanel.Width / 2, _mainWindow.modelPanel.Height / 2, 100);
+
+                numAimX.Value = point._x;
+                BoxChanged(numAimX, null);
+                numAimY.Value = point._y;
+                BoxChanged(numAimY, null);
+                numAimZ.Value = point._z;
+                BoxChanged(numAimZ, null);
             }
         }
 

@@ -50,7 +50,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Vertex Data")]
         public Vector3 EMax { get { return hdr._eMax; } }
 
-
         public bool ForceRebuild { get { return _forceRebuild; } set { if (_forceRebuild != value) { _forceRebuild = value; SignalPropertyChange(); } } }
         public bool ForceFloat { get { return _forceFloat; } set { if (_forceFloat != value) { _forceFloat = value; } } }
         

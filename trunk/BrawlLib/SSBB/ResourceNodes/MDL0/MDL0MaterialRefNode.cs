@@ -339,18 +339,28 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (header->_texOffset != 0)
             {
-                if (_replaced)
-                    Name = header->TextureName;
+                if (_replaced && header->_texOffset >= Parent.WorkingUncompressed.Length)
+                    Name = null;
                 else
-                    _name = header->TextureName;
-                _texture = Model.FindOrCreateTexture(_name);
-                _texture._references.Add(this);
+                {
+                    if (_replaced)
+                        Name = header->TextureName;
+                    else
+                        _name = header->TextureName;
+                    _texture = Model.FindOrCreateTexture(_name);
+                    _texture._references.Add(this);
+                }
             }
             if (header->_pltOffset != 0)
             {
-                string name = header->PaletteName;
-                _palette = Model.FindOrCreatePalette(name);
-                _palette._references.Add(this);
+                if (_replaced && header->_pltOffset >= Parent.WorkingUncompressed.Length)
+                    _palette = null;
+                else
+                {
+                    string name = header->PaletteName;
+                    _palette = Model.FindOrCreatePalette(name);
+                    _palette._references.Add(this);
+                }
             }
 
             if (((MDL0MaterialNode)Parent).XFCommands.Length != 0)

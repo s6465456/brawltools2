@@ -17,40 +17,66 @@ namespace BrawlLib.Modeling
         public Vector3 _position;
         public Vector3 _weightedPosition;
 
-        public Vector3 _normal;
-        public Vector3 _weightedNormal;
+        //public Vector3 _normal;
+        //public Vector3 _weightedNormal;
 
         internal IMatrixNode _matrixNode;
+        public bool _moved = false;
 
-        public RGBAPixel[] _colors = new RGBAPixel[2];
-        public Vector2[] _uvs = new Vector2[8];
+        public List<RGBAPixel>[] _colors = new List<RGBAPixel>[2];
+        public List<Vector2>[] _uvs = new List<Vector2>[8];
 
         public MDL0ObjectNode _object;
 
-        public int Index = 0;
+        public int _index = 0;
+        public List<int> _faceDataIndices = new List<int>();
 
-        public Vector3 GetPoint()
-        {
-            if (_object.MatrixNode == null)
-                return WeightedPosition;
-            else
-                return _object.MatrixNode.Matrix * Position;
-        }
-
+        //Contains all the facepoints with the same position and influence.
+        //Note that the normal, uv and color indices may differ per facepoint
+        public List<Facepoint> _facepoints = new List<Facepoint>();
+        
         public Matrix GetMatrix()
         {
-            if (_object.MatrixNode == null)
-                return MatrixNode.Matrix;
-            else
+            if (_object != null && _object.MatrixNode != null)
                 return _object.MatrixNode.Matrix;
+            else if (MatrixNode != null)
+                return MatrixNode.Matrix;
+
+            return new Matrix();
         }
+        public Matrix GetInvMatrix()
+        {
+            if (_object != null && _object.MatrixNode != null)
+                return _object.MatrixNode.InverseMatrix;
+            else if (MatrixNode != null)
+                return MatrixNode.InverseMatrix;
+
+            return new Matrix();
+        }
+
+        public Vector3 UnweightPos(Vector3 pos) { return GetInvMatrix() * pos; }
+        public Vector3 WeightPos(Vector3 pos) { return GetMatrix() * pos; }
+
+        public List<BoneWeight> GetBoneWeights() { return MatrixNode == null ? _object.MatrixNode.Weights : MatrixNode.Weights; }
+        public MDL0BoneNode[] GetBones()
+        {
+            List<BoneWeight> b = GetBoneWeights();
+            return b == null ? null : b.Select(x => x.Bone).ToArray();
+        }
+        public float[] GetWeightValues()
+        {
+            List<BoneWeight> b = GetBoneWeights();
+            return b == null ? null : b.Select(x => x.Weight).ToArray();
+        }
+        public int IndexOfBone(MDL0BoneNode b) { return Array.IndexOf(GetBones(), b); }
+        public BoneWeight WeightForBone(MDL0BoneNode b) { int i = IndexOfBone(b); if (i == -1) return null; return GetBoneWeights()[i]; }
 
         [Browsable(true)]
         public string Influence
         {
-            get { return MatrixNode == null ? "(none)" : MatrixNode.IsPrimaryNode ? ((MDL0BoneNode)MatrixNode)._name : "(multiple)"; }
-            //set { Inf = String.IsNullOrEmpty(value) ? null : Model.FindOrCreateBone(value); Model.SignalPropertyChange(); }
+            get { return MatrixNode == null ? "(none)" : MatrixNode.IsPrimaryNode ? ((MDL0BoneNode)MatrixNode).Name : "(multiple)"; }
         }
+
         [Browsable(false)]
         public IMatrixNode MatrixNode
         {
@@ -60,16 +86,42 @@ namespace BrawlLib.Modeling
                 if (_matrixNode == value)
                     return;
 
+                if (value is MDL0BoneNode && _matrixNode is Influence)
+                {
+                    _position *= ((MDL0BoneNode)value).InverseMatrix;
+                    //_normal *= ((MDL0BoneNode)value).InverseMatrix.GetRotationMatrix();
+
+                    _object._vertexNode.Vertices[_facepoints[0].VertexIndex] = _position;
+                    _object._vertexNode.ForceRebuild = true;
+                    if (_object._vertexNode.Format == WiiVertexComponentType.Float)
+                        _object._vertexNode.ForceFloat = true;
+                    //SetNormal();
+                }
+                else if (value is Influence && _matrixNode is MDL0BoneNode)
+                {
+                    _position *= ((MDL0BoneNode)_matrixNode).Matrix;
+                    //_normal *= ((MDL0BoneNode)_matrixNode).Matrix.GetRotationMatrix();
+
+                    _object._vertexNode.Vertices[_facepoints[0].VertexIndex] = _position;
+                    _object._vertexNode.ForceRebuild = true;
+                    if (_object._vertexNode.Format == WiiVertexComponentType.Float)
+                        _object._vertexNode.ForceFloat = true;
+                    //SetNormal();
+                }
+
                 if (_matrixNode != null)
                 {
                     _matrixNode.ReferenceCount--;
-                    _matrixNode.References.Remove(this);
+                    _matrixNode.Users.Remove(this);
                 }
 
                 if ((_matrixNode = value) != null)
                 {
                     _matrixNode.ReferenceCount++;
-                    _matrixNode.References.Add(this);
+                    _matrixNode.Users.Add(this);
+
+                    if (_object != null)
+                        _object.SignalPropertyChange();
                 }
             }
         }
@@ -77,133 +129,182 @@ namespace BrawlLib.Modeling
         public Vector3 WeightedPosition
         {
             get { return _weightedPosition; }
-            set { _weightedPosition = value; }
+            set { _weightedPosition = value; Unweight(); }
         }
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector3StringConverter))]
+        //public Vector3 WeightedNormal
+        //{
+        //    get { return _weightedNormal; }
+        //    set { _weightedNormal = value; UnweightNormal(); }
+        //}
         [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 Position
         {
             get { return _position; }
             set { _position = value; }
         }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 Normal
-        {
-            get { return _normal; }
-            set { _normal = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel Color1
-        {
-            get { return _colors[0]; }
-            set { _colors[0] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel Color2
-        {
-            get { return _colors[1]; }
-            set { _colors[1] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 UV1
-        {
-            get { return _uvs[0]; }
-            set { _uvs[0] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 UV2
-        {
-            get { return _uvs[1]; }
-            set { _uvs[1] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 UV3
-        {
-            get { return _uvs[2]; }
-            set { _uvs[2] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 UV4
-        {
-            get { return _uvs[3]; }
-            set { _uvs[3] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 UV5
-        {
-            get { return _uvs[4]; }
-            set { _uvs[4] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 UV6
-        {
-            get { return _uvs[5]; }
-            set { _uvs[5] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 UV7
-        {
-            get { return _uvs[6]; }
-            set { _uvs[6] = value; }
-        }
-        [Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 UV8
-        {
-            get { return _uvs[7]; }
-            set { _uvs[7] = value; }
-        }
-        [Browsable(true), Category("Normal"), TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 WeightedNormal
-        {
-            get { return _weightedNormal; }
-            set { _weightedNormal = value; }
-        }
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector3StringConverter))]
+        //public Vector3 Normal
+        //{
+        //    get { return _normal; }
+        //    set { _normal = value; }
+        //}
+        
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(RGBAStringConverter))]
+        //public RGBAPixel Color1
+        //{
+        //    get { return _colors[0]; }
+        //    set { _colors[0] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(RGBAStringConverter))]
+        //public RGBAPixel Color2
+        //{
+        //    get { return _colors[1]; }
+        //    set { _colors[1] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
+        //public Vector2 UV1
+        //{
+        //    get { return _uvs[0]; }
+        //    set { _uvs[0] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
+        //public Vector2 UV2
+        //{
+        //    get { return _uvs[1]; }
+        //    set { _uvs[1] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
+        //public Vector2 UV3
+        //{
+        //    get { return _uvs[2]; }
+        //    set { _uvs[2] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
+        //public Vector2 UV4
+        //{
+        //    get { return _uvs[3]; }
+        //    set { _uvs[3] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
+        //public Vector2 UV5
+        //{
+        //    get { return _uvs[4]; }
+        //    set { _uvs[4] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
+        //public Vector2 UV6
+        //{
+        //    get { return _uvs[5]; }
+        //    set { _uvs[5] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
+        //public Vector2 UV7
+        //{
+        //    get { return _uvs[6]; }
+        //    set { _uvs[6] = value; }
+        //}
+        //[Browsable(true), Category("Vertex"), TypeConverter(typeof(Vector2StringConverter))]
+        //public Vector2 UV8
+        //{
+        //    get { return _uvs[7]; }
+        //    set { _uvs[7] = value; }
+        //}
 
+        public Vertex3() { }
         public Vertex3(Vector3 position)
         {
             Position = position;
         }
-
-        public Vertex3(Vector3 position, Vector3 normal)
-        {
-            Position = position;
-            Normal = normal;
-        }
-
         public Vertex3(Vector3 position, IMatrixNode influence)
         {
             Position = position;
             MatrixNode = influence;
         }
 
-        public Vertex3(Vector3 position, Vector3 normal, IMatrixNode influence)
-        {
-            Position = position;
-            Normal = normal;
-            MatrixNode = influence;
-        }
-
-        public Vertex3(Vector3 position, IMatrixNode influence, Vector3 normal, RGBAPixel[] color, Vector2[] uv)
-        {
-            Position = position;
-            MatrixNode = influence;
-            Normal = normal;
-            _colors = color;
-            _uvs = uv;
-        }
-
-        //Pre-multiply vertex and normal using influence.
+        //Pre-multiply vertex using influence.
         //Influences must have already been calculated.
         public void Weight()
         {
-            _weightedPosition = (_matrixNode != null) ? _matrixNode.Matrix * Position : Position;
-            //_weightedNormal = (_influence != null) ? _influence.Matrix.GetRotationMatrix() * Normal : Normal;
-        }
-        //Need to do this to put the vertices back in their raw positions if they were moved.
-        public void UnWeight()
-        {
-            
+            _weightedPosition = GetMatrix() * Position;
+
+            weights = null;
+            nodes = null;
         }
 
+        public void Unweight()
+        {
+            if (weights == null || nodes == null)
+                _position = GetInvMatrix() * WeightedPosition;
+            else
+            {
+                Vector3 trans = _weightedPosition - bCenter; 
+
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    MDL0VertexNode set = nodes[i];
+                    set.Vertices[_facepoints[0].VertexIndex] = GetInvMatrix() * (GetMatrix() * set.Vertices[_facepoints[0].VertexIndex] + trans * weights[i]);
+                    set.ForceRebuild = true;
+                    if (set.Format == WiiVertexComponentType.Float)
+                        set.ForceFloat = true;
+                }
+
+                _position = GetInvMatrix() * (WeightedPosition + trans * baseWeight);
+            }
+
+            _object._vertexNode.Vertices[_facepoints[0].VertexIndex] = _position;
+            _object._vertexNode.ForceRebuild = true;
+            if (_object._vertexNode.Format == WiiVertexComponentType.Float)
+                _object._vertexNode.ForceFloat = true;
+        }
+
+        internal float baseWeight = 0;
+        internal float[] weights = null;
+        internal MDL0VertexNode[] nodes = null;
+        internal Vector3 bCenter = new Vector3();
+
+        //public unsafe void SetNormal()
+        //{
+        //    _object._normalNode.Normals[_facepoints[0].NormalIndex] = _normal;
+        //    _object._normalNode.ForceRebuild = true;
+        //    if (_object._normalNode.Format == WiiVertexComponentType.Float)
+        //        _object._normalNode.ForceFloat = true;
+        //}
+
+        //public unsafe void SetUV(int id)
+        //{
+        //    if (_object._uvSet[id] == null)
+        //        return;
+
+        //    int i = _facepoints[0].UVIndex[id];
+        //    _object._uvSet[id].Points[i] = _uvs[id][0];
+
+        //    foreach (int x in _faceDataIndices)
+        //        ((Vector2*)(_object._manager._faceData[id + 4].Address))[x] = _uvs[id][0];
+
+        //    _object._uvSet[id].ForceRebuild = true;
+        //    if (_object._uvSet[id].Format == WiiVertexComponentType.Float)
+        //        _object._uvSet[id].ForceFloat = true;
+
+        //    _object._manager._dirty[id + 4] = true;
+        //}
+
+        //public unsafe void SetColor(int id)
+        //{
+        //    if (_object._colorSet[id] == null)
+        //        return;
+
+        //    int i = _facepoints[0].UVIndex[id];
+        //    _object._colorSet[id].Colors[i] = _colors[id][0];
+
+        //    foreach (int x in _faceDataIndices)
+        //        ((RGBAPixel*)(_object._manager._faceData[id + 2].Address))[x] = _colors[id][0];
+
+        //    _object._colorSet[id]._changed = true;
+        //    _object._manager._dirty[id + 2] = true;
+        //}
+
+        //Call only after weighting
         public void Morph(Vector3 dest, float percent) { _weightedPosition.Morph(dest, percent); }
 
         public Color GetWeightColor(MDL0BoneNode targetBone)
@@ -236,103 +337,8 @@ namespace BrawlLib.Modeling
 
             return (Position == v.Position) && (_matrixNode == v._matrixNode);
         }
+
+        public Color _highlightColor = Color.Transparent;
+        public bool _selected = false;
     }
-
-    //[StructLayout(LayoutKind.Sequential, Pack = 1)]
-    //public unsafe struct VertData
-    //{
-    //    public const int Size = 12 + 12 + 4 + 4 * 2 + 8 * 8;
-
-    //    public Vector3 _position;
-    //    public Vector3 _normal;
-    //    public int _weight;
-
-    //    public RGBAPixel _color1;
-    //    public RGBAPixel _color2;
-
-    //    public Vector2 _uv1;
-    //    public Vector2 _uv2;
-    //    public Vector2 _uv3;
-    //    public Vector2 _uv4;
-    //    public Vector2 _uv5;
-    //    public Vector2 _uv6;
-    //    public Vector2 _uv7;
-    //    public Vector2 _uv8;
-        
-    //    public VertData(Vector3 position, int weight, Vector3 normal, RGBAPixel[] color, Vector2[] uv)
-    //    {
-    //        _position = position;
-    //        _weight = weight;
-    //        _normal = normal;
-
-    //        _color1 = color[0];
-    //        _color2 = color[1];
-
-    //        _uv1 = uv[0];
-    //        _uv2 = uv[1];
-    //        _uv3 = uv[2];
-    //        _uv4 = uv[3];
-    //        _uv5 = uv[4];
-    //        _uv6 = uv[5];
-    //        _uv7 = uv[6];
-    //        _uv8 = uv[7];
-    //    }
-
-    //    public bool Equals(VertData v)
-    //    {
-    //        if (object.ReferenceEquals(this, v))
-    //            return true;
-
-    //        return
-    //            (_position == v._position) &&
-    //            (_normal == v._normal) &&
-    //            (_weight == v._weight) &&
-    //            (_color1 == v._color1) &&
-    //            (_color2 == v._color2) &&
-    //            (_uv1 == v._uv1) &&
-    //            (_uv2 == v._uv2) &&
-    //            (_uv3 == v._uv3) &&
-    //            (_uv4 == v._uv4) &&
-    //            (_uv5 == v._uv5) &&
-    //            (_uv6 == v._uv6) &&
-    //            (_uv7 == v._uv7) &&
-    //            (_uv8 == v._uv8); 
-    //    }
-
-    //    public static bool operator !=(VertData v1, VertData v2)
-    //    {
-    //        return
-    //            (v1._position != v2._position) ||
-    //            (v1._normal != v2._normal) ||
-    //            (v1._weight != v2._weight) ||
-    //            (v1._color1 != v2._color1) ||
-    //            (v1._color2 != v2._color2) ||
-    //            (v1._uv1 != v2._uv1) ||
-    //            (v1._uv2 != v2._uv2) ||
-    //            (v1._uv3 != v2._uv3) ||
-    //            (v1._uv4 != v2._uv4) ||
-    //            (v1._uv5 != v2._uv5) ||
-    //            (v1._uv6 != v2._uv6) ||
-    //            (v1._uv7 != v2._uv7) ||
-    //            (v1._uv8 != v2._uv8);
-    //    }
-
-    //    public static bool operator ==(VertData v1, VertData v2)
-    //    {
-    //        return
-    //            (v1._position == v2._position) &&
-    //            (v1._normal == v2._normal) &&
-    //            (v1._weight == v2._weight) &&
-    //            (v1._color1 == v2._color1) &&
-    //            (v1._color2 == v2._color2) &&
-    //            (v1._uv1 == v2._uv1) &&
-    //            (v1._uv2 == v2._uv2) &&
-    //            (v1._uv3 == v2._uv3) &&
-    //            (v1._uv4 == v2._uv4) &&
-    //            (v1._uv5 == v2._uv5) &&
-    //            (v1._uv6 == v2._uv6) &&
-    //            (v1._uv7 == v2._uv7) &&
-    //            (v1._uv8 == v2._uv8);
-    //    }
-    //}
 }

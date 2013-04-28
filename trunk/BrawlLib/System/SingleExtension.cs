@@ -23,5 +23,21 @@ namespace System
         {
             return value <= min ? min : value >= max ? max : value;
         }
+
+        public static Single Clamp180Deg(this Single value)
+        {
+            float e = value;
+
+            float d = (int)(e / 360.0f);
+            e -= 360.0f * d;
+
+            float l = e / 180.0f;
+            if (l > 1)
+                e -= 360.0f;
+            else if (l < -1)
+                e += 360.0f;
+
+            return e;
+        }
     }
 }

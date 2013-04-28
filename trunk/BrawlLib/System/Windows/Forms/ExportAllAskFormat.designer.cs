@@ -1,6 +1,6 @@
 ﻿namespace System.Windows.Forms
 {
-    partial class ExportAllAskFormat
+    partial class ExportAllFormatDialog
     {
         /// <summary>
         /// Required designer variable.
@@ -91,7 +91,7 @@
         #endregion
 
         public System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBox1;
+        public System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
     }

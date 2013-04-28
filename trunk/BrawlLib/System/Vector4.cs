@@ -19,6 +19,20 @@ namespace System
         public static Vector4 operator -(Vector4 v1, Vector4 v2) { return new Vector4(v1._x - v2._x, v1._y - v2._y, v1._z - v2._z, v1._w - v2._w); }
         public static Vector4 operator +(Vector4 v1, Vector4 v2) { return new Vector4(v1._x + v2._x, v1._y + v2._y, v1._z + v2._z, v1._w + v2._w); }
 
+        public static Vector4 operator *(Vector4 v1, Vector4 v2)
+        {
+            Vector4 v = new Vector4();
+
+            Vector3 x1 = new Vector3(v1._x, v1._y, v1._z);
+            Vector3 x2 = new Vector3(v2._x, v2._y, v2._z);
+            float w1 = v1._w;
+            float w2 = v2._w;
+
+            //Vector3 s = new Vector3(w1 * w2 - x1.Dot(x2), w1 * x2 + w2 * x1 + x1.Cross(x2));
+
+            return v;
+        }
+
         public static bool operator ==(Vector4 v1, Vector4 v2) { return (v1._x == v2._x) && (v1._y == v2._y) && (v1._z == v2._z) && (v1._w == v2._w); }
         public static bool operator !=(Vector4 v1, Vector4 v2) { return (v1._x != v2._x) || (v1._y != v2._y) || (v1._z != v2._z) || (v1._w != v2._w); }
 
@@ -35,6 +49,8 @@ namespace System
             float scale = 1.0f / Length3();
             return new Vector4(_x * scale, _y * scale, _z * scale, _w);
         }
+
+        public override string ToString() { return String.Format("({0},{1},{2},{3})", _x, _y, _z, _w); }
 
         public override bool Equals(object obj)
         {
@@ -58,11 +74,81 @@ namespace System
             set { fixed (Vector4* p = &this) ((float*)p)[index] = value; }
         }
 
-        public static Vector4 UnitX = new Vector4(1, 0, 0, 0);
-        public static Vector4 UnitY = new Vector4(0, 1, 0, 0);
-        public static Vector4 UnitZ = new Vector4(0, 0, 1, 0);
-        public static Vector4 UnitW = new Vector4(0, 0, 0, 1);
-        public static Vector4 Zero = new Vector4(0, 0, 0, 0);
+        public static readonly Vector4 UnitX = new Vector4(1, 0, 0, 0);
+        public static readonly Vector4 UnitY = new Vector4(0, 1, 0, 0);
+        public static readonly Vector4 UnitZ = new Vector4(0, 0, 1, 0);
+        public static readonly Vector4 UnitW = new Vector4(0, 0, 0, 1);
+        public static readonly Vector4 Zero = new Vector4(0, 0, 0, 0);
         public static readonly Vector4 One = new Vector4(1, 1, 1, 1);
+        public static readonly Vector4 Identity = new Vector4(0, 0, 0, 1);
+
+        public void ToAxisAngle(out Vector3 axis, out float angle)
+        {
+            Vector4 result = ToAxisAngle();
+            axis = new Vector3(result._x, result._y, result._z);
+            angle = result._w;
+        }
+
+        public Vector4 ToAxisAngle()
+        {
+            Vector4 q = this;
+            if (q._w > 1.0f)
+                q.Normalize();
+
+            Vector4 result = new Vector4();
+
+            result._w = 2.0f * (float)System.Math.Acos(q._w);
+            float den = (float)System.Math.Sqrt(1.0 - q._w * q._w);
+            if (den > 0.0001f)
+            {
+                result._x = q._x / den;
+                result._y = q._y / den;
+                result._z = q._z / den;
+            }
+            else
+                result._x = 1;
+
+            return result;
+        }
+
+        public static Vector4 FromAxisAngle(Vector3 axis, float angle)
+        {
+            if (axis.Dot() == 0.0f)
+                return Identity;
+
+            Vector4 result = Identity;
+
+            angle *= 0.5f;
+            axis.Normalize();
+            result._x = axis._x * (float)System.Math.Sin(angle);
+            result._y = axis._y * (float)System.Math.Sin(angle);
+            result._z = axis._z * (float)System.Math.Sin(angle);
+            result._w = (float)System.Math.Cos(angle);
+
+            return result.Normalize();
+        }
+
+        public static Vector4 FromEulerAngles(Vector3 v)
+        {
+            Vector3 
+                vx = new Vector3(1, 0, 0),
+                vy = new Vector3(0, 1, 0), 
+                vz = new Vector3(0, 0, 1);
+            Vector4 qx, qy, qz;
+
+            qx = FromAxisAngle(vx, v._x);
+            qy = FromAxisAngle(vy, v._y);
+            qz = FromAxisAngle(vz, v._z);
+
+            return qx * qy * qz;
+        }
+
+        public Vector3 ToEuler()
+        {
+            return new Vector3(
+                (float)Math.Atan2(2 * (_x * _y + _z * _w), 1 - 2 * (_y * _y + _z * _z)),
+                (float)Math.Asin(2 * (_x * _z - _w * _y)),
+                (float)Math.Atan2(2 * (_x * _w + _y * _z), 1 - 2 * (_z * _z + _w * _w)));
+        }
     }
 }

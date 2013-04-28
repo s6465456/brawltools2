@@ -34,32 +34,16 @@ namespace System.Audio
             _ds8.SetCooperativeLevel(owner.Handle, Win32.DirectSound.DSCooperativeLevel.Normal);
         }
 
-
-        //public override AudioBuffer CreateBuffer(IAudioStream source)
-        //{
-        //    WaveFormatEx fmt = new WaveFormatEx(source.Format, source.Channels, source.Frequency, source.BitsPerSample);
-        //    DS.DSBufferCapsFlags flags = DS.DSBufferCapsFlags.CtrlVolume | DS.DSBufferCapsFlags.LocDefer |DS.DSBufferCapsFlags.GlobalFocus | DS.DSBufferCapsFlags.GetCurrentPosition2;
-        //    DS.DSBufferDesc desc = new DS.DSBufferDesc(AudioBuffer.DefaultBufferSpan * fmt.nAvgBytesPerSec, flags, &fmt, Guid.Empty);
-
-        //    AudioBuffer buf = CreateBuffer(ref desc);
-        //    buf._source = source;
-        //    return buf;
-        //}
-
-        public override AudioBuffer CreateBuffer(WaveFormatTag format, int channels, int bps, int frequency, int size)
+        public override AudioBuffer CreateBuffer(IAudioStream target)
         {
-            WaveFormatEx fmt = new WaveFormatEx(format, channels, frequency, bps);
+            int size = AudioBuffer.DefaultBufferSpan * target.Frequency * target.Channels * target.BitsPerSample / 8;
+
+            WaveFormatEx fmt = new WaveFormatEx(target.Format, target.Channels, target.Frequency, target.BitsPerSample);
+            
             DS.DSBufferCapsFlags flags = DS.DSBufferCapsFlags.CtrlVolume | DS.DSBufferCapsFlags.LocDefer | DS.DSBufferCapsFlags.GlobalFocus | DS.DSBufferCapsFlags.GetCurrentPosition2;
             DS.DSBufferDesc desc = new DS.DSBufferDesc((uint)size, flags, &fmt, Guid.Empty);
 
-            return new wAudioBuffer(this, ref desc);
+            return new wAudioBuffer(this, ref desc) { _source = target };
         }
-
-        //private AudioBuffer CreateBuffer(ref DS.DSBufferDesc desc)
-        //{
-        //    DS.IDirectSoundBuffer8 buf;
-        //    _ds8.CreateSoundBuffer(ref desc, out buf, IntPtr.Zero);
-        //    return new wAudioBuffer(this, buf);
-        //}
     }
 }

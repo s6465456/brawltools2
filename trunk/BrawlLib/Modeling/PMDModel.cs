@@ -523,7 +523,7 @@ namespace BrawlLib.Modeling
                 bone.RecalcBindState();
                 //bone.GetBindState();
                 BoneCache.Add(bone);
-                model._influences.AddOrCreateInf(new Influence(bone));
+                model._influences.FindOrCreate(new Influence(bone), false);
             }
 
             model._version = 9;
@@ -597,7 +597,7 @@ namespace BrawlLib.Modeling
                 t._z = m.Pos[2];
                 if (inf._weights.Count > 1)
                 {
-                    inf = model._influences.AddOrCreate(inf);
+                    inf = model._influences.FindOrCreate(inf, false);
                     v = new Vertex3(Matrix.Identity * t, inf);
                 }
                 else
@@ -606,7 +606,7 @@ namespace BrawlLib.Modeling
                     v = new Vertex3(bone._inverseBindMatrix * Matrix.Identity * t, bone);
                 }
 
-                p._manager._vertices.Add(new Vertex3(new Vector3(m.Pos[0], m.Pos[1], m.Pos[2]), inf, new Vector3(m.NormalVector[0], m.NormalVector[1], m.NormalVector[2]), null, new Vector2[] { new Vector2(m.UV[0], m.UV[1]) }));
+                //p._manager._vertices.Add(new Vertex3(new Vector3(m.Pos[0], m.Pos[1], m.Pos[2]), inf, new Vector3(m.NormalVector[0], m.NormalVector[1], m.NormalVector[2]), null, new Vector2[] { new Vector2(m.UV[0], m.UV[1]) }));
             }
 
             index = 0;
@@ -615,8 +615,8 @@ namespace BrawlLib.Modeling
             {
                 *Indices++ = i;
                 *pTri++ = (ushort)index++;
-                *Normals++ = p._manager._vertices[i]._normal;
-                *UVs++ = p._manager._vertices[i]._uvs[0];
+                //*Normals++ = p._manager._vertices[i]._normal;
+                //*UVs++ = p._manager._vertices[i]._uvs[0];
             }
             model._polyList.Add(p);
 

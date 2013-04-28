@@ -65,7 +65,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Attributes
 
-        public MDL0ObjectNode[] Objects { get { if (!isMetal) return _polygons.ToArray(); else return MetalMaterial._polygons.ToArray(); } }
+        public MDL0ObjectNode[] Objects { get { if (!isMetal) return _polygons.ToArray(); else return MetalMaterial == null ? null : MetalMaterial._polygons.ToArray(); } }
         internal List<MDL0ObjectNode> _polygons = new List<MDL0ObjectNode>();
 
         [Browsable(false)]
@@ -210,7 +210,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if ((_shader = value) != null)
                     _shader._materials.Add(this);
                 if (_shader != null)
-                    ActiveShaderStages = _shader.stages;
+                    ActiveShaderStages = _shader._stages;
             }
         }
         [Browsable(true), TypeConverter(typeof(DropDownListShaders))]
@@ -522,7 +522,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Material")]
         public byte LightChannels { get { return _numLights; } set { if (!CheckIfMetal()) _numLights = value.Clamp(0, 2); } }
         [Category("Material")]
-        public byte ActiveShaderStages { get { return _ssc; } set { if (!CheckIfMetal()) _ssc = (value > ShaderNode.stages ? (byte)ShaderNode.stages : value < 1 ? (byte)1 : value); } }
+        public byte ActiveShaderStages { get { return _ssc; } set { if (!CheckIfMetal()) _ssc = (value > ShaderNode._stages ? (byte)ShaderNode._stages : value < 1 ? (byte)1 : value); } }
         [Category("Material")]
         public byte IndirectShaderStages { get { return _clip; } set { if (!CheckIfMetal()) _clip = (value > 4 ? (byte)4 : value < 0 ? (byte)0 : value); } }
         [Category("Material")]
@@ -584,13 +584,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Metal
 
-        public bool updating = false;
+        public bool _updating = false;
         public void UpdateAsMetal()
         {
             if (!isMetal)
                 return;
 
-            updating = true;
+            _updating = true;
             if (ShaderNode != null && ShaderNode._autoMetal && ShaderNode.texCount == Children.Count)
             {
                 //ShaderNode.DefaultAsMetal(Children.Count); 
@@ -607,7 +607,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     }
                     else
                     {
-                        if (s.stages == 4)
+                        if (s._stages == 4)
                         {
                             foreach (MDL0MaterialNode y in s._materials)
                                 if (!y.isMetal || y.Children.Count != Children.Count)
@@ -718,14 +718,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                     SignalPropertyChange();
                 }
             }
-            updating = false;
+            _updating = false;
         }
 
         public bool CheckIfMetal()
         {
             if (Model._autoMetal)
             {
-                if (!updating)
+                if (!_updating)
                 {
                     if (isMetal)
                         if (MessageBox.Show(null, "This model is currently set to automatically modify metal materials.\nYou cannot make changes unless you turn it off.\nDo you want to turn it off?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
@@ -869,10 +869,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             (_userEntries = new UserDataCollection()).Read(header->UserData(_initVersion));
 
-            if (_replaced)
-                foreach (MDL0MaterialRefNode m in Children)
-                    m._replaced = true;
-
             Populate();
             return true;
         }
@@ -1005,7 +1001,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 else
                 {
-                    _lSet = 1;
+                    _lSet = 0;
                     _fSet = 0;
                     _normMapRefLight1 =
                     _normMapRefLight2 =
@@ -1014,9 +1010,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _ssc = 1;
                     _cull = CullMode.Cull_Inside;
                     _numLights = 1;
-                    
-                    _chan1 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(255, 255, 255, 255), 7, 3);
-                    _chan2 = new LightChannel(15, new RGBAPixel(0, 0, 0, 255), new RGBAPixel(), 7, 1);
+
+                    _chan1 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(255, 255, 255, 255), 1795, 1795);
+                    _chan2 = new LightChannel(15, new RGBAPixel(0, 0, 0, 255), new RGBAPixel(), 1795, 1795);
                 }
 
                 //Set default texgen flags
@@ -1269,10 +1265,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 List<float> values = new List<float>();
                 if (_fog != null && _animFrame < _fog._colors.Count)
                 {
-                    values.Add(_fog._colors[_animFrame].R * RGBAPixel.ColorFactor);
-                    values.Add(_fog._colors[_animFrame].G * RGBAPixel.ColorFactor);
-                    values.Add(_fog._colors[_animFrame].B * RGBAPixel.ColorFactor);
-                    values.Add(_fog._colors[_animFrame].A * RGBAPixel.ColorFactor);
+                    ARGBPixel p = _fog._colors[_animFrame];
+                    values.Add(p.R * RGBAPixel.ColorFactor);
+                    values.Add(p.G * RGBAPixel.ColorFactor);
+                    values.Add(p.B * RGBAPixel.ColorFactor);
+                    values.Add(p.A * RGBAPixel.ColorFactor);
                 }
                 else 
                 {
@@ -1379,40 +1376,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public string GeneratePixelShaderCode(MDL0ObjectNode Object, PSGRENDER_MODE PSGRenderMode, TKContext ctx)
         {
-            /*
-            * gl_LightSource[] is a built-in array for all lights.
-            struct gl_LightSourceParameters 
-            {   
-               vec4 ambient;              // Aclarri   
-               vec4 diffuse;              // Dcli   
-               vec4 specular;             // Scli   
-               vec4 position;             // Ppli   
-               vec4 halfVector;           // Derived: Hi   
-               vec3 spotDirection;        // Sdli   
-               float spotExponent;        // Srli   
-               float spotCutoff;          // Crli                              
-                                          // (range: [0.0,90.0], 180.0)   
-               float spotCosCutoff;       // Derived: cos(Crli)                 
-                                          // (range: [1.0,0.0],-1.0)   
-               float constantAttenuation; // K0   
-               float linearAttenuation;   // K1   
-               float quadraticAttenuation;// K2  
-            };    
-            uniform gl_LightSourceParameters gl_LightSource[gl_MaxLights];
-            *
-            * access the values set with glMaterial using the GLSL built-in variables gl_FrontMateral and gl_BackMaterial.
-            struct gl_MaterialParameters  
-            {   
-               vec4 emission;    // Ecm   
-               vec4 ambient;     // Acm   
-               vec4 diffuse;     // Dcm   
-               vec4 specular;    // Scm   
-               float shininess;  // Srm  
-            };  
-            uniform gl_MaterialParameters gl_FrontMaterial;  
-            uniform gl_MaterialParameters gl_BackMaterial; 
-            */
-
             tempShader = "";
 
             int numStages = ShaderNode.Children.Count;
@@ -2215,7 +2178,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.RemoveChild(child);
 
-            if (!updating && Model._autoMetal && MetalMaterial != null && !this.isMetal)
+            if (!_updating && Model._autoMetal && MetalMaterial != null && !this.isMetal)
                 MetalMaterial.UpdateAsMetal();
         }
 

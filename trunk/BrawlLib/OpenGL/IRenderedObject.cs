@@ -11,6 +11,7 @@ namespace BrawlLib.OpenGL
         void Attach(TKContext ctx);
         void Detach();
         void Refesh();
-        void Render(TKContext ctx, ModelEditControl mainWindow);
+        void Render(TKContext ctx, ModelPanel mainWindow);
+        void GetBox(out Vector3 min, out Vector3 max);
     }
 }

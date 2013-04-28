@@ -108,7 +108,7 @@ namespace BrawlLib.Wii.Audio
             wave->_sampleRate = (ushort)sampleRate;
             wave->_channelInfoTableOffset = 0x1C;
             wave->_nibbles = samples.Align(14) / 14 * 16;
-            wave->_dataLocation = (uint)entrySize;
+            wave->_dataLocation = (uint)(header->Data->Data - map.Address);
 
             RWAVData* dataBlock = header->Data;
             dataBlock->_header._tag = RWAVData.Tag;

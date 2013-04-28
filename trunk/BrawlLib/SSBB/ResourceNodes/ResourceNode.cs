@@ -211,26 +211,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             set
             {
-                _changed = false;
+                _changed = value;
                 foreach (ResourceNode r in Children)
-                    r.IsDirty = false;
-
-                //if (value == IsDirty)
-                //{
-                //    if (!value)
-                //    {
-                //        if (Clean != null)
-                //            Clean(this);
-                //    }
-                //    else
-                //    {
-                //        if (Dirty != null)
-                //            Dirty(this);
-                //    }
-
-                //    if (_parent != null)
-                //        _parent.IsDirty = value;
-                //}
+                    if (r._children != null)
+                        r.IsDirty = value;
+                    else
+                        r._changed = value;
             }
         }
 
@@ -430,8 +416,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             Parent = parent;
 
             _children = null;
+
+            if (Parent != null && Parent._replaced)
+                _replaced = true;
+
             if (!OnInitialize())
                 _children = new List<ResourceNode>();
+
+            _replaced = false;
         }
 
         public virtual void Remove()

@@ -39,16 +39,16 @@ namespace System.Windows.Forms
                     form.TargetModel = (MDL0Node)model.SelectedItem;
                     for (int i = 0; i < form._targetModels.Count; i++)
                         if (form._hide && form._targetModels[i] != null)
-                            form.modelPanel1.RemoveTarget(form._targetModels[i]);
+                            form.modelPanel.RemoveTarget(form._targetModels[i]);
                         else
                             if (form._targetModels[i] != null)
-                                form.modelPanel1.AddTarget(form._targetModels[i]);
+                                form.modelPanel.AddTarget(form._targetModels[i]);
                 }
                 else
                 {
                     form._targetModels.Remove((MDL0Node)model.SelectedItem);
-                    form.modelPanel1.RemoveTarget((MDL0Node)model.SelectedItem);
-                    form.modelPanel1.Invalidate();
+                    form.modelPanel.RemoveTarget((MDL0Node)model.SelectedItem);
+                    form.modelPanel.Invalidate();
                 }
 
             DialogResult = DialogResult.OK;

@@ -92,6 +92,5 @@ namespace System.Audio
                 sampleCount -= blockSamples;
             }
         }
-
     }
 }

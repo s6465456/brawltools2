@@ -15,6 +15,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class REFTNode : ARCEntryNode
     {
         internal REFT* Header { get { return (REFT*)WorkingUncompressed.Address; } }
+        internal NW4RCommonHeader* CommonHeader { get { return (NW4RCommonHeader*)WorkingUncompressed.Address; } }
+
         public override ResourceType ResourceType { get { return ResourceType.REFT; } }
 
         private int _unk1, _unk2, _unk3, _dataLen, _dataOff;
@@ -32,9 +34,25 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("REFT Object Table")]
         //public short NumEntries { get { return _TableEntries; } }
 
+        [Category("NW4R Node")]
+        public byte VersionMajor { get { return _major; } }
+        [Category("NW4R Node")]
+        public byte VersionMinor { get { return _minor; } }
+        internal byte _minor, _major;
+
+        internal string _tag;
+        internal int _length;
+        internal Endian _endian;
+
         protected override bool OnInitialize()
         {
             base.OnInitialize();
+
+            _major = CommonHeader->VersionMajor;
+            _minor = CommonHeader->VersionMinor;
+            _tag = CommonHeader->_tag;
+            _length = CommonHeader->_length;
+            _endian = CommonHeader->Endian;
 
             REFT* header = Header;
 

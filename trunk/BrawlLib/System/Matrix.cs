@@ -11,8 +11,126 @@ namespace System
 
         fixed float _values[16];
 
+        public Vector4 Row0 { get { return *(Vector4*)&Data[0]; } set { *(Vector4*)&Data[0] = value; } }
+        public Vector4 Row1 { get { return *(Vector4*)&Data[4]; } set { *(Vector4*)&Data[4] = value; } }
+        public Vector4 Row2 { get { return *(Vector4*)&Data[8]; } set { *(Vector4*)&Data[8] = value; } }
+        public Vector4 Row3 { get { return *(Vector4*)&Data[12]; } set { *(Vector4*)&Data[12] = value; } }
+
+        public Vector4 Col0 
+        {
+            get { return new Vector4(Data[0], Data[4], Data[8], Data[12]); } 
+            set 
+            {
+                Data[0] = value._x;
+                Data[4] = value._y;
+                Data[8] = value._z;
+                Data[12] = value._w;
+            } 
+        }
+        public Vector4 Col1
+        {
+            get { return new Vector4(Data[1], Data[5], Data[9], Data[13]); } 
+            set
+            {
+                Data[1] = value._x;
+                Data[5] = value._y;
+                Data[9] = value._z;
+                Data[13] = value._w;
+            }
+        }
+        public Vector4 Col2
+        {
+            get { return new Vector4(Data[2], Data[6], Data[10], Data[14]); } 
+            set
+            {
+                Data[2] = value._x;
+                Data[6] = value._y;
+                Data[10] = value._z;
+                Data[14] = value._w;
+            }
+        }
+        public Vector4 Col3
+        {
+            get { return new Vector4(Data[3], Data[7], Data[11], Data[15]); } 
+            set
+            {
+                Data[3] = value._x;
+                Data[7] = value._y;
+                Data[11] = value._z;
+                Data[15] = value._w;
+            }
+        }
+
+        /// <summary>
+        /// Row 1, Column 1
+        /// </summary>
+        public float M11 { get { return Data[0]; } set { Data[0] = value; } }
+        /// <summary>
+        /// Row 1, Column 2
+        /// </summary>
+        public float M12 { get { return Data[1]; } set { Data[1] = value; } }
+        /// <summary>
+        /// Row 1, Column 3
+        /// </summary>
+        public float M13 { get { return Data[2]; } set { Data[2] = value; } }
+        /// <summary>
+        /// Row 1, Column 4
+        /// </summary>
+        public float M14 { get { return Data[3]; } set { Data[3] = value; } }
+
+        /// <summary>
+        /// Row 2, Column 1
+        /// </summary>
+        public float M21 { get { return Data[4]; } set { Data[4] = value; } }
+        /// <summary>
+        /// Row 2, Column 2
+        /// </summary>
+        public float M22 { get { return Data[5]; } set { Data[5] = value; } }
+        /// <summary>
+        /// Row 2, Column 3
+        /// </summary>
+        public float M23 { get { return Data[6]; } set { Data[6] = value; } }
+        /// <summary>
+        /// Row 2, Column 4
+        /// </summary>
+        public float M24 { get { return Data[7]; } set { Data[7] = value; } }
+
+        /// <summary>
+        /// Row 3, Column 1
+        /// </summary>
+        public float M31 { get { return Data[8]; } set { Data[8] = value; } }
+        /// <summary>
+        /// Row 3, Column 2
+        /// </summary>
+        public float M32 { get { return Data[9]; } set { Data[9] = value; } }
+        /// <summary>
+        /// Row 3, Column 3
+        /// </summary>
+        public float M33 { get { return Data[10]; } set { Data[10] = value; } }
+        /// <summary>
+        /// Row 3, Column 4
+        /// </summary>
+        public float M34 { get { return Data[11]; } set { Data[11] = value; } }
+
+        /// <summary>
+        /// Row 4, Column 1
+        /// </summary>
+        public float M41 { get { return Data[12]; } set { Data[12] = value; } }
+        /// <summary>
+        /// Row 4, Column 2
+        /// </summary>
+        public float M42 { get { return Data[13]; } set { Data[13] = value; } }
+        /// <summary>
+        /// Row 4, Column 3
+        /// </summary>
+        public float M43 { get { return Data[14]; } set { Data[14] = value; } }
+        /// <summary>
+        /// Row 4, Column 4
+        /// </summary>
+        public float M44 { get { return Data[15]; } set { Data[15] = value; } }
+
         public float* Data { get { fixed (float* ptr = _values)return ptr; } }
-        
+
         public float this[int x, int y]
         {
             get { return Data[(y << 2) + x]; }
@@ -37,7 +155,7 @@ namespace System
                 p[i] = values[i];
         }
 
-        public Matrix(float[] values)
+        public Matrix(params float[] values)
         {
             Matrix m = this;
             float* p = (float*)&m;
@@ -169,18 +287,6 @@ namespace System
             return nv;
         }
 
-        public Vector3 Divide(Vector3 v, Vector3 nv)
-        {
-            //Thanks to VILE for this function!
-            fixed (float* p = _values)
-            {
-                v._x = (nv._x - (p[4] * v._y) - (p[8] * v._z) - p[12]) / p[0];
-                v._y = (nv._y - (p[1] * v._x) - (p[9] * v._z) - p[13]) / p[5];
-                v._z = (nv._z - (p[2] * v._x) - (p[6] * v._y) - p[14]) / p[10];
-            }
-            return v;
-        }
-
         public static Vector2 operator *(Matrix m, Vector2 v)
         {
             Vector2 nv;
@@ -192,8 +298,7 @@ namespace System
             //nv._z = (p[2] * v._x) + (p[6] * v._y) + (p[10] * v._z) + p[14];
             return nv;
         }
-
-        public static Vector3 operator *(Matrix m, Vector3 v)
+        public static Vector3 MultiplyVec3(Vector3 v, Matrix m)
         {
             Vector3 nv;
             float* p = (float*)&m;
@@ -202,6 +307,8 @@ namespace System
             nv._z = (p[2] * v._x) + (p[6] * v._y) + (p[10] * v._z) + p[14];
             return nv;
         }
+        public static Vector3 operator *(Vector3 v, Matrix m) { return MultiplyVec3(v, m); }
+        public static Vector3 operator *(Matrix m, Vector3 v) { return MultiplyVec3(v, m); }
 
         public static Vector4 operator *(Matrix m, Vector4 v)
         {
@@ -399,10 +506,10 @@ namespace System
             return m;
         }
 
-        public Quaternion QuaternionFromMatrix()
+        public Vector4 QuaternionFromMatrix()
         {
             Matrix m = this;
-            Quaternion q = new Quaternion();
+            Vector4 q = new Vector4();
 
             q._w = (float)Math.Sqrt(Math.Max(0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2;
             q._x = (float)Math.Sqrt(Math.Max(0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2;
@@ -606,8 +713,50 @@ namespace System
 
             return m1;
         }
+        public static Matrix OrthographicMatrix(float w, float h, float nearZ, float farZ) { return OrthographicMatrix(-w / 2, w / 2, h / 2, -h / 2, nearZ, farZ); }
+        public static Matrix OrthographicMatrix(float left, float right, float top, float bottom, float nearZ, float farZ)
+        {
+            Matrix m = Matrix.Identity;
 
-        public static Matrix ProjectionMatrix(float fovY, float aspect, float nearZ, float farZ)
+            float* p = (float*)&m;
+
+            float rl = right - left;
+            float tb = top - bottom;
+            float fn = farZ - nearZ;
+
+            p[0] = 2 / rl;
+            p[5] = 2 / tb;
+            p[10] = -2 / fn;
+
+            p[12] = -(right + left) / rl;
+            p[13] = -(top + bottom) / tb;
+            p[14] = -(farZ + nearZ) / fn;
+
+            return m;
+        }
+        public static Matrix ReverseOrthographicMatrix(float w, float h, float nearZ, float farZ) { return ReverseOrthographicMatrix(-w / 2, w / 2, h / 2, -h / 2, nearZ, farZ); }
+        public static Matrix ReverseOrthographicMatrix(float left, float right, float top, float bottom, float nearZ, float farZ)
+        {
+            Matrix m = Matrix.Identity;
+
+            float* p = (float*)&m;
+
+            float rl = right - left;
+            float tb = top - bottom;
+            float fn = farZ - nearZ;
+
+            p[0] = rl / 2;
+            p[5] = tb / 2;
+            p[10] = fn / -2;
+
+            p[12] = (right + left) / 2;
+            p[13] = (top + bottom) / 2;
+            p[14] = (farZ + nearZ) / 2;
+
+            return m;
+        }
+
+        public static Matrix PerspectiveMatrix(float fovY, float aspect, float nearZ, float farZ)
         {
             Matrix m;
 
@@ -625,7 +774,7 @@ namespace System
 
             return m;
         }
-        public static Matrix ReverseProjectionMatrix(float fovY, float aspect, float nearZ, float farZ)
+        public static Matrix ReversePerspectiveMatrix(float fovY, float aspect, float nearZ, float farZ)
         {
             Matrix m;
 
@@ -719,7 +868,7 @@ namespace System
             return m;
         }
 
-        public static Matrix QuaternionTransformMatrix(Vector3 scale, Quaternion rotate, Vector3 translate)
+        public static Matrix QuaternionTransformMatrix(Vector3 scale, Vector4 rotate, Vector3 translate)
         {
             Matrix m;
             float* p = (float*)&m;
@@ -757,7 +906,7 @@ namespace System
             return m;
         }
 
-        public static Matrix ReverseQuaternionTransformMatrix(Vector3 scale, Quaternion rotate, Vector3 translate)
+        public static Matrix ReverseQuaternionTransformMatrix(Vector3 scale, Vector4 rotate, Vector3 translate)
         {
             Matrix m;
             float* p = (float*)&m;
@@ -802,43 +951,43 @@ namespace System
             return m;
         }
 
-        public FrameState QuatDerive()
-        {
-            FrameState state = new FrameState();
+        //public FrameState QuatDerive()
+        //{
+        //    FrameState state = new FrameState();
 
-            fixed (float* p = _values)
-            {
-                //Translation is easy!
-                state._translate = *(Vector3*)&p[12];
+        //    fixed (float* p = _values)
+        //    {
+        //        //Translation is easy!
+        //        state._translate = *(Vector3*)&p[12];
 
-                //Scale, use sqrt of rotation columns
-                state._scale._x = (float)Math.Round(Math.Sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 4);
-                state._scale._y = (float)Math.Round(Math.Sqrt(p[4] * p[4] + p[5] * p[5] + p[6] * p[6]), 4);
-                state._scale._z = (float)Math.Round(Math.Sqrt(p[8] * p[8] + p[9] * p[9] + p[10] * p[10]), 4);
+        //        //Scale, use sqrt of rotation columns
+        //        state._scale._x = (float)Math.Round(Math.Sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 4);
+        //        state._scale._y = (float)Math.Round(Math.Sqrt(p[4] * p[4] + p[5] * p[5] + p[6] * p[6]), 4);
+        //        state._scale._z = (float)Math.Round(Math.Sqrt(p[8] * p[8] + p[9] * p[9] + p[10] * p[10]), 4);
 
-                Matrix m = new Matrix();
-                float* d = (float*)&m;
+        //        Matrix m = new Matrix();
+        //        float* d = (float*)&m;
 
-                d[0] = p[0] / state._scale._x;
-                d[1] = p[1] / state._scale._x;
-                d[2] = p[2] / state._scale._x;
+        //        d[0] = p[0] / state._scale._x;
+        //        d[1] = p[1] / state._scale._x;
+        //        d[2] = p[2] / state._scale._x;
 
-                d[4] = p[4] / state._scale._y;
-                d[5] = p[5] / state._scale._y;
-                d[6] = p[6] / state._scale._y;
+        //        d[4] = p[4] / state._scale._y;
+        //        d[5] = p[5] / state._scale._y;
+        //        d[6] = p[6] / state._scale._y;
 
-                d[8] = p[8] / state._scale._z;
-                d[9] = p[9] / state._scale._z;
-                d[10] = p[10] / state._scale._z;
+        //        d[8] = p[8] / state._scale._z;
+        //        d[9] = p[9] / state._scale._z;
+        //        d[10] = p[10] / state._scale._z;
 
-                d[15] = 1;
+        //        d[15] = 1;
 
-                state._quaternion = m.ToQuaternion();
-            }
+        //        //state._quaternion = m.ToQuaternion();
+        //    }
 
-            state.CalcQuatTransforms();
-            return state;
-        }
+        //    //state.CalcQuatTransforms();
+        //    return state;
+        //}
 
         public static Matrix AxisAngleMatrix(Vector3 point1, Vector3 point2)
         {
@@ -939,7 +1088,7 @@ namespace System
             return m;
         }
 
-        public Matrix QuaternionRotMatrix(Quaternion quaternion)
+        public Matrix QuaternionRotMatrix(Vector4 quaternion)
         {
             Matrix result;
 
@@ -1018,768 +1167,167 @@ namespace System
         //    Quaternion quaternion = Quaternion.FromAxisAngle(yaw, pitch, roll);
         //    return QuaternionRotMatrix(quaternion);
         //}
-        
-        public Quaternion ToQuaternion()
+
+        public Vector4 GetQuaternion()
         {
             Matrix m = this;
             float* p = (float*)&m;
-            
-            Quaternion result = new Quaternion();
 
-            float scale = m[0, 0] + m[1, 1] + m[2, 2];
-            float half, sqrt;
+            Vector4 result = new Vector4();
+
+            float scale = p[0] + p[5] + p[10] + 1;
+            float sqrt;
 
             if (scale > 0.0f)
             {
-                sqrt = (float)(Math.Sqrt((double)(scale + 1.0f)));
+                sqrt = 0.5f / (float)Math.Sqrt((double)scale);
 
-                result._w = sqrt * 0.5f;
-                sqrt = 0.5f / sqrt;
-
-                result._x = (m[1, 2] - m[2, 1]) * sqrt;
-                result._y = (m[2, 0] - m[0, 2]) * sqrt;
-                result._z = (m[0, 1] - m[1, 0]) * sqrt;
+                result._x = (p[9] - p[6]) * sqrt;
+                result._y = (p[2] - p[8]) * sqrt;
+                result._z = (p[4] - p[1]) * sqrt;
+                result._w = 0.25f / sqrt;
 
                 return result;
             }
 
-            if ((m[0, 0] >= m[1, 1]) && (m[0, 0] >= m[2, 2]))
+            if ((p[0] >= p[5]) && (p[0] >= p[10]))
             {
-                sqrt = (float)(Math.Sqrt((double)(1.0f + m[0, 0] - m[1, 1] - m[2, 2])));
-                half = 0.5f / sqrt;
+                sqrt = (float)Math.Sqrt(1.0 + p[0] - p[5] - p[10]) * 2;
 
-                result._x = 0.5f * sqrt;
-                result._x = (m[0, 1] + m[1, 0]) * half;
-                result._z = (m[0, 2] + m[2, 0]) * half;
-                result._w = (m[1, 2] - m[2, 1]) * half;
+                result._x = 0.5f / sqrt;
+                result._y = (p[1] + p[4]) / sqrt;
+                result._z = (p[2] + p[8]) / sqrt;
+                result._w = (p[6] + p[9]) / sqrt;
 
                 return result;
             }
 
-            if (m[1, 1] > m[2, 2])
+            if (p[5] > p[10])
             {
-                sqrt = (float)(Math.Sqrt((double)(1.0f + m[1, 1] - m[0, 0] - m[2, 2])));
-                half = 0.5f / sqrt;
+                sqrt = (float)Math.Sqrt(1.0 + p[5] - p[0] - p[10]) * 2;
 
-                result._x = (m[1, 0] + m[0, 1]) * half;
-                result._y = 0.5f * sqrt;
-                result._x = (m[2, 1] + m[1, 2]) * half;
-                result._w = (m[2, 0] - m[0, 2]) * half;
+                result._x = (p[1] + p[4]) / sqrt;
+                result._y = 0.5f / sqrt;
+                result._z = (p[6] + p[9]) / sqrt;
+                result._w = (p[2] + p[8]) / sqrt;
 
                 return result;
             }
 
-            sqrt = (float)(Math.Sqrt((double)(1.0f + m[2, 2] - m[0, 0] - m[1, 1])));
-            half = 0.5f / sqrt;
+            sqrt = (float)Math.Sqrt(1.0 + p[10] - p[0] - p[5]) * 2;
 
-            result._x = (m[2, 0] + m[0, 2]) * half;
-            result._y = (m[2, 1] + m[1, 2]) * half;
-            result._z = 0.5f * sqrt;
-            result._w = (m[0, 1] - m[1, 0]) * half;
+            result._x = (p[2] + p[8]) / sqrt;
+            result._y = (p[6] + p[9]) / sqrt;
+            result._z = 0.5f / sqrt;
+            result._w = (p[1] + p[4]) / sqrt;
 
             return result;
         }
 
-        public static void slerp(Quaternion Q0, Quaternion Q1, double T, Quaternion Result) 
+        //From OpenTK
+        public static Matrix Invert(Matrix mat)
         {
-            double CosTheta = Q0[3] * Q1[3] - (Q0[0] * Q1[0] + Q0[1] * Q1[1] + Q0[2] * Q1[2]);
-	        double Theta = Math.Acos(CosTheta);
-            double SinTheta = Math.Sqrt(1.0 - CosTheta * CosTheta);
+            int[] colIdx = { 0, 0, 0, 0 };
+            int[] rowIdx = { 0, 0, 0, 0 };
+            int[] pivotIdx = { -1, -1, -1, -1 };
 
-            if(Math.Abs(SinTheta) < 1e-5)
+            // convert the matrix to an array for easy looping
+            float[,] inverse = { { mat.Row0._x, mat.Row0._y, mat.Row0._z, mat.Row0._w }, 
+                                 { mat.Row1._x, mat.Row1._y, mat.Row1._z, mat.Row1._w }, 
+                                 { mat.Row2._x, mat.Row2._y, mat.Row2._z, mat.Row2._w }, 
+                                 { mat.Row3._x, mat.Row3._y, mat.Row3._z, mat.Row3._w } };
+            int icol = 0;
+            int irow = 0;
+            for (int i = 0; i < 4; i++)
             {
-                for(int i = 0; i < 4; i++)
-                    Result[i] = Q0[i];
-                    
-                return;
+                // Find the largest pivot value
+                float maxPivot = 0.0f;
+                for (int j = 0; j < 4; j++)
+                    if (pivotIdx[j] != 0)
+                        for (int k = 0; k < 4; ++k)
+                            if (pivotIdx[k] == -1)
+                            {
+                                float absVal = System.Math.Abs(inverse[j, k]);
+                                if (absVal > maxPivot)
+                                {
+                                    maxPivot = absVal;
+                                    irow = j;
+                                    icol = k;
+                                }
+                            }
+                            else if (pivotIdx[k] > 0)
+                                return mat;
+
+                ++(pivotIdx[icol]);
+
+                // Swap rows over so pivot is on diagonal
+                if (irow != icol)
+                    for (int k = 0; k < 4; ++k)
+                    {
+                        float f = inverse[irow, k];
+                        inverse[irow, k] = inverse[icol, k];
+                        inverse[icol, k] = f;
+                    }
+
+                rowIdx[i] = irow;
+                colIdx[i] = icol;
+
+                float pivot = inverse[icol, icol];
+                // check for singular matrix
+                if (pivot == 0.0f)
+                {
+                    throw new InvalidOperationException("Matrix is singular and cannot be inverted.");
+                    //return mat;
+                }
+
+                // Scale row so it has a unit diagonal
+                float oneOverPivot = 1.0f / pivot;
+                inverse[icol, icol] = 1.0f;
+                for (int k = 0; k < 4; ++k)
+                    inverse[icol, k] *= oneOverPivot;
+
+                // Do elimination of non-diagonal elements
+                for (int j = 0; j < 4; ++j)
+                    // check this isn't on the diagonal
+                    if (icol != j)
+                    {
+                        float f = inverse[j, icol];
+                        inverse[j, icol] = 0.0f;
+                        for (int k = 0; k < 4; ++k)
+                            inverse[j, k] -= inverse[icol, k] * f;
+                    }
             }
 
-            double Sin_T_Theta = Math.Sin(T * Theta) / SinTheta;
-            double Sin_OneMinusT_Theta = Math.Sin((1.0 - T) * Theta) / SinTheta;
+            for (int j = 3; j >= 0; --j)
+            {
+                int ir = rowIdx[j];
+                int ic = colIdx[j];
+                for (int k = 0; k < 4; ++k)
+                {
+                    float f = inverse[k, ir];
+                    inverse[k, ir] = inverse[k, ic];
+                    inverse[k, ic] = f;
+                }
+            }
 
-	        for(int i = 0; i < 4; i++)
-                Result[i] = (float)(Q0[i] * Sin_OneMinusT_Theta + Q1[i] * Sin_T_Theta);
-
-            Result.Normalize();
+            mat.Row0 = new Vector4(inverse[0, 0], inverse[0, 1], inverse[0, 2], inverse[0, 3]);
+            mat.Row1 = new Vector4(inverse[1, 0], inverse[1, 1], inverse[1, 2], inverse[1, 3]);
+            mat.Row2 = new Vector4(inverse[2, 0], inverse[2, 1], inverse[2, 2], inverse[2, 3]);
+            mat.Row3 = new Vector4(inverse[3, 0], inverse[3, 1], inverse[3, 2], inverse[3, 3]);
+            
+            return mat;
         }
 
-
-//public class Matrix {
-//    /** The elements of the matrix. */
-//    public double p[0], p[4], p[8], p[12];
-//    public double p[1], p[5], p[9], p[13];
-//    public double p[2], p[6], p[10], p[14];
-//    public double p[3], p[7], p[11], p[15];
-
-//    /** Default constructor. */
-//    public Matrix(){
-//    setIdentity();
-//    }
-    
-//    /** Default constructor. */
-//    public Matrix(Matrix in){
-//    copy(in);
-//    }
-    
-//    /** Set the matrix to the identity matrix. */
-//    public void setIdentity(){
-//    p[0] = 1.0; p[4] = 0.0; p[8] = 0.0; p[12] = 0.0;
-//    p[1] = 0.0; p[5] = 1.0; p[9] = 0.0; p[13] = 0.0;
-//    p[2] = 0.0; p[6] = 0.0; p[10] = 1.0; p[14] = 0.0;
-//    p[3] = 0.0; p[7] = 0.0; p[11] = 0.0; p[15] = 1.0;
-//    }
-    
-//    /** Set the matrix to the zero matrix. */
-//    public void zero(){
-//    p[0] = 0.0; p[4] = 0.0; p[8] = 0.0; p[12] = 0.0;
-//    p[1] = 0.0; p[5] = 0.0; p[9] = 0.0; p[13] = 0.0;
-//    p[2] = 0.0; p[6] = 0.0; p[10] = 0.0; p[14] = 0.0;
-//    p[3] = 0.0; p[7] = 0.0; p[11] = 0.0; p[15] = 0.0;
-//    }
-
-//    /** Set matrix from another. */
-//    public void set(Matrix m){
-//    p[0] = m.p[0]; p[4] = m.p[4]; p[8] = m.p[8]; p[12] = m.p[12];
-//    p[1] = m.p[1]; p[5] = m.p[5]; p[9] = m.p[9]; p[13] = m.p[13];
-//    p[2] = m.p[2]; p[6] = m.p[6]; p[10] = m.p[10]; p[14] = m.p[14];
-//    p[3] = m.p[3]; p[7] = m.p[7]; p[11] = m.p[11]; p[15] = m.p[15];
-//    }
-    
-//    public void set(int i, int j, double val){
-//    if(i < 0 || i > 3 || j < 0 || j > 3){
-//        Log.error("trying to set element " + i + "," + j + " to %g", val);
-//        return;
-//    }
-//    if(i == 0){
-//        if(j == 0)      p[0] = val;
-//        else if(j == 1) p[4] = val;
-//        else if(j == 2) p[8] = val;
-//        else if(j == 3) p[12] = val;
-//    }else if(i == 1){
-//        if(j == 0)      p[1] = val;
-//        else if(j == 1) p[5] = val;
-//        else if(j == 2) p[9] = val;
-//        else if(j == 3) p[13] = val;
-//    }else if(i == 2){
-//        if(j == 0)      p[2] = val;
-//        else if(j == 1) p[6] = val;
-//        else if(j == 2) p[10] = val;
-//        else if(j == 3) p[14] = val;
-//    }else if(i == 3){
-//        if(j == 0)      p[3] = val;
-//        else if(j == 1) p[7] = val;
-//        else if(j == 2) p[11] = val;
-//        else if(j == 3) p[15] = val;
-//    }else{
-//        Log.error("trying to set row %d", i);
-//    }
-//    }
-
-//    /** Scale the transformation matrix. */
-//    public void scale(double s){
-//    scale(s, s, s);
-//    }
-    
-//    /** Apply non uniform scale. */
-//    public void scale(double sx, double sy, double sz){ 
-//    p[0] *= sx; p[4] *= sy; p[8] *= sz;
-//    p[1] *= sx; p[5] *= sy; p[9] *= sz;
-//    p[2] *= sx; p[6] *= sy; p[10] *= sz;
-//    p[3] *= sx; p[7] *= sy; p[11] *= sz;
-//    }
-    
-//    /** Translate the transformation matrix. */
-//    public void translate(double tx, double ty, double tz){
-//    p[0] += p[12]*tx; p[4] += p[12]*ty; p[8] += p[12]*tz;
-//    p[1] += p[13]*tx; p[5] += p[13]*ty; p[9] += p[13]*tz;
-//    p[2] += p[14]*tx; p[6] += p[14]*ty; p[10] += p[14]*tz;
-//    p[3] += p[15]*tx; p[7] += p[15]*ty; p[11] += p[15]*tz;
-//    }
-
-//    private static Matrix workMatrix = new Matrix();
-
-//    /** Translate the transformation matrix the other way. */
-//    public void pretranslate(double tx, double ty, double tz){
-//    p[3] = tx*p[0] + ty*p[1] + tz*p[2];
-//    p[7] = tx*p[4] + ty*p[5] + tz*p[6];
-//    p[11] = tx*p[8] + ty*p[9] + tz*p[10];
-//    }
-    
-//    /** Rotate around x in degrees. */
-//    public void rotateXdegrees(double d){
-//    double r = d*Math.PI / 180.0;
-//    double c = Math.cos(r);
-//    double s = Math.sin(r);
-
-//    double t = 0.0;
-//    t = p[4]; p[4] = t*c - p[8]*s; p[8] = t*s + p[8]*c; 
-//    t = p[5]; p[5] = t*c - p[9]*s; p[9] = t*s + p[9]*c; 
-//    t = p[6]; p[6] = t*c - p[10]*s; p[10] = t*s + p[10]*c; 
-//    t = p[7]; p[7] = t*c - p[11]*s; p[11] = t*s + p[11]*c; 
-//    }
-
-//    /** Rotate around y in degrees. */
-//    public void rotateYdegrees(double d){
-//    double r = d*Math.PI / 180.0;
-//    double c = Math.cos(r);
-//    double s = Math.sin(r);
-
-//    double t = 0.0;
-//    t = p[0]; p[0] = t*c + p[8]*s; p[8] = p[8]*c - t*s;
-//    t = p[1]; p[1] = t*c + p[9]*s; p[9] = p[9]*c - t*s;
-//    t = p[2]; p[2] = t*c + p[10]*s; p[10] = p[10]*c - t*s;
-//    t = p[3]; p[3] = t*c + p[11]*s; p[11] = p[11]*c - t*s;
-//    }
-
-//    /** Rotate around Z in degrees. */
-//    public void rotateZdegrees(double d){
-//    double r = d*Math.PI / 180.0;
-//    double c = Math.cos(r);
-//    double s = Math.sin(r);
-
-//    Matrix m = new Matrix();
-//    m.rotateAroundVector(0., 0., 1., r);
-//    transform(m);
-	
-//    // this is wrong...
-//    //double t = 0.0;
-//    //t = p[0]; p[0] = t*c + p[4]*s; p[4] = t*s - p[4]*c;
-//    //t = p[1]; p[1] = t*c + p[5]*s; p[5] = t*s - p[5]*c;
-//    //t = p[2]; p[2] = t*c + p[6]*s; p[6] = t*s - p[6]*c;
-//    //t = p[3]; p[3] = t*c + p[7]*s; p[7] = t*s - p[7]*c;
-//    }
-
-//    /** Transform by another matrix. */
-//    public void transform(Matrix m){
-//    double xp[0] = p[0], xp[4] = p[4], xp[8] = p[8], xp[12] = p[12];
-//    double xp[1] = p[1], xp[5] = p[5], xp[9] = p[9], xp[13] = p[13];
-//    double xp[2] = p[2], xp[6] = p[6], xp[10] = p[10], xp[14] = p[14];
-//    double xp[3] = p[3], xp[7] = p[7], xp[11] = p[11], xp[15] = p[15];
-	
-//    p[0] = xp[0]*m.p[0] + xp[4]*m.p[1] + xp[8]*m.p[2] + xp[12]*m.p[3];
-//    p[4] = xp[0]*m.p[4] + xp[4]*m.p[5] + xp[8]*m.p[6] + xp[12]*m.p[7];
-//    p[8] = xp[0]*m.p[8] + xp[4]*m.p[9] + xp[8]*m.p[10] + xp[12]*m.p[11];
-//    p[12] = xp[0]*m.p[12] + xp[4]*m.p[13] + xp[8]*m.p[14] + xp[12]*m.p[15];
-	
-//    p[1] = xp[1]*m.p[0] + xp[5]*m.p[1] + xp[9]*m.p[2] + xp[13]*m.p[3];
-//    p[5] = xp[1]*m.p[4] + xp[5]*m.p[5] + xp[9]*m.p[6] + xp[13]*m.p[7];
-//    p[9] = xp[1]*m.p[8] + xp[5]*m.p[9] + xp[9]*m.p[10] + xp[13]*m.p[11];
-//    p[13] = xp[1]*m.p[12] + xp[5]*m.p[13] + xp[9]*m.p[14] + xp[13]*m.p[15];
-	
-//    p[2] = xp[2]*m.p[0] + xp[6]*m.p[1] + xp[10]*m.p[2] + xp[14]*m.p[3];
-//    p[6] = xp[2]*m.p[4] + xp[6]*m.p[5] + xp[10]*m.p[6] + xp[14]*m.p[7];
-//    p[10] = xp[2]*m.p[8] + xp[6]*m.p[9] + xp[10]*m.p[10] + xp[14]*m.p[11];
-//    p[14] = xp[2]*m.p[12] + xp[6]*m.p[13] + xp[10]*m.p[14] + xp[14]*m.p[15];
-	
-//    p[3] = xp[3]*m.p[0] + xp[7]*m.p[1] + xp[11]*m.p[2] + xp[15]*m.p[3];
-//    p[7] = xp[3]*m.p[4] + xp[7]*m.p[5] + xp[11]*m.p[6] + xp[15]*m.p[7];
-//    p[11] = xp[3]*m.p[8] + xp[7]*m.p[9] + xp[11]*m.p[10] + xp[15]*m.p[11];
-//    p[15] = xp[3]*m.p[12] + xp[7]*m.p[13] + xp[11]*m.p[14] + xp[15]*m.p[15];
-//    }
-    
-//    /** Transform a point by the current matrix. */
-//    public void transform(Point3d p){
-//    double x = p.x, y = p.y, z = p.z;
-//    p.x = x*p[0] + y*p[1] + z*p[2] + p[3];
-//    p.y = x*p[4] + y*p[5] + z*p[6] + p[7];
-//    p.z = x*p[8] + y*p[9] + z*p[10] + p[11];
-//    }
-
-//    /** Transform a point by the inverse matrix (assumes rotation matrix) */
-//    public void transformByInverse(Point3d p){
-//    double x = p.x, y = p.y, z = p.z;
-//    // don't need translation part here.
-//    p.x = x*p[0] + y*p[4] + z*p[8];
-//    p.y = x*p[1] + y*p[5] + z*p[9];
-//    p.z = x*p[2] + y*p[6] + z*p[10];
-//    }
-    
-//    /** Rotate around a line. */
-//    public void rotateAroundVector(Point3d p, double theta){
-//    rotateAroundVector(p.x, p.y, p.z, theta);
-//    }
-    
-//    /** Rotate around a line. */
-//    public void rotateAroundVector(double x, double y, double z,
-//                   double theta){
-//    double d = x*x + y*y + z*z;
-
-//    if(d > 1.e-3){
-//        d = Math.sqrt(d);
-//        x /= d;
-//        y /= d;
-//        z /= d;
-//    }else{
-//        System.out.println("rotateAroundVector: direction is zero length");
-//        return;
-//    }
-
-//    double s = Math.sin(theta);
-//    double c = Math.cos(theta);
-//    double t = 1.0 - c;
-
-//    setIdentity();
-	
-//    p[0] = t * x * x + c;	/* leading diagonal */
-//    p[5] = t * y * y + c;
-//    p[10] = t * z * z + c;
-	
-//    p[1] = t * x * y + s * z;	/* off diagonal elements */
-//    p[2] = t * x * z - s * y;
-	
-//    p[4] = t * x * y - s * z;
-//    p[6] = t * y * z + s * x;
-	
-//    p[8] = t * x * z + s * y;
-//    p[9] = t * y * z - s * x;
-//    }
-    
-//    /** A format object for printing matrices. */
-//    private static Format f6 = new Format("%11.6f");
-    
-//    /** Print a default message with the matrix. */
-//    public void print(){
-//    print("-----------------");
-//    }
-    
-//    /** Print the matrix. */
-//    public void print(String message){
-//    System.out.println(message);
-//    System.out.println("" + f6.format(p[0]) + " " + f6.format(p[4]) +
-//               " " + f6.format(p[8]) + " " + f6.format(p[12]));
-//    System.out.println("" + f6.format(p[1]) + " " + f6.format(p[5]) +
-//               " " + f6.format(p[9]) + " " + f6.format(p[13]));
-//    System.out.println("" + f6.format(p[2]) + " " + f6.format(p[6]) +
-//               " " + f6.format(p[10]) + " " + f6.format(p[14]));
-//    System.out.println("" + f6.format(p[3]) + " " + f6.format(p[7]) + 
-//               " " + f6.format(p[11]) + " " + f6.format(p[15]));
-//    }
-
-//    public String returnScript(){
-//    String command = "matrix ";
-//    command += FILE.sprint(" %g", p[0]) + FILE.sprint(" %g", p[4]) + FILE.sprint(" %g", p[8]) + FILE.sprint(" %g", p[12]);
-//    command += FILE.sprint(" %g", p[1]) + FILE.sprint(" %g", p[5]) + FILE.sprint(" %g", p[9]) + FILE.sprint(" %g", p[13]);
-//    command += FILE.sprint(" %g", p[2]) + FILE.sprint(" %g", p[6]) + FILE.sprint(" %g", p[10]) + FILE.sprint(" %g", p[14]);
-//    command += FILE.sprint(" %g", p[3]) + FILE.sprint(" %g", p[7]) + FILE.sprint(" %g", p[11]) + FILE.sprint(" %g", p[15]);
-//    command += ";";
-
-//    return command;
-//    }
-
-//    /** Small number for matrix equivalence. */
-//    private static final double TOL = 1.e-5;
-
-//    /** Does this matrix equal another matrix. */
-//    public boolean equals(Matrix m){
-//    if(Math.abs(p[0] - m.p[0]) > TOL) return false;
-//    if(Math.abs(p[4] - m.p[4]) > TOL) return false;
-//    if(Math.abs(p[8] - m.p[8]) > TOL) return false;
-//    if(Math.abs(p[12] - m.p[12]) > TOL) return false;
-//    if(Math.abs(p[1] - m.p[1]) > TOL) return false;
-//    if(Math.abs(p[5] - m.p[5]) > TOL) return false;
-//    if(Math.abs(p[9] - m.p[9]) > TOL) return false;
-//    if(Math.abs(p[13] - m.p[13]) > TOL) return false;
-//    if(Math.abs(p[2] - m.p[2]) > TOL) return false;
-//    if(Math.abs(p[6] - m.p[6]) > TOL) return false;
-//    if(Math.abs(p[10] - m.p[10]) > TOL) return false;
-//    if(Math.abs(p[14] - m.p[14]) > TOL) return false;
-//    if(Math.abs(p[3] - m.p[3]) > TOL) return false;
-//    if(Math.abs(p[7] - m.p[7]) > TOL) return false;
-//    if(Math.abs(p[11] - m.p[11]) > TOL) return false;
-//    if(Math.abs(p[15] - m.p[15]) > TOL) return false;
-
-//    return true;
-//    }
-
-//    /** Does this matrix equal another matrix. */
-//    public boolean isIdentity(){
-//    return isIdentity(TOL);
-//    }
-
-//    public boolean isIdentity(double tol){
-//    if(Math.abs(p[0] - 1.0) > tol) return false;
-//    if(Math.abs(p[4])       > tol) return false;
-//    if(Math.abs(p[8])       > tol) return false;
-//    if(Math.abs(p[12])       > tol) return false;
-//    if(Math.abs(p[1])       > tol) return false;
-//    if(Math.abs(p[5] - 1.0) > tol) return false;
-//    if(Math.abs(p[9])       > tol) return false;
-//    if(Math.abs(p[13])       > tol) return false;
-//    if(Math.abs(p[2])       > tol) return false;
-//    if(Math.abs(p[6])       > tol) return false;
-//    if(Math.abs(p[10] - 1.0) > tol) return false;
-//    if(Math.abs(p[14])       > tol) return false;
-//    if(Math.abs(p[3])       > tol) return false;
-//    if(Math.abs(p[7])       > tol) return false;
-//    if(Math.abs(p[11])       > tol) return false;
-//    if(Math.abs(p[15] - 1.0) > tol) return false;
-
-//    return true;
-//    }
-
-//    /** Copy m into this matrix. */
-//    public void copy(Matrix m){
-//    p[0] = m.p[0]; p[4] = m.p[4]; p[8] = m.p[8]; p[12] = m.p[12];
-//    p[1] = m.p[1]; p[5] = m.p[5]; p[9] = m.p[9]; p[13] = m.p[13];
-//    p[2] = m.p[2]; p[6] = m.p[6]; p[10] = m.p[10]; p[14] = m.p[14];
-//    p[3] = m.p[3]; p[7] = m.p[7]; p[11] = m.p[11]; p[15] = m.p[15];
-//    }
-
-//    /** Transpose the matrix. */
-//    public void transpose(){
-//    double tmp;
-
-//    // remember only transpose once
-//    tmp = p[4]; p[4] = p[1]; p[1] = tmp;
-//    tmp = p[8]; p[8] = p[2]; p[2] = tmp;
-//    tmp = p[12]; p[12] = p[3]; p[3] = tmp;
-
-//    tmp = p[9]; p[9] = p[6]; p[6] = tmp;
-//    tmp = p[13]; p[13] = p[7]; p[7] = tmp;
-
-//    tmp = p[14]; p[14] = p[11]; p[11] = tmp;
-//    }
-
-//    /*
-//     * Matrix Inversion
-//     * by Richard Carling
-//     * from "Graphics Gems", Academic Press, 1990
-//     */
-
-//    /** A small number. */
-//    private static final double SMALL_NUMBER = 1.e-8;
-
-//    /**
-//     *   invert( original_matrix, inverse_matrix )
-//     * 
-//     *    calculate the inverse of a 4x4 matrix
-//     *
-//     *     -1     
-//     *     A  = ___1__ adjoint A
-//     *         det A
-//     */
-//    public static void invert(Matrix in, Matrix out ){
-//    /* calculate the adjoint matrix */
-//    adjoint(in, out);
-
-//    /*  calculate the 4x4 determinant
-//     *  if the determinant is zero, 
-//     *  then the inverse matrix is not unique.
-//     */
-//    double det = det4x4(in);
-
-//    if(Math.abs(det) < SMALL_NUMBER){
-//        System.err.println("Matrix.invert: Non-singular matrix, " +
-//                   "no inverse");
-//        return;
-//    }
-
-//    /* scale the adjoint matrix to get the inverse */
-//    out.p[0] /= det; out.p[4] /= det; out.p[8] /= det; out.p[12] /= det;
-//    out.p[1] /= det; out.p[5] /= det; out.p[9] /= det; out.p[13] /= det;
-//    out.p[2] /= det; out.p[6] /= det; out.p[10] /= det; out.p[14] /= det;
-//    out.p[3] /= det; out.p[7] /= det; out.p[11] /= det; out.p[15] /= det;
-//    }
-
-//    /**
-//     *   adjoint( original_matrix, inverse_matrix )
-//     * 
-//     *     calculate the adjoint of a 4x4 matrix
-//     *
-//     *      Let  a   denote the minor determinant of matrix A obtained by
-//     *            ij
-//     *
-//     *      deleting the ith row and jth column from A.
-//     *
-//     *                    i+j
-//     *     Let  b   = (-1)    a
-//     *           ij            ji
-//     *
-//     *    The matrix B = (b  ) is the adjoint of A
-//     *                     ij
-//     */
-//    public static void adjoint(Matrix in, Matrix out){
-//    double a1, a2, a3, a4, b1, b2, b3, b4;
-//    double c1, c2, c3, c4, d1, d2, d3, d4;
-
-//    /* assign to individual variable names to aid  */
-//    /* selecting correct values  */
-
-//    a1 = in.p[0]; b1 = in.p[4]; 
-//    c1 = in.p[8]; d1 = in.p[12];
-
-//    a2 = in.p[1]; b2 = in.p[5]; 
-//    c2 = in.p[9]; d2 = in.p[13];
-
-//    a3 = in.p[2]; b3 = in.p[6];
-//    c3 = in.p[10]; d3 = in.p[14];
-
-//    a4 = in.p[3]; b4 = in.p[7]; 
-//    c4 = in.p[11]; d4 = in.p[15];
-
-
-//    /* row column labeling reversed since we transpose rows & columns */
-
-//    out.p[0] =   det3x3(b2, b3, b4, c2, c3, c4, d2, d3, d4);
-//    out.p[1] = - det3x3(a2, a3, a4, c2, c3, c4, d2, d3, d4);
-//    out.p[2] =   det3x3(a2, a3, a4, b2, b3, b4, d2, d3, d4);
-//    out.p[3] = - det3x3(a2, a3, a4, b2, b3, b4, c2, c3, c4);
-        
-//    out.p[4] = - det3x3(b1, b3, b4, c1, c3, c4, d1, d3, d4);
-//    out.p[5] =   det3x3(a1, a3, a4, c1, c3, c4, d1, d3, d4);
-//    out.p[6] = - det3x3(a1, a3, a4, b1, b3, b4, d1, d3, d4);
-//    out.p[7] =   det3x3(a1, a3, a4, b1, b3, b4, c1, c3, c4);
-        
-//    out.p[8] =   det3x3(b1, b2, b4, c1, c2, c4, d1, d2, d4);
-//    out.p[9] = - det3x3(a1, a2, a4, c1, c2, c4, d1, d2, d4);
-//    out.p[10] =   det3x3(a1, a2, a4, b1, b2, b4, d1, d2, d4);
-//    out.p[11] = - det3x3(a1, a2, a4, b1, b2, b4, c1, c2, c4);
-        
-//    out.p[12] = - det3x3(b1, b2, b3, c1, c2, c3, d1, d2, d3);
-//    out.p[13] =   det3x3(a1, a2, a3, c1, c2, c3, d1, d2, d3);
-//    out.p[14] = - det3x3(a1, a2, a3, b1, b2, b3, d1, d2, d3);
-//    out.p[15] =   det3x3(a1, a2, a3, b1, b2, b3, c1, c2, c3);
-//    }
-
-//    /**
-//     * double = det4x4( matrix )
-//     * 
-//     * calculate the determinant of a 4x4 matrix.
-//     */
-//    private static double det4x4(Matrix m){
-//    double a1, a2, a3, a4, b1, b2, b3, b4, c1, c2, c3, c4, d1, d2, d3, d4;
-
-//    /* assign to individual variable names to aid selecting */
-//    /*  correct elements */
-
-//    a1 = m.p[0]; b1 = m.p[4]; 
-//    c1 = m.p[8]; d1 = m.p[12];
-
-//    a2 = m.p[1]; b2 = m.p[5]; 
-//    c2 = m.p[9]; d2 = m.p[13];
-
-//    a3 = m.p[2]; b3 = m.p[6]; 
-//    c3 = m.p[10]; d3 = m.p[14];
-
-//    a4 = m.p[3]; b4 = m.p[7]; 
-//    c4 = m.p[11]; d4 = m.p[15];
-
-//    double ans;
-
-//    ans = a1 * det3x3(b2, b3, b4, c2, c3, c4, d2, d3, d4)
-//        - b1 * det3x3(a2, a3, a4, c2, c3, c4, d2, d3, d4)
-//        + c1 * det3x3(a2, a3, a4, b2, b3, b4, d2, d3, d4)
-//        - d1 * det3x3(a2, a3, a4, b2, b3, b4, c2, c3, c4);
-//    return ans;
-//    }
-
-//    /**
-//     * double = det3x3(  a1, a2, a3, b1, b2, b3, c1, c2, c3 )
-//     * 
-//     * calculate the determinant of a 3x3 matrix
-//     * in the form
-//     *
-//     *     | a1,  b1,  c1 |
-//     *     | a2,  b2,  c2 |
-//     *     | a3,  b3,  c3 |
-//     */
-//    private static double det3x3(double a1, double a2, double a3,
-//                 double b1, double b2, double b3,
-//                 double c1, double c2, double c3){
-//    double ans;
-
-//    ans = a1 * det2x2(b2, b3, c2, c3)
-//        - b1 * det2x2(a2, a3, c2, c3)
-//        + c1 * det2x2(a2, a3, b2, b3);
-//    return ans;
-//    }
-
-//    /**
-//     * double = det2x2( double a, double b, double c, double d )
-//     * 
-//     * calculate the determinant of a 2x2 matrix.
-//     */
-//    private static double det2x2(double a, double b, double c, double d){
-//    double ans = a * d - b * c;
-//    return ans;
-//    }
-
-//    /** Interpolate a new matrix. */
-//    public static Matrix interpolate(Matrix MS, Matrix MF, double frac){
-//    Matrix MI = new Matrix();
-
-//    interpolate(MS, MF, frac, MI);
-
-//    return MI;
-//    }
-
-//    /** Interpolate a new matrix. */
-//    public static void interpolate(Matrix MS, Matrix MF, double frac, Matrix MI){
-//    double qS[] = new double[4];
-//    double qF[] = new double[4];
-//    double qI[] = new double[4];
-
-//    //MS.print("start");
-
-//    MS.toQuaternion(qS);
-//    MF.toQuaternion(qF);
-
-//    slerp(qS, qF, frac, qI);
-
-//    MI.fromQuaternion(qI);
-
-//    //System.out.println("frac " + frac);
-//    //MI.print("interpolated");
-//    //MF.print("final");
-//    }
-
-//    /** Convert a matrix to a quaternion. */
-//    public void toQuaternion(double q[]){
-//    double trace = p[0] + p[5] + p[10] + 1.0;
-
-//    if( trace > 1.e-7 ) {
-//        double s = 0.5 / Math.sqrt(trace);
-//        q[0] = ( p[6] - p[9] ) * s;
-//        q[1] = ( p[8] - p[2] ) * s;
-//        q[2] = ( p[1] - p[4] ) * s;
-//        q[3] = 0.25 / s;
-//    } else {
-//        if ( p[0] > p[5] && p[0] > p[10] ) {
-//        double s = 2.0 * Math.sqrt( 1.0 + p[0] - p[5] - p[10]);
-//        q[0] = 0.25 * s;
-//        q[1] = (p[4] + p[1] ) / s;
-//        q[2] = (p[8] + p[2] ) / s;
-//        q[3] = (p[9] - p[6] ) / s;
-//        } else if (p[5] > p[10]) {
-//        double s = 2.0 * Math.sqrt( 1.0 + p[5] - p[0] - p[10]);
-//        q[0] = (p[4] + p[1] ) / s;
-//        q[1] = 0.25 * s;
-//        q[2] = (p[9] + p[6] ) / s;
-//        q[3] = (p[8] - p[2] ) / s;    
-//        } else {
-//        double s = 2.0 * Math.sqrt( 1.0 + p[10] - p[0] - p[5] );
-//        q[0] = (p[8] + p[2] ) / s;
-//        q[1] = (p[9] + p[6] ) / s;
-//        q[2] = 0.25 * s;
-//        q[3] = (p[4] - p[1] ) / s;
-//        }
-//    }
-
-//    double len = q[0]*q[0] +q[1]*q[1] +q[2]*q[2] +q[3]*q[3];
-
-//    len = Math.sqrt(len);
-
-//    for(int i = 0; i < 4; i++){
-//        q[i] /= len;
-//    }
-//    }
-
-//    /** Generate rotation matrix from quaternion. */
-//    public void fromQuaternion(double q[]){
-//    //fromQuaternion(q[3], q[0], q[1], q[2]);
-//    double X = q[0];
-//    double Y = q[1];
-//    double Z = q[2];
-//    double W = q[3];
-
-//    double xx = X * X;
-//    double xy = X * Y;
-//    double xz = X * Z;
-//    double xw = X * W;
-//    double yy = Y * Y;
-//    double yz = Y * Z;
-//    double yw = Y * W;
-//    double zz = Z * Z;
-//    double zw = Z * W;
-
-//    setIdentity();
-
-//    p[0]  = 1 - 2 * ( yy + zz );
-//    p[4]  =     2 * ( xy - zw );
-//    p[8]  =     2 * ( xz + yw );
-//    p[1]  =     2 * ( xy + zw );
-//    p[5]  = 1 - 2 * ( xx + zz );
-//    p[9]  =     2 * ( yz - xw );
-//    p[2]  =     2 * ( xz - yw );
-//    p[6]  =     2 * ( yz + xw );
-//    p[10]  = 1 - 2 * ( xx + yy );
-//    //mat[3]  = mat[7] = mat[11] = mat[12] = mat[13] = mat[14] = 0;
-//    //mat[15] = 1;
-//    /*
-//    mat[0]  = 1 - 2 * ( yy + zz );
-//    mat[1]  =     2 * ( xy - zw );
-//    mat[2]  =     2 * ( xz + yw );
-//    mat[4]  =     2 * ( xy + zw );
-//    mat[5]  = 1 - 2 * ( xx + zz );
-//    mat[6]  =     2 * ( yz - xw );
-//    mat[8]  =     2 * ( xz - yw );
-//    mat[9]  =     2 * ( yz + xw );
-//    mat[10] = 1 - 2 * ( xx + yy );
-//    mat[3]  = mat[7] = mat[11] = mat[12] = mat[13] = mat[14] = 0;
-//    mat[15] = 1;
-//    */
-//    }
-
-//    /**
-//     * Generate rotation matrix from quaternion.
-//     * Used by the fitting routine
-//     */
-//    public void fromQuaternion(double q1, double q2, double q3, double q4){
-//    p[0] = q1*q1 + q2*q2 - q3*q3 - q4*q4;
-//    p[1] = 2. * (q2*q3 - q1*q4);
-//    p[2] = 2. * (q2*q4 + q1*q3);
-//    p[3] = 0.0;
-
-//    p[4] = 2. * (q2*q3 + q1*q4);
-//    p[5] = q1*q1 - q2*q2 + q3*q3 - q4*q4;
-//    p[6] = 2. * (q3*q4 - q1*q2);
-//    p[7] = 0.0;
-
-//    p[8] = 2. * (q2*q4 - q1*q3);
-//    p[9] = 2. * (q3*q4 + q1*q2);
-//    p[10] = q1*q1 - q2*q2 - q3*q3 + q4*q4;
-//    p[11] = 0.0;
-
-//    p[12] = p[13] = p[14] = 0.0;
-//    p[15] = 1.0;
-//    }
-
-//    /** The famous quaternion slerp. */
-//    public static void slerp(double Q0[], double Q1[], double T, double Result[]) {
-//    //double CosTheta = Q0.DotProd(Q1);
-//    double CosTheta = Q0[3]*Q1[3] - (Q0[0]*Q1[0] + Q0[1]*Q1[1] + Q0[2]*Q1[2]);
-//    double Theta = Math.acos(CosTheta);
-//    double SinTheta = Math.sqrt(1.0-CosTheta*CosTheta);
-	
-//        if(Math.abs(SinTheta) < 1.e-5){
-//            for(int i = 0; i < 4; i++){
-//                Result[i] = Q0[i];
-//            }
-//            return;
-//        }
-
-//    double Sin_T_Theta = Math.sin(T*Theta)/SinTheta;
-//    double Sin_OneMinusT_Theta = Math.sin((1.0-T)*Theta)/SinTheta;
-
-//    //Result = Q0*Sin_OneMinusT_Theta;
-//    //Result += (Q1*Sin_T_Theta);
-//    for(int i = 0; i < 4; i++){
-//        Result[i] = Q0[i]*Sin_OneMinusT_Theta + Q1[i]*Sin_T_Theta;
-//    }
-
-//    double len =
-//        Result[0]*Result[0] +
-//        Result[1]*Result[1] +
-//        Result[2]*Result[2] +
-//        Result[3]*Result[3];
-//    len = Math.sqrt(len);
-
-//    for(int i = 0; i < 4; i++){
-//        Result[i] /= len;
-//    }
-
-//    }
-//}
-
+        public override bool Equals(object obj)
+        {
+            if (obj is Matrix)
+                return ((Matrix)obj == this);
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

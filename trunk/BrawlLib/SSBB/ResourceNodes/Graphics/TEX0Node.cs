@@ -44,7 +44,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
         internal UserDataCollection _userEntries = new UserDataCollection();
 
-        public PLT0Node GetPaletteNode() { return ((_parent == null) || (!HasPalette)) ? null : _parent._parent.FindChild("Palettes(NW4R)/" + this.Name, false) as PLT0Node; }
+        public PLT0Node GetPaletteNode() { return ((_parent == null) || (!HasPalette)) ? null : Parent._parent.FindChild("Palettes(NW4R)/" + this.Name, false) as PLT0Node; }
 
         protected override bool OnInitialize()
         {
@@ -85,10 +85,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             PLT0Node plt = GetPaletteNode();
             try
             {
-                if (plt != null)
-                    return TextureConverter.DecodeIndexed(Header1, plt.Palette, index + 1);
-                else
-                    return TextureConverter.Decode(Header1, index + 1);
+                if (WorkingUncompressed != DataSource.Empty)
+                    if (plt != null)
+                        return TextureConverter.DecodeIndexed(Header1, plt.Palette, index + 1);
+                    else
+                        return TextureConverter.Decode(Header1, index + 1);
+                else 
+                    return null;
             }
             catch { return null; }
         }
@@ -97,10 +100,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             try
             {
-                if (plt != null)
-                    return TextureConverter.DecodeIndexed(Header1, plt.Palette, index + 1);
-                else
-                    return TextureConverter.Decode(Header1, index + 1);
+                if (WorkingUncompressed != DataSource.Empty)
+                    if (plt != null)
+                        return TextureConverter.DecodeIndexed(Header1, plt.Palette, index + 1);
+                    else
+                        return TextureConverter.Decode(Header1, index + 1);
+                else 
+                    return null;
             }
             catch { return null; }
         }

@@ -74,8 +74,7 @@ namespace BrawlLib.Wii.Compression
                 else
                 {
                     byte srcTmp;
-            
-                    length    += 3;
+                    length += 3;
                     if (length > destCount)
                     // Measures for buffer overrun when invalid data is decompressed.
                         length = destCount;

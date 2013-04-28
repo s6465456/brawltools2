@@ -10,8 +10,7 @@ namespace System
         {
             switch (Environment.OSVersion.Platform)
             {
-                case PlatformID.Win32NT: { Win32.MoveMemory(dst, src, size); 
-                    break; }
+                case PlatformID.Win32NT: { Win32.MoveMemory(dst, src, size); break; }
                 case PlatformID.MacOSX: { break; }
                 case PlatformID.Unix: { Linux.memmove(dst, src, size); break; }
             }

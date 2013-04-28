@@ -1025,7 +1025,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Model.Refesh();
         }
 
-        public void Render(TKContext ctx, ModelEditControl mainWindow)
+        public void GetBox(out Vector3 min, out Vector3 max)
+        {
+            min = new Vector3();
+            max = new Vector3();
+        }
+
+        public void Render(TKContext ctx, ModelPanel mainWindow)
         {
             if (Model != null)
             {

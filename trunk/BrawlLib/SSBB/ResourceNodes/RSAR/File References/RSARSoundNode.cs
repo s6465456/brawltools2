@@ -313,22 +313,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _dataNode = _soundNode.Children[0].Children[_waveInfo._soundIndex] as RWSDDataNode;
                 _dataNode._refs.Add(this);
             }
+
             return false;
         }
-
-        public IAudioStream CreateStream()
+        public IAudioStream _stream;
+        public IAudioStream[] CreateStreams()
         {
+            _stream = null;
             if (_soundNode is RWSDNode)
             {
                 RWSDDataNode d = _dataNode as RWSDDataNode;
-                if (d == null) return null;
-                if (!(_soundNode.Children.Count > 1 && _soundNode.Children[1].Children.Count > d._part3._waveIndex && d._part3._waveIndex >= 0))
-                    return null;
-
-                return (_soundNode.Children[1].Children[d._part3._waveIndex] as RSARFileAudioNode).CreateStream();
+                if (d != null && _soundNode.Children.Count > 1 && _soundNode.Children[1].Children.Count > d._part3._waveIndex && d._part3._waveIndex >= 0)
+                    _stream = (_soundNode.Children[1].Children[d._part3._waveIndex] as RSARFileAudioNode).CreateStreams()[0];
             }
-            else
-                return null;
+            return new IAudioStream[] { _stream };
         }
 
         protected override int OnCalculateSize(bool force)
@@ -391,7 +389,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override unsafe void Export(string outPath)
         {
             if (outPath.EndsWith(".wav"))
-                WAV.ToFile(CreateStream(), outPath);
+                WAV.ToFile(CreateStreams()[0], outPath);
             else
                 base.Export(outPath);
         }

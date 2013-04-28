@@ -9,9 +9,9 @@ using BrawlLib;
 
 namespace System.Windows.Forms
 {
-    public partial class ExportAllAskFormat : Form
+    public partial class ExportAllFormatDialog : Form
     {
-        public ExportAllAskFormat()
+        public ExportAllFormatDialog()
         {
             InitializeComponent();
             string[] source = ExportFilters.TEX0.Split('|');

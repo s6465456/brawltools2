@@ -1556,16 +1556,14 @@ namespace System.Windows.Forms
             if (e.Button == MouseButtons.Left)
             {
                 if (saveIndex != 0)
-                {
                     if (undoSaves[saveIndex - 1]._collisionLinks[0]._value.ToString() == undoSaves[saveIndex - 1]._linkVectors[0].ToString())//If equal to starting point, remove.
                     {
                         undoSaves.RemoveAt(saveIndex - 1);
                         saveIndex--;
                         if (saveIndex == 0)
-                        { btnUndo.Enabled = false; }
+                            btnUndo.Enabled = false;
                     }
-                }
-
+                
                 hasMoved = false;
                 FinishSelection();
                 FinishHover();

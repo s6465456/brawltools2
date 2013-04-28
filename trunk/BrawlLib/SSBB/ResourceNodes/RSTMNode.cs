@@ -57,17 +57,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Audio Stream")]
         public int BitsPerSample { get { return _bps; } }
 
-        public IAudioStream CreateStream()
+        public IAudioStream[] CreateStreams()
         {
             if (Header != null)
-                return new ADPCMStream(Header, _audioSource.Address);
-            return null;
+                return ADPCMStream.GetStreams(Header, _audioSource.Address);
+            return new IAudioStream[] { null };
         }
 
         protected override bool OnInitialize()
         {
             if ((_name == null) && (_origPath != null))
                 _name = Path.GetFileNameWithoutExtension(_origPath);
+
+            base.OnInitialize();
 
             StrmDataInfo* part1 = Header->HEADData->Part1;
 
@@ -95,7 +97,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override unsafe void Export(string outPath)
         {
             if (outPath.EndsWith(".wav"))
-                WAV.ToFile(CreateStream(), outPath);
+                WAV.ToFile(CreateStreams()[0], outPath);
             else
             {
                 if (_audioSource != DataSource.Empty)

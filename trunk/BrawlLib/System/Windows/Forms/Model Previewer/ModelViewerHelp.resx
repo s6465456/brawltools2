@@ -125,25 +125,65 @@
 
 [____Controls____]
 
-Right mouse button - Hold to pan
-Ctrl + Right mouse - Hold to rotate
-Mouse wheel - Zoom
-Arrow keys - Pan
-Ctrl + Arrow keys - Rotate
-+, - keys - Zoom
+_____Model Panel_____
+Right mouse button: Hold to pan
+Ctrl + Right mouse: Hold to rotate
+Mouse wheel: Zoom
+Arrow keys: Pan
+Ctrl + Arrow keys: Rotate
++, - keys: Zoom
 Shift key: Increase camera translation/rotation speed
 
-A key - Toggle left panel
-W key - Toggle top panel
-S key - Toggle bottom panel
-D key - Toggle right panel
+_____Panels_____
+A key: Toggle left panel
+W key: Toggle top panel
+S key: Toggle bottom panel
+D key: Toggle right panel
+Ctrl + Alt + D: Toggle all panels
 
-E key - Use bone scale control
-R key - Use bone rotation control
-T key - Use bone translation control
+E key: Use bone scale control
+R key: Use bone rotation control
+T key: Use bone translation control
 
-Ctrl + Z key - Undo last animation change
-Ctrl + Y key - Redo last animation undo
+F key: Toggle floor
+B key: Toggle bones
+P key: Toggle polygons
+V key: Toggle vertices
+
+H key: Toggle Weight Editor (replaces animation editor on bottom panel)
+J key: Toggle Vertex Editor (replaces animation editor on bottom panel)
+
+Ctrl + U: Reset Camera
+G Key: Reload Textures
+
+____Animations_____
+Page Up: Next Frame
+Page Down: Previous Frame
+Ctrl + Page Up: Last Frame
+Ctrl + Page Down: First Frame
+Space key: Play animation
+
+CHR0 Editor Only
+Ctrl + Z: Undo
+Ctrl + Y: Redo
+
+Ctrl + C: Copy Bone Frame
+Ctrl + Shift + C: Copy Whole Frame
+
+Ctrl + V: Paste Bone Frame
+Ctrl + Alt + V: Paste Bone Frame - Keyframes only
+
+Ctrl + Shift + V: Paste Whole Frame
+Ctrl + Alt + Shift + V: Paste Whole Frame - Keyframes only
+
+Ctrl + Backspace: Clear Bone Frame of All Keyframes
+Ctrl + Shift + Backspace: Clear Whole Frame of All Keyframes
+
+Delete Key: Remove Frame
+
+____Other_____
+Ctrl + A: Select all vertices
+
 
 There are various control panels that are hidden in the model viewer. You'll notice that when you press one of the bars along the border of the window, these controls will expand allowing greater control over the content.
 
@@ -289,7 +329,6 @@ Textures are automatically loaded from the same directory as the file. You can l
     Open the model file, and it will then load the extracted textures.
     When you make changes to a texture, use the reload feature to see the changes.
     Textures no longer have to be replaced to see how it affects the model, just reload them.
-    When you're done, open the original file and use the Replace All feature. 
-</value>
+    When you're done, open the original file and use the Replace All feature. </value>
   </data>
 </root>

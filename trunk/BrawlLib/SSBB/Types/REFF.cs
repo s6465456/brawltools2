@@ -707,7 +707,12 @@ namespace BrawlLib.SSBBTypes
     public enum AnimCurveTargetChild //curve flag = 5
     {
         //Updates: child
-        Child = 0
+        Child = 0,
+    }
+    public enum AnimCurveTargetChild2 //curve flag = 5
+    {
+        //Updates: child
+        Child = 26,
     }
 
     public enum AnimCurveTargetField //curve flag = 7
