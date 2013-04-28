@@ -240,6 +240,10 @@ namespace System.Audio
         public ushort _bitsPerSample;
         public ushort _extraParamSize;
 
+        //For some reason, if these aren't here, dataChunk bytes are 0
+        public ushort _randomFiller1;
+        public uint _randomFiller2;
+
         public int GetSize() { return (int)(8 + _chunkSize); }
         public fmtChunk(int format, int channels, int bitsPerSample, int sampleRate)
         {
@@ -251,7 +255,8 @@ namespace System.Audio
             _blockAlign = (ushort)(bitsPerSample / 8 * channels);
             _avgBytesSec = (uint)(sampleRate * _blockAlign);
             _bitsPerSample = (ushort)bitsPerSample;
-            _extraParamSize = 0;
+            _extraParamSize = _randomFiller1 = 0;
+            _randomFiller2 = 0;
         }
     }
 

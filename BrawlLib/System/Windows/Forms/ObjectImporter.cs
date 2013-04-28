@@ -34,25 +34,44 @@ namespace System.Windows.Forms
             comboBox1.Items.AddRange(_externalModel.FindChild("Objects", true).Children.ToArray());
             comboBox2.Items.AddRange(_internalModel._linker.BoneCache);
             comboBox3.Items.Add("Add as child");
-            //comboBox3.Items.Add("Replace");
-            //comboBox3.Items.Add("Merge children");
+            comboBox3.Items.Add("Replace");
+            comboBox3.Items.Add("Merge children");
             comboBox1.SelectedIndex = comboBox2.SelectedIndex = comboBox3.SelectedIndex = 0;
 
             return base.ShowDialog(null);
         }
 
-        private void MergeChildren(MDL0BoneNode main, MDL0BoneNode ext, ResourceNode res)
+        private void MergeChildren(MDL0BoneNode parent, MDL0BoneNode child, ResourceNode res)
         {
             bool found = false;
+            MDL0BoneNode bone = null;
+            foreach (MDL0BoneNode b1 in parent.Children)
+                if (b1.Name == child.Name)
+                {
+                    found = true;
+                    bone = b1;
+                    foreach (MDL0BoneNode b in child.Children)
+                        MergeChildren(b1, b, res);
+                    break;
+                }
+            if (!found)
+            {
+                MDL0BoneNode b = child.Clone();
+                parent.InsertChild(b, true, child.Index);
+                bone = b;
+            }
+            else
+                found = false;
+            
             if (res is MDL0ObjectNode)
             {
                 MDL0ObjectNode poly = res as MDL0ObjectNode;
                 foreach (Vertex3 v in poly._manager._vertices)
-                    if (v._matrixNode == ext)
+                    if (v._matrixNode == child)
                     {
-                        v._matrixNode = main;
-                        main.ReferenceCount++;
-                        main.References.Add(v);
+                        v.MatrixNode = bone;
+                        //bone.ReferenceCount++;
+                        //bone.References.Add(v);
                     }
             }
             else if (res is MDL0Node)
@@ -60,31 +79,12 @@ namespace System.Windows.Forms
                 MDL0Node mdl = res as MDL0Node;
                 foreach (MDL0ObjectNode poly in mdl.FindChild("Objects", true).Children)
                     foreach (Vertex3 v in poly._manager._vertices)
-                        if (v._matrixNode == ext)
+                        if (v._matrixNode == child)
                         {
-                            v._matrixNode = main;
-                            main.ReferenceCount++;
-                            main.References.Add(v);
+                            v.MatrixNode = bone;
+                            //bone.ReferenceCount++;
+                            //bone.References.Add(v);
                         }
-            }
-            foreach (MDL0BoneNode b2 in ext.Children)
-            {
-                foreach (MDL0BoneNode b1 in main.Children)
-                {
-                    if (b1.Name == b2.Name)
-                    {
-                        found = true;
-                        MergeChildren(b1, b2, res);
-                        break;
-                    }
-                }
-                if (!found)
-                {
-                    if (b2.ReferenceCount > 0)
-                        main.InsertChild(b2, true, b2.Index);
-                }
-                else
-                    found = false;
             }
         }
 
@@ -156,10 +156,10 @@ namespace System.Windows.Forms
             {
                 foreach (Vertex3 vert in node._manager._vertices)
                     if (vert._matrixNode != null && vert._matrixNode is Influence)
-                        vert._matrixNode = _internalModel._influences.AddOrCreateInf((Influence)vert._matrixNode);
+                        vert._matrixNode = _internalModel._influences.FindOrCreate((Influence)vert._matrixNode, true);
             }
             else if (node.MatrixNode != null && node.MatrixNode is Influence)
-                node.MatrixNode = _internalModel._influences.AddOrCreateInf((Influence)node.MatrixNode);
+                node.MatrixNode = _internalModel._influences.FindOrCreate((Influence)node.MatrixNode, true);
 
             newNode.RecalcIndices();
             newNode._bone = (MDL0BoneNode)_internalModel.BoneGroup.Children[0];
@@ -237,7 +237,7 @@ namespace System.Windows.Forms
                     label2.Text = "With base bone \"" + _baseInf + "\", replace: ";
                     break;
                 case 2:
-                    label2.Text = "Merge base bone \"" + _baseInf + "\" with: ";
+                    label2.Text = "Merge base bone \"" + _baseInf + "\" with children of: ";
                     break;
             }
 
@@ -278,7 +278,7 @@ namespace System.Windows.Forms
                         label2.Text = "With base bone \"" + _baseInf + "\", replace: ";
                         break;
                     case 2:
-                        label2.Text = "Merge base bone \"" + _baseInf + "\" with: ";
+                        label2.Text = "Merge base bone \"" + _baseInf + "\" with children of: ";
                         break;
                 }
             }

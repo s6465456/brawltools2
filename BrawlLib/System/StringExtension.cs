@@ -41,16 +41,50 @@ namespace System
                 *ptr++ = (sbyte)s[i];
             ptr++; //Null terminator
         }
-        public static bool[] ToBinaryArray(this string s)
+        public static string ToBinaryArray(this string s)
         {
-            List<bool> values = new List<bool>();
-            for (int i = 0; i < s.Length; i++)
+            //string value = "";
+            //for (int i = 0; i < s.Length; i++)
+            //{
+            //    byte c = (byte)s[i];
+            //    for (int x = 0; x < 8; x++)
+            //        value += ((c >> (7 - x)) & 1);
+            //}
+            //return value;
+            string result = string.Empty;
+            foreach (char ch in s)
+                result += Convert.ToString((int)ch, 2);
+            return result.PadLeft(result.Length.Align(8), '0');
+        }
+        public static int CompareBits(this String t1, String t2)
+        {
+            int bit = 0;
+            bool found = false;
+            int min = Math.Min(t1.Length, t2.Length);
+            for (int i = 0; i < min; i++)
             {
-                byte c = (byte)s[i];
+                byte c1 = (byte)t1[i];
+                byte c2 = (byte)t2[i];
+
                 for (int x = 0; x < 8; x++)
-                    values.Add((c >> (8 - x)) != 0);
+                    if (c1 >> (7 - x) != c2 >> (7 - x))
+                    {
+                        bit = i * 8 + x; 
+                        found = true;
+                        break;
+                    }
+                if (bit != 0)
+                    break;
             }
-            return values.ToArray();
+            if (!found)
+                bit = min * 8 + 1;
+            return bit;
+        }
+        public static bool AtBit(this String s, int bitIndex)
+        {
+            int bit = bitIndex % 8;
+            int byteIndex = (bitIndex - bit) / 8;
+            return ((s[byteIndex] >> (7 - bit)) & 1) != 0;
         }
     }
 }

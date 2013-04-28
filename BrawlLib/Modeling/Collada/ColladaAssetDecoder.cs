@@ -125,7 +125,7 @@ namespace BrawlLib.Modeling
                         //    else if (bone.Parent != null)
                         //        if (bone.Parent.Name == "FacePattern")
                         //            Console.WriteLine(bone.Name);
-                        inf._weights[x] = new BoneWeight(bone, weight);
+                        inf._weights.Add(new BoneWeight(bone, weight));
                     }
                 }
 
@@ -137,7 +137,7 @@ namespace BrawlLib.Modeling
                 if (inf._weights.Count > 1)
                 {
                     //Match with manager
-                    inf = infManager.AddOrCreate(inf);
+                    inf = infManager.FindOrCreate(inf, false);
                     v = new Vertex3(skin._bindMatrix * pVert[i], inf); //World position
                 }
                 else
@@ -591,12 +591,12 @@ namespace BrawlLib.Modeling
                             else if (pCmd[z] == 2)
                                 weight = pWeights[*iPtr];
 
-                        inf._weights[x] = new BoneWeight(bone, weight);
+                        inf._weights.Add(new BoneWeight(bone, weight));
                     }
                 }
 
                 //Match with manager
-                inf = iMan.AddOrCreateInf(inf);
+                inf = iMan.FindOrCreate(inf, true);
 
                 //Create Vertex and look for match
                 Vertex3 v = new Vertex3(pVert[*pVInd], inf);

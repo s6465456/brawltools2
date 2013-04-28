@@ -111,7 +111,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
-    <Reference Include="OpenTK.Compatibility, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -124,6 +123,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="System\ComponentModel\CustomPropertyDescriptor.cs" />
     <None Include="System\ComponentModel\DelegatePropertyDescriptor.cs" />
     <None Include="Modeling\Model\Bone.cs" />
@@ -131,9 +131,6 @@
     <Compile Include="Imaging\GIF\GifDecoder.cs" />
     <Compile Include="Imaging\GIF\LZWEncoder.cs" />
     <Compile Include="Imaging\GIF\NeuQuant.cs" />
-    <Compile Include="Modeling\Triangle Converter\TCParamDebug.cs" />
-    <Compile Include="Modeling\Triangle Converter\TCMain.cs" />
-    <Compile Include="Modeling\Triangle Converter\TCTableVariables.cs" />
     <Compile Include="Modeling\PMDModel.cs" />
     <Compile Include="Modeling\SaveState.cs" />
     <Compile Include="Modeling\Collada\Collada.cs">
@@ -172,8 +169,6 @@
     <None Include="OpenGL\GLBone.cs" />
     <Compile Include="OpenGL\TKContext.cs" />
     <None Include="OpenGL\wGlContextTK.cs" />
-    <Compile Include="OpenGL\CPPEnums.cs" />
-    <Compile Include="OpenGL\Enums.cs" />
     <Compile Include="OpenGL\GLCamera.cs" />
     <None Include="OpenGL\GLContext.cs" />
     <None Include="OpenGL\GLDelegates.cs" />
@@ -192,6 +187,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Settings.Designer.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="SSBB\BinaryStringTable.cs" />
     <Compile Include="SSBB\ExportFilters.cs" />
     <Compile Include="SSBB\LabelBuilder.cs" />
@@ -200,6 +197,8 @@
     <Compile Include="SSBB\ResourceNodes\AI\ATKDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\AI\CENode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurVecNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurPosNode.cs" />
     <Compile Include="SSBB\ResourceNodes\NW4RNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Graphics\TPLNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Graphics\REFFTEVStage.cs" />
@@ -339,8 +338,8 @@
     <Compile Include="System\Audio\wAudioProvider.cs" />
     <Compile Include="System\Audio\WAV.cs" />
     <Compile Include="System\BinaryHandlers.cs" />
-    <Compile Include="System\BInt24.cs" />
-    <Compile Include="System\BUInt24.cs" />
+    <Compile Include="System\Int24.cs" />
+    <Compile Include="System\UInt24.cs" />
     <Compile Include="System\IO\GeckoStream.cs" />
     <Compile Include="System\PowerPCAssembly\Assembly Manager.cs" />
     <Compile Include="System\PowerPCAssembly\PowerPcAssembly.cs" />
@@ -359,7 +358,6 @@
     <Compile Include="System\PowerPCAssembly\PowerPcFormat.cs" />
     <Compile Include="System\RoundingExtensions.cs" />
     <Compile Include="System\ViewerSettingsFile.cs" />
-    <Compile Include="System\Quaternion.cs" />
     <Compile Include="System\DropDownLists.cs" />
     <Compile Include="System\DoubleExtension.cs" />
     <Compile Include="System\DVector3.cs" />
@@ -374,7 +372,7 @@
     <Compile Include="System\UnsafeBuffer.cs" />
     <Compile Include="System\Vector2.cs" />
     <Compile Include="System\Vector3.cs" />
-    <Compile Include="OpenGL\wGL.cs" />
+    <None Include="OpenGL\wGL.cs" />
     <None Include="OpenGL\wGlContext.cs" />
     <Compile Include="OpenGL\wPixelFormatDescriptor.cs" />
     <Compile Include="Platform\Linux.cs" />
@@ -408,7 +406,40 @@
     <Compile Include="System\Windows\Forms\Model Previewer\Editors\CLR0Editor.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\Editors\VertexEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\Editors\WeightEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\ButtonClick.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\BRRESNodes.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Rendering.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Mouse.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Animation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Undo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\CheckedChanged.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\FileHandling.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Variables.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Designer.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\ModelViewerHelp.cs">
@@ -495,9 +526,6 @@
     <Compile Include="System\Windows\Forms\TangentEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\Editors\CHR0Editor.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -516,7 +544,7 @@
     <Compile Include="System\Windows\Forms\Model Previewer\Editors\SRT0Editor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\LeftPanel.cs">
+    <Compile Include="System\Windows\Forms\Model Previewer\Panels\AnimModelPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\Panels\BonesPanel.cs">
@@ -567,15 +595,6 @@
     <Compile Include="System\Windows\Forms\GradientDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <None Include="System\Windows\Forms\Model Previewer\Panels\Old\AnimPanel.cs">
-      <SubType>UserControl</SubType>
-    </None>
-    <None Include="System\Windows\Forms\Model Previewer\Panels\Old\AssetPanel.cs">
-      <SubType>UserControl</SubType>
-    </None>
-    <None Include="System\Windows\Forms\Model Previewer\Panels\Old\OptionPanel.cs">
-      <SubType>UserControl</SubType>
-    </None>
     <Compile Include="System\Windows\Forms\Model Previewer\ModelPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -619,6 +638,7 @@
     <Compile Include="Wii\Compression\CXDecompression.cs" />
     <Compile Include="Wii\Compression\CXCompression.cs" />
     <Compile Include="Wii\Compression\RunLength.cs" />
+    <Compile Include="Wii\Graphics\ShaderGenerator.cs" />
     <Compile Include="Wii\Models\AnimationCode.cs" />
     <Compile Include="Wii\Animations\AnimationConverter.cs" />
     <Compile Include="Wii\Animations\AnimationFrame.cs" />
@@ -705,6 +725,9 @@
     <EmbeddedResource Include="Modeling\Collada\ColladaImporter.resx">
       <DependentUpon>ColladaImporter.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="OpenGL\GLPanel.resx">
+      <DependentUpon>GLPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -724,8 +747,14 @@
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\CLR0Editor.resx">
       <DependentUpon>CLR0Editor.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\VertexEditor.resx">
+      <DependentUpon>VertexEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\WeightEditor.resx">
       <DependentUpon>WeightEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelEditControl\Designer.resx">
+      <DependentUpon>Designer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelViewerHelp.resx">
       <DependentUpon>ModelViewerHelp.cs</DependentUpon>
@@ -797,9 +826,6 @@
     <EmbeddedResource Include="System\Windows\Forms\TangentEditor.resx">
       <DependentUpon>TangentEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelEditControl.resx">
-      <DependentUpon>ModelEditControl.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\CHR0Editor.resx">
       <DependentUpon>CHR0Editor.cs</DependentUpon>
     </EmbeddedResource>
@@ -818,8 +844,8 @@
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\SRT0Editor.resx">
       <DependentUpon>SRT0Editor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\LeftPanel.resx">
-      <DependentUpon>LeftPanel.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\AnimModelPanel.resx">
+      <DependentUpon>AnimModelPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\BonesPanel.resx">
       <DependentUpon>BonesPanel.cs</DependentUpon>
@@ -857,15 +883,6 @@
     <EmbeddedResource Include="System\Windows\Forms\GradientDialog.resx">
       <DependentUpon>GradientDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="System\Windows\Forms\Model Previewer\Panels\Old\AnimPanel.resx">
-      <DependentUpon>AnimPanel.cs</DependentUpon>
-    </None>
-    <None Include="System\Windows\Forms\Model Previewer\Panels\Old\AssetPanel.resx">
-      <DependentUpon>AssetPanel.cs</DependentUpon>
-    </None>
-    <None Include="System\Windows\Forms\Model Previewer\Panels\Old\OptionPanel.resx">
-      <DependentUpon>OptionPanel.cs</DependentUpon>
-    </None>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\PlaybackPanel.resx">
       <DependentUpon>PlaybackPanel.cs</DependentUpon>
     </EmbeddedResource>
@@ -913,7 +930,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Modeling\Triangle Converter\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="OpenTK.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

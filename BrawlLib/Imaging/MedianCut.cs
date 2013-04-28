@@ -109,7 +109,6 @@ namespace BrawlLib.Imaging
             GC.SuppressFinalize(this);
         }
 
-
         private bool SelectColors(int targetColors)
         {
             int splitAxis;
@@ -478,7 +477,6 @@ namespace BrawlLib.Imaging
                 for (int i = 0; i < 4; i++)
                     sColor[i] = (byte)(colBuffer[i] / (uint)_weight);
 
-
                 //Calculate volume
                 _volume = 1;
                 for (int i = 0; i < 4; i++)
@@ -595,7 +593,6 @@ namespace BrawlLib.Imaging
                     //    }
                     //}
 
-
                     if (((lBias * rpe) > maxC) && (pMin[2] < pMax[2]))
                     {
                         outBox = boxes;
@@ -625,7 +622,6 @@ namespace BrawlLib.Imaging
                 }
                 return outBox;
             }
-
         }
     }
 }

@@ -517,7 +517,7 @@ namespace System.Windows.Forms
         private AnimationFrame _tempFrame = AnimationFrame.Identity;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0BoneNode TargetBone { get { return _mainWindow._targetBone; } set { _mainWindow.TargetBone = value; } }
+        public MDL0BoneNode TargetBone { get { return _mainWindow.SelectedBone; } set { _mainWindow.SelectedBone = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
@@ -610,15 +610,16 @@ namespace System.Windows.Forms
         }
         public unsafe void Undo(SaveState save)
         {
-            numTransX.Value = save._frameState._translate._x;
+            FrameState t = (FrameState)save._frameState;
+            numTransX.Value = t._translate._x;
             BoxChanged(numTransX, null);
-            numTransY.Value = save._frameState._translate._y;
+            numTransY.Value = t._translate._y;
             BoxChanged(numTransY, null);
-            numRot.Value = save._frameState._rotate._x;
+            numRot.Value = t._rotate._x;
             BoxChanged(numRot, null);
-            numScaleX.Value = save._frameState._scale._x;
+            numScaleX.Value = t._scale._x;
             BoxChanged(numScaleX, null);
-            numScaleY.Value = save._frameState._scale._y;
+            numScaleY.Value = t._scale._y;
             BoxChanged(numScaleY, null);
         }
         internal unsafe void BoxChangedCreateUndo(object sender, EventArgs e)
@@ -741,9 +742,11 @@ namespace System.Windows.Forms
                 //mr.RecalcBindState();
                 TargetTexRef.SignalPropertyChange();
             }
-            TargetModel.ApplySRT(SelectedAnimation, CurrentFrame);
+            
             ResetBox(index);
-            _mainWindow.modelPanel1.Invalidate();
+
+            _mainWindow.UpdateModel();
+            _mainWindow.modelPanel.Invalidate();
         }
 
         private static Dictionary<string, AnimationFrame> _copyAllState = new Dictionary<string, AnimationFrame>();

@@ -19,16 +19,13 @@ namespace System
         {
             return value <= min ? min : value >= max ? max : value;
         }
-        public static Int32 ClampToEven(this Int32 value)
+        public static Int32 RoundDownToEven(this Int32 value)
         {
-            int f = value;
-            int r = f % 2;
-            int v = f - r;
-            return v;
+            return value - (value % 2);
         }
-        public static Int32 ClampToOdd(this Int32 value)
+        public static Int32 RoundUpToEven(this Int32 value)
         {
-            return ClampToEven(value) + 1;
+            return value + (value % 2);
         }
     }
 }

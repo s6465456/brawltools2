@@ -432,7 +432,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public virtual int DataAlign { get { return 4; } }
 
         [Browsable(false)]
-        public BRESNode BRESNode { get { return ((_parent != null) && (_parent._parent is BRESNode)) ? _parent._parent as BRESNode : null; } }
+        public BRESNode BRESNode { get { return ((_parent != null) && (Parent.Parent is BRESNode)) ? Parent.Parent as BRESNode : null; } }
 
         [Browsable(false)]
         public virtual int tFrameCount { get { return 0; } set { } }

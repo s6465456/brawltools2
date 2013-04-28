@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using DS = System.Win32.DirectSound;
+using OpenTK.Audio;
+using OpenTK.Audio.OpenAL;
 
 namespace System.Audio
 {
@@ -65,7 +67,7 @@ namespace System.Audio
 
             offset = offset.Align(_blockAlign);
             length = length.Align(_blockAlign);
-
+            
             data._dataOffset = offset;
             data._dataLength = length;
             data._sampleOffset = offset / _blockAlign;
@@ -88,8 +90,13 @@ namespace System.Audio
             _dsb8.Unlock(data._part1Address, (uint)data._part1Length, data._part2Address, (uint)data._part2Length);
         }
 
-        public override void Play() { _dsb8.Play(0, 0, DS.DSBufferPlayFlags.Looping); }
-        public override void Stop() { _dsb8.Stop(); }
-
+        public override void Play()
+        {
+            _dsb8.Play(0, 0, DS.DSBufferPlayFlags.Looping);
+        }
+        public override void Stop() 
+        {
+            _dsb8.Stop();
+        }
     }
 }

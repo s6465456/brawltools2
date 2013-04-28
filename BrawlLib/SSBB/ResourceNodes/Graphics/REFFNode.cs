@@ -13,6 +13,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class REFFNode : ARCEntryNode
     {
         internal REFF* Header { get { return (REFF*)WorkingUncompressed.Address; } }
+        internal NW4RCommonHeader* CommonHeader { get { return (NW4RCommonHeader*)WorkingUncompressed.Address; } }
+
         public override ResourceType ResourceType { get { return ResourceType.REFF; } }
 
         private int _unk1, _unk2, _unk3, _dataLen, _dataOff;
@@ -30,9 +32,25 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("REFF Object Table")]
         //public short NumEntries { get { return _TableEntries; } }
 
+        [Category("NW4R Node")]
+        public byte VersionMajor { get { return _major; } }
+        [Category("NW4R Node")]
+        public byte VersionMinor { get { return _minor; } }
+        internal byte _minor, _major;
+
+        internal string _tag;
+        internal int _length;
+        internal Endian _endian;
+
         protected override bool OnInitialize()
         {
             base.OnInitialize();
+
+            _major = CommonHeader->VersionMajor;
+            _minor = CommonHeader->VersionMinor;
+            _tag = CommonHeader->_tag;
+            _length = CommonHeader->_length;
+            _endian = CommonHeader->Endian;
 
             REFF* header = Header;
 
@@ -289,66 +307,66 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 return null;
             }
-            set 
-            {
-                int i = 0;
-                switch (CurveFlag)
-                {
-                    case AnimCurveType.ParticleByte:
-                    case AnimCurveType.ParticleFloat:
-                        AnimCurveTargetByteFloat a;
-                        if (Enum.TryParse<AnimCurveTargetByteFloat>(value, true, out a))
-                            hdr.kindType = (byte)a;
-                        else if (int.TryParse(value, out i))
-                            hdr.kindType = (byte)i;
-                        break;
-                    case AnimCurveType.ParticleRotate:
-                        AnimCurveTargetRotateFloat b;
-                        if (Enum.TryParse<AnimCurveTargetRotateFloat>(value, true, out b))
-                            hdr.kindType = (byte)b;
-                        else if (int.TryParse(value, out i))
-                            hdr.kindType = (byte)i;
-                        break;
-                    case AnimCurveType.ParticleTexture:
-                        AnimCurveTargetPtclTex c;
-                        if (Enum.TryParse<AnimCurveTargetPtclTex>(value, true, out c))
-                            hdr.kindType = (byte)c;
-                        else if (int.TryParse(value, out i))
-                            hdr.kindType = (byte)i;
-                        break;
-                    case AnimCurveType.Child:
-                        AnimCurveTargetChild d;
-                        if (Enum.TryParse<AnimCurveTargetChild>(value, true, out d))
-                            hdr.kindType = (byte)d;
-                        else if (int.TryParse(value, out i))
-                            hdr.kindType = (byte)i;
-                        break;
-                    case AnimCurveType.Field:
-                        AnimCurveTargetField e;
-                        if (Enum.TryParse<AnimCurveTargetField>(value, true, out e))
-                            hdr.kindType = (byte)e;
-                        else if (int.TryParse(value, out i))
-                            hdr.kindType = (byte)i;
-                        break;
-                    case AnimCurveType.PostField:
-                        AnimCurveTargetPostField f;
-                        if (Enum.TryParse<AnimCurveTargetPostField>(value, true, out f))
-                            hdr.kindType = (byte)f;
-                        else if (int.TryParse(value, out i))
-                            hdr.kindType = (byte)i;
-                        break;
-                    case AnimCurveType.EmitterFloat:
-                        AnimCurveTargetEmitterFloat g;
-                        if (Enum.TryParse<AnimCurveTargetEmitterFloat>(value, true, out g))
-                            hdr.kindType = (byte)g;
-                        else if (int.TryParse(value, out i))
-                            hdr.kindType = (byte)i;
-                        break;
-                }
-            }
+            //set 
+            //{
+            //    int i = 0;
+            //    switch (CurveFlag)
+            //    {
+            //        case AnimCurveType.ParticleByte:
+            //        case AnimCurveType.ParticleFloat:
+            //            AnimCurveTargetByteFloat a;
+            //            if (Enum.TryParse<AnimCurveTargetByteFloat>(value, true, out a))
+            //                hdr.kindType = (byte)a;
+            //            else if (int.TryParse(value, out i))
+            //                hdr.kindType = (byte)i;
+            //            break;
+            //        case AnimCurveType.ParticleRotate:
+            //            AnimCurveTargetRotateFloat b;
+            //            if (Enum.TryParse<AnimCurveTargetRotateFloat>(value, true, out b))
+            //                hdr.kindType = (byte)b;
+            //            else if (int.TryParse(value, out i))
+            //                hdr.kindType = (byte)i;
+            //            break;
+            //        case AnimCurveType.ParticleTexture:
+            //            AnimCurveTargetPtclTex c;
+            //            if (Enum.TryParse<AnimCurveTargetPtclTex>(value, true, out c))
+            //                hdr.kindType = (byte)c;
+            //            else if (int.TryParse(value, out i))
+            //                hdr.kindType = (byte)i;
+            //            break;
+            //        case AnimCurveType.Child:
+            //            AnimCurveTargetChild d;
+            //            if (Enum.TryParse<AnimCurveTargetChild>(value, true, out d))
+            //                hdr.kindType = (byte)d;
+            //            else if (int.TryParse(value, out i))
+            //                hdr.kindType = (byte)i;
+            //            break;
+            //        case AnimCurveType.Field:
+            //            AnimCurveTargetField e;
+            //            if (Enum.TryParse<AnimCurveTargetField>(value, true, out e))
+            //                hdr.kindType = (byte)e;
+            //            else if (int.TryParse(value, out i))
+            //                hdr.kindType = (byte)i;
+            //            break;
+            //        case AnimCurveType.PostField:
+            //            AnimCurveTargetPostField f;
+            //            if (Enum.TryParse<AnimCurveTargetPostField>(value, true, out f))
+            //                hdr.kindType = (byte)f;
+            //            else if (int.TryParse(value, out i))
+            //                hdr.kindType = (byte)i;
+            //            break;
+            //        case AnimCurveType.EmitterFloat:
+            //            AnimCurveTargetEmitterFloat g;
+            //            if (Enum.TryParse<AnimCurveTargetEmitterFloat>(value, true, out g))
+            //                hdr.kindType = (byte)g;
+            //            else if (int.TryParse(value, out i))
+            //                hdr.kindType = (byte)i;
+            //            break;
+            //    }
+            //}
         }
         [Category("Animation")]
-        public AnimCurveType CurveFlag { get { return (AnimCurveType)hdr.curveFlag; } set { hdr.curveFlag = (byte)value; SignalPropertyChange(); } }
+        public AnimCurveType CurveFlag { get { return (AnimCurveType)hdr.curveFlag; } }//set { hdr.curveFlag = (byte)value; SignalPropertyChange(); } }
         [Category("Animation")]
         public byte KindEnable { get { return hdr.kindEnable; } }
         [Category("Animation")]
@@ -449,7 +467,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             if (_name == null)
                 _name = "Table" + Index;
-            return Count > 0;
+            //return Count > 0;
+            return false;
         }
 
         protected override void OnPopulate()

@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace System.Windows.Forms
 {
-    public class ModelAssetPanel : UserControl
+    public class AnimModelPanel : UserControl
     {
         #region Designer
 
@@ -40,8 +40,6 @@ namespace System.Windows.Forms
         public ListView listAnims;
         private ColumnHeader nameColumn;
         public ComboBox fileType;
-        private ContextMenuStrip ctxAnimList;
-        private ToolStripMenuItem createNewToolStripMenuItem;
         private Panel panel1;
         private ContextMenuStrip ctxAnim;
         private ToolStripMenuItem toolStripMenuItem2;
@@ -54,6 +52,8 @@ namespace System.Windows.Forms
         public Button Load;
         private TransparentPanel overObjPnl;
         private TransparentPanel overTexPnl;
+        private ToolStripMenuItem createNewToolStripMenuItem;
+        private ToolStripMenuItem deleteToolStripMenuItem;
         private Panel pnlObjects;
 
         private void InitializeComponent()
@@ -74,8 +74,6 @@ namespace System.Windows.Forms
             this.Load = new System.Windows.Forms.Button();
             this.fileType = new System.Windows.Forms.ComboBox();
             this.btnAnims = new System.Windows.Forms.Button();
-            this.ctxAnimList = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.createNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ctxTextures = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.sourceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -99,10 +97,11 @@ namespace System.Windows.Forms
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.portToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.createNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlObjects.SuspendLayout();
             this.pnlAnims.SuspendLayout();
             this.panel1.SuspendLayout();
-            this.ctxAnimList.SuspendLayout();
             this.ctxTextures.SuspendLayout();
             this.pnlTextures.SuspendLayout();
             this.ctxAnim.SuspendLayout();
@@ -289,20 +288,6 @@ namespace System.Windows.Forms
             this.btnAnims.UseVisualStyleBackColor = true;
             this.btnAnims.Click += new System.EventHandler(this.btnAnims_Click);
             // 
-            // ctxAnimList
-            // 
-            this.ctxAnimList.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.createNewToolStripMenuItem});
-            this.ctxAnimList.Name = "ctxAnims";
-            this.ctxAnimList.Size = new System.Drawing.Size(136, 26);
-            // 
-            // createNewToolStripMenuItem
-            // 
-            this.createNewToolStripMenuItem.Name = "createNewToolStripMenuItem";
-            this.createNewToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
-            this.createNewToolStripMenuItem.Text = "Create New";
-            this.createNewToolStripMenuItem.Click += new System.EventHandler(this.createNewToolStripMenuItem_Click);
-            // 
             // ctxTextures
             // 
             this.ctxTextures.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -467,49 +452,65 @@ namespace System.Windows.Forms
             this.toolStripMenuItem3,
             this.toolStripMenuItem4,
             this.portToolStripMenuItem,
-            this.renameToolStripMenuItem});
+            this.renameToolStripMenuItem,
+            this.deleteToolStripMenuItem,
+            this.createNewToolStripMenuItem});
             this.ctxAnim.Name = "ctxAnim";
-            this.ctxAnim.Size = new System.Drawing.Size(125, 120);
+            this.ctxAnim.Size = new System.Drawing.Size(195, 186);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Enabled = false;
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(124, 22);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(194, 22);
             this.toolStripMenuItem2.Text = "Source";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(121, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(191, 6);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(124, 22);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(194, 22);
             this.toolStripMenuItem3.Text = "Export...";
             this.toolStripMenuItem3.Click += new System.EventHandler(this.exportToolStripMenuItem_Click);
             // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(124, 22);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(194, 22);
             this.toolStripMenuItem4.Text = "Replace...";
             this.toolStripMenuItem4.Click += new System.EventHandler(this.replaceToolStripMenuItem_Click);
             // 
             // portToolStripMenuItem
             // 
             this.portToolStripMenuItem.Name = "portToolStripMenuItem";
-            this.portToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.portToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
             this.portToolStripMenuItem.Text = "Port...";
             this.portToolStripMenuItem.Click += new System.EventHandler(this.portToolStripMenuItem_Click);
             // 
             // renameToolStripMenuItem
             // 
             this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
-            this.renameToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.renameToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
             this.renameToolStripMenuItem.Text = "Rename";
             this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
+            // 
+            // createNewToolStripMenuItem
+            // 
+            this.createNewToolStripMenuItem.Name = "createNewToolStripMenuItem";
+            this.createNewToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.createNewToolStripMenuItem.Text = "Create New Animation";
+            this.createNewToolStripMenuItem.Click += new System.EventHandler(this.createNewToolStripMenuItem_Click);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.deleteToolStripMenuItem.Text = "Delete";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // ModelAssetPanel
             // 
@@ -523,17 +524,15 @@ namespace System.Windows.Forms
             this.pnlObjects.ResumeLayout(false);
             this.pnlAnims.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
-            this.ctxAnimList.ResumeLayout(false);
             this.ctxTextures.ResumeLayout(false);
             this.pnlTextures.ResumeLayout(false);
             this.ctxAnim.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
         #endregion
 
-        public bool closing = false;
+        public bool _closing = false;
 
         public ModelEditControl _mainWindow;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -566,7 +565,7 @@ namespace System.Windows.Forms
         public MDL0TextureNode SelectedTexture { get { return _selectedTexture; } set { lstTextures.SelectedItem = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0BoneNode TargetBone { get { return _mainWindow._targetBone; } set { _mainWindow.TargetBone = value; } }
+        public MDL0BoneNode TargetBone { get { return _mainWindow.SelectedBone; } set { _mainWindow.SelectedBone = value; } }
         
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0MaterialRefNode TargetTexRef
@@ -623,22 +622,30 @@ namespace System.Windows.Forms
             set { _mainWindow.SelectedVIS0 = value; }
         }
 
+        public AnimType TargetAnimType
+        {
+            get { return (AnimType)fileType.SelectedIndex; }
+            set { fileType.SelectedIndex = (int)value; }
+        }
+
         //Bone Name - Attached Polygon Indices
         public Dictionary<string, List<int>> VIS0Indices = new Dictionary<string, List<int>>();
 
-        public ModelAssetPanel()
+        public AnimModelPanel()
         {
             InitializeComponent();
             listAnims.Groups.Add(_AnimGroup);
         }
 
-        public bool LoadAnims(ResourceNode node, int type)
+        public bool LoadAnims(ResourceNode node, AnimType type)
         {
             bool found = false;
             switch (node.ResourceType)
             {
                 case ResourceType.ARC:
                 case ResourceType.MRG:
+                case ResourceType.U8:
+                case ResourceType.U8Folder:
                 case ResourceType.BRES:
                 case ResourceType.BRESGroup:
                 default:
@@ -646,13 +653,13 @@ namespace System.Windows.Forms
                         if (found) LoadAnims(n, type); else found = LoadAnims(n, type);
                     break;
 
-                case ResourceType.CHR0: found = true; if (type == 0) goto Add; break;
-                case ResourceType.SRT0: found = true; if (type == 1) goto Add; break;
-                case ResourceType.SHP0: found = true; if (type == 2) goto Add; break;
-                case ResourceType.PAT0: found = true; if (type == 3) goto Add; break;
-                case ResourceType.VIS0: found = true; if (type == 4) goto Add; break;
-                case ResourceType.SCN0: found = true; if (type == 5) goto Add; break;
-                case ResourceType.CLR0: found = true; if (type == 6) goto Add; break;
+                case ResourceType.CHR0: found = true; if (type == AnimType.CHR) goto Add; break;
+                case ResourceType.SRT0: found = true; if (type == AnimType.SRT) goto Add; break;
+                case ResourceType.SHP0: found = true; if (type == AnimType.SHP) goto Add; break;
+                case ResourceType.PAT0: found = true; if (type == AnimType.PAT) goto Add; break;
+                case ResourceType.VIS0: found = true; if (type == AnimType.VIS) goto Add; break;
+                case ResourceType.SCN0: found = true; if (type == AnimType.SCN) goto Add; break;
+                case ResourceType.CLR0: found = true; if (type == AnimType.CLR) goto Add; break;
             }
             return found;
             Add: listAnims.Items.Add(new ListViewItem(node.Name, (int)node.ResourceType, _AnimGroup) { Tag = node });
@@ -660,7 +667,8 @@ namespace System.Windows.Forms
         }
 
         public CheckState BRRESRelative = CheckState.Unchecked;
-        public bool UpdateAnimations(int type)
+        public bool UpdateAnimations() { return UpdateAnimations(TargetAnimType); }
+        public bool UpdateAnimations(AnimType type)
         {
             _mainWindow._updating = true;
 
@@ -695,7 +703,7 @@ namespace System.Windows.Forms
             _mainWindow._updating = false;
             CurrentFrame = frame;
 
-            if ((_mainWindow.GetSelectedBRRESFile(fileType.SelectedIndex) == null) && (listAnims.SelectedItems.Count == 0))
+            if ((_mainWindow.GetSelectedBRRESFile((AnimType)TargetAnimType) == null) && (listAnims.SelectedItems.Count == 0))
             {
                 _mainWindow._chr0 = null;
                 _mainWindow._srt0 = null;
@@ -706,8 +714,8 @@ namespace System.Windows.Forms
                 _mainWindow._clr0 = null;
                 _mainWindow.UpdatePropDisplay();
                 _mainWindow.UpdateModel();
-                _mainWindow.AnimChanged(fileType.SelectedIndex);
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.AnimChanged(TargetAnimType);
+                _mainWindow.modelPanel.Invalidate();
             }
 
             return count != listAnims.Items.Count;
@@ -790,7 +798,7 @@ namespace System.Windows.Forms
             {
                 ResourceNode n;
 
-                UpdateAnimations(fileType.SelectedIndex);
+                UpdateAnimations(TargetAnimType);
 
                 if ((n = TargetModel.FindChild("Objects", false)) != null)
                     foreach (MDL0ObjectNode poly in n.Children)
@@ -934,11 +942,11 @@ namespace System.Windows.Forms
                 }
             }
 
-            if (!_updating) _mainWindow.modelPanel1.Invalidate();
+            if (!_updating) _mainWindow.modelPanel.Invalidate();
         }
 
-        public event EventHandler Key;
-        public event EventHandler Unkey;
+        //public event EventHandler Key;
+        //public event EventHandler Unkey;
         //protected override bool ProcessKeyPreview(ref Message m)
         //{
         //    if (m.Msg == 0x100)
@@ -981,7 +989,7 @@ namespace System.Windows.Forms
 
                 TargetTexRef = _selectedPolygon != null ? _selectedPolygon.UsableMaterialNode.FindChild(_selectedTexture.Name, true) as MDL0MaterialRefNode : null;
             }
-            if (!_updating) _mainWindow.modelPanel1.Invalidate();
+            if (!_updating) _mainWindow.modelPanel.Invalidate();
         }
 
         private void chkAllPoly_CheckStateChanged(object sender, EventArgs e)
@@ -998,7 +1006,7 @@ namespace System.Windows.Forms
 
             _updating = false;
 
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
 
         private void btnObjects_Click(object sender, EventArgs e)
@@ -1057,7 +1065,7 @@ namespace System.Windows.Forms
             tref.Enabled = e.NewValue == CheckState.Checked;
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void chkAllTextures_CheckStateChanged(object sender, EventArgs e)
@@ -1071,7 +1079,7 @@ namespace System.Windows.Forms
 
             _updating = false;
 
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
 
         private void viewToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1079,9 +1087,9 @@ namespace System.Windows.Forms
             if (_selectedTexture != null)
                 using (GLTextureWindow w = new GLTextureWindow())
                 {
-                    _mainWindow.modelPanel1._ctx.Release();
+                    _mainWindow.modelPanel.Release();
                     w.ShowDialog(this, _selectedTexture.Texture);
-                    _mainWindow.modelPanel1._ctx.Capture();
+                    _mainWindow.modelPanel.Capture();
                 }
         }
 
@@ -1100,7 +1108,7 @@ namespace System.Windows.Forms
                         lstTextures.SetSelected(index, false);
                         _updating = false;
 
-                        _mainWindow.modelPanel1.Invalidate();
+                        _mainWindow.modelPanel.Invalidate();
                     }
             }
         }
@@ -1160,7 +1168,7 @@ namespace System.Windows.Forms
             if (_selectedTexture != null)
             {
                 _selectedTexture.Reload();
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
             }
         }
 
@@ -1212,46 +1220,46 @@ namespace System.Windows.Forms
 
         private void listAnims_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (closing)
+            if (_closing)
                 return;
             if (listAnims.SelectedItems.Count > 0)
             {
-                switch (fileType.SelectedIndex)
+                switch (TargetAnimType)
                 {
-                    case 0: _mainWindow._chr0 = listAnims.SelectedItems[0].Tag as CHR0Node;
+                    case AnimType.CHR: _mainWindow._chr0 = listAnims.SelectedItems[0].Tag as CHR0Node;
                         createNewToolStripMenuItem.Text = "Create New CHR0";
                         break;
-                    case 1: _mainWindow._srt0 = listAnims.SelectedItems[0].Tag as SRT0Node;
+                    case AnimType.SRT: _mainWindow._srt0 = listAnims.SelectedItems[0].Tag as SRT0Node;
                         createNewToolStripMenuItem.Text = "Create New SRT0";
                         break;
-                    case 2: _mainWindow._shp0 = listAnims.SelectedItems[0].Tag as SHP0Node;
+                    case AnimType.SHP: _mainWindow._shp0 = listAnims.SelectedItems[0].Tag as SHP0Node;
                         createNewToolStripMenuItem.Text = "Create New SHP0";
                         break;
-                    case 3: _mainWindow._pat0 = listAnims.SelectedItems[0].Tag as PAT0Node;
+                    case AnimType.PAT: _mainWindow._pat0 = listAnims.SelectedItems[0].Tag as PAT0Node;
                         createNewToolStripMenuItem.Text = "Create New PAT0";
                         break;
-                    case 4: _mainWindow._vis0 = listAnims.SelectedItems[0].Tag as VIS0Node;
+                    case AnimType.VIS: _mainWindow._vis0 = listAnims.SelectedItems[0].Tag as VIS0Node;
                         createNewToolStripMenuItem.Text = "Create New VIS0";
                         break;
-                    case 5: _mainWindow._scn0 = listAnims.SelectedItems[0].Tag as SCN0Node;
+                    case AnimType.SCN: _mainWindow._scn0 = listAnims.SelectedItems[0].Tag as SCN0Node;
                         createNewToolStripMenuItem.Text = "Create New SCN0";
                         break;
-                    case 6: _mainWindow._clr0 = listAnims.SelectedItems[0].Tag as CLR0Node;
+                    case AnimType.CLR: _mainWindow._clr0 = listAnims.SelectedItems[0].Tag as CLR0Node;
                         createNewToolStripMenuItem.Text = "Create New CLR0";
                         break;
                 }
                 if (_mainWindow.syncAnimationsTogetherToolStripMenuItem.Checked)
-                    _mainWindow.GetFiles(fileType.SelectedIndex);
-                _mainWindow.AnimChanged(fileType.SelectedIndex);
+                    _mainWindow.GetFiles(TargetAnimType);
+                _mainWindow.AnimChanged(TargetAnimType);
                 _mainWindow.UpdatePropDisplay();
             }
             else
             {
-                _mainWindow.GetFiles(-1);
+                _mainWindow.GetFiles(AnimType.None);
                 _mainWindow.UpdatePropDisplay();
                 _mainWindow.UpdateModel();
-                _mainWindow.AnimChanged(-1);
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.AnimChanged(AnimType.None);
+                _mainWindow.modelPanel.Invalidate();
             }
 
             //if (_selectedAnim != null)
@@ -1260,8 +1268,8 @@ namespace System.Windows.Forms
 
         private void fileType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            UpdateAnimations(fileType.SelectedIndex);
-            if (fileType.SelectedIndex == 0)
+            UpdateAnimations(TargetAnimType);
+            if (TargetAnimType == 0)
                 portToolStripMenuItem.Visible = true;
             else
                 portToolStripMenuItem.Visible = false;
@@ -1271,10 +1279,10 @@ namespace System.Windows.Forms
         #region Animation Context Menu
         private void ctxAnim_Opening(object sender, CancelEventArgs e)
         {
-            if (_mainWindow.GetSelectedBRRESFile(fileType.SelectedIndex) == null)
+            if (_mainWindow.GetSelectedBRRESFile(TargetAnimType) == null)
                 e.Cancel = true;
             else
-                sourceToolStripMenuItem.Text = String.Format("Source: {0}", Path.GetFileName(_mainWindow.GetSelectedBRRESFile(fileType.SelectedIndex).RootNode._origPath));
+                sourceToolStripMenuItem.Text = String.Format("Source: {0}", Path.GetFileName(_mainWindow.GetSelectedBRRESFile(TargetAnimType).RootNode._origPath));
         }
 
         private SaveFileDialog dlgSave = new SaveFileDialog();
@@ -1282,17 +1290,19 @@ namespace System.Windows.Forms
         private void exportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             BRESEntryNode node;
-            if ((node = _mainWindow.GetSelectedBRRESFile(fileType.SelectedIndex) as BRESEntryNode) == null)
+            if ((node = _mainWindow.GetSelectedBRRESFile(TargetAnimType) as BRESEntryNode) == null)
                 return;
 
             dlgSave.FileName = node.Name;
-            switch (fileType.SelectedIndex)
+            switch (TargetAnimType)
             {
-                case 0: dlgSave.Filter = ExportFilters.CHR0; break;
-                case 1: dlgSave.Filter = ExportFilters.SRT0; break;
-                case 2: dlgSave.Filter = ExportFilters.SHP0; break;
-                case 3: dlgSave.Filter = ExportFilters.PAT0; break;
-                case 4: dlgSave.Filter = ExportFilters.VIS0; break;
+                case AnimType.CHR: dlgSave.Filter = ExportFilters.CHR0; break;
+                case AnimType.SRT: dlgSave.Filter = ExportFilters.SRT0; break;
+                case AnimType.SHP: dlgSave.Filter = ExportFilters.SHP0; break;
+                case AnimType.PAT: dlgSave.Filter = ExportFilters.PAT0; break;
+                case AnimType.VIS: dlgSave.Filter = ExportFilters.VIS0; break;
+                case AnimType.SCN: dlgSave.Filter = ExportFilters.SCN0; break;
+                case AnimType.CLR: dlgSave.Filter = ExportFilters.CLR0; break;
             }
             if (dlgSave.ShowDialog() == DialogResult.OK)
                 node.Export(dlgSave.FileName);
@@ -1301,18 +1311,18 @@ namespace System.Windows.Forms
         private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             BRESEntryNode node;
-            if ((node = _mainWindow.GetSelectedBRRESFile(fileType.SelectedIndex) as BRESEntryNode) == null)
+            if ((node = _mainWindow.GetSelectedBRRESFile(TargetAnimType) as BRESEntryNode) == null)
                 return;
 
-            switch (fileType.SelectedIndex)
+            switch (TargetAnimType)
             {
-                case 0: dlgOpen.Filter = ExportFilters.CHR0; break;
-                case 1: dlgOpen.Filter = ExportFilters.SRT0; break;
-                case 2: dlgOpen.Filter = ExportFilters.SHP0; break;
-                case 3: dlgOpen.Filter = ExportFilters.PAT0; break;
-                case 4: dlgOpen.Filter = ExportFilters.VIS0; break;
-                case 5: dlgOpen.Filter = ExportFilters.SCN0; break;
-                case 6: dlgOpen.Filter = ExportFilters.CLR0; break;
+                case AnimType.CHR: dlgOpen.Filter = ExportFilters.CHR0; break;
+                case AnimType.SRT: dlgOpen.Filter = ExportFilters.SRT0; break;
+                case AnimType.SHP: dlgOpen.Filter = ExportFilters.SHP0; break;
+                case AnimType.PAT: dlgOpen.Filter = ExportFilters.PAT0; break;
+                case AnimType.VIS: dlgOpen.Filter = ExportFilters.VIS0; break;
+                case AnimType.SCN: dlgOpen.Filter = ExportFilters.SCN0; break;
+                case AnimType.CLR: dlgOpen.Filter = ExportFilters.CLR0; break;
             }
 
             if (dlgOpen.ShowDialog() == DialogResult.OK)
@@ -1321,7 +1331,7 @@ namespace System.Windows.Forms
 
         private unsafe void portToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (fileType.SelectedIndex != 0 || SelectedCHR0 == null || (SelectedCHR0.IsPorted && MessageBox.Show("This animation has already been ported!\nDo you still want to continue?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.No))
+            if (TargetAnimType != 0 || SelectedCHR0 == null || (SelectedCHR0.IsPorted && MessageBox.Show("This animation has already been ported!\nDo you still want to continue?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.No))
                 return;
 
             MDL0Node model;
@@ -1335,42 +1345,39 @@ namespace System.Windows.Forms
                     SelectedCHR0.Port(TargetModel, model);
 
             _mainWindow.UpdateModel();
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
         #endregion
 
         private void listAnims_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-            {
-                if (_mainWindow.GetSelectedBRRESFile(fileType.SelectedIndex) != null)
+                if (_mainWindow.GetSelectedBRRESFile(TargetAnimType) != null)
                     listAnims.ContextMenuStrip = ctxAnim;
-                else
-                    listAnims.ContextMenuStrip = ctxAnimList;
-            }
         }
 
         private void renameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (RenameDialog dlg = new RenameDialog())
-                dlg.ShowDialog(this.ParentForm, _mainWindow.GetSelectedBRRESFile(fileType.SelectedIndex));
+                dlg.ShowDialog(this.ParentForm, _mainWindow.GetSelectedBRRESFile(TargetAnimType));
         }
 
         private void createNewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ResourceNode r;
-            if ((r = _mainWindow.GetSelectedBRRESFile(fileType.SelectedIndex)) != null)
-                switch (fileType.SelectedIndex)
+            if ((r = _mainWindow.GetSelectedBRRESFile(TargetAnimType)) != null)
+                switch (TargetAnimType)
                 {
-                    case 0: ((BRESNode)r.Parent.Parent).CreateResource<CHR0Node>("NewCHR"); break;
-                    case 1: ((BRESNode)r.Parent.Parent).CreateResource<SRT0Node>("NewSRT"); break;
-                    case 2: ((BRESNode)r.Parent.Parent).CreateResource<SHP0Node>("NewSHP"); break;
-                    case 3: ((BRESNode)r.Parent.Parent).CreateResource<PAT0Node>("NewPAT"); break;
-                    case 4: ((BRESNode)r.Parent.Parent).CreateResource<VIS0Node>("NewVIS"); break;
-                    case 5: ((BRESNode)r.Parent.Parent).CreateResource<SCN0Node>("NewSCN"); break;
-                    case 6: ((BRESNode)r.Parent.Parent).CreateResource<CLR0Node>("NewCLR"); break;
+                    case AnimType.CHR: ((BRESNode)r.Parent.Parent).CreateResource<CHR0Node>("NewCHR"); break;
+                    case AnimType.SRT: ((BRESNode)r.Parent.Parent).CreateResource<SRT0Node>("NewSRT"); break;
+                    case AnimType.SHP: ((BRESNode)r.Parent.Parent).CreateResource<SHP0Node>("NewSHP"); break;
+                    case AnimType.PAT: ((BRESNode)r.Parent.Parent).CreateResource<PAT0Node>("NewPAT"); break;
+                    case AnimType.VIS: ((BRESNode)r.Parent.Parent).CreateResource<VIS0Node>("NewVIS"); break;
+                    case AnimType.SCN: ((BRESNode)r.Parent.Parent).CreateResource<SCN0Node>("NewSCN"); break;
+                    case AnimType.CLR: ((BRESNode)r.Parent.Parent).CreateResource<CLR0Node>("NewCLR"); break;
                 }
-            UpdateAnimations(fileType.SelectedIndex);
+            UpdateAnimations(TargetAnimType);
+            listAnims.Items[listAnims.Items.Count - 1].Selected = true;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -1453,5 +1460,27 @@ namespace System.Windows.Forms
             overObjPnl.Invalidate();
             overTexPnl.Invalidate();
         }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _mainWindow.GetSelectedBRRESFile(TargetAnimType).Remove();
+            _mainWindow.GetFiles(AnimType.None);
+            UpdateAnimations();
+            _mainWindow.UpdatePropDisplay();
+            _mainWindow.UpdateModel();
+            _mainWindow.AnimChanged(AnimType.None);
+            _mainWindow.modelPanel.Invalidate();
+        }
+    }
+    public enum AnimType : int
+    {
+        None = -1,
+        CHR = 0,
+        SRT = 1,
+        SHP = 2,
+        PAT = 3,
+        VIS = 4,
+        SCN = 5,
+        CLR = 6
     }
 }

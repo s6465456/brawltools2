@@ -72,7 +72,7 @@ namespace BrawlLib.Wii.Compression
                 progress.Begin(0, remaining, 0);
 
             byte mask = 0;
- 	        //byte* code_byte = dest;
+ 	        byte code_byte = 0;
  	        while (src < src_end)
  	        {
                 //if (dest > dest_end)
@@ -97,11 +97,11 @@ namespace BrawlLib.Wii.Compression
 
  	            if (mask == 0)
  	            {
- 	                //code_byte = dest;
+                    code_byte = blockBuffer[dInd];
                     blockBuffer[dInd++] = 0;
  	                mask = 0x80;
  	            }
- 	
+
                 int max_len = 0x111;
 	            uint matchLen = 1;
  	            byte* found = null;
@@ -172,7 +172,7 @@ namespace BrawlLib.Wii.Compression
  	            }
  	            else
  	            {
- 	                //*code_byte |= mask;
+ 	                code_byte |= mask;
                     blockBuffer[dInd++] = *src++;
  	            }
  	            mask >>= 1;
@@ -190,65 +190,6 @@ namespace BrawlLib.Wii.Compression
  	        }
             return dstLen;
         }
-        private ushort MakeHash(byte* ptr)
-        {
-            return (ushort)((ptr[0] << 6) ^ (ptr[1] << 3) ^ ptr[2]);
-        }
-
-        private int FindPattern(byte* sPtr, int length, ref int matchOffset)
-        {
-            if (length < MinMatch) return 0;
-            length = Math.Min(length, PatternLength);
-
-            byte* mPtr;
-            int bestLen = MinMatch - 1, bestOffset = 0, index;
-            for (int offset = _First[MakeHash(sPtr)]; offset != 0xFFFF; offset = _Next[offset])
-            {
-                if (offset < _wIndex) mPtr = sPtr - _wIndex + offset;
-                else mPtr = sPtr - _wLength - _wIndex + offset;
-
-                if (sPtr - mPtr < 2) break;
-
-                for (index = bestLen + 1; (--index >= 0) && (mPtr[index] == sPtr[index]); ) ;
-                if (index >= 0) continue;
-                for (index = bestLen; (++index < length) && (mPtr[index] == sPtr[index]); ) ;
-
-                bestOffset = (int)(sPtr - mPtr);
-                if ((bestLen = index) == length) break;
-            }
-
-            if (bestLen < MinMatch) return 0;
-
-            matchOffset = bestOffset;
-            return bestLen;
-        }
-        private void Consume(byte* ptr, int length, int remaining)
-        {
-            int last, inOffset, inVal, outVal;
-            for (int i = Math.Min(length, remaining - 2); i-- > 0;)
-            {
-                if (_wLength == WindowLength)
-                {
-                    //Remove node
-                    outVal = MakeHash(ptr - WindowLength);
-                    if ((_First[outVal] = _Next[_First[outVal]]) == 0xFFFF)
-                        _Last[outVal] = 0xFFFF;
-                    inOffset = _wIndex++;
-                    _wIndex &= WindowMask;
-                }
-                else
-                    inOffset = _wLength++;
-
-                inVal = MakeHash(ptr++);
-                if ((last = _Last[inVal]) == 0xFFFF)
-                    _First[inVal] = (ushort)inOffset;
-                else
-                    _Next[last] = (ushort)inOffset;
-
-                _Last[inVal] = (ushort)inOffset;
-                _Next[inOffset] = 0xFFFF;
-            }
-        }
 
         public static int CompactYAZ0(VoidPtr srcAddr, int srcLen, Stream outStream, string name)
         {
@@ -259,7 +200,7 @@ namespace BrawlLib.Wii.Compression
 
         public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen)
         {
-            if ((header->Algorithm != CompressionType.RunLength) || (header->Parameter != 0))
+            if ((header->Algorithm != CompressionType.RunLength)/* || (header->Parameter != 0)*/)
                 throw new InvalidCompressionException("Compression header does not match RunLength format.");
 
             byte control = 0, bit = 0;
@@ -272,7 +213,7 @@ namespace BrawlLib.Wii.Compression
                     bit = 8;
                 }
                 bit--;
-                if ((control & 0x80) == 0x80)
+                if ((control & 0x80) != 0)
                     *dstPtr++ = *srcPtr++;
                 else
                 {

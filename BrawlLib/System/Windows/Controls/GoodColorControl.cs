@@ -447,6 +447,9 @@ namespace System.Windows.Forms
             pnlColorBox.Invalidate();
             pnlColorBar.Invalidate();
 
+            _rgb = (ARGBPixel)_hsv;
+            _rgb.A = (byte)numA.Value;
+
             if (ColorChanged != null)
                 ColorChanged(this, null);
         }

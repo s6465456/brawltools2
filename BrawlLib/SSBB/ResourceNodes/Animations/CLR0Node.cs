@@ -108,6 +108,30 @@ namespace BrawlLib.SSBB.ResourceNodes
             return node;
         }
 
+        public void Append(CLR0Node external)
+        {
+            int origIntCount = FrameCount;
+            FrameCount += external.FrameCount;
+
+            foreach (CLR0MaterialNode mat in external.Children)
+            {
+                foreach (CLR0MaterialEntryNode _extEntry in mat.Children)
+                {
+                    CLR0MaterialEntryNode _intEntry = null;
+                    if ((_intEntry = (CLR0MaterialEntryNode)FindChild(mat.Name + "/" + _extEntry.Name, false)) == null)
+                    {
+                        CLR0MaterialEntryNode newIntEntry = new CLR0MaterialEntryNode() { Name = _extEntry.Name };
+                        
+                        //AddChild(newIntEntry);
+                    }
+                    else
+                    {
+                        //for (int x = 0; x < external.FrameCount; x++)
+                    }
+                }
+            }
+        }
+
         protected override int OnCalculateSize(bool force)
         {
             int size = (_version == 4 ? CLR0v4.Size : CLR0v3.Size) + 0x18 + Children.Count * 0x10;
@@ -382,7 +406,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else
             {
-                _numEntries = ((CLR0Node)_parent._parent)._numFrames;
+                _numEntries = ((CLR0Node)Parent.Parent)._numFrames;
                 ABGRPixel* data = Header->Data;
                 for (int i = 0; i < _numEntries; i++)
                     _colors.Add((ARGBPixel)(*data++));
@@ -403,7 +427,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void MakeList()
         {
             _constant = false;
-            int entries = ((CLR0Node)_parent._parent)._numFrames;
+            int entries = ((CLR0Node)Parent._parent)._numFrames;
             _numEntries = _colors.Count;
             NumEntries = entries;
         }

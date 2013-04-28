@@ -2497,7 +2497,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MoveDefSectionNode sections;
         public MoveDefLookupNode lookupNode;
 
-        public FDefReferenceStringTable refTable;
+        public CompactStringTable refTable;
 
         public Dictionary<int, MoveDefLookupOffsetNode> _lookupSizes;
 
@@ -3357,7 +3357,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _lookupOffsets = new LookupManager();
             lookupCount = 0;
             lookupLen = 0;
-            refTable = new FDefReferenceStringTable();
+            refTable = new CompactStringTable();
             foreach (MoveDefEntryNode e in sections._sectionList)
             {
                 e._lookupCount = 0;

@@ -39,7 +39,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public class NW4REntryNode : ResourceNode
     {
-        internal NW4RNode FormatRootNode
+        internal NW4RNode NW4RRootNode
         {
             get
             {

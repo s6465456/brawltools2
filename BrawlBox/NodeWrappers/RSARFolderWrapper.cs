@@ -51,7 +51,11 @@ namespace BrawlBox.NodeWrappers
 
         #endregion
 
-        public RSARFolderWrapper() { ContextMenuStrip = _menu; }
+        public RSARFolderWrapper() 
+        {
+            //ContextMenuStrip = _menu; 
+            ContextMenuStrip = null; 
+        }
 
         public void NewFolder()
         {

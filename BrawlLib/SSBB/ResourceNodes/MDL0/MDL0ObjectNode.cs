@@ -13,12 +13,12 @@ using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public interface IMatrixNodeUser
+    public interface IMatrixNodeUser //Objects and Vertices
     {
         IMatrixNode MatrixNode { get; set; }
     }
 
-    public unsafe class MDL0ObjectNode : MDL0EntryNode, IMatrixNodeUser
+    public unsafe class MDL0ObjectNode : MDL0EntryNode, IMatrixNodeUser, IRenderedObject
     {
         internal MDL0Object* Header { get { return (MDL0Object*)WorkingUncompressed.Address; } }
 
@@ -30,8 +30,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public List<IMatrixNode> Nodes = new List<IMatrixNode>();
 
-        internal bool Weighted { get { return _nodeId == -1 || _singleBind == null; } }
-        internal bool TexMtx
+        internal bool Weighted { get { return _nodeId == -1 || _matrixNode == null; } }
+        internal bool HasTexMtx
         {
             get
             {
@@ -129,7 +129,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Object Data")]
         public int FacepointCount { get { return _numFacepoints; } }
         [Category("Object Data")]
-        public int VertexCount { get { return _manager._vertices.Count; } }
+        public int VertexCount { get { return _manager == null ? 0 : _manager._vertices.Count; } }
         [Category("Object Data")]
         public int FaceCount { get { return _numFaces; } }
 
@@ -141,40 +141,29 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Linked Sets
 
+        #region Vertices & Normals
+
+        internal MDL0VertexNode _vertexNode;
+        internal MDL0NormalNode _normalNode;
+
         [TypeConverter(typeof(DropDownListVertices))]
         public string VertexNode
         {
             get { return _vertexNode == null ? null : _vertexNode._name; }
             set
             {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_vertexNode = null;
-                    //_elementIndices[0] = -1;
-                }
-                else
+                if (!String.IsNullOrEmpty(value))
                 {
                     MDL0VertexNode node = Model.FindChild(String.Format("Vertices/{0}", value), false) as MDL0VertexNode;
-                    if (node != null)
+                    if (node != null && _vertexNode != null && node.NumVertices >= _vertexNode.NumVertices)
                     {
-                        if (_vertexNode != null && node.NumVertices == _vertexNode.NumVertices)
-                        {
-                            _vertexNode = node;
-                            _elementIndices[0] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Vertex counts are not equal. Cannot continue.");
-                            return;
-                        }
+                        _vertexNode = node;
+                        _elementIndices[0] = (short)node.Index;
                     }
                 }
                 SignalPropertyChange();
             }
         }
-        //public MDL0VertexNode VertexNode { get { return _vertexNode; } set { _vertexNode = value; SignalPropertyChange(); _rebuild = true; } }
-        public MDL0VertexNode _vertexNode;
 
         [TypeConverter(typeof(DropDownListNormals))]
         public string NormalNode
@@ -182,408 +171,214 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return _normalNode == null ? null : _normalNode._name; }
             set
             {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_normalNode = null;
-                    //_elementIndices[1] = -1;
-                }
-                else
+                if (!String.IsNullOrEmpty(value))
                 {
                     MDL0NormalNode node = Model.FindChild(String.Format("Normals/{0}", value), false) as MDL0NormalNode;
-                    if (node != null)
+                    if (node != null && _normalNode != null && node.NumEntries >= _normalNode.NumEntries)
                     {
-                        if (_normalNode != null && node.NumEntries == _normalNode.NumEntries)
-                        {
-                            _normalNode = node;
-                            _elementIndices[1] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
+                        _normalNode = node;
+                        _elementIndices[1] = (short)node.Index;
                     }
                 }
                 SignalPropertyChange();
             }
         }
-        //public MDL0NormalNode NormalNode { get { return _normalNode; } }
-        internal MDL0NormalNode _normalNode;
+
+        #endregion
+
+        #region Colors
+
+        internal MDL0ColorNode[] _colorSet = new MDL0ColorNode[2];
+        private void SetColors(int id, string value)
+        {
+            if (String.IsNullOrEmpty(value))
+                if (_colorSet[id] != null)
+                {
+                    _c0Changed = true;
+                    _colorSet[id] = null;
+                    _elementIndices[id + 2] = -1;
+                    _rebuild = true;
+                }
+                else return;
+            else
+            {
+                MDL0ColorNode node = Model.FindChild(String.Format("Colors/{0}", value), false) as MDL0ColorNode;
+                if (node != null && node.NumEntries != 0)
+                {
+                    if (_colorSet[id] != null)
+                        if (node.NumEntries == _colorSet[id].NumEntries)
+                        {
+                            _colorSet[id] = node;
+                            _elementIndices[id + 2] = (short)node.Index;
+                        }
+                        else if (node.NumEntries > _colorSet[id].NumEntries)
+                        {
+                            MessageBox.Show("All vertices will only use the first color entry.");
+                            _colorSet[id] = node;
+                            _elementIndices[id + 2] = (short)node.Index;
+                        }
+                        else
+                        {
+                            MessageBox.Show("There are not enough color entries for this object.");
+                            return;
+                        }
+                    else
+                    {
+                        if (node.NumEntries > 1)
+                            MessageBox.Show("All vertices will only use the first color entry.");
+
+                        _colorSet[id] = node;
+                        _elementIndices[id + 2] = (short)node.Index;
+                        _rebuild = true;
+                        _c0Changed = true;
+                    }
+                }
+                else return;
+            }
+            SignalPropertyChange();
+        }
 
         public bool _c0Changed = false;
         [TypeConverter(typeof(DropDownListColors))]
         public string ColorNode0
         {
             get { return _colorSet[0] == null ? null : _colorSet[0]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    if (_colorSet[0] != null)
-                    {
-                        _c0Changed = true;
-                        _colorSet[0] = null;
-                        _elementIndices[2] = -1;
-                        _rebuild = true;
-                    }
-                }
-                else
-                {
-                    MDL0ColorNode node = Model.FindChild(String.Format("Colors/{0}", value), false) as MDL0ColorNode;
-                    if (node != null && node.NumEntries != 0)
-                    {
-                        if (_colorSet[0] != null)
-                            if (node.NumEntries == _colorSet[0].NumEntries)
-                            {
-                                _colorSet[0] = node;
-                                _elementIndices[2] = (short)node.Index;
-                            }
-                            else if (node.NumEntries > _colorSet[0].NumEntries)
-                            {
-                                MessageBox.Show("All vertices will only use the first color entry.");
-                                _colorSet[0] = node;
-                                _elementIndices[2] = (short)node.Index;
-                            }
-                            else
-                            {
-                                MessageBox.Show("There are not enough color entries for this object.");
-                                return;
-                            }
-                        else
-                        {
-                            if (node.NumEntries > 1)
-                                MessageBox.Show("All vertices will only use the first color entry.");
-
-                            _colorSet[0] = node;
-                            _elementIndices[2] = (short)node.Index;
-                            _rebuild = true;
-                            _c0Changed = true;
-                        }
-                    }
-                    else return;
-                }
-                SignalPropertyChange();
-            }
+            set { SetColors(0, value); }
         }
         public bool _c1Changed = false;
         [TypeConverter(typeof(DropDownListColors))]
         public string ColorNode1
         {
             get { return _colorSet[1] == null ? null : _colorSet[1]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    if (_colorSet[1] != null)
-                    {
-                        _c1Changed = true;
-                        _colorSet[1] = null;
-                        _elementIndices[3] = -1;
-                        _rebuild = true;
-                    }
-                }
-                else
-                {
-                    MDL0ColorNode node = Model.FindChild(String.Format("Colors/{0}", value), false) as MDL0ColorNode;
-                    if (node != null && node.NumEntries != 0)
-                    {
-                        if (_colorSet[1] != null)
-                            if (node.NumEntries == _colorSet[1].NumEntries)
-                            {
-                                _colorSet[1] = node;
-                                _elementIndices[3] = (short)node.Index;
-                            }
-                            else if (node.NumEntries > _colorSet[1].NumEntries)
-                            {
-                                MessageBox.Show("All vertices will only use the first color entry.");
-                                _colorSet[1] = node;
-                                _elementIndices[3] = (short)node.Index;
-                            }
-                            else
-                            {
-                                MessageBox.Show("There are not enough color entries for this object.");
-                                return;
-                            }
-                        else
-                        {
-                            if (node.NumEntries > 1)
-                                MessageBox.Show("All vertices will only use the first color entry.");
-
-                            _colorSet[1] = node;
-                            _elementIndices[3] = (short)node.Index;
-                            _rebuild = true;
-                            _c1Changed = true;
-                        }
-                    }
-                    else return;
-                }
-                SignalPropertyChange();
-            }
+            set { SetColors(1, value); }
         }
 
-        //public MDL0ColorNode[] ColorNodes { get { return _colorSet; } }
-        internal MDL0ColorNode[] _colorSet = new MDL0ColorNode[2];
+        #endregion
+
+        #region UVs
+
+        internal MDL0UVNode[] _uvSet = new MDL0UVNode[8];
+        private void SetUVs(int id, string value)
+        {
+            if (String.IsNullOrEmpty(value))
+                if (MessageBox.Show(RootNode._mainForm, "Do you want to remove this reference?", "Continue?", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                {
+                    _uvSet[id] = null;
+                    _elementIndices[id + 4] = -1;
+                    _rebuild = true;
+                }
+                else return;
+            else
+            {
+                MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
+                if (node != null && _uvSet[id] != null)
+                {
+                    if (node.NumEntries != _uvSet[id].NumEntries && MessageBox.Show(RootNode._mainForm, "Entry counts are not equal.\nThis might cause problems.\nContinue anyway?", "Continue?", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                        return;
+
+                    _uvSet[id] = node;
+                    _elementIndices[id + 4] = (short)node.Index;
+                }
+                else return;
+            }
+            SignalPropertyChange();
+        }
 
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord0
         {
             get { return _uvSet[0] == null ? null : _uvSet[0]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_uvSet[0] = null;
-                    //_elementIndices[4] = -1;
-                }
-                else
-                {
-                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
-                    if (node != null)
-                    {
-                        if (_uvSet[0] != null && node.NumEntries == _uvSet[0].NumEntries)
-                        {
-                            _uvSet[0] = node;
-                            _elementIndices[4] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
+            set { SetUVs(0, value); }
         }
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord1
         {
             get { return _uvSet[1] == null ? null : _uvSet[1]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_uvSet[1] = null;
-                    //_elementIndices[5] = -1;
-                }
-                else
-                {
-                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
-                    if (node != null)
-                    {
-                        if (_uvSet[1] != null && node.NumEntries == _uvSet[1].NumEntries)
-                        {
-                            _uvSet[1] = node;
-                            _elementIndices[5] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
+            set { SetUVs(1, value); }
         }
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord2
         {
             get { return _uvSet[2] == null ? null : _uvSet[2]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_uvSet[2] = null;
-                    //_elementIndices[6] = -1;
-                }
-                else
-                {
-                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
-                    if (node != null)
-                    {
-                        if (_uvSet[2] != null && node.NumEntries == _uvSet[0].NumEntries)
-                        {
-                            _uvSet[2] = node;
-                            _elementIndices[6] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
+            set { SetUVs(2, value); }
         }
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord3
         {
             get { return _uvSet[3] == null ? null : _uvSet[3]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_uvSet[3] = null;
-                    //_elementIndices[7] = -1;
-                }
-                else
-                {
-                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
-                    if (node != null)
-                    {
-                        if (_uvSet[3] != null && node.NumEntries == _uvSet[3].NumEntries)
-                        {
-                            _uvSet[3] = node;
-                            _elementIndices[7] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
+            set { SetUVs(3, value); }
         }
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord4
         {
             get { return _uvSet[4] == null ? null : _uvSet[4]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_uvSet[4] = null;
-                    //_elementIndices[8] = -1;
-                }
-                else
-                {
-                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
-                    if (node != null)
-                    {
-                        if (_uvSet[4] != null && node.NumEntries == _uvSet[4].NumEntries)
-                        {
-                            _uvSet[4] = node;
-                            _elementIndices[8] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
+            set { SetUVs(4, value); }
         }
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord5
         {
             get { return _uvSet[5] == null ? null : _uvSet[5]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_uvSet[5] = null;
-                    //_elementIndices[9] = -1;
-                }
-                else
-                {
-                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
-                    if (node != null)
-                    {
-                        if (_uvSet[5] != null && node.NumEntries == _uvSet[5].NumEntries)
-                        {
-                            _uvSet[5] = node;
-                            _elementIndices[4] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
+            set { SetUVs(5, value); }
         }
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord6
         {
             get { return _uvSet[6] == null ? null : _uvSet[6]._name; }
-            set
-            {
-                if (String.IsNullOrEmpty(value))
-                {
-                    return;
-                    //_uvSet[6] = null;
-                    //_elementIndices[10] = -1;
-                }
-                else
-                {
-                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
-                    if (node != null)
-                    {
-                        if (_uvSet[6] != null && node.NumEntries == _uvSet[6].NumEntries)
-                        {
-                            _uvSet[6] = node;
-                            _elementIndices[10] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
-                    }
-                }
-                SignalPropertyChange();
-            }
+            set { SetUVs(6, value); }
         }
         [TypeConverter(typeof(DropDownListUVs))]
         public string TexCoord7
         {
             get { return _uvSet[7] == null ? null : _uvSet[7]._name; }
+            set { SetUVs(7, value); }
+        }
+
+        #endregion
+
+        #region Fur
+
+        internal MDL0FurPosNode _furPosNode;
+        internal MDL0FurVecNode _furVecNode;
+
+        [TypeConverter(typeof(DropDownListFurPos))]
+        public string FurLayerCoordNode
+        {
+            get { return _furPosNode == null ? null : _furPosNode._name; }
             set
             {
-                if (String.IsNullOrEmpty(value))
+                if (!String.IsNullOrEmpty(value))
                 {
-                    return;
-                    //_uvSet[7] = null;
-                    //_elementIndices[11] = -1;
-                }
-                else
-                {
-                    MDL0UVNode node = Model.FindChild(String.Format("UVs/{0}", value), false) as MDL0UVNode;
-                    if (node != null)
+                    MDL0FurPosNode node = Model.FindChild(String.Format("FurLayerCoords/{0}", value), false) as MDL0FurPosNode;
+                    if (node != null && _furPosNode != null && node.NumVertices >= _furPosNode.NumVertices)
                     {
-                        if (_uvSet[7] != null && node.NumEntries == _uvSet[7].NumEntries)
-                        {
-                            _uvSet[7] = node;
-                            _elementIndices[11] = (short)node.Index;
-                        }
-                        else
-                        {
-                            MessageBox.Show("Entry counts are not equal. Cannot continue.");
-                            return;
-                        }
+                        _furPosNode = node;
+                        _elementIndices[12] = (short)node.Index;
                     }
                 }
                 SignalPropertyChange();
             }
         }
 
-        //public MDL0UVNode[] UVNodes { get { return _uvSet; } }
-        internal MDL0UVNode[] _uvSet = new MDL0UVNode[8];
+        [TypeConverter(typeof(DropDownListFurVec))]
+        public string FurVectorNode
+        {
+            get { return _furVecNode == null ? null : _furVecNode._name; }
+            set
+            {
+                if (!String.IsNullOrEmpty(value))
+                {
+                    MDL0FurVecNode node = Model.FindChild(String.Format("FurVectors/{0}", value), false) as MDL0FurVecNode;
+                    if (node != null && _furVecNode != null && node.NumEntries >= _furVecNode.NumEntries)
+                    {
+                        _furVecNode = node;
+                        _elementIndices[13] = (short)node.Index;
+                    }
+                }
+                SignalPropertyChange();
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -603,20 +398,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int _flag = 0;
         public int _index;
 
-        internal short[] _elementIndices = new short[12];
+        internal short[] _elementIndices = new short[14];
 
         public int[] _nodeCache;
-        private int tableLen = 0;
-        private int triCount = 0;
-        private int stripCount = 0;
-        private int primitiveStart = 0;
-        private int primitiveSize = 0;
+        private int _tableLen = 0;
+        private int _triCount = 0;
+        private int _stripCount = 0;
+        private int _primitiveStart = 0;
+        private int _primitiveSize = 0;
         public GXVtxDescList[] _descList;
         public GXVtxAttrFmtList[] _fmtList;
-        public int fpStride = 0;
+        public int _fpStride = 0;
         public Facepoint[] _facepoints;
         //public List<PrimitiveGroup> Primitives { get { return groups; } }
-        public List<PrimitiveGroup> groups = new List<PrimitiveGroup>();
+        public List<PrimitiveGroup> _primGroups = new List<PrimitiveGroup>();
         public List<Triangle> Triangles = new List<Triangle>();
         public List<Tristrip> Tristrips = new List<Tristrip>();
 
@@ -628,7 +423,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(true), TypeConverter(typeof(DropDownListBones))]
         public string SingleBind
         {
-            get { return _singleBind == null ? "(none)" : _singleBind.IsPrimaryNode ? ((MDL0BoneNode)_singleBind)._name : "(multiple)"; }
+            get { return _matrixNode == null ? "(none)" : _matrixNode.IsPrimaryNode ? ((MDL0BoneNode)_matrixNode)._name : "(multiple)"; }
             set
             {
                 MatrixNode = String.IsNullOrEmpty(value) ? null : Model.FindBone(value); 
@@ -637,30 +432,60 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Model.Rebuild(false);
             }
         }
-        internal IMatrixNode _singleBind;
+        internal IMatrixNode _matrixNode;
         [Browsable(false)]
         public IMatrixNode MatrixNode
         {
-            get { return _singleBind; }
+            get { return _matrixNode; }
             set
             {
-                if (_singleBind == value)
+                if (_matrixNode == value)
                     return;
-                if (_singleBind != null)
+
+                if (value is MDL0BoneNode && _matrixNode is Influence)
                 {
-                    if (_singleBind is MDL0BoneNode)
-                        ((MDL0BoneNode)_singleBind)._infPolys.Remove(this);
-                    else
-                        _singleBind.ReferenceCount--;
+                    foreach (Vertex3 v in _manager._vertices)
+                    {
+                        v._position *= ((MDL0BoneNode)value).InverseMatrix;
+                        //v._normal *= ((MDL0BoneNode)value).InverseMatrix.GetRotationMatrix();
+                    }
+                    SetEditedVertices();
+                    //SetEditedNormals();
                 }
-                if ((_singleBind = value) != null)
+                else if (value is Influence && _matrixNode is MDL0BoneNode)
+                {
+                    foreach (Vertex3 v in _manager._vertices)
+                    {
+                        v._position *= ((MDL0BoneNode)_matrixNode).Matrix;
+                        //v._normal *= ((MDL0BoneNode)_matrixNode).Matrix.GetRotationMatrix();
+                    }
+                    SetEditedVertices();
+                    //SetEditedNormals();
+                }
+
+                if (_matrixNode != null)
+                {
+                    if (_matrixNode is MDL0BoneNode)
+                        ((MDL0BoneNode)_matrixNode)._infPolys.Remove(this);
+                    else
+                    {
+                        _matrixNode.ReferenceCount--;
+                        _matrixNode.Users.Remove(this);
+                    }
+                }
+                if ((_matrixNode = value) != null)
                 {
                     //Singlebind bones aren't added to NodeMix, but its node id is still built as influenced
                     //_singleBind.ReferenceCount++;
-                    if (_singleBind is MDL0BoneNode)
-                        ((MDL0BoneNode)_singleBind)._infPolys.Add(this);
+                    if (_matrixNode is MDL0BoneNode)
+                        ((MDL0BoneNode)_matrixNode)._infPolys.Add(this);
                     else
-                        _singleBind.ReferenceCount++;
+                    {
+                        _matrixNode.ReferenceCount++;
+                        _matrixNode.Users.Add(this);
+                    }
+
+                    _rebuild = true;
                 }
             }
         }
@@ -866,6 +691,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                         if (id == u.ID)
                             (_uvSet[i] = u)._polygons.Add(this);
 
+            if (header->_furVectorId >= 0)
+                foreach (MDL0FurVecNode v in Model._furVecList)
+                    if (header->_furVectorId == v.ID)
+                        (_furVecNode = v)._polygons.Add(this);
+
+            if (header->_furLayerCoordId >= 0)
+                foreach (MDL0FurPosNode n in Model._furPosList)
+                    if (header->_furLayerCoordId == n.ID)
+                        (_furPosNode = n)._polygons.Add(this);
+
             //Link element indices for rebuild
             _elementIndices[0] = (short)(_vertexNode != null ? _vertexNode.Index : -1);
             _elementIndices[1] = (short)(_normalNode != null ? _normalNode.Index : -1);
@@ -873,6 +708,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _elementIndices[i] = (short)(_colorSet[i - 2] != null ? _colorSet[i - 2].Index : -1);
             for (int i = 4; i < 12; i++)
                 _elementIndices[i] = (short)(_uvSet[i - 4] != null ? _uvSet[i - 4].Index : -1);
+            _elementIndices[12] = (short)(_furVecNode != null ? _furVecNode.Index : -1);
+            _elementIndices[13] = (short)(_furPosNode != null ? _furPosNode.Index : -1);
 
             //Create primitive manager
             if (_parent != null)
@@ -881,7 +718,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _manager = new PrimitiveManager(header, Model._assets, linker.NodeCache, this);
                 foreach (Vertex3 v in _manager._vertices)
                 {
-                    v.Index = i++;
+                    v._index = i++;
                     v._object = this;
                 }
             }
@@ -896,11 +733,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Read internal object node cache and read influence list
             if (Model._linker.NodeCache != null)
             {
-                foreach (ushort node in _manager._desc.NodeIds)
-                    try { Nodes.Add(Model._linker.NodeCache[node]); }
-                    catch { }
+                foreach (NodeIdOffset node in _manager._nodeRefOffsets)
+                    Nodes.Add(Model._linker.NodeCache[node._id]);
 
-                if (_singleBind == null)
+                if (_matrixNode == null)
                 {
                     _influences = new List<IMatrixNode>();
                     bushort* weights = header->WeightIndices(Model._version);
@@ -944,18 +780,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _elementIndices[i] = (short)(_colorSet[i - 2] != null ? _colorSet[i - 2].Index : _elementIndices[i]);
             for (int i = 4; i < 12; i++)
                 _elementIndices[i] = (short)(_uvSet[i - 4] != null ? _uvSet[i - 4].Index : _elementIndices[i]);
+            _elementIndices[12] = (short)(_furVecNode != null ? _furVecNode.Index : _elementIndices[0]);
+            _elementIndices[13] = (short)(_furPosNode != null ? _furPosNode.Index : _elementIndices[1]);
         }
 
         //This should be done after node indices have been assigned
         protected override int OnCalculateSize(bool force)
         {
             //Reset everything!
-            tableLen =
-            primitiveStart =
-            primitiveSize =
-            fpStride =
-            triCount =
-            stripCount = 0;
+            _tableLen =
+            _primitiveStart =
+            _primitiveSize =
+            _fpStride =
+            _triCount =
+            _stripCount = 0;
 
             //Create node table
             HashSet<int> nodes = new HashSet<int>();
@@ -981,7 +819,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (Model._isImport)
                 {
                     //Continue checking for single bind
-                    if (_nodeId == -2 && _singleBind == null)
+                    if (_nodeId == -2 && _matrixNode == null)
                     {
                         bool first = true;
                         foreach (Vertex3 v in _manager._vertices)
@@ -989,24 +827,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                             if (first)
                             {
                                 if (v._matrixNode != null)
-                                {
-                                    _singleBind = Model._linker.NodeCache[v._matrixNode.NodeIndex];
-                                    if (_singleBind is MDL0BoneNode)
-                                        ((MDL0BoneNode)_singleBind)._infPolys.Add(this);
-                                }
+                                    MatrixNode = Model._linker.NodeCache[v._matrixNode.NodeIndex];
+                                
                                 first = false;
                             }
-                            v._matrixNode = null;
+                            v.MatrixNode = null;
                         }
                     }
 
                     _manager.Nodes = new Dictionary<int, IMatrixNode>();
                     foreach (Vertex3 v in _manager._vertices)
-                    {
                         if (v._matrixNode != null)
                             if (!_manager.Nodes.ContainsKey(v._matrixNode.NodeIndex))
                                 _manager.Nodes.Add(v._matrixNode.NodeIndex, v._matrixNode);
-                    }
                 }
 
                 //Set vertex descriptor
@@ -1014,18 +847,16 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 //Add table length
                 size += _nodeCache.Length * 2 + 4;
-                tableLen = ((size.Align(0x10) + 0xE0) % 0x20 == 0) ? size.Align(0x10) : size.Align(0x20);
+                _tableLen = ((size.Align(0x10) + 0xE0) % 0x20 == 0) ? size.Align(0x10) : size.Align(0x20);
 
                 //Add def length
-                size = primitiveStart = tableLen + 0xE0;
+                size = _primitiveStart = _tableLen + 0xE0;
 
                 if (Model._isImport)
                 {
-                    groups.Clear();
+                    _primGroups.Clear();
                     Triangles.Clear();
                     Tristrips.Clear();
-
-                    //_bone = Model._boneGroup._children[0] as MDL0BoneNode;
 
                     //Merge vertices and assets into facepoints
                     _facepoints = _manager.MergeData(this);
@@ -1043,49 +874,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 //Indices are written in reverse for each triangle, 
                                 //so they need to be set to a triangle in reverse
 
-                                Tri.z = _facepoints[indices[t + 0]];
-                                Tri.y = _facepoints[indices[t + 1]];
-                                Tri.x = _facepoints[indices[t + 2]];
+                                Tri._z = _facepoints[indices[t + 0]];
+                                Tri._y = _facepoints[indices[t + 1]];
+                                Tri._x = _facepoints[indices[t + 2]];
                             }
                             else
                             {
-                                Tri.x = _facepoints[indices[t + 0]];
-                                Tri.y = _facepoints[indices[t + 1]];
-                                Tri.z = _facepoints[indices[t + 2]];
+                                Tri._x = _facepoints[indices[t + 0]];
+                                Tri._y = _facepoints[indices[t + 1]];
+                                Tri._z = _facepoints[indices[t + 2]];
                             }
 
                             Triangles.Add(Tri);
                         }
 
-                        //TriangleConverter.ACTCData tc = TriangleConverter.actcNew();
-
-                        //int triangleCount = Triangles.Count;
-                        //uint[][] triangles = new uint[triangleCount][];
-                        //int g = 0;
-                        //foreach (Triangle t in Triangles)
-                        //{
-                        //    triangles[g] = new uint[3];
-                        //    triangles[g][0] = (uint)t.xIndex;
-                        //    triangles[g][1] = (uint)t.yIndex;
-                        //    triangles[g][2] = (uint)t.zIndex;
-                        //    g++;
-                        //}
-                        //int[] primLengths;
-                        //TriangleConverter.ACTC_var[] primTypes;
-                        //uint[] primVerts;
-                        //int primCount;
-
-                        //primLengths = new int[triangleCount];
-                        //primTypes = new TriangleConverter.ACTC_var[triangleCount];
-                        //primVerts = new uint[triangleCount * 3];
-                        //primCount = TriangleConverter.actcTrianglesToPrimitives(tc, triangleCount, triangles, primTypes, primLengths, primVerts, int.MaxValue);
-                        ////if (primCount < 0)
-                        ////{
-                        ////    /* something bad happened */
-                        ////    /* print error and exit or whatever */
-                        ////}
-
-                        //Groups as triangles (working)
+                        //Groups as triangles
                         bool NewGroup = true;
                         PrimitiveGroup grp = new PrimitiveGroup();
                         for (int i = 0; i < Triangles.Count; i++)
@@ -1098,44 +901,48 @@ namespace BrawlLib.SSBB.ResourceNodes
                             }
                             if (!(grp.CanAdd(Triangles[i]))) //Will add automatically if true
                             {
-                                groups.Add(grp);
+                                _primGroups.Add(grp);
                                 NewGroup = true;
                                 goto Top;
                             }
                             if (i == Triangles.Count - 1) //Last triangle
-                                groups.Add(grp);
+                                _primGroups.Add(grp);
                         }
                     }
                 }
 
                 //Build display list
-                foreach (PrimitiveGroup g in groups)
+                foreach (PrimitiveGroup g in _primGroups)
                 {
                     if (Model._isImport)
                     {
-                        if (g.Tristrips.Count != 0)
-                            foreach (Tristrip strip in g.Tristrips)
-                                primitiveSize += 3 + strip.points.Count * fpStride;
+                        if (g._tristrips.Count != 0)
+                            foreach (Tristrip strip in g._tristrips)
+                                _primitiveSize += 3 + strip._points.Count * _fpStride;
 
-                        if (g.Triangles.Count != 0)
+                        if (g._trifans.Count != 0)
+                            foreach (Trifan fan in g._trifans)
+                                _primitiveSize += 3 + fan._points.Count * _fpStride;
+
+                        if (g._triangles.Count != 0)
                         {
-                            primitiveSize += 3;
-                            foreach (Triangle t in g.Triangles)
-                                primitiveSize += 3 * fpStride;
+                            _primitiveSize += 3;
+                            foreach (Triangle t in g._triangles)
+                                _primitiveSize += 3 * _fpStride;
                         }
                     }
                     else
                         for (int i = 0; i < g._headers.Count; i++)
-                            primitiveSize += 3 + g._points[i].Count * fpStride;
+                            _primitiveSize += 3 + g._points[i].Count * _fpStride;
 
                     if (Weighted)
-                        primitiveSize += 5 * g.nodeIds.Count * (TexMtx ? 3 : 2); //Add total matrices size
+                        _primitiveSize += 5 * g._nodeIds.Count * (HasTexMtx ? 3 : 2); //Add total matrices size
                 }
 
-                size += primitiveSize;
+                size += _primitiveSize;
                 int align = ((size.Align(0x10)) % 0x20 == 0) ? 0x10 : 0x20;
                 size = size.Align(align);
-                primitiveSize = primitiveSize.Align(align);
+                _primitiveSize = _primitiveSize.Align(align);
 
                 //Texture matrices (0x30) start at 0x00, max 11
                 //Pos matrices (0x20) start at 0x78, max 10
@@ -1162,11 +969,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _numFacepoints = header->_numVertices = _manager._pointCount;
                 _numFaces = header->_numFaces = _manager._faceCount;
 
-                _primBufferSize = header->_primitives._bufferSize = primitiveSize;
-                _primSize = header->_primitives._size = primitiveSize;
-                _primOffset = header->_primitives._offset = tableLen + 0xBC;
+                _primBufferSize = header->_primitives._bufferSize = _primitiveSize;
+                _primSize = header->_primitives._size = _primitiveSize;
+                _primOffset = header->_primitives._offset = _tableLen + 0xBC;
 
-                _defOffset = tableLen - 0x18;
+                _defOffset = _tableLen - 0x18;
 
                 header->_defintions._bufferSize = _defBufferSize;
                 header->_defintions._size = _defSize;
@@ -1180,16 +987,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                     header->_nodeTableOffset = 0x64;
                 else
                 {
-                    //Technically two bshorts: Fur Vector Id & Fur Layer Coord Id. Currently unsupported.
-                    *(bint*)((byte*)header + 0x60) = -1;
+                    *(bshort*)((byte*)header + 0x60) = _elementIndices[12];
+                    *(bshort*)((byte*)header + 0x62) = _elementIndices[13];
 
                     //Table offset
                     *(byte*)((byte*)header + 0x67) = 0x68;
                 }
 
                 //Set the node id
-                if (_singleBind != null)
-                    header->_nodeId = _nodeId = (ushort)_singleBind.NodeIndex;
+                if (_matrixNode != null)
+                    header->_nodeId = _nodeId = (ushort)_matrixNode.NodeIndex;
                 else
                     header->_nodeId = _nodeId = -1;
 
@@ -1226,7 +1033,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     (uint)Defs->UVATC);
 
                 //If the object has a single-bind, there will be no weight table
-                if (_singleBind == null)
+                if (_matrixNode == null)
                 {
                     //Write weight table
                     bushort* ptr = (bushort*)header->WeightIndices(Model._version);
@@ -1242,9 +1049,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (Model._linker.NodeCache != null)
                 {
                     Nodes.Clear();
-                    foreach (ushort node in _manager._desc.NodeIds)
-                        if (node < Model._linker.NodeCache.Length && node >= 0) 
-                            Nodes.Add(Model._linker.NodeCache[node]);
+                    foreach (NodeIdOffset node in _manager._nodeRefOffsets)
+                        if (node._id < Model._linker.NodeCache.Length && node._id >= 0) 
+                            Nodes.Add(Model._linker.NodeCache[node._id]);
                 }
             }
             else
@@ -1252,14 +1059,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Move raw data over
                 base.OnRebuild(address, length, force);
 
-                //Correct some things, just in case.
-                CorrectNodeIds(header); RecalcIndices();
+                CorrectNodeIds(header); 
+                
+                RecalcIndices();
                 header->_vertexId = _elementIndices[0];
                 header->_normalId = _elementIndices[1];
                 for (int i = 2; i < 4; i++)
                     *(bshort*)&header->_colorIds[i - 2] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
                 for (int i = 4; i < 12; i++)
                     *(bshort*)&header->_uids[i - 4] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
+                if (Model._version >= 10)
+                {
+                    *(bshort*)((byte*)header + 0x60) = _elementIndices[12];
+                    *(bshort*)((byte*)header + 0x62) = _elementIndices[13];
+                }
             }
 
             _rebuild = false;
@@ -1273,14 +1086,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (int n in _nodeCache)
                 *ptr++ = (ushort)n;
 
-            if (_singleBind != null)
-                header->_nodeId = _nodeId = (ushort)_singleBind.NodeIndex;
+            if (_matrixNode != null)
+                header->_nodeId = _nodeId = (ushort)_matrixNode.NodeIndex;
             else 
                 header->_nodeId = _nodeId = -1;
 
             int i = 0;
-            foreach (uint addr in _manager._desc.Addresses) //Node ids will always match with addresses
-                *(bushort*)((byte*)header->PrimitiveData + addr) = (ushort)Nodes[i++].NodeIndex;
+            foreach (NodeIdOffset addr in _manager._nodeRefOffsets) //Node ids will always match with addresses
+                *(bushort*)((byte*)header->PrimitiveData + addr._offset) = (ushort)Nodes[i++].NodeIndex;
         }
 
         public override unsafe void Export(string outPath)
@@ -1304,6 +1117,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Rendering
+
+        public void GetBox(out Vector3 min, out Vector3 max)
+        {
+            min = new Vector3(float.MaxValue);
+            max = new Vector3(float.MinValue);
+
+            foreach (Vertex3 vertex in _manager._vertices)
+            {
+                Vector3 v = vertex.WeightedPosition;
+
+                min.Min(v);
+                max.Max(v);
+            }
+        }
 
         #region GLSL
 
@@ -2021,33 +1848,33 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             if (ctx.bSupportsGLSLUBO)
             {
-                GL.UniformBlockBinding(shaderProgramHandle, 0, 1);
+                GL.UniformBlockBinding(_shaderProgramHandle, 0, 1);
                 if (vertexShaderHandle != 0)
-                    GL.UniformBlockBinding(shaderProgramHandle, 1, 2);
+                    GL.UniformBlockBinding(_shaderProgramHandle, 1, 2);
             }
 
             if (!ctx.bSupportsGLSLUBO)
                 for (int a = 8; a < UniformNames.Length; a++)
-                    UniformLocations[a] = GL.GetUniformLocation(shaderProgramHandle, UniformNames[a]);
+                    UniformLocations[a] = GL.GetUniformLocation(_shaderProgramHandle, UniformNames[a]);
 
             if (!ctx.bSupportsGLSLBinding)
                 for (int a = 0; a < 8; a++)
-                    if ((UniformLocations[a] = GL.GetUniformLocation(shaderProgramHandle, UniformNames[a])) != -1)
+                    if ((UniformLocations[a] = GL.GetUniformLocation(_shaderProgramHandle, UniformNames[a])) != -1)
                         GL.Uniform1(UniformLocations[a], a);
 
             // Need to get some attribute locations
             if (vertexShaderHandle != 0 && !ctx.bSupportsGLSLATTRBind)
             {
                 // We have no vertex Shader
-                GL.BindAttribLocation(shaderProgramHandle, SHADER_NORM1_ATTRIB, "rawnorm1");
-                GL.BindAttribLocation(shaderProgramHandle, SHADER_NORM2_ATTRIB, "rawnorm2");
-                GL.BindAttribLocation(shaderProgramHandle, SHADER_POSMTX_ATTRIB, "fposmtx");
+                GL.BindAttribLocation(_shaderProgramHandle, SHADER_NORM1_ATTRIB, "rawnorm1");
+                GL.BindAttribLocation(_shaderProgramHandle, SHADER_NORM2_ATTRIB, "rawnorm2");
+                GL.BindAttribLocation(_shaderProgramHandle, SHADER_POSMTX_ATTRIB, "fposmtx");
             }
         }
 
-        public string fragmentShaderSource;
-        public int fragmentShaderHandle;
-        public int shaderProgramHandle = 0;
+        public string _fragmentShaderSource;
+        public int _fragmentShaderHandle;
+        public int _shaderProgramHandle = 0;
         /*
             w("{0}float4 " + I_POSNORMALMATRIX + "[6];\n", WriteLocation(ctx));
             w("{0}float4 " + I_PROJECTION + "[4];\n", WriteLocation(ctx));
@@ -2187,20 +2014,18 @@ namespace BrawlLib.SSBB.ResourceNodes
             //{
 
             //});
-
         }
-
-#endregion
+        #endregion
 
         internal bool _render = true;
         public void PreRender()
         {
-            if (_singleBind != null)
-            {
-                GL.PushMatrix();
-                Matrix m = _singleBind.Matrix;
-                GL.MultMatrix((float*)&m);
-            }
+            //if (_singleBind != null)
+            //{
+            //    GL.PushMatrix();
+            //    Matrix m = _singleBind.Matrix;
+            //    GL.MultMatrix((float*)&m);
+            //}
 
             if (UsableMaterialNode != null)
             {
@@ -2375,8 +2200,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_render)
                 return;
 
-            GL.PushName(Index);
-
             if (ctx._canUseShaders)
             {
                 bool temp = false;
@@ -2388,72 +2211,82 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     temp = true;
 
-                    if (shaderProgramHandle > 0)
-                        GL.DeleteProgram(shaderProgramHandle);
+                    if (_shaderProgramHandle > 0)
+                        GL.DeleteProgram(_shaderProgramHandle);
 
-                    shaderProgramHandle = GL.CreateProgram();
+                    _shaderProgramHandle = GL.CreateProgram();
 
-                    int status_code;
+                    int status;
                     string info;
 
                     if (_renderUpdate)
                     {
-                        vertexShaderSource = GenerateVertexShaderCode(ctx);
+                        vertexShaderSource = ShaderGenerator.GenerateVertexShader(this);//GenerateVertexShaderCode(ctx);
 
                         GL.ShaderSource(vertexShaderHandle, vertexShaderSource);
                         GL.CompileShader(vertexShaderHandle);
 
                         GL.GetShaderInfoLog(vertexShaderHandle, out info);
-                        GL.GetShader(vertexShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
+                        GL.GetShader(vertexShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status);
                         //Console.WriteLine(info + "\n\n" + vertexShaderSource + "\n\n");
-                        if (status_code != 1)
+                        if (status != 1)
                         {
                             //MessageBox.Show(info);
                             Console.WriteLine(info + "\n\n" + vertexShaderSource + "\n\n");
                         }
                         else
-                            GL.AttachShader(shaderProgramHandle, vertexShaderHandle);
+                            GL.AttachShader(_shaderProgramHandle, vertexShaderHandle);
                     }
                     if (_renderUpdate || UsableMaterialNode._renderUpdate || UsableMaterialNode.ShaderNode._renderUpdate)
                     {
-                        fragmentShaderSource = UsableMaterialNode.GeneratePixelShaderCode(this, MDL0MaterialNode.PSGRENDER_MODE.PSGRENDER_NORMAL, ctx);
+                        _fragmentShaderSource = ShaderGenerator.GeneratePixelShader(this);
+                        //UsableMaterialNode.GeneratePixelShaderCode(this, MDL0MaterialNode.PSGRENDER_MODE.PSGRENDER_NORMAL, ctx);
 
-                        GL.ShaderSource(fragmentShaderHandle, fragmentShaderSource);
-                        GL.CompileShader(fragmentShaderHandle);
+                        GL.ShaderSource(_fragmentShaderHandle, _fragmentShaderSource);
+                        GL.CompileShader(_fragmentShaderHandle);
 
-                        GL.GetShaderInfoLog(fragmentShaderHandle, out info);
-                        GL.GetShader(fragmentShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status_code);
+                        GL.GetShaderInfoLog(_fragmentShaderHandle, out info);
+                        GL.GetShader(_fragmentShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status);
                         //Console.WriteLine(info + "\n\n" + fragmentShaderSource + "\n\n");
-                        if (status_code != 1)
+                        if (status != 1)
                         {
                             //MessageBox.Show(info);
-                            Console.WriteLine(info + "\n\n" + fragmentShaderSource + "\n\n");
+                            Console.WriteLine(info + "\n\n" + _fragmentShaderSource + "\n\n");
                         }
                         else
-                            GL.AttachShader(shaderProgramHandle, fragmentShaderHandle);
+                            GL.AttachShader(_shaderProgramHandle, _fragmentShaderHandle);
 
                         UsableMaterialNode._renderUpdate = UsableMaterialNode.ShaderNode._renderUpdate = false;
                     }
 
                     _renderUpdate = false;
 
-                    GL.LinkProgram(shaderProgramHandle);
+                    GL.LinkProgram(_shaderProgramHandle);
                 }
 
-                GL.UseProgram(shaderProgramHandle);
+                GL.UseProgram(_shaderProgramHandle);
 
                 if (temp)
                 {
-                    SetUniforms(shaderProgramHandle);
-                    UsableMaterialNode.SetUniforms(shaderProgramHandle);
+                    SetUniforms(_shaderProgramHandle);
+                    UsableMaterialNode.SetUniforms(_shaderProgramHandle);
                 }
                 if (UsableMaterialNode._lightSet != null)
-                    SetLightUniforms(shaderProgramHandle);
+                    SetLightUniforms(_shaderProgramHandle);
             }
 
-            _manager.PrepareStream();
+            //if (ctx._canUseShaders)
+            //{
+            //    GL.Enable(EnableCap.Texture2D);
+            //    _manager.PrepareStream();
+            //}
+            //else
+            if (_manager != null)
+                _manager.PrepareFixedStream();
 
             PreRender();
+
+            GL.MatrixMode(MatrixMode.Modelview);
 
             if (UsableMaterialNode != null)
                 if (UsableMaterialNode.Children.Count == 0) _manager.RenderTexture(null);
@@ -2462,25 +2295,31 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
                         continue;
 
-                    GL.MatrixMode(MatrixMode.Texture);
+                    if (!ctx._canUseShaders)
+                    {
+                        GL.MatrixMode(MatrixMode.Texture);
 
-                    GL.PushMatrix();
+                        GL.PushMatrix();
 
-                    //Add bind transform
-                    GL.Scale(mr.Scale._x, mr.Scale._y, 0);
-                    GL.Rotate(mr.Rotation, 1, 0, 0);
-                    GL.Translate(-mr.Translation._x, mr.Translation._y, 0);
+                        //Add bind transform
+                        GL.Scale(mr.Scale._x, mr.Scale._y, 0);
+                        GL.Rotate(mr.Rotation, 1, 0, 0);
+                        GL.Translate(-mr.Translation._x, mr.Translation._y, 0);
 
-                    //Now add frame transform
-                    GL.Scale(mr._frameState._scale._x, mr._frameState._scale._y, 1);
-                    GL.Rotate(mr._frameState._rotate._x, 1, 0, 0);
-                    GL.Translate(-mr._frameState._translate._x, mr._frameState._translate._y - ((mr._frameState._scale._y - 1) / 2), 0);
+                        //Now add frame transform
+                        GL.Scale(mr._frameState._scale._x, mr._frameState._scale._y, 1);
+                        GL.Rotate(mr._frameState._rotate._x, 1, 0, 0);
+                        GL.Translate(-mr._frameState._translate._x, mr._frameState._translate._y - ((mr._frameState._scale._y - 1) / 2), 0);
 
-                    GL.MatrixMode(MatrixMode.Modelview);
+                        GL.MatrixMode(MatrixMode.Modelview);
+                    }
+                    else
+                        GL.ClientActiveTexture(TextureUnit.Texture0 + mr.Index);
 
-                    mr.Bind(ctx, shaderProgramHandle);
+                    mr.Bind(ctx, _shaderProgramHandle);
                     
-                    _manager.RenderTexture(mr);
+                    if (!ctx._canUseShaders && _manager != null)
+                        _manager.RenderTexture(mr);
 
                     switch ((int)mr.UWrapMode)
                     {
@@ -2496,21 +2335,75 @@ namespace BrawlLib.SSBB.ResourceNodes
                         case 2: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.MirroredRepeat); break;
                     }
 
-                    GL.MatrixMode(MatrixMode.Texture);
-                    GL.PopMatrix();
-                    GL.MatrixMode(MatrixMode.Modelview);
+                    if (!ctx._canUseShaders)
+                    {
+                        GL.MatrixMode(MatrixMode.Texture);
+                        GL.PopMatrix();
+                        GL.MatrixMode(MatrixMode.Modelview);
+                    }
 
                     //mr._texture.Rendered = true;
                 }
-            else
+            else if (!ctx._canUseShaders)
                 _manager.RenderTexture(null);
-            
-            _manager.DetachStreams();
 
-            if (_singleBind != null)
-                GL.PopMatrix();
+            if (ctx._canUseShaders)
+                _manager.RenderTexture(null);
 
-            GL.PopName();
+            //if (ctx._canUseShaders)
+            //    _manager.DetachStreams();
+            //else
+            if (_manager != null)
+                _manager.DetachFixedStreams();
+
+            //if (_singleBind != null)
+            //    GL.PopMatrix();
+        }
+
+        public void DrawBox()
+        {
+            Vector3 min, max;
+            GetBox(out min, out max);
+
+            GL.Begin(BeginMode.Lines);
+
+            GL.Vertex3(min._x, min._y, min._z);
+            GL.Vertex3(max._x, min._y, min._z);
+
+            GL.Vertex3(min._x, min._y, min._z);
+            GL.Vertex3(min._x, max._y, min._z);
+
+            GL.Vertex3(min._x, min._y, min._z);
+            GL.Vertex3(min._x, min._y, max._z);
+
+            GL.Vertex3(max._x, max._y, max._z);
+            GL.Vertex3(max._x, max._y, min._z);
+
+            GL.Vertex3(max._x, max._y, max._z);
+            GL.Vertex3(min._x, max._y, max._z);
+
+            GL.Vertex3(max._x, max._y, max._z);
+            GL.Vertex3(max._x, min._y, max._z);
+
+            GL.Vertex3(max._x, min._y, max._z);
+            GL.Vertex3(min._x, min._y, max._z);
+
+            GL.Vertex3(max._x, min._y, max._z);
+            GL.Vertex3(max._x, min._y, min._z);
+
+            GL.Vertex3(min._x, max._y, min._z);
+            GL.Vertex3(min._x, max._y, max._z);
+
+            GL.Vertex3(min._x, max._y, min._z);
+            GL.Vertex3(max._x, max._y, min._z);
+
+            GL.Vertex3(min._x, min._y, max._z);
+            GL.Vertex3(min._x, max._y, max._z);
+
+            GL.Vertex3(max._x, min._y, min._z);
+            GL.Vertex3(max._x, max._y, min._z);
+
+            GL.End();
         }
 
         public bool _renderUpdate = false;
@@ -2519,16 +2412,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int vertexShaderHandle;
 
         internal void WeightVertices() { _manager.Weight(); }
-        internal void UnWeightVertices() { _manager.UnWeight(); }
 
         internal override void Bind(TKContext ctx) 
         {
             _render = (_bone != null ? _bone._flags1.HasFlag(BoneFlags.Visible) ? true : false : true);
 
-            if (ctx._canUseShaders)
+            if (ctx != null && ctx._canUseShaders)
             {
                 vertexShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.VertexShader);
-                fragmentShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
+                _fragmentShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
 
                 _renderUpdate = true;
             }
@@ -2540,43 +2432,98 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (vertexShaderHandle != 0)
                 GL.DeleteShader(vertexShaderHandle);
 
-            if (fragmentShaderHandle != 0)
-                GL.DeleteShader(fragmentShaderHandle);
+            if (_fragmentShaderHandle != 0)
+                GL.DeleteShader(_fragmentShaderHandle);
 
-            if (shaderProgramHandle != 0)
-                GL.DeleteProgram(shaderProgramHandle);
+            if (_shaderProgramHandle != 0)
+                GL.DeleteProgram(_shaderProgramHandle);
         }
-        public unsafe void RenderVertexOrbs(GLDisplayList list, Vector3 cam)
+
+        public void Attach(TKContext ctx) { Model.Attach(ctx); _render = true; }
+        public void Detach() { Model.Detach(); _render = false; }
+        public void Refesh() { Model.Refesh(); }
+
+        public void Render(TKContext ctx, ModelPanel mainWindow)
         {
-            //Rendering using sphere is inefficient and slows down the program.
-            //Render using a quad and rotate it to face the camera instead.
+            GL.Enable(EnableCap.Lighting);
+            GL.Enable(EnableCap.DepthTest);
+            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
-            Matrix m = Matrix.Identity;
-            GL.PushMatrix();
-            if (_singleBind != null)
-            {
-                m = _singleBind.Matrix;
-                GL.MultMatrix((float*)&m);
-            }
-
-            foreach (Vertex3 v in _manager._vertices)
-            {
-                Vector3 pos = m * v.WeightedPosition;
-                Vector3 rot = pos.LookatAngles(cam) * Maths._rad2degf;
-
-                Matrix x = Matrix.TransformMatrix(new Vector3(0.10f), rot, v.WeightedPosition);
-                
-                GL.PushMatrix();
-                GL.MultMatrix((float*)&x);
-
-                list.Call();
-                GL.PopMatrix();
-            } 
-            GL.PopMatrix();
+            Render(ctx);
         }
+
         #endregion
 
         #region Etc
+        public void ConvertInf()
+        {
+            if (_matrixNode == null)
+            {
+                IMatrixNode inf = null;
+                bool ok = true;
+                foreach (Vertex3 v in _manager._vertices)
+                {
+                    if (inf == null)
+                        inf = v.MatrixNode;
+                    else if (inf != v.MatrixNode)
+                    {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok)
+                {
+                    MatrixNode = inf;
+                    foreach (Vertex3 v in _manager._vertices)
+                        v.MatrixNode = null;
+                }
+            }
+            else
+            {
+                foreach (Vertex3 v in _manager._vertices)
+                    v.MatrixNode = MatrixNode;
+                MatrixNode = null;
+            }
+        }
+        public void SetVerticesFromWeighted()
+        {
+            for (int i = 0; i < _manager._vertices.Count; i++)
+            {
+                Vertex3 vec = _manager._vertices[i];
+                //if (vec._moved)
+                    _vertexNode.Vertices[_manager._vertices[i]._facepoints[0].VertexIndex] = vec.UnweightPos(vec._weightedPosition);
+            }
+
+            _vertexNode.ForceRebuild = true; 
+            if (_vertexNode.Format == WiiVertexComponentType.Float)
+                _vertexNode.ForceFloat = true;
+        }
+        //public void SetEditedNormals()
+        //{
+        //    for (int i = 0; i < _manager._vertices.Count; i++)
+        //    {
+        //        Vertex3 vec = _manager._vertices[i];
+        //        if (vec._moved)
+        //            _vertexNode.Vertices[_manager._vertices[i]._facepoints[0].NormalIndex] = vec._normal;
+        //    }
+
+        //    _normalNode.ForceRebuild = true;
+        //    if (_normalNode.Format == WiiVertexComponentType.Float)
+        //        _normalNode.ForceFloat = true;
+        //}
+        public void SetEditedVertices()
+        {
+            for (int i = 0; i < _manager._vertices.Count; i++)
+            {
+                Vertex3 vec = _manager._vertices[i];
+                //if (vec._moved)
+                    _vertexNode.Vertices[_manager._vertices[i]._facepoints[0].VertexIndex] = vec._position;
+            }
+            
+            _vertexNode.ForceRebuild = true;
+            if (_vertexNode.Format == WiiVertexComponentType.Float)
+                _vertexNode.ForceFloat = true;
+        }
 
         public MDL0ObjectNode Clone() { return MemberwiseClone() as MDL0ObjectNode; }
 
@@ -2620,18 +2567,20 @@ namespace BrawlLib.SSBB.ResourceNodes
             XluMaterialNode = null;
 
             if (_manager != null)
-            {
                 foreach (Vertex3 v in _manager._vertices)
                     if (v._matrixNode != null)
+                    {
+                        v._matrixNode.Users.Remove(v);
                         v._matrixNode.ReferenceCount--;
-            }
+                    }
 
             base.Remove();
 
             Dispose();
 
-            foreach (MDL0ObjectNode p in node._polyList)
-                p.RecalcIndices();
+            if (node._polyList != null)
+                foreach (MDL0ObjectNode p in node._polyList)
+                    p.RecalcIndices();
         }
 
         public static int DrawCompareOpa(ResourceNode n1, ResourceNode n2)
@@ -2650,13 +2599,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (((MDL0ObjectNode)n1).OpaMaterialNode == null && ((MDL0ObjectNode)n2).OpaMaterialNode == null)
                 return 0;
 
-            //They were equal. Fall back on material draw priority
+            //Now check material draw priority
             if (((MDL0ObjectNode)n1).OpaMaterialNode.Index > ((MDL0ObjectNode)n2).OpaMaterialNode.Index)
                 return 1;
             if (((MDL0ObjectNode)n1).OpaMaterialNode.Index < ((MDL0ObjectNode)n2).OpaMaterialNode.Index)
                 return -1;
 
-            //Now compare the object index
+            //Finally compare the object index
             if (((MDL0ObjectNode)n1).Index > ((MDL0ObjectNode)n2).Index)
                 return 1;
             if (((MDL0ObjectNode)n1).Index < ((MDL0ObjectNode)n2).Index)
@@ -2681,13 +2630,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (((MDL0ObjectNode)n1).XluMaterialNode == null && ((MDL0ObjectNode)n2).XluMaterialNode == null)
                 return 0;
 
-            //They were equal. Fall back on material draw priority
+            //Now check material draw priority
             if (((MDL0ObjectNode)n1).XluMaterialNode.Index > ((MDL0ObjectNode)n2).XluMaterialNode.Index)
                 return 1;
             if (((MDL0ObjectNode)n1).XluMaterialNode.Index < ((MDL0ObjectNode)n2).XluMaterialNode.Index)
                 return -1;
 
-            //Now compare the object index
+            //Finally compare the object index
             if (((MDL0ObjectNode)n1).Index > ((MDL0ObjectNode)n2).Index)
                 return 1;
             if (((MDL0ObjectNode)n1).Index < ((MDL0ObjectNode)n2).Index)

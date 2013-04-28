@@ -89,8 +89,8 @@ namespace BrawlLib.SSBBTypes
         public const uint Size = 0x10;
 
         public BinTag _tag;
-        public bshort _endian;
-        public bshort _version;
+        public bushort _endian;
+        public bushort _version;
         public bint _length;
         public bushort _firstOffset;
         public bushort _numEntries;
@@ -100,7 +100,7 @@ namespace BrawlLib.SSBBTypes
 
         public byte VersionMajor { get { return ((byte*)_version.Address)[0]; } set { ((byte*)_version.Address)[0] = value; } }
         public byte VersionMinor { get { return ((byte*)_version.Address)[1]; } set { ((byte*)_version.Address)[1] = value; } }
-        public Endian Endian { get { return (Endian)(short)_endian; } set { _endian = (short)value; } }
+        public Endian Endian { get { return (Endian)(short)_endian; } set { _endian = (ushort)value; } }
 
         public DataBlockCollection Entries { get { return new DataBlockCollection(DataBlock); } }
     }

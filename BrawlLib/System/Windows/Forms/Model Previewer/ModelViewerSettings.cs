@@ -17,7 +17,6 @@ namespace System.Windows.Forms
         private Label label5;
         private Label label6;
         private Label label7;
-        private Label label8;
         private NumericInputBox ax;
         private NumericInputBox radius;
         private NumericInputBox dx;
@@ -30,9 +29,6 @@ namespace System.Windows.Forms
         private NumericInputBox dz;
         private NumericInputBox elevation;
         private NumericInputBox az;
-        private NumericInputBox sw;
-        private NumericInputBox dw;
-        private NumericInputBox aw;
         private GroupBox groupBox1;
         private GroupBox groupBox2;
         private Label label10;
@@ -62,140 +58,206 @@ namespace System.Windows.Forms
         private Label label24;
         private NumericInputBox maxUndoCount;
         private Label label18;
+        private NumericInputBox ez;
+        private NumericInputBox ey;
+        private Label label8;
+        private NumericInputBox ex;
+        private Label label23;
+        private Label label22;
+        private Label label21;
+        private Label label19;
         private ModelEditControl form;
 
-        public ModelViewerSettingsDialog() { InitializeComponent(); _dlgColor = new GoodColorDialog(); maxUndoCount.Integral = true; }
+        public ModelViewerSettingsDialog() 
+        {
+            InitializeComponent(); 
+            _dlgColor = new GoodColorDialog(); 
+            maxUndoCount.Integral = true;
+            _boxes[0] = ax;
+            _boxes[1] = ay;
+            _boxes[2] = az;
+            _boxes[3] = ex;
+            _boxes[4] = radius;
+            _boxes[5] = azimuth;
+            _boxes[6] = elevation;
+            _boxes[7] = dx;
+            _boxes[8] = dy;
+            _boxes[9] = dz;
+            _boxes[10] = ey;
+            _boxes[11] = sx;
+            _boxes[12] = sy;
+            _boxes[13] = sz;
+            _boxes[14] = ez;
+            _boxes[15] = tScale;
+            _boxes[16] = rScale;
+            _boxes[17] = zScale;
+            _boxes[18] = yFov;
+            _boxes[19] = nearZ;
+            _boxes[20] = farZ;
+            _boxes[21] = maxUndoCount;
 
-        public DialogResult ShowDialog(ModelEditControl owner)
+            for (int i = 0; i < 15; i++)
+                if (i < 4 || i > 6)
+                {
+                    _boxes[i].MaxValue = 255;
+                    _boxes[i].MinValue = 0;
+                }
+        }
+
+        private NumericInputBox[] _boxes = new NumericInputBox[22];
+        private float[] _origValues = new float[22];
+        
+        public void Show(ModelEditControl owner)
         {
             form = owner;
 
-            ax.Value = form.modelPanel1.Ambient._x;
-            ay.Value = form.modelPanel1.Ambient._y;
-            az.Value = form.modelPanel1.Ambient._z;
-            aw.Value = form.modelPanel1.Ambient._w;
+            form._renderLightDisplay = true;
 
-            radius.Value = form.modelPanel1.LightPosition._x;
-            azimuth.Value = form.modelPanel1.LightPosition._y;
-            elevation.Value = form.modelPanel1.LightPosition._z;
+            ax.Value = form.modelPanel.Ambient._x * 255.0f;
+            ay.Value = form.modelPanel.Ambient._y * 255.0f;
+            az.Value = form.modelPanel.Ambient._z * 255.0f;
 
-            dx.Value = form.modelPanel1.Diffuse._x;
-            dy.Value = form.modelPanel1.Diffuse._y;
-            dz.Value = form.modelPanel1.Diffuse._z;
-            dw.Value = form.modelPanel1.Diffuse._w;
+            radius.Value = form.modelPanel.LightPosition._x;
+            azimuth.Value = form.modelPanel.LightPosition._y;
+            elevation.Value = form.modelPanel.LightPosition._z;
 
-            sx.Value = form.modelPanel1.Specular._x;
-            sy.Value = form.modelPanel1.Specular._y;
-            sz.Value = form.modelPanel1.Specular._z;
-            sw.Value = form.modelPanel1.Specular._w;
+            dx.Value = form.modelPanel.Diffuse._x * 255.0f;
+            dy.Value = form.modelPanel.Diffuse._y * 255.0f;
+            dz.Value = form.modelPanel.Diffuse._z * 255.0f;
 
-            tScale.Value = form.modelPanel1.TranslationScale;
-            rScale.Value = form.modelPanel1.RotationScale;
-            zScale.Value = form.modelPanel1.ZoomScale;
+            sx.Value = form.modelPanel.Specular._x * 255.0f;
+            sy.Value = form.modelPanel.Specular._y * 255.0f;
+            sz.Value = form.modelPanel.Specular._z * 255.0f;
 
-            yFov.Value = form.modelPanel1._fovY;
-            nearZ.Value = form.modelPanel1._nearZ;
-            farZ.Value = form.modelPanel1._farZ;
+            ex.Value = form.modelPanel.Emission._x * 255.0f;
+            ey.Value = form.modelPanel.Emission._y * 255.0f;
+            ez.Value = form.modelPanel.Emission._z * 255.0f;
+
+            tScale.Value = form.modelPanel.TranslationScale;
+            rScale.Value = form.modelPanel.RotationScale;
+            zScale.Value = form.modelPanel.ZoomScale;
+
+            yFov.Value = form.modelPanel._fovY;
+            nearZ.Value = form.modelPanel._nearZ;
+            farZ.Value = form.modelPanel._farZ;
 
             maxUndoCount.Value = form._allowedUndos;
+
+            for (int i = 0; i < 22; i++)
+            {
+                _origValues[i] = _boxes[i].Value;
+                _boxes[i].Tag = i;
+            }
 
             UpdateOrb();
             UpdateLine();
             UpdateCol1();
+            UpdateAmb();
+            UpdateDif();
+            UpdateSpe();
+            UpdateEmi();
 
-            return base.ShowDialog(owner);
+            base.Show(owner);
+        }
+
+        private void BoxValueChanged(object sender, EventArgs e)
+        {
+            _boxes[5].Value = _boxes[5].Value.Clamp180Deg();
+            _boxes[6].Value = _boxes[6].Value.Clamp180Deg();
+
+            form.modelPanel.Ambient = new Vector4(_boxes[0].Value / 255.0f, _boxes[1].Value / 255.0f, _boxes[2].Value / 255.0f, 1.0f);
+            form.modelPanel.LightPosition = new Vector4(_boxes[4].Value, _boxes[5].Value, _boxes[6].Value, 1.0f);
+            form.modelPanel.Diffuse = new Vector4(_boxes[7].Value / 255.0f, _boxes[8].Value / 255.0f, _boxes[9].Value / 255.0f, 1.0f);
+            form.modelPanel.Specular = new Vector4(_boxes[11].Value / 255.0f, _boxes[12].Value / 255.0f, _boxes[13].Value / 255.0f, 1.0f);
+            form.modelPanel.Emission = new Vector4(_boxes[3].Value / 255.0f, _boxes[10].Value / 255.0f, _boxes[14].Value / 255.0f, 1.0f);
+
+            form.modelPanel.TranslationScale = _boxes[15].Value;
+            form.modelPanel.RotationScale = _boxes[16].Value;
+            form.modelPanel.ZoomScale = _boxes[17].Value;
+
+            form.modelPanel._fovY = _boxes[18].Value;
+            form.modelPanel._nearZ = _boxes[19].Value;
+            form.modelPanel._farZ = _boxes[20].Value;
+
+            form._allowedUndos = (uint)Math.Abs(_boxes[21].Value);
+
+            int i = (int)(sender as NumericInputBox).Tag;
+
+            if (i == 3 || i == 10 || i == 14)
+                UpdateEmi();
+            else if (i < 3)
+                UpdateAmb();
+            else if (i < 10)
+                UpdateDif();
+            else
+                UpdateSpe();
+
+            form.modelPanel._projectionChanged = true;
+
+            form.modelPanel.Invalidate();
         }
 
         private unsafe void btnOkay_Click(object sender, EventArgs e)
         {
-            form.modelPanel1.Ambient = new Vector4(ax.Value, ay.Value, az.Value, aw.Value);
-            form.modelPanel1.LightPosition = new Vector4(radius.Value, azimuth.Value, elevation.Value, 1.0f);
-            form.modelPanel1.Diffuse = new Vector4(dx.Value, dy.Value, dz.Value, dw.Value);
-            form.modelPanel1.Specular = new Vector4(sx.Value, sy.Value, sz.Value, sw.Value);
+            if (Math.Abs(_boxes[5].Value) == Math.Abs(_boxes[6].Value) &&
+                _boxes[5].Value % 180.0f == 0 &&
+                _boxes[6].Value % 180.0f == 0)
+            {
+                _boxes[5].Value = 0;
+                _boxes[6].Value = 0;
+            }
 
-            form.modelPanel1.TranslationScale = tScale.Value;
-            form.modelPanel1.RotationScale = rScale.Value;
-            form.modelPanel1.ZoomScale = zScale.Value;
+            form.modelPanel.Ambient = new Vector4(ax.Value / 255.0f, ay.Value / 255.0f, az.Value / 255.0f, 1.0f);
+            form.modelPanel.LightPosition = new Vector4(radius.Value, azimuth.Value, elevation.Value, 1.0f);
+            form.modelPanel.Diffuse = new Vector4(dx.Value / 255.0f, dy.Value / 255.0f, dz.Value / 255.0f, 1.0f);
+            form.modelPanel.Specular = new Vector4(sx.Value / 255.0f, sy.Value / 255.0f, sz.Value / 255.0f, 1.0f);
+            form.modelPanel.Emission = new Vector4(_boxes[3].Value / 255.0f, _boxes[10].Value / 255.0f, _boxes[14].Value / 255.0f, 1.0f);
 
-            form.modelPanel1._fovY = yFov.Value;
-            form.modelPanel1._nearZ = nearZ.Value;
-            form.modelPanel1._farZ = farZ.Value;
+            form.modelPanel.TranslationScale = tScale.Value;
+            form.modelPanel.RotationScale = rScale.Value;
+            form.modelPanel.ZoomScale = zScale.Value;
 
-            form._allowedUndos = (int)maxUndoCount.Value;
+            form.modelPanel._fovY = yFov.Value;
+            form.modelPanel._nearZ = nearZ.Value;
+            form.modelPanel._farZ = farZ.Value;
 
-            //Vector4 Ambient = new Vector4();
-            //if (!float.TryParse(ax.Text, out Ambient._x))
-            //    Ambient._x = 0.2f;
-            //if (!float.TryParse(ay.Text, out Ambient._y))
-            //    Ambient._y = 0.2f;
-            //if (!float.TryParse(az.Text, out Ambient._z))
-            //    Ambient._z = 0.2f;
-            //if (!float.TryParse(aw.Text, out Ambient._w))
-            //    Ambient._w = 1;
-            //form.modelPanel1.Ambient = Ambient;
-
-            //Vector4 Light = new Vector4();
-            //if (!float.TryParse(radius.Text, out Light._x))
-            //    Light._x = 0;
-            //if (!float.TryParse(azimuth.Text, out Light._y))
-            //    Light._y = 6;
-            //if (!float.TryParse(elevation.Text, out Light._z))
-            //    Light._z = 6;
-            //Light._w = 1;
-            //form.modelPanel1.LightPosition = Light;
-
-            //Vector4 Diffuse = new Vector4();
-            //if (!float.TryParse(dx.Text, out Diffuse._x))
-            //    Diffuse._x = 0.8f;
-            //if (!float.TryParse(dy.Text, out Diffuse._y))
-            //    Diffuse._y = 0.8f;
-            //if (!float.TryParse(dz.Text, out Diffuse._z))
-            //    Diffuse._z = 0.8f;
-            //if (!float.TryParse(dw.Text, out Diffuse._w))
-            //    Diffuse._w = 1;
-            //form.modelPanel1.Diffuse = Diffuse;
-
-            //Vector4 Specular = new Vector4();
-            //if (!float.TryParse(sx.Text, out Specular._x))
-            //    Specular._x = 0.5f;
-            //if (!float.TryParse(sy.Text, out Specular._y))
-            //    Specular._y = 0.5f;
-            //if (!float.TryParse(sz.Text, out Specular._z))
-            //    Specular._z = 0.5f;
-            //if (!float.TryParse(sw.Text, out Specular._w))
-            //    Specular._w = 1;
-            //form.modelPanel1.Specular = Specular;
-
-            //float val;
-            //if (!float.TryParse(tScale.Text, out val))
-            //    val = 0.05f;
-            //form.modelPanel1.TranslationScale = val;
-            //if (!float.TryParse(rScale.Text, out val))
-            //    val = 0.1f;
-            //form.modelPanel1.RotationScale = val;
-            //if (!float.TryParse(zScale.Text, out val))
-            //    val = 2.5f;
-            //form.modelPanel1.ZoomScale = val;
-
-            //if (!float.TryParse(yFov.Text, out val))
-            //    val = 45.0f;
-            //form.modelPanel1._fovY = val;
-            //if (!float.TryParse(nearZ.Text, out val))
-            //    val = 1.0f;
-            //form.modelPanel1._nearZ = val;
-            //if (!float.TryParse(farZ.Text, out val))
-            //    val = 20000.0f;
-            //form.modelPanel1._farZ = val;
-
-            form.modelPanel1._projectionChanged = true;
-
-            form.modelPanel1.Invalidate();
+            form._allowedUndos = (uint)Math.Abs(maxUndoCount.Value);
 
             DialogResult = DialogResult.OK;
             Close();
         }
 
-        private void btnCancel_Click(object sender, EventArgs e) { DialogResult = DialogResult.Cancel; Close(); }
+        private void btnCancel_Click(object sender, EventArgs e) 
+        {
+            form.modelPanel.Ambient = new Vector4(_origValues[0] / 255.0f, _origValues[1] / 255.0f, _origValues[2] / 255.0f, 1.0f);
+            form.modelPanel.LightPosition = new Vector4(_origValues[4], _origValues[5], _origValues[6], 1.0f);
+            form.modelPanel.Diffuse = new Vector4(_origValues[7] / 255.0f, _origValues[8] / 255.0f, _origValues[9] / 255.0f, 1.0f);
+            form.modelPanel.Specular = new Vector4(_origValues[11] / 255.0f, _origValues[12] / 255.0f, _origValues[13] / 255.0f, 1.0f);
+            form.modelPanel.Emission = new Vector4(_origValues[3] / 255.0f, _origValues[10] / 255.0f, _origValues[14] / 255.0f, 1.0f);
+
+            form.modelPanel.TranslationScale = _origValues[15];
+            form.modelPanel.RotationScale = _origValues[16];
+            form.modelPanel.ZoomScale = _origValues[17];
+
+            form.modelPanel._fovY = _origValues[18];
+            form.modelPanel._nearZ = _origValues[19];
+            form.modelPanel._farZ = _origValues[20];
+
+            form._allowedUndos = (uint)Math.Abs(_origValues[21]);
+
+            DialogResult = DialogResult.Cancel; 
+            Close(); 
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            form.modelPanel._projectionChanged = true;
+            form._renderLightDisplay = false;
+
+            form.modelPanel.Invalidate();
+        }
 
         #region Designer
 
@@ -217,7 +279,6 @@ namespace System.Windows.Forms
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
             this.sy = new System.Windows.Forms.NumericInputBox();
             this.dy = new System.Windows.Forms.NumericInputBox();
             this.azimuth = new System.Windows.Forms.NumericInputBox();
@@ -226,10 +287,15 @@ namespace System.Windows.Forms
             this.dz = new System.Windows.Forms.NumericInputBox();
             this.elevation = new System.Windows.Forms.NumericInputBox();
             this.az = new System.Windows.Forms.NumericInputBox();
-            this.sw = new System.Windows.Forms.NumericInputBox();
-            this.dw = new System.Windows.Forms.NumericInputBox();
-            this.aw = new System.Windows.Forms.NumericInputBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.ez = new System.Windows.Forms.NumericInputBox();
+            this.ey = new System.Windows.Forms.NumericInputBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.ex = new System.Windows.Forms.NumericInputBox();
             this.label17 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -291,46 +357,50 @@ namespace System.Windows.Forms
             // 
             this.ax.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.ax.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ax.Location = new System.Drawing.Point(67, 92);
+            this.ax.Location = new System.Drawing.Point(88, 81);
             this.ax.Name = "ax";
             this.ax.Size = new System.Drawing.Size(50, 20);
             this.ax.TabIndex = 3;
             this.ax.Text = "0";
+            this.ax.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // radius
             // 
             this.radius.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.radius.Location = new System.Drawing.Point(12, 41);
+            this.radius.Location = new System.Drawing.Point(60, 35);
             this.radius.Name = "radius";
             this.radius.Size = new System.Drawing.Size(66, 20);
             this.radius.TabIndex = 4;
             this.radius.Text = "0";
+            this.radius.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // dx
             // 
             this.dx.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.dx.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.dx.Location = new System.Drawing.Point(67, 111);
+            this.dx.Location = new System.Drawing.Point(88, 100);
             this.dx.Name = "dx";
             this.dx.Size = new System.Drawing.Size(50, 20);
             this.dx.TabIndex = 5;
             this.dx.Text = "0";
+            this.dx.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // sx
             // 
             this.sx.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.sx.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sx.Location = new System.Drawing.Point(67, 130);
+            this.sx.Location = new System.Drawing.Point(88, 119);
             this.sx.Name = "sx";
             this.sx.Size = new System.Drawing.Size(50, 20);
             this.sx.TabIndex = 6;
             this.sx.Text = "0";
+            this.sx.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label1.Location = new System.Drawing.Point(12, 92);
+            this.label1.Location = new System.Drawing.Point(33, 81);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(56, 20);
             this.label1.TabIndex = 7;
@@ -340,7 +410,7 @@ namespace System.Windows.Forms
             // label2
             // 
             this.label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label2.Location = new System.Drawing.Point(12, 22);
+            this.label2.Location = new System.Drawing.Point(60, 16);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(66, 20);
             this.label2.TabIndex = 8;
@@ -351,7 +421,7 @@ namespace System.Windows.Forms
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label3.Location = new System.Drawing.Point(12, 111);
+            this.label3.Location = new System.Drawing.Point(33, 100);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(56, 20);
             this.label3.TabIndex = 9;
@@ -362,7 +432,7 @@ namespace System.Windows.Forms
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label4.Location = new System.Drawing.Point(12, 130);
+            this.label4.Location = new System.Drawing.Point(33, 119);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(56, 20);
             this.label4.TabIndex = 10;
@@ -373,163 +443,135 @@ namespace System.Windows.Forms
             // 
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label5.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label5.Location = new System.Drawing.Point(67, 73);
+            this.label5.Location = new System.Drawing.Point(88, 62);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(50, 20);
             this.label5.TabIndex = 19;
-            this.label5.Text = "X";
+            this.label5.Text = "R";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label6
             // 
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label6.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label6.Location = new System.Drawing.Point(116, 73);
+            this.label6.Location = new System.Drawing.Point(137, 62);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(50, 20);
             this.label6.TabIndex = 20;
-            this.label6.Text = "Y";
+            this.label6.Text = "G";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label7
             // 
             this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label7.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label7.Location = new System.Drawing.Point(165, 73);
+            this.label7.Location = new System.Drawing.Point(186, 62);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(50, 20);
             this.label7.TabIndex = 21;
-            this.label7.Text = "Z";
+            this.label7.Text = "B";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label8
-            // 
-            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label8.Location = new System.Drawing.Point(214, 73);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(50, 20);
-            this.label8.TabIndex = 22;
-            this.label8.Text = "W";
-            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // sy
             // 
             this.sy.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.sy.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sy.Location = new System.Drawing.Point(116, 130);
+            this.sy.Location = new System.Drawing.Point(137, 119);
             this.sy.Name = "sy";
             this.sy.Size = new System.Drawing.Size(50, 20);
             this.sy.TabIndex = 26;
             this.sy.Text = "0";
+            this.sy.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // dy
             // 
             this.dy.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.dy.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.dy.Location = new System.Drawing.Point(116, 111);
+            this.dy.Location = new System.Drawing.Point(137, 100);
             this.dy.Name = "dy";
             this.dy.Size = new System.Drawing.Size(50, 20);
             this.dy.TabIndex = 25;
             this.dy.Text = "0";
+            this.dy.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // azimuth
             // 
             this.azimuth.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.azimuth.Location = new System.Drawing.Point(77, 41);
+            this.azimuth.Location = new System.Drawing.Point(129, 35);
             this.azimuth.Name = "azimuth";
             this.azimuth.Size = new System.Drawing.Size(66, 20);
             this.azimuth.TabIndex = 24;
             this.azimuth.Text = "0";
+            this.azimuth.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // ay
             // 
             this.ay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.ay.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ay.Location = new System.Drawing.Point(116, 92);
+            this.ay.Location = new System.Drawing.Point(137, 81);
             this.ay.Name = "ay";
             this.ay.Size = new System.Drawing.Size(50, 20);
             this.ay.TabIndex = 23;
             this.ay.Text = "0";
+            this.ay.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // sz
             // 
             this.sz.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.sz.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sz.Location = new System.Drawing.Point(165, 130);
+            this.sz.Location = new System.Drawing.Point(186, 119);
             this.sz.Name = "sz";
             this.sz.Size = new System.Drawing.Size(50, 20);
             this.sz.TabIndex = 30;
             this.sz.Text = "0";
+            this.sz.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // dz
             // 
             this.dz.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.dz.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.dz.Location = new System.Drawing.Point(165, 111);
+            this.dz.Location = new System.Drawing.Point(186, 100);
             this.dz.Name = "dz";
             this.dz.Size = new System.Drawing.Size(50, 20);
             this.dz.TabIndex = 29;
             this.dz.Text = "0";
+            this.dz.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // elevation
             // 
             this.elevation.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.elevation.Location = new System.Drawing.Point(142, 41);
+            this.elevation.Location = new System.Drawing.Point(197, 35);
             this.elevation.Name = "elevation";
             this.elevation.Size = new System.Drawing.Size(66, 20);
             this.elevation.TabIndex = 28;
             this.elevation.Text = "0";
+            this.elevation.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // az
             // 
             this.az.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.az.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.az.Location = new System.Drawing.Point(165, 92);
+            this.az.Location = new System.Drawing.Point(186, 81);
             this.az.Name = "az";
             this.az.Size = new System.Drawing.Size(50, 20);
             this.az.TabIndex = 27;
             this.az.Text = "0";
-            // 
-            // sw
-            // 
-            this.sw.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.sw.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.sw.Location = new System.Drawing.Point(214, 130);
-            this.sw.Name = "sw";
-            this.sw.Size = new System.Drawing.Size(50, 20);
-            this.sw.TabIndex = 34;
-            this.sw.Text = "0";
-            // 
-            // dw
-            // 
-            this.dw.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.dw.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.dw.Location = new System.Drawing.Point(214, 111);
-            this.dw.Name = "dw";
-            this.dw.Size = new System.Drawing.Size(50, 20);
-            this.dw.TabIndex = 33;
-            this.dw.Text = "0";
-            // 
-            // aw
-            // 
-            this.aw.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.aw.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.aw.Location = new System.Drawing.Point(214, 92);
-            this.aw.Name = "aw";
-            this.aw.Size = new System.Drawing.Size(50, 20);
-            this.aw.TabIndex = 31;
-            this.aw.Text = "0";
+            this.az.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.label23);
+            this.groupBox1.Controls.Add(this.label22);
+            this.groupBox1.Controls.Add(this.label21);
+            this.groupBox1.Controls.Add(this.label19);
+            this.groupBox1.Controls.Add(this.ez);
+            this.groupBox1.Controls.Add(this.ey);
+            this.groupBox1.Controls.Add(this.label8);
+            this.groupBox1.Controls.Add(this.ex);
             this.groupBox1.Controls.Add(this.label17);
             this.groupBox1.Controls.Add(this.label16);
-            this.groupBox1.Controls.Add(this.sw);
-            this.groupBox1.Controls.Add(this.dw);
-            this.groupBox1.Controls.Add(this.aw);
             this.groupBox1.Controls.Add(this.sz);
             this.groupBox1.Controls.Add(this.dz);
             this.groupBox1.Controls.Add(this.label2);
@@ -540,7 +582,6 @@ namespace System.Windows.Forms
             this.groupBox1.Controls.Add(this.azimuth);
             this.groupBox1.Controls.Add(this.dy);
             this.groupBox1.Controls.Add(this.ay);
-            this.groupBox1.Controls.Add(this.label8);
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.label5);
@@ -557,10 +598,91 @@ namespace System.Windows.Forms
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Lighting";
             // 
+            // label23
+            // 
+            this.label23.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label23.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label23.Location = new System.Drawing.Point(235, 138);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(40, 20);
+            this.label23.TabIndex = 43;
+            this.label23.Click += new System.EventHandler(this.label23_Click);
+            // 
+            // label22
+            // 
+            this.label22.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label22.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label22.Location = new System.Drawing.Point(235, 119);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(40, 20);
+            this.label22.TabIndex = 42;
+            this.label22.Click += new System.EventHandler(this.label22_Click);
+            // 
+            // label21
+            // 
+            this.label21.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label21.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label21.Location = new System.Drawing.Point(235, 100);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(40, 20);
+            this.label21.TabIndex = 41;
+            this.label21.Click += new System.EventHandler(this.label21_Click);
+            // 
+            // label19
+            // 
+            this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label19.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label19.Location = new System.Drawing.Point(235, 81);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(40, 20);
+            this.label19.TabIndex = 11;
+            this.label19.Click += new System.EventHandler(this.label19_Click);
+            // 
+            // ez
+            // 
+            this.ez.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ez.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ez.Location = new System.Drawing.Point(186, 138);
+            this.ez.Name = "ez";
+            this.ez.Size = new System.Drawing.Size(50, 20);
+            this.ez.TabIndex = 40;
+            this.ez.Text = "0";
+            // 
+            // ey
+            // 
+            this.ey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ey.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ey.Location = new System.Drawing.Point(137, 138);
+            this.ey.Name = "ey";
+            this.ey.Size = new System.Drawing.Size(50, 20);
+            this.ey.TabIndex = 39;
+            this.ey.Text = "0";
+            // 
+            // label8
+            // 
+            this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label8.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label8.Location = new System.Drawing.Point(33, 138);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(56, 20);
+            this.label8.TabIndex = 38;
+            this.label8.Text = "Emission:";
+            this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // ex
+            // 
+            this.ex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ex.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ex.Location = new System.Drawing.Point(88, 138);
+            this.ex.Name = "ex";
+            this.ex.Size = new System.Drawing.Size(50, 20);
+            this.ex.TabIndex = 37;
+            this.ex.Text = "0";
+            // 
             // label17
             // 
             this.label17.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label17.Location = new System.Drawing.Point(142, 22);
+            this.label17.Location = new System.Drawing.Point(197, 16);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(66, 20);
             this.label17.TabIndex = 36;
@@ -570,7 +692,7 @@ namespace System.Windows.Forms
             // label16
             // 
             this.label16.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label16.Location = new System.Drawing.Point(77, 22);
+            this.label16.Location = new System.Drawing.Point(129, 16);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(66, 20);
             this.label16.TabIndex = 35;
@@ -607,6 +729,7 @@ namespace System.Windows.Forms
             this.farZ.Size = new System.Drawing.Size(60, 20);
             this.farZ.TabIndex = 11;
             this.farZ.Text = "0";
+            this.farZ.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // nearZ
             // 
@@ -616,6 +739,7 @@ namespace System.Windows.Forms
             this.nearZ.Size = new System.Drawing.Size(60, 20);
             this.nearZ.TabIndex = 10;
             this.nearZ.Text = "0";
+            this.nearZ.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // yFov
             // 
@@ -625,6 +749,7 @@ namespace System.Windows.Forms
             this.yFov.Size = new System.Drawing.Size(60, 20);
             this.yFov.TabIndex = 9;
             this.yFov.Text = "0";
+            this.yFov.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // zScale
             // 
@@ -634,6 +759,7 @@ namespace System.Windows.Forms
             this.zScale.Size = new System.Drawing.Size(50, 20);
             this.zScale.TabIndex = 8;
             this.zScale.Text = "0";
+            this.zScale.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // tScale
             // 
@@ -643,6 +769,7 @@ namespace System.Windows.Forms
             this.tScale.Size = new System.Drawing.Size(50, 20);
             this.tScale.TabIndex = 7;
             this.tScale.Text = "0";
+            this.tScale.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // rScale
             // 
@@ -652,6 +779,7 @@ namespace System.Windows.Forms
             this.rScale.Size = new System.Drawing.Size(50, 20);
             this.rScale.TabIndex = 6;
             this.rScale.Text = "0";
+            this.rScale.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // label14
             // 
@@ -851,6 +979,7 @@ namespace System.Windows.Forms
             this.maxUndoCount.Size = new System.Drawing.Size(66, 20);
             this.maxUndoCount.TabIndex = 37;
             this.maxUndoCount.Text = "0";
+            this.maxUndoCount.ValueChanged += new System.EventHandler(this.BoxValueChanged);
             // 
             // label18
             // 
@@ -937,6 +1066,82 @@ namespace System.Windows.Forms
         {
             lblCol1Text.Text = ((ARGBPixel)ModelEditControl._floorHue).ToString();
             lblCol1Color.BackColor = Color.FromArgb(ModelEditControl._floorHue.R, ModelEditControl._floorHue.G, ModelEditControl._floorHue.B);
+        }
+        private void UpdateAmb()
+        {
+            label19.BackColor = Color.FromArgb(255, (int)(ax.Value), (int)(ay.Value), (int)(az.Value));
+            form.modelPanel.Ambient = new Vector4(ax.Value / 255.0f, ay.Value / 255.0f, az.Value / 255.0f, 1.0f);
+        }
+        private void UpdateDif()
+        {
+            label21.BackColor = Color.FromArgb(255, (int)(dx.Value), (int)(dy.Value), (int)(dz.Value));
+            form.modelPanel.Diffuse = new Vector4(dx.Value / 255.0f, dy.Value / 255.0f, dz.Value / 255.0f, 1.0f);
+        }
+        private void UpdateSpe()
+        {
+            label22.BackColor = Color.FromArgb(255, (int)(sx.Value), (int)(sy.Value), (int)(sz.Value));
+            form.modelPanel.Specular = new Vector4(sx.Value / 255.0f, sy.Value / 255.0f, sz.Value / 255.0f, 1.0f);
+        }
+        private void UpdateEmi()
+        {
+            label23.BackColor = Color.FromArgb(255, (int)(ex.Value), (int)(ey.Value), (int)(ez.Value));
+            form.modelPanel.Emission = new Vector4(ex.Value / 255.0f, ey.Value / 255.0f, ez.Value / 255.0f, 1.0f);
+        }
+        public bool _updating = false;
+        private void label19_Click(object sender, EventArgs e)
+        {
+            _dlgColor.Color = Color.FromArgb(255, (int)(ax.Value), (int)(ay.Value), (int)(az.Value));
+            if (_dlgColor.ShowDialog(this) == DialogResult.OK)
+            {
+                _updating = true;
+                ax.Value = (float)_dlgColor.Color.R;
+                ay.Value = (float)_dlgColor.Color.G;
+                az.Value = (float)_dlgColor.Color.B;
+                _updating = false;
+                UpdateAmb();
+            }
+        }
+
+        private void label21_Click(object sender, EventArgs e)
+        {
+            _dlgColor.Color = Color.FromArgb(255, (int)(dx.Value), (int)(dy.Value), (int)(dz.Value));
+            if (_dlgColor.ShowDialog(this) == DialogResult.OK)
+            {
+                _updating = true;
+                dx.Value = (float)_dlgColor.Color.R;
+                dy.Value = (float)_dlgColor.Color.G;
+                dz.Value = (float)_dlgColor.Color.B;
+                _updating = false;
+                UpdateDif();
+            }
+        }
+
+        private void label22_Click(object sender, EventArgs e)
+        {
+            _dlgColor.Color = Color.FromArgb(255, (int)(sx.Value ), (int)(sy.Value), (int)(sz.Value));
+            if (_dlgColor.ShowDialog(this) == DialogResult.OK)
+            {
+                _updating = true;
+                sx.Value = (float)_dlgColor.Color.R;
+                sy.Value = (float)_dlgColor.Color.G;
+                sz.Value = (float)_dlgColor.Color.B;
+                _updating = false;
+                UpdateSpe();
+            }
+        }
+
+        private void label23_Click(object sender, EventArgs e)
+        {
+            _dlgColor.Color = Color.FromArgb(255, (int)(ex.Value), (int)(ey.Value), (int)(ez.Value));
+            if (_dlgColor.ShowDialog(this) == DialogResult.OK)
+            {
+                _updating = true;
+                ex.Value = (float)_dlgColor.Color.R;
+                ey.Value = (float)_dlgColor.Color.G;
+                ez.Value = (float)_dlgColor.Color.B;
+                _updating = false;
+                UpdateEmi();
+            }
         }
     }
 }

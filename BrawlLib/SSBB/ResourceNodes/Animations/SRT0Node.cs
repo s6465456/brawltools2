@@ -521,8 +521,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _keyframes = null;
 
-            if (_parent is SRT0EntryNode && _parent._parent is SRT0Node)
-                _numFrames = ((SRT0Node)_parent._parent).FrameCount;
+            if (Parent is SRT0EntryNode && Parent.Parent is SRT0Node)
+                _numFrames = ((SRT0Node)Parent.Parent).FrameCount;
 
             return false;
         }

@@ -262,14 +262,17 @@ namespace BrawlLib.Wii.Models
         public UnsafeBuffer RemapTable;
         public int RemapSize;
 
+        public List<List<Facepoint>> _points;
+
         private fixed ushort Nodes[16];
+
+        public List<NodeIdOffset> _nodeIds;
 
         public ElementDescriptor(MDL0Object* polygon)
         {
             byte* pData = (byte*)polygon->DefList;
             byte* pCom;
             ElementDef* pDef;
-            dirCache = new List<Vector3>();
 
             CPElementSpec UVATGroups;
             int format; //0 for direct, 1 for byte, 2 for short
@@ -278,9 +281,10 @@ namespace BrawlLib.Wii.Models
             RemapTable = new UnsafeBuffer(polygon->_numVertices * 4);
             RemapSize = 0;
             Stride = 0;
-            
-            NodeIds = new List<ushort>();
-            Addresses = new List<uint>();
+
+            _nodeIds = new List<NodeIdOffset>();
+
+            _points = new List<List<Facepoint>>();
 
             //Read element descriptor from polygon display list
             MDL0PolygonDefs* Definitons = (MDL0PolygonDefs*)polygon->DefList;
@@ -333,7 +337,7 @@ namespace BrawlLib.Wii.Models
                         int f = (int)UVATGroups.PositionDef.DataFormat;
 
                         //Clamp format to even value and add length to stride
-                        Stride += f.ClampToEven().Clamp(1, 4) * (!UVATGroups.PositionDef.IsSpecial ? 2 : 3);
+                        Stride += f.RoundDownToEven().Clamp(1, 4) * (!UVATGroups.PositionDef.IsSpecial ? 2 : 3);
 
                         pDef->Scale = (byte)UVATGroups.PositionDef.Scale;
                         pDef->Output = (byte)((!UVATGroups.PositionDef.IsSpecial ? (int)ElementCodec.CodecType.XY : (int)ElementCodec.CodecType.XYZ) + (byte)UVATGroups.PositionDef.DataFormat);
@@ -359,7 +363,7 @@ namespace BrawlLib.Wii.Models
                     if (format == 0)
                     {
                         int f = (int)UVATGroups.NormalDef.DataFormat;
-                        Stride += f.ClampToEven().Clamp(1, 4) * 3;
+                        Stride += f.RoundDownToEven().Clamp(1, 4) * 3;
 
                         pDef->Scale = (byte)UVATGroups.NormalDef.Scale;
                         pDef->Output = (byte)(((int)ElementCodec.CodecType.XYZ) + (byte)UVATGroups.NormalDef.DataFormat);
@@ -413,7 +417,7 @@ namespace BrawlLib.Wii.Models
                         if (format == 0)
                         {
                             int f = (int)UVATGroups.GetUVDef(i).DataFormat;
-                            Stride += f.ClampToEven().Clamp(1, 4);
+                            Stride += f.RoundDownToEven().Clamp(1, 4);
 
                             pDef->Output = (byte)((!UVATGroups.GetUVDef(i).IsSpecial ? (int)ElementCodec.CodecType.S : (int)ElementCodec.CodecType.ST) + (byte)UVATGroups.GetUVDef(i).DataFormat);
                             pDef->Scale = (byte)UVATGroups.GetUVDef(i).Scale;
@@ -431,9 +435,6 @@ namespace BrawlLib.Wii.Models
                 *pCom = 0;
             }
         }
-
-        public List<ushort> NodeIds;
-        public List<uint> Addresses;
         
         //Set node ID/Index using specified command block
         public void SetNode(ref byte* pIn, byte* start)
@@ -441,8 +442,7 @@ namespace BrawlLib.Wii.Models
             //Get node ID
             ushort node = *(bushort*)pIn;
 
-            NodeIds.Add(node);
-            Addresses.Add((uint)pIn - (uint)start);
+            _nodeIds.Add(new NodeIdOffset(node, (uint)pIn - (uint)start));
 
             //Get cache index.
             //Wii memory assigns data using offsets of 4-byte values.
@@ -462,24 +462,20 @@ namespace BrawlLib.Wii.Models
         {
             ushort node = *(bushort*)pIn;
 
-            NodeIds.Add(node);
-            Addresses.Add((uint)pIn - (uint)start);
+            _nodeIds.Add(new NodeIdOffset(node, (uint)pIn - (uint)start));
 
             //Increment pointer
             pIn += 4;
         }
 
-        public List<Vector3> dirCache;
-
         //Decode a single primitive using command list
         public void Run(ref byte* pIn, byte** pAssets, byte** pOut, int count, PrimitiveGroup group, ref ushort* indices, IMatrixNode[] nodeTable)
         {
-            int weight = 0;
+            //pIn is the address in the primitives
+            //pOut is address of the face data buffers
+            //pAssets is the address of the raw asset buffers
 
-            //Vector3 Position = new Vector3();
-            //Vector3 Normal = new Vector3();
-            //Vector2[] UV = new Vector2[8];
-            //RGBAPixel[] Color = new RGBAPixel[2];
+            int weight = 0;
 
             int index = 0, outSize;
             DecodeOp o;
@@ -503,16 +499,15 @@ namespace BrawlLib.Wii.Models
 
                     Facepoint f = new Facepoint();
 
-                Top:
+                Continue:
                     o = (DecodeOp)(*p++);
                     switch (o)
                     {
                         //Process weight using cache
                         case DecodeOp.PosWeight:
                             weight = pNode[*pIn++ / 3];
-                            if (weight < nodeTable.Length)
-                                f.Node = nodeTable[weight];
-                            goto Top;
+                            f._node = nodeTable[weight];
+                            goto Continue;
 
                         case DecodeOp.TexMtx0:
                         case DecodeOp.TexMtx1:
@@ -526,47 +521,11 @@ namespace BrawlLib.Wii.Models
                             //if (*pIn++ == 0x60) //Identity matrix...
                             //    Console.WriteLine();
                             pTexMtx[index] = (byte)(*pIn++ / 3);
-                            goto Top;
+                            goto Continue;
 
                         case DecodeOp.ElementDirect:
-
-                            //if (pDef->Type == 2 || pDef->Type == 3)
-                            //{
-
-                            //}
-                            //else
-                            //{
-                                ElementCodec.Decoders[pDef->Output](ref pIn, ref pOut[pDef->Type], VQuant.DeQuantTable[pDef->Scale]);
-
-                            //    if (pDef->Type == 0) //Special processing for vertices
-                            //    {
-                            //        Vector3* v = (Vector3*)(pOut[pDef->Type] - 12);
-
-                            //        index = dirCache.IndexOf(*v);
-                            //        if (index < 0)
-                            //        {
-                            //            dirCache.Add(*v);
-                            //            index = dirCache.Count;
-                            //        }
-
-                            //        //Match weight and index with remap table
-                            //        int mapEntry = (weight << 16) | index;
-                            //        int* pTmp = (int*)RemapTable.Address;
-
-                            //        //Find matching index, starting at end of list
-                            //        //Do nothing while the index lowers
-                            //        index = RemapSize;
-                            //        while ((--index >= 0) && (pTmp[index] != mapEntry)) ;
-
-                            //        //No match, create new entry
-                            //        //Will be processed into vertices at the end!
-                            //        if (index < 0) pTmp[index = RemapSize++] = mapEntry;
-
-                            //        //Write index
-                            //        *indices++ = (ushort)index;
-                            //    }
-                            //}
-                            goto Top;
+                            ElementCodec.Decoders[pDef->Output](ref pIn, ref pOut[pDef->Type], VQuant.DeQuantTable[pDef->Scale]);
+                            goto Continue;
 
                         case DecodeOp.ElementIndexed:
 
@@ -603,16 +562,23 @@ namespace BrawlLib.Wii.Models
                                 int* pTmp = (int*)RemapTable.Address;
 
                                 //Find matching index, starting at end of list
-                                //Do nothing while the index lowers
+                                //Lower index until a match is found at that index or index is less than 0
                                 index = RemapSize;
                                 while ((--index >= 0) && (pTmp[index] != mapEntry)) ;
 
                                 //No match, create new entry
                                 //Will be processed into vertices at the end!
-                                if (index < 0) pTmp[index = RemapSize++] = mapEntry;
+                                if (index < 0)
+                                {
+                                    pTmp[index = RemapSize++] = mapEntry;
+
+                                    _points.Add(new List<Facepoint>());
+                                }
 
                                 //Write index
                                 *indices++ = (ushort)index;
+
+                                _points[index].Add(f);
                             }
                             else
                             {
@@ -632,65 +598,11 @@ namespace BrawlLib.Wii.Models
                             }
 
                             pDef++;
-                            goto Top;
-
-                        //Can't use this until it works faster. Merges all data into vertices.
-                        //    if (pDef->Type == 0)
-                        //    {
-                        //        tOut = (byte*)&Position;
-                        //        goto Apply;
-                        //    }
-                        //    else if (pDef->Type == 1)
-                        //    {
-                        //        tOut = (byte*)&Normal;
-                        //        goto Apply;
-                        //    }
-                        //    else if (pDef->Type < 4)
-                        //    {
-                        //        fixed (RGBAPixel* color = &Color[pDef->Type - 2])
-                        //        tOut = (byte*)color;
-                        //        goto Apply;
-                        //    }
-                        //    else
-                        //    {
-                        //        fixed (Vector2* uv = &UV[pDef->Type - 4])
-                        //        tOut = (byte*)uv;
-                        //        goto Apply;
-                        //    }
-
-                        //Apply:
-                        //    //Copy data from buffer
-                        //    outSize = pDef->Output;
-
-                        //    //Input data from asset cache
-                        //    tIn = pAssets[pDef->Type] + (index * outSize);
-
-                        //    //Copy data to output
-                        //    while (outSize-- > 0)
-                        //        *tOut++ = *tIn++;
-
-                        //    pDef++;
-                        //    goto Top;
+                            goto Continue;
 
                         default: break; //End
                     }
-                    ////Remap as whole vertex
-
-                    ////Match vertex with remap table
-                    //VertData mapEntry = new VertData(Position, weight, Normal, Color, UV);
-                    //VertData* pTmp = (VertData*)RemapTable.Address;
-
-                    ////Find matching index, starting at end of list
-                    //index = RemapSize;
-                    //while ((--index >= 0) && (pTmp[index] != mapEntry));
-
-                    ////No match, create new entry
-                    //if (index < 0)
-                    //    pTmp[index = RemapSize++] = mapEntry;
-
-                    ////Write index
-                    //*pOut++ = (ushort)index;
-
+                    
                     group._points[group._points.Count - 1].Add(f);
                 }
             }
@@ -728,83 +640,28 @@ namespace BrawlLib.Wii.Models
 
             if (!Weighted)
             {
-                //if (pVert == null)
-                //{
-                //    if (dirCache != null && dirCache.Count > 0)
-                //    {                    
-                //        //Add vertex to list using raw value.
-                //        int* pMap = (int*)RemapTable.Address;
-                //        for (int i = 0; i < RemapSize; i++)
-                //            list.Add(new Vertex3(dirCache[*pMap++]));
-                //    }
-                //}
-                //else
-                //{
-                    //Add vertex to list using raw value.
-                    int* pMap = (int*)RemapTable.Address;
-                    for (int i = 0; i < RemapSize; i++)
-                        list.Add(new Vertex3(pVert[*pMap++]));
-                //}
-                
+                //Add vertex to list using raw value.
+                int* pMap = (int*)RemapTable.Address;
+                for (int i = 0; i < RemapSize; i++)
+                    list.Add(new Vertex3(pVert[*pMap++]) { _facepoints = _points[i] });
             }
             else if (nodeTable != null)
             {
-                //if (pVert == null)
-                //{
-                //    if (dirCache != null && dirCache.Count > 0)
-                //    {
-                //        ushort* pMap = (ushort*)RemapTable.Address;
-                //        for (int i = 0; i < RemapSize; i++)
-                //        {
-                //            //Create new vertex, assigning the value + influence from the remap table
-                //            Vertex3 v = new Vertex3(dirCache[*pMap++], *pMap < nodeTable.Length ? nodeTable[*pMap] : null); pMap++;
-                //            //Add vertex to list
-                //            list.Add(v);
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                    ushort* pMap = (ushort*)RemapTable.Address;
-                    for (int i = 0; i < RemapSize; i++)
-                    {
-                        //Create new vertex, assigning the value + influence from the remap table
-                        Vertex3 v = new Vertex3(pVert[*pMap++], *pMap < nodeTable.Length ? nodeTable[*pMap] : null); pMap++;
-                        //Add vertex to list
-                        list.Add(v);
-                    }
+                ushort* pMap = (ushort*)RemapTable.Address;
+                for (int i = 0; i < RemapSize; i++)
+                {
+                    //Create new vertex, assigning the value + influence from the remap table
+                    Vertex3 v = new Vertex3(pVert[*pMap++], nodeTable[*pMap++]) { _facepoints = _points[i] };
+                    //Add vertex to list
+                    list.Add(v);
                 }
-            //}
+            }
 
             //Clean up
-            //RemapTable.Dispose();
-            //RemapTable = null;
+            RemapTable.Dispose();
+            RemapTable = null;
 
             return list;
         }
-
-        //internal unsafe List<Vertex3> Finish(IMatrixNode[] nodeTable)
-        //{
-        //    //Create vertex list from remap table
-        //    List<Vertex3> list = new List<Vertex3>();
-
-        //    VertData* pMap = (VertData*)RemapTable.Address;
-        //    for (int i = 0; i < RemapSize; i++, pMap++)
-        //    {
-        //        list.Add(new Vertex3(
-        //            pMap->_position,
-        //            Weighted ? nodeTable[pMap->_weight] : null,
-        //            pMap->_normal,
-        //            new RGBAPixel[] { pMap->_color1, pMap->_color2 },
-        //            new Vector2[] { pMap->_uv1, pMap->_uv2, pMap->_uv3, pMap->_uv4, pMap->_uv5, pMap->_uv6, pMap->_uv7, pMap->_uv8 })
-        //        );
-        //    }
-
-        //    //Clean up
-        //    RemapTable.Dispose();
-        //    RemapTable = null;
-
-        //    return list;
-        //}
     }
 }

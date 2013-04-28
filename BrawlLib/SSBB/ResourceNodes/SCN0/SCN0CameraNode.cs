@@ -100,6 +100,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Matrix m = Matrix.ReverseLookat(aimPos, pos, _twist.GetFrameValue(frame));
                 Vector3 a = m.GetAngles();
                 return new Vector3(-a._x, -a._y, -a._z);
+                //return aimPos.LookatAngles(pos) * Maths._rad2degf;
             }
         }
 
@@ -261,18 +262,18 @@ namespace BrawlLib.SSBB.ResourceNodes
         PosX = 0x10,
         PosY = 0x11,
         PosZ = 0x12,
-        RotX = 0x13,
-        RotY = 0x14,
-        RotZ = 0x15,
-        AimX = 0x16,
-        AimY = 0x17,
-        AimZ = 0x18,
-        Twist = 0x19,
-        FovY = 0x1A,
-        Height = 0x1B,
-        Aspect = 0x1C,
-        NearZ = 0x1D,
-        FarZ = 0x1E,
+        Aspect = 0x13,
+        NearZ = 0x14,
+        FarZ = 0x15,
+        RotX = 0x16,
+        RotY = 0x17,
+        RotZ = 0x18,
+        AimX = 0x19,
+        AimY = 0x1A,
+        AimZ = 0x1B,
+        Twist = 0x1C,
+        FovY = 0x1D,
+        Height = 0x1E,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

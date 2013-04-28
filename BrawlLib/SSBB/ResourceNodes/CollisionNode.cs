@@ -131,7 +131,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void Attach(TKContext ctx) { }
         public void Detach() { }
         public void Refesh() { }
-        public void Render(TKContext ctx, ModelEditControl mainWindow)
+        public void Render(TKContext ctx, ModelPanel mainWindow)
         {
             GL.Disable(EnableCap.Lighting);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
@@ -139,6 +139,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             foreach (CollisionObject obj in _objects)
                 obj.Render(ctx);
+        }
+        public void GetBox(out Vector3 min, out Vector3 max)
+        {
+            min = new Vector3();
+            max = new Vector3();
         }
         #endregion
 

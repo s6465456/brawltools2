@@ -34,5 +34,4 @@ namespace BrawlLib.Wii.Textures
                     *dPtr++ = (wRGB565Pixel)sPtr[x++];
         }
     }
-
 }

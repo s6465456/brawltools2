@@ -199,7 +199,7 @@ namespace BrawlLib.Wii.Graphics
 
     //This is used by polygons to enable element arrays (I believe)
     //There doesn't seem to be a native spec for this
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct XFArrayFlags
     {
         internal buint _data;

@@ -62,12 +62,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _headerLen = RBNKHeader.Size;
             if (VersionMinor >= 2)
             {
-                _headerLen = Children[0].CalculateSize(true);
-
-                int size = (RWAR.Size + 12 + Children[1].Children.Count * 12).Align(0x20) + RWARDataBlock.Size;
-                foreach (RSARFileAudioNode n in Children[1].Children)
-                    size += n.WorkingUncompressed.Length;
-                _audioLen = size.Align(0x20);
+                _headerLen += Children[0].CalculateSize(true);
+                _audioLen = Children[1].CalculateSize(true);
             }
             else
             {
@@ -76,39 +72,60 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (WAVESoundNode s in Children[1].Children)
                     _audioLen += s._audioSource.Length;
             }
+
             return _headerLen + _audioLen;
         }
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            VoidPtr addr = address;
-
+            VoidPtr addr = address + 0x20;
+            
             RBNKHeader* header = (RBNKHeader*)address;
             header->_header._length = length;
             header->_header._tag = RBNKHeader.Tag;
-            header->_header._numEntries = 2;
+            header->_header._numEntries = (ushort)(VersionMinor >= 2 ? 1 : 2);
             header->_header._firstOffset = 0x20;
             header->_header.Endian = Endian.Big;
-            header->_header._version = 0x101;
+            header->_header._version = (ushort)(0x100 + VersionMinor);
             header->_dataOffset = 0x20;
             header->_dataLength = Children[0]._calcSize;
-            header->_waveOffset = 0x20 + Children[0]._calcSize;
-            header->_waveLength = Children[1]._calcSize;
-
-            addr += 0x20; //Advance address to data header
-
-            if (RSARNode == null)
-            {
-                VoidPtr audioAddr = addr;
-                foreach (ResourceNode e in Children)
-                    audioAddr += e._calcSize;
-                (Children[1] as RBNKSoundGroupNode)._audioAddr = audioAddr;
-            }
-            else (Children[1] as RBNKSoundGroupNode)._audioAddr = _rebuildAudioAddr;
 
             Children[0].Rebuild(addr, Children[0]._calcSize, true);
             addr += Children[0]._calcSize;
-            Children[1].Rebuild(addr, Children[1]._calcSize, true);
-            addr += Children[1]._calcSize;
+
+            if (VersionMinor < 2)
+            {
+                header->_waveOffset = 0x20 + Children[0]._calcSize;
+                header->_waveLength = Children[1]._calcSize;
+
+                if (RSARNode == null)
+                {
+                    VoidPtr audioAddr = addr;
+                    foreach (ResourceNode e in Children)
+                        audioAddr += e._calcSize;
+                    (Children[1] as RBNKSoundGroupNode)._audioAddr = audioAddr;
+                }
+                else (Children[1] as RBNKSoundGroupNode)._audioAddr = _rebuildAudioAddr;
+
+                Children[1].Rebuild(addr, Children[1]._calcSize, true);
+                addr += Children[1]._calcSize;
+            }
+            else
+            {
+                header->_waveOffset = 0;
+                header->_waveLength = 0;
+
+                VoidPtr a;
+                if (RSARNode == null)
+                {
+                    VoidPtr audioAddr = addr;
+                    foreach (ResourceNode e in Children)
+                        audioAddr += e._calcSize;
+                    a = audioAddr;
+                }
+                else a = _rebuildAudioAddr;
+
+                Children[1].Rebuild(a, Children[1]._calcSize, true);
+            }
         }
 
         public override void Remove()

@@ -12,11 +12,11 @@ using BrawlLib.Imaging;
 
 namespace System.Windows.Forms
 {
-    public partial class UserControl1 : UserControl
+    public partial class KeyframePanel : UserControl
     {
         public ModelEditControl _mainWindow;
 
-        public UserControl1() { InitializeComponent(); }
+        public KeyframePanel() { InitializeComponent(); }
 
         private int _currentPage = 1;
         private ResourceNode _target;
@@ -41,9 +41,9 @@ namespace System.Windows.Forms
 
             //Visible = panelEnabled = type != -1;
             grpKeys.Visible = type == 0; //Keyframes
-            panel4.Visible = type != 0 && type != 2;
-            panel6.Visible = panel1.Visible = type == 1; //Vis
-            panel3.Visible = type == 2; //Colors
+            ctrlPanel.Visible = type != 0 && type != 2;
+            visclrPanel.Visible = visPanel.Visible = type == 1; //Vis
+            clrPanel.Visible = type == 2; //Colors
 
             lstTypes.Visible = false;
         }
@@ -54,8 +54,8 @@ namespace System.Windows.Forms
 
             //Visible = panelEnabled = enabled;
             grpKeys.Visible = keys;
-            panel1.Visible = panel6.Visible = vis;
-            panel3.Visible = clr;
+            visPanel.Visible = visclrPanel.Visible = vis;
+            clrPanel.Visible = clr;
 
             lstTypes.Visible = (keys && vis) || (vis && clr) || (clr && keys);
 
@@ -73,8 +73,8 @@ namespace System.Windows.Forms
 
             //Visible = panelEnabled = enabled;
             grpKeys.Visible = keys;
-            panel1.Visible = panel6.Visible = vis;
-            panel3.Visible = clr || spec;
+            visPanel.Visible = visclrPanel.Visible = vis;
+            clrPanel.Visible = clr || spec;
 
             lstTypes.Visible = (keys && vis) || (vis && (clr || spec)) || ((clr || spec) && keys);
 
@@ -201,38 +201,33 @@ namespace System.Windows.Forms
             int count = listKeyframes.Items.Count;
             for (int i = 0; i < count; i++)
             {
-                switch (_mainWindow.pnlAssets.fileType.SelectedIndex)
+                object x = listKeyframes.Items[i];
+                if (x is AnimationFrame)
                 {
-                    case 0: //CHR
-                    case 1: //SRT
-                        if (((AnimationFrame)listKeyframes.Items[i]).Index == index)
-                            return i;
-                        break;
-                    case 2: //SHP
-                        if (((FloatKeyframe)listKeyframes.Items[i]).Index == index)
-                            return i;
-                        break;
-                    case 3: //PAT
-                        break;
-
-                    case 4: //VIS
-                        break;
-                    case 5:
-                        if (((AnimationFrame)listKeyframes.Items[i]).Index == index)
-                            return i;
-                        break;
+                    if (((AnimationFrame)x).Index == index)
+                        return i;
+                }
+                else if (x is FloatKeyframe)
+                {
+                    if (((FloatKeyframe)x).Index == index)
+                        return i;
                 }
             }
             return -1;
         }
 
-        private void listKeyframes_SelectedIndexChanged(object sender, EventArgs e)
+        private unsafe void listKeyframes_SelectedIndexChanged(object sender, EventArgs e)
         {
             int index = listKeyframes.SelectedIndex;
             if (index >= 0)
             {
-                AnimationFrame f = (AnimationFrame)listKeyframes.SelectedItem;
-                _mainWindow.pnlPlayback.numFrameIndex.Value = f.Index + 1;
+                object x = listKeyframes.SelectedItem;
+                int i = 0;
+                if (x is AnimationFrame)
+                    i = ((AnimationFrame)listKeyframes.SelectedItem).Index + 1;
+                else if (x is FloatKeyframe)
+                    i = ((FloatKeyframe)listKeyframes.SelectedItem).Index + 1;
+                _mainWindow.pnlPlayback.numFrameIndex.Value = i;
             }
         }
         public void UpdateEntry()
@@ -267,16 +262,6 @@ namespace System.Windows.Forms
                     visEditor.TargetNode.MakeAnimated();
                 UpdateEntry();
             }
-        }
-
-        private void chkClrEnabled_CheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void chkClrConst_CheckedChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void lstTypes_SelectedIndexChanged(object sender, EventArgs e)

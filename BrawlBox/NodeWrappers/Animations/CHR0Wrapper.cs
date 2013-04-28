@@ -78,6 +78,14 @@ namespace BrawlBox.NodeWrappers
                 }
             }
         }
+
+        //public void Resize()
+        //{
+        //    ((CHR0Node)_resource).Resize();
+        //    BaseWrapper res = this.FindResource(_resource, false);
+        //    res.EnsureVisible();
+        //    res.TreeView.SelectedNode = res;
+        //}
         
         public void Append()
         {

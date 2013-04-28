@@ -198,9 +198,15 @@ namespace System.Windows.Forms
             if (Text == "")
                 val = float.NaN;
             else if (!Integral)
+            {
                 float.TryParse(Text, out val);
+                val.Clamp(MinValue, MaxValue);
+            }
             else
+            {
                 int.TryParse(Text, out val2);
+                val2.Clamp((int)MinValue, (int)MaxValue);
+            }
 
             if (!Integral)
             {

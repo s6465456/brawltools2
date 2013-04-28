@@ -193,7 +193,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     }
 
                                     //Add influence to model object, while adding it to the cache.
-                                    if (!d) linker.NodeCache[index] = model._influences.AddOrCreate(inf);
+                                    if (!d) linker.NodeCache[index] = model._influences.FindOrCreate(inf, false);
 
                                     //Move data pointer to next entry
                                     pData = (byte*)nEntry;
@@ -240,6 +240,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 case MDLResourceType.UVs:
                     if (linker.UVs != null)
                         ExtractGroup(linker.UVs, typeof(MDL0UVNode));
+                    break;
+
+                case MDLResourceType.FurLayerCoords:
+                    if (linker.FurLayerCoords != null)
+                        ExtractGroup(linker.FurLayerCoords, typeof(MDL0FurPosNode));
+                    break;
+
+                case MDLResourceType.FurVectors:
+                    if (linker.FurVectors != null)
+                        ExtractGroup(linker.FurVectors, typeof(MDL0FurVecNode));
                     break;
 
                 case MDLResourceType.Objects:
@@ -361,7 +371,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_name == "Bones")
                 foreach (MDL0EntryNode n in _children)
                     PostProcessBone(mdlAddress, n, pGroup, ref index, stringTable);
-            else
+            else if (_name != "Definitions")
                 foreach (MDL0EntryNode n in _children)
                 {
                     dataAddress = (VoidPtr)pGroup + (rEntry++)->_dataOffset;

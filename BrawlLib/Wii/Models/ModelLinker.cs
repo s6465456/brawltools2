@@ -30,7 +30,7 @@ namespace BrawlLib.Wii.Models
     public unsafe class ModelLinker// : IDisposable
     {
         #region Linker lists
-        internal const int BankLen = 11;
+        internal const int BankLen = 13;
 
         internal static readonly Type[] TypeBank = new Type[] 
         {
@@ -45,8 +45,8 @@ namespace BrawlLib.Wii.Models
             typeof(MDL0ObjectNode),
             null,
             null,
-            null,
-            null,
+            typeof(MDL0FurVecNode),
+            typeof(MDL0FurPosNode),
         };
 
         internal static readonly MR[] OrderBank = new MR[]
@@ -55,6 +55,8 @@ namespace BrawlLib.Wii.Models
             MR.Palettes,
             MR.Definitions,
             MR.Bones,
+            MR.FurVectors,
+            MR.FurLayerCoords,
             MR.Materials,
             MR.Shaders,
             MR.Objects,
@@ -62,8 +64,6 @@ namespace BrawlLib.Wii.Models
             MR.Normals,
             MR.Colors,
             MR.UVs,
-            //MR.FurVectors,
-            //MR.FurLayerCoords
         };
 
         internal static readonly List<MR>[] IndexBank = new List<MR>[]{
@@ -96,14 +96,10 @@ namespace BrawlLib.Wii.Models
         public ResourceGroup* Polygons; //5
         public ResourceGroup* Textures; //10
         public ResourceGroup* Palettes; //11
-
         public ResourceGroup* FurVectors;
         public ResourceGroup* FurLayerCoords;
-        //public ResourceGroup* None;
-        //public int StringOffset;
 
         public MDL0GroupNode[] Groups = new MDL0GroupNode[BankLen];
-        //public MDL0Props* Properties;
 
         public MDL0Node Model;
         public int _headerLen, _tableLen, _groupLen, _texLen, _boneLen, _dataLen, _defLen, _assetLen;
@@ -134,10 +130,10 @@ namespace BrawlLib.Wii.Models
             //Extract resource addresses
             fixed (ResourceGroup** gList = &Defs)
                 for (int i = 0; i < groupCount; i++)
-                    if ((offset = offsets[i]) != 0 && iList[i] != MR.FurVectors && iList[i] != MR.FurLayerCoords)
+                    if ((offset = offsets[i]) > 0)
                         gList[(int)iList[i]] = (ResourceGroup*)((byte*)pModel + offset);
-                    else if (offset > 0 && (iList[i] == MR.FurLayerCoords || iList[i] == MR.FurVectors))
-                        MessageBox.Show("Unsupported Fur Data is used!");
+                    //else if (offset > 0 && (iList[i] == MR.FurLayerCoords || iList[i] == MR.FurVectors))
+                    //    MessageBox.Show("Unsupported Fur Data is used!");
         }
 
         public static ModelLinker Prepare(MDL0Node model)
@@ -268,7 +264,7 @@ namespace BrawlLib.Wii.Models
                     if (form != null)
                         form.Say("Writing relocation offsets for the " + resType.ToString());
 
-                    if (resType == MR.FurLayerCoords || resType == MR.FurVectors || ((group = Groups[(int)resType]) == null) || (TypeBank[(int)resType] == null))
+                    if (((group = Groups[(int)resType]) == null) || (TypeBank[(int)resType] == null))
                         continue;
 
                     pOut[(int)resType] = pGrp = (ResourceGroup*)pGroup;
@@ -311,9 +307,7 @@ namespace BrawlLib.Wii.Models
                 for (int i = 0; i < count; i++)
                 {
                     resType = iList[i];
-                    if (resType == MR.FurVectors || resType == MR.FurLayerCoords)
-                        offset = 0;
-                    else if ((offset = (int)pGroup[(int)resType]) > 0)
+                    if ((offset = (int)pGroup[(int)resType]) > 0)
                         offset -= (int)Header;
                     pOffset[i] = offset;
                 }

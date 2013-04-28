@@ -55,7 +55,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class FDefReferenceStringTable
+    public unsafe class CompactStringTable
     {
         public SortedList<string, VoidPtr> _table = new SortedList<string, VoidPtr>(StringComparer.Ordinal);
 

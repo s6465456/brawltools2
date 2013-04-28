@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BrawlLib.SSBB.ResourceNodes;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
+using System.Reflection;
 
 namespace System
 {
@@ -370,6 +374,147 @@ namespace System
                 case HitboxEffect.Flinchless: return new Vector3(0x3f, 0x3f, 0x3f);
                 default: return new Vector3(0x7f, 0x7f, 0x7f);
             }
+        }
+        public static T DeepClone<T>(T obj)
+        {
+            using (var ms = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(ms, obj);
+                ms.Position = 0;
+
+                return (T)formatter.Deserialize(ms);
+            }
+        }
+        private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        public static Object CreateInstance(Type type)
+        {
+            var instance = FormatterServices.GetUninitializedObject(type);
+            return instance;
+        }
+
+        public static T Clone<T>(this T obj)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                BinaryFormatter serializer = new BinaryFormatter();
+                serializer.Serialize(memoryStream, obj);
+                memoryStream.Position = 0;
+                var copy = serializer.Deserialize(memoryStream);
+                return (T)copy;
+            }
+        }
+
+        public static bool IsPrimitive(this Type type)
+        {
+            if (type == typeof(String)) return true;
+            return (type.IsValueType & type.IsPrimitive);
+        }
+
+        public static Object Copy(this Object originalObject)
+        {
+            return InternalCopy(originalObject, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
+        }
+        private static Object InternalCopy(Object originalObject, IDictionary<Object, Object> visited)
+        {
+            if (originalObject == null) return null;
+            var typeToReflect = originalObject.GetType();
+            if (IsPrimitive(typeToReflect)) return originalObject;
+            if (visited.ContainsKey(originalObject)) return visited[originalObject];
+            var cloneObject = CloneMethod.Invoke(originalObject, null);
+            visited.Add(originalObject, cloneObject);
+            CopyFields(originalObject, visited, cloneObject, typeToReflect);
+            RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
+            return cloneObject;
+        }
+
+        private static void RecursiveCopyBaseTypePrivateFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect)
+        {
+            if (typeToReflect.BaseType != null)
+            {
+                RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect.BaseType);
+                CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType, BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
+            }
+        }
+
+        private static void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
+        {
+            foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
+            {
+                if (filter != null && filter(fieldInfo) == false) continue;
+                if (IsPrimitive(fieldInfo.FieldType)) continue;
+                var originalFieldValue = fieldInfo.GetValue(originalObject);
+                var clonedFieldValue = originalFieldValue == null ? null : InternalCopy(originalFieldValue, visited);
+                fieldInfo.SetValue(cloneObject, clonedFieldValue);
+                if (clonedFieldValue == null) continue;
+                if (fieldInfo.FieldType.IsArray)
+                {
+                    var arrayType = fieldInfo.FieldType.GetElementType();
+                    if (IsPrimitive(arrayType)) continue;
+                    Array clonedArray = (Array)clonedFieldValue;
+                    for (long i = 0; i < clonedArray.LongLength; i++)
+                        clonedArray.SetValue(InternalCopy(clonedArray.GetValue(i), visited), i);
+                }
+            }
+        }
+        public static T Copy<T>(this T original)
+        {
+            return (T)Copy((Object)original);
+        }
+        public static object DeepCopy(object obj)
+        {
+            if (obj == null)
+                return null;
+            Type type = obj.GetType();
+
+            if (type.IsValueType || type == typeof(string))
+            {
+                return obj;
+            }
+            else if (type.IsArray)
+            {
+                Type elementType = Type.GetType(
+                     type.FullName.Replace("[]", string.Empty));
+                var array = obj as Array;
+                Array copied = Array.CreateInstance(elementType, array.Length);
+                for (int i = 0; i < array.Length; i++)
+                {
+                    copied.SetValue(DeepCopy(array.GetValue(i)), i);
+                }
+                return Convert.ChangeType(copied, obj.GetType());
+            }
+            else if (type.IsClass)
+            {
+
+                object toret = Activator.CreateInstance(obj.GetType());
+                FieldInfo[] fields = type.GetFields(BindingFlags.Public |
+                            BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (FieldInfo field in fields)
+                {
+                    object fieldValue = field.GetValue(obj);
+                    if (fieldValue == null)
+                        continue;
+                    field.SetValue(toret, DeepCopy(fieldValue));
+                }
+                return toret;
+            }
+            else
+                throw new ArgumentException("Unknown type");
+        }
+    }
+
+    public class ReferenceEqualityComparer : EqualityComparer<Object>
+    {
+        public override bool Equals(object x, object y)
+        {
+            return ReferenceEquals(x, y);
+        }
+
+        public override int GetHashCode(object obj)
+        {
+            if (obj == null) return 0;
+            return obj.GetHashCode();
         }
     }
     public class SectionParamInfo

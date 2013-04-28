@@ -112,6 +112,13 @@ namespace BrawlBox
                 TEX0Node node = NodeFactory.FromFile(null, path) as TEX0Node;
                 ((BRESNode)_resource).GetOrCreateFolder<TEX0Node>().AddChild(node);
 
+                string palette = Path.ChangeExtension(path, ".plt0");
+                if (File.Exists(palette) && node.HasPalette)
+                {
+                    PLT0Node n = NodeFactory.FromFile(null, palette) as PLT0Node;
+                    ((BRESNode)_resource).GetOrCreateFolder<PLT0Node>().AddChild(n);
+                }
+
                 BaseWrapper w = this.FindResource(node, true);
                 w.EnsureVisible();
                 w.TreeView.SelectedNode = w;
@@ -143,7 +150,7 @@ namespace BrawlBox
                     w.EnsureVisible();
                     w.TreeView.SelectedNode = w;
 
-                    if ((node as MDL0Node).reopen == true)
+                    if ((node as MDL0Node)._reopen == true)
                     {
                         string tempPath = Path.GetTempFileName();
                         _resource.Export(tempPath);
@@ -347,7 +354,7 @@ namespace BrawlBox
 
             if (hasTextures)
             {
-                ExportAllAskFormat dialog = new ExportAllAskFormat();
+                ExportAllFormatDialog dialog = new ExportAllFormatDialog();
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                     ((BRESNode)_resource).ExportToFolder(path, dialog.SelectedExtension);
@@ -368,7 +375,7 @@ namespace BrawlBox
             if (path == null)
                 return;
 
-            ExportAllAskFormat dialog = new ExportAllAskFormat();
+            ExportAllFormatDialog dialog = new ExportAllFormatDialog();
             dialog.label1.Text = "Input format for textures:";
 
             if (dialog.ShowDialog() == DialogResult.OK)

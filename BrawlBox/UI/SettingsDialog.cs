@@ -32,15 +32,13 @@ namespace BrawlBox
                 FileAssociation.Get(".breff"),
                 FileAssociation.Get(".breft"),
 
-                FileAssociation.Get(".rwsd"),
-                FileAssociation.Get(".rbnk"),
-                FileAssociation.Get(".rseq"),
+                FileAssociation.Get(".brwsd"),
+                FileAssociation.Get(".brbnk"),
+                FileAssociation.Get(".brseq"),
 
                 FileAssociation.Get(".dol"),
                 FileAssociation.Get(".rel"),
             };
-        private GroupBox groupBox2;
-        private CheckBox checkBox2;
 
         private static FileType[] _typeList = new FileType[]{
             FileType.Get("SSBB.PAC"),
@@ -69,9 +67,9 @@ namespace BrawlBox
             FileType.Get("SSBB.BREFF"),
             FileType.Get("SSBB.BREFT"),
 
-            FileType.Get("SSBB.RWSD"),
-            FileType.Get("SSBB.RBNK"),
-            FileType.Get("SSBB.RSEQ"),
+            FileType.Get("SSBB.BRWSD"),
+            FileType.Get("SSBB.BRBNK"),
+            FileType.Get("SSBB.BRSEQ"),
 
             FileType.Get("SSBB.DOL"),
             FileType.Get("SSBB.REL"),
@@ -182,9 +180,9 @@ namespace BrawlBox
             System.Windows.Forms.ListViewItem listViewItem21 = new System.Windows.Forms.ListViewItem("Effect List (*.efls)");
             System.Windows.Forms.ListViewItem listViewItem22 = new System.Windows.Forms.ListViewItem("Effect Parameters (*.breff)");
             System.Windows.Forms.ListViewItem listViewItem23 = new System.Windows.Forms.ListViewItem("Effect Textures (*.breft)");
-            System.Windows.Forms.ListViewItem listViewItem24 = new System.Windows.Forms.ListViewItem("Sound Stream (*.rwsd)");
-            System.Windows.Forms.ListViewItem listViewItem25 = new System.Windows.Forms.ListViewItem("Sound Bank (*.rbnk)");
-            System.Windows.Forms.ListViewItem listViewItem26 = new System.Windows.Forms.ListViewItem("Sound Sequence (*.rseq)");
+            System.Windows.Forms.ListViewItem listViewItem24 = new System.Windows.Forms.ListViewItem("Sound Stream (*.brwsd)");
+            System.Windows.Forms.ListViewItem listViewItem25 = new System.Windows.Forms.ListViewItem("Sound Bank (*.brbnk)");
+            System.Windows.Forms.ListViewItem listViewItem26 = new System.Windows.Forms.ListViewItem("Sound Sequence (*.brseq)");
             System.Windows.Forms.ListViewItem listViewItem27 = new System.Windows.Forms.ListViewItem("Static Module (*.dol)");
             System.Windows.Forms.ListViewItem listViewItem28 = new System.Windows.Forms.ListViewItem("Relocatable Module (*.rel)");
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -194,10 +192,7 @@ namespace BrawlBox
             this.btnOkay = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnApply = new System.Windows.Forms.Button();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -209,7 +204,7 @@ namespace BrawlBox
             this.groupBox1.Controls.Add(this.listView1);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(238, 200);
+            this.groupBox1.Size = new System.Drawing.Size(238, 249);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "File Associations";
@@ -309,7 +304,7 @@ namespace BrawlBox
             this.listView1.Location = new System.Drawing.Point(3, 37);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(232, 157);
+            this.listView1.Size = new System.Drawing.Size(232, 206);
             this.listView1.TabIndex = 6;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -353,46 +348,18 @@ namespace BrawlBox
             this.btnApply.UseVisualStyleBackColor = true;
             this.btnApply.Click += new System.EventHandler(this.btnApply_Click);
             // 
-            // groupBox2
-            // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.checkBox2);
-            this.groupBox2.Location = new System.Drawing.Point(12, 218);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(238, 41);
-            this.groupBox2.TabIndex = 4;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Resource Tree";
-            // 
-            // checkBox2
-            // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Checked = true;
-            this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox2.Location = new System.Drawing.Point(7, 20);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(82, 17);
-            this.checkBox2.TabIndex = 0;
-            this.checkBox2.Text = "Show Icons";
-            this.checkBox2.UseVisualStyleBackColor = true;
-            this.checkBox2.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
-            // 
             // SettingsDialog
             // 
             this.ClientSize = new System.Drawing.Size(262, 302);
-            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.btnApply);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOkay);
             this.Controls.Add(this.groupBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.Name = "SettingsDialog";
             this.Text = "Settings";
             this.Shown += new System.EventHandler(this.SettingsDialog_Shown);
             this.groupBox1.ResumeLayout(false);
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -403,11 +370,6 @@ namespace BrawlBox
             bool check = checkBox1.Checked;
             foreach (ListViewItem i in listView1.Items)
                 i.Checked = check;
-        }
-
-        private void checkBox2_CheckedChanged(object sender, EventArgs e)
-        {
-            MainForm.Instance.resourceTree.ShowIcons = checkBox2.Checked;
         }
     }
 }

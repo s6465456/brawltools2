@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class RASDNode : BRESEntryNode
+    public unsafe class RASDNode : U8EntryNode
     {
         internal RASD* Header { get { return (RASD*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }

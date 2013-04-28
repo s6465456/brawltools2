@@ -15,7 +15,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal SCN0v5* Header5 { get { return (SCN0v5*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.SCN0; } }
 
-        public int _version = 4, _origPathOffset, _frameCount = 1, _specLights, _loop, _lightset, _amblights, _lights, _fog, _camera, _pad;
+        public int _version = 4, _origPathOffset, _frameCount = 1, _specLights, _loop, _lightset, _amblights, _lights, _fog, _camera;
 
         [Browsable(false)]
         public override int tFrameCount { get { return FrameCount; } set { FrameCount = value; } }
@@ -25,7 +25,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Scene Data")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
-        public int FrameCount { get { return _frameCount; } set { _frameCount = value; SignalPropertyChange(); } }
+        public int FrameCount 
+        {
+            get { return _frameCount; }
+            set 
+            {
+                _frameCount = value;
+                SCN0GroupNode lights = GetFolder<SCN0LightNode>();
+                if (lights != null)
+                    foreach (SCN0LightNode l in lights.Children)
+                        l.FrameCount = _frameCount;
+
+                SignalPropertyChange(); 
+            }
+        }
         //[Category("Scene Data")]
         //public int SpecularLightCount { get { return _specLights; } set { _specLights = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
@@ -54,7 +67,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _lights = Header5->_lightCount;
                 _fog = Header5->_fogCount;
                 _camera = Header5->_cameraCount;
-                _pad = Header5->_pad;
 
                 (_userEntries = new UserDataCollection()).Read(Header5->UserData);
 
@@ -74,7 +86,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _lights = Header4->_lightCount;
                 _fog = Header4->_fogCount;
                 _camera = Header4->_cameraCount;
-                _pad = Header4->_pad;
 
                 return Header4->Group->_numEntries > 0;
             }
@@ -218,7 +229,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_frameCount = (short)_frameCount;
                 header->_specLightCount = (short)_specLights;
                 header->_loop = _loop;
-                header->_pad = (short)_pad;
+                header->_pad = 0;
                 header->_dataOffset = SCN0v5.Size;
 
                 group = header->Group;
@@ -231,7 +242,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_frameCount = (short)_frameCount;
                 header->_specLightCount = (short)_specLights;
                 header->_loop = _loop;
-                header->_pad = (short)_pad;
+                header->_pad = 0;
                 header->_dataOffset = SCN0v4.Size;
 
                 group = header->Group;

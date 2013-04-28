@@ -11,6 +11,16 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class RSARFileEntryNode : ResourceNode
     {
+        internal RSARNode RSARNode
+        {
+            get
+            {
+                ResourceNode n = this;
+                while (((n = n.Parent) != null) && !(n is RSARNode)) ;
+                return n as RSARNode;
+            }
+        }
+
         internal VoidPtr _offset;
     }
 
@@ -20,11 +30,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             if (_name == null)
                 _name = String.Format("Audio[{0}]", Index);
-
-            Info = (WaveInfo*)WorkingUncompressed.Address;
+            
+            Info = *(WaveInfo*)WorkingUncompressed.Address;
 
             if (!_replaced)
-                SetSizeInternal((WaveInfo.Size + Info->_format._channels * (4 + ChannelInfo.Size + (Info->_format._encoding == 2 ? ADPCMInfo.Size : 0))));
+                SetSizeInternal((WaveInfo.Size + Info._format._channels * (4 + ChannelInfo.Size + (Info._format._encoding == 2 ? ADPCMInfo.Size : 0))));
 
             return false;
         }
@@ -32,13 +42,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void GetAudio()
         {
             uint _audioLen;
-            VoidPtr _dataAddr = ((RSARFileNode)_parent._parent)._audioSource.Address + Info->_dataLocation;
-            if (Index != _parent.Children.Count - 1)
-                _audioLen = ((WAVESoundNode)_parent.Children[Index + 1]).Info->_dataLocation - Info->_dataLocation;
+            VoidPtr _dataAddr = ((RSARFileNode)Parent._parent)._audioSource.Address + Info._dataLocation;
+            if (Index != Parent.Children.Count - 1)
+                _audioLen = ((WAVESoundNode)Parent.Children[Index + 1]).Info._dataLocation - Info._dataLocation;
             else
-                _audioLen = (uint)((RSARFileNode)_parent._parent)._audioSource.Length - Info->_dataLocation;
+                _audioLen = (uint)((RSARFileNode)Parent._parent)._audioSource.Length - Info._dataLocation;
 
-            _audioSource = new DataSource(_dataAddr, (int)_audioLen);
+            Init(_dataAddr, (int)_audioLen, (WaveInfo*)WorkingUncompressed.Address);
         }
 
         public override unsafe void Replace(string fileName)
@@ -54,22 +64,22 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 base.Replace(fileName);
 
-            //Get the audio source
-            _audioSource = new DataSource(WorkingUncompressed.Address + Info->_dataLocation, (int)(WorkingUncompressed.Length - Info->_dataLocation));
+            Init(WorkingUncompressed.Address + Info._dataLocation, (int)(WorkingUncompressed.Length - Info._dataLocation), (WaveInfo*)WorkingUncompressed.Address);
 
             //Cut out the audio samples from the imported data
-            SetSizeInternal((int)Info->_dataLocation);
-
-            stream = null;
+            SetSizeInternal((int)Info._dataLocation);
 
             UpdateCurrentControl();
             SignalPropertyChange();
+            Parent.Parent.SignalPropertyChange();
+            if (RSARNode != null)
+                RSARNode.SignalPropertyChange();
         }
 
         public override unsafe void Export(string outPath)
         {
             if (outPath.EndsWith(".wav"))
-                WAV.ToFile(CreateStream(), outPath);
+                WAV.ToFile(CreateStreams()[0], outPath);
             else
             {
                 if (_audioSource != DataSource.Empty)

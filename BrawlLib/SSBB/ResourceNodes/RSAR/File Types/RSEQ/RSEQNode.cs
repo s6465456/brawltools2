@@ -13,22 +13,18 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal RSEQHeader* Header { get { return (RSEQHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.RSEQ; } }
 
-        [Category("RSEQ")]
-        public byte VersionMajor { get { return _major; } }
-        [Category("RSEQ")]
-        public byte VersionMinor { get { return _minor; } }
-        private byte _minor, _major;
-
         public MMLCommand[] _cmds;
         public MMLCommand[] Commands { get { return _cmds; } }
 
-        DataSource _data;
+        UnsafeBuffer _dataBuffer;
 
         protected override bool OnInitialize()
         {
             base.OnInitialize();
 
-            _data = new DataSource(Header->Data, Header->_dataLength);
+            _dataBuffer = new UnsafeBuffer(Header->_dataLength);
+            Memory.Move(_dataBuffer.Address, Header->Data, (uint)Header->_dataLength);
+
             _cmds = MMLParser.Parse(Header->Data + 12);
 
             return true;
@@ -53,7 +49,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (RSEQLabelNode node in Children)
                 builder.Add(node.Id, node._name);
             _audioLen = 0;
-            return _headerLen = 0x20 + _data.Length + builder.GetSize();
+            return _headerLen = 0x20 + _dataBuffer.Length + builder.GetSize();
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -66,12 +62,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_header._numEntries = 2;
             header->_header._firstOffset = 0x20;
             header->_dataOffset = 0x20;
-            header->_dataLength = _data.Length;
-            header->_lablOffset = 0x20 + _data.Length;
+            header->_dataLength = _dataBuffer.Length;
+            header->_lablOffset = 0x20 + _dataBuffer.Length;
             header->_lablLength = builder.GetSize();
 
             //MML Parser is not complete yet, so copy raw data over
-            Memory.Move((VoidPtr)header + header->_dataOffset, _data.Address, (uint)_data.Length);
+            Memory.Move((VoidPtr)header + header->_dataOffset, _dataBuffer.Address, (uint)_dataBuffer.Length);
             
             builder.Write((VoidPtr)header + header->_lablOffset);
         }

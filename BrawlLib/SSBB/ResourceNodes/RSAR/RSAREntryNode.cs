@@ -9,7 +9,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class RSAREntryNode : ResourceNode
     {
-        internal RSARNode RSARNode
+        public RSARNode RSARNode
         {
             get
             {

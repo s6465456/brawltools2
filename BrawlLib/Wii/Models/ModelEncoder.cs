@@ -18,7 +18,7 @@ namespace BrawlLib.Wii.Models
             MDL0Node model = linker.Model;
             int index = 0;
 
-            int count = model._influences._influences.Count + linker.BoneCache.Length;
+            int count = model._influences.Count + linker.BoneCache.Length;
 
             linker._nodeCount = count;
             linker.Model._numNodes = count;
@@ -105,7 +105,7 @@ namespace BrawlLib.Wii.Models
                         {
                             mixLen += 4;
                             foreach (BoneWeight w in i._weights)
-                                if (w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode)
+                                if (w.Weight != 0 && w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode)
                                     mixLen += 6;
                         }
                         foreach (MDL0BoneNode b in linker.BoneCache)
@@ -191,33 +191,31 @@ namespace BrawlLib.Wii.Models
                                     p._elementIndices[x] = (short)aList.Count;
 
                                     if (form != null)
-                                    {
                                         form.Say("Encoding " + str + (x - aInd) + " for Object " + i + ": " + p.Name);
-                                        form.Update(form.current++);
-                                    }
+                                    
                                     VertexCodec vert;
                                     switch (aInd)
                                     {
                                         case 0:
-                                            vert = new VertexCodec(p._manager.RawVertices, false, model._importOptions._fltVerts);
+                                            vert = new VertexCodec(p._manager.RawVertices(false), false, model._importOptions._fltVerts);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x40;
                                             break;
-                                        case 1: 
-                                            vert = new VertexCodec(p._manager.RawNormals, false, model._importOptions._fltNrms);
+                                        case 1:
+                                            vert = new VertexCodec(p._manager.RawNormals(false), false, model._importOptions._fltNrms);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x20;
                                             break;
                                         case 2:
-                                            ColorCodec col = new ColorCodec(p._manager.Colors(x - 2));
+                                            ColorCodec col = new ColorCodec(p._manager.Colors(x - 2, false));
                                             aList.Add(col);
                                             if (!direct)
                                                 assetLen += col._dataLen.Align(0x20) + 0x20;
                                             break;
                                         default:
-                                            vert = new VertexCodec(p._manager.UVs(x - 4), model._importOptions._fltUVs);
+                                            vert = new VertexCodec(p._manager.UVs(x - 4, false), model._importOptions._fltUVs);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x40;
@@ -518,12 +516,12 @@ namespace BrawlLib.Wii.Models
                     *(bushort*)&pData[1] = (ushort)i._index;
                     int g = 0;
                     foreach (BoneWeight w in i._weights)
-                        if (w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode) g++;
+                        if (w.Weight != 0 && w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode) g++;
                     pData[3] = (byte)g;
                     pData += 4; //Advance
                     foreach (BoneWeight w in i._weights)
                     {
-                        if (w.Bone._nodeIndex >= linker.NodeCache.Length || w.Bone._nodeIndex < 0)
+                        if (w.Weight == 0 && w.Bone._nodeIndex >= linker.NodeCache.Length || w.Bone._nodeIndex < 0)
                             continue;
 
                         *(bushort*)pData = (ushort)w.Bone._nodeIndex;
@@ -870,29 +868,9 @@ namespace BrawlLib.Wii.Models
 
         private static void SetBox(ModelLinker linker)
         {
-            Vector3 min = new Vector3(float.MaxValue);
-            Vector3 max = new Vector3(float.MinValue);
-            if (linker.Model._vertList != null)
-            {
-                foreach (MDL0VertexNode v in linker.Model._vertList)
-                {
-                    if (v.EMin._x < min._x)
-                        min._x = v.EMin._x;
-                    if (v.EMin._y < min._y)
-                        min._y = v.EMin._y;
-                    if (v.EMin._z < min._z)
-                        min._z = v.EMin._z;
+            Vector3 min, max;
 
-                    if (v.EMax._x > max._x)
-                        max._x = v.EMax._x;
-                    if (v.EMax._y > max._y)
-                        max._y = v.EMax._y;
-                    if (v.EMax._z > max._z)
-                        max._z = v.EMax._z;
-                }
-            }
-            else
-                min = max = new Vector3(0);
+            linker.Model.GetBox(out min, out max);
 
             linker.Model._min = min;
             linker.Model._max = max;

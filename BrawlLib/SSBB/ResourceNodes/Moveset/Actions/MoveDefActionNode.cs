@@ -260,7 +260,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _loopTime++;
 
             _totalFrames++;
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
 
         public void SetFrame(int index, ModelEditControl _mainWindow)
@@ -344,7 +344,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _loopTime++;
 
                 _totalFrames++;
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
             }
         }
 

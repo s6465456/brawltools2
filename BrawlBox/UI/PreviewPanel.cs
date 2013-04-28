@@ -19,6 +19,7 @@ namespace BrawlBox
         private object _target;
         private int _targetIndex, _maxIndex;
         private Image _currentImage;
+        internal static HatchBrush _brush = new HatchBrush(HatchStyle.LargeCheckerBoard, Color.LightGray, Color.GhostWhite);
 
         public object RenderingTarget
         {
@@ -72,14 +73,31 @@ namespace BrawlBox
 
         public PreviewPanel()
         {
-            this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.ResizeRedraw | ControlStyles.OptimizedDoubleBuffer, true);
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.ResizeRedraw | ControlStyles.OptimizedDoubleBuffer, true);
             InitializeComponent();
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-            g.ResetClip();
+            g.Clear(BackColor);
+
+            if (_currentImage == null)
+                return;
+
+            int w = _currentImage.Width, h = _currentImage.Height;
+            Rectangle client = this.ClientRectangle;
+            Rectangle bounds = new Rectangle(0, 0, w, h);
+
+            float aspect = (float)w / h;
+            float newaspect = (float)client.Width / client.Height;
+
+            float scale = (newaspect > aspect) ? (float)client.Height / h : (float)client.Width / w;
+
+            bounds.Width = (int)(w * scale);
+            bounds.Height = (int)(h * scale);
+            bounds.X = (client.Width - bounds.Width) >> 1;
+            bounds.Y = (client.Height - bounds.Height) >> 1;
 
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.SmoothingMode = SmoothingMode.HighQuality;
@@ -87,36 +105,9 @@ namespace BrawlBox
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             g.CompositingQuality = CompositingQuality.AssumeLinear;
 
-            g.Clear(this.BackColor);
+            g.FillRectangle(_brush, bounds);
+            g.DrawImage(_currentImage, bounds);
 
-            if (_target == null) return;
-
-            if (_currentImage == null) return;
-
-            Rectangle client = this.ClientRectangle;
-            Rectangle bounds = new Rectangle(0, 0, _currentImage.Width, _currentImage.Height);
-
-            float aspect = (float)bounds.Width / bounds.Height;
-            float newaspect = (float)client.Width / client.Height;
-
-            float scale;
-            if (newaspect > aspect)
-                scale = (float)client.Height / bounds.Height;
-            else
-                scale = (float)client.Width / bounds.Width;
-
-            bounds.Width = (int)(bounds.Width * scale);
-            bounds.Height = (int)(bounds.Height * scale);
-            bounds.X = (client.Width - bounds.Width) >> 1;
-            bounds.Y = (client.Height - bounds.Height) >> 1;
-
-            g.TranslateTransform(bounds.X, bounds.Y);
-            g.ScaleTransform(scale, scale);
-            g.SetClip(bounds);
-            g.FillRectangle(Brushes.Cyan, new Rectangle(-1, -1, _currentImage.Width + 2, _currentImage.Height + 2));
-            g.FillRectangle(Brushes.Magenta, 0, 0, _currentImage.Width, _currentImage.Height);
-            g.Clear(Color.White);
-            g.DrawImage(_currentImage, 0, 0);
             g.Flush();
         }
 

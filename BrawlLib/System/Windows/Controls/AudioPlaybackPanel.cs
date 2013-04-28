@@ -14,6 +14,7 @@ namespace System.Windows.Forms
         private Label lblProgress;
         private Timer tmrUpdate;
         private System.ComponentModel.IContainer components;
+        private ComboBox lstStreams;
         private CheckBox chkLoop;
 
         private void InitializeComponent()
@@ -25,13 +26,14 @@ namespace System.Windows.Forms
             this.chkLoop = new System.Windows.Forms.CheckBox();
             this.lblProgress = new System.Windows.Forms.Label();
             this.tmrUpdate = new System.Windows.Forms.Timer(this.components);
+            this.lstStreams = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
             // 
             // trackBar1
             // 
-            this.trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.trackBar1.Location = new System.Drawing.Point(0, 4);
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Size = new System.Drawing.Size(536, 45);
@@ -75,8 +77,8 @@ namespace System.Windows.Forms
             // 
             // lblProgress
             // 
-            this.lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblProgress.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblProgress.Location = new System.Drawing.Point(0, 31);
             this.lblProgress.Name = "lblProgress";
             this.lblProgress.Size = new System.Drawing.Size(536, 23);
@@ -89,8 +91,20 @@ namespace System.Windows.Forms
             this.tmrUpdate.Interval = 10;
             this.tmrUpdate.Tick += new System.EventHandler(this.tmrUpdate_Tick);
             // 
+            // lstStreams
+            // 
+            this.lstStreams.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.lstStreams.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.lstStreams.FormattingEnabled = true;
+            this.lstStreams.Location = new System.Drawing.Point(313, 68);
+            this.lstStreams.Name = "lstStreams";
+            this.lstStreams.Size = new System.Drawing.Size(73, 21);
+            this.lstStreams.TabIndex = 5;
+            this.lstStreams.SelectedIndexChanged += new System.EventHandler(this.lstStreams_SelectedIndexChanged);
+            // 
             // AudioPlaybackPanel
             // 
+            this.Controls.Add(this.lstStreams);
             this.Controls.Add(this.lblProgress);
             this.Controls.Add(this.chkLoop);
             this.Controls.Add(this.btnRewind);
@@ -106,11 +120,63 @@ namespace System.Windows.Forms
 
         #endregion
 
+        private bool _updating = false;
         private bool _loop = false;
         private bool _isPlaying = false;
-        private bool _isScrolling = false;
+        //private bool _isScrolling = false;
+
         private DateTime _sampleTime;
-        private IAudioStream _targetStream;
+        private IAudioStream[] _targetStreams;
+
+        private IAudioStream _targetStream 
+        {
+            get 
+            {
+                if (_targetIndex < 0)
+                    return null;
+
+                return _targetStreams[_targetIndex]; 
+            } 
+        }
+
+        public IAudioStream[] TargetStreams
+        {
+            get { return _targetStreams; }
+            set
+            {
+                if (value == _targetStreams)
+                    return;
+
+                lstStreams.Items.Clear(); 
+                if (_targetStreams != null)
+                    for (int x = 0; x < _targetStreams.Length; x++)
+                    {
+                        _targetStreams[x].Dispose();
+                        _targetStreams[x] = null;
+                    }
+
+                if ((_targetStreams = value) != null)
+                {
+                    _buffers = new AudioBuffer[_targetStreams.Length];
+                    if (lstStreams.Visible = _targetStreams.Length > 1)
+                    {
+                        int i = 1;
+                        foreach (IAudioStream s in _targetStreams)
+                            lstStreams.Items.Add("Stream" + i++);
+                    }
+                    else
+                        lstStreams.Items.Add("");
+                }
+                else
+                {
+                    lstStreams.Visible = false;
+                    lstStreams.Items.Add("");
+                }
+                _updating = true;
+                lstStreams.SelectedIndex = _targetIndex = 0;
+                _updating = false;
+            }
+        }
 
         private IAudioSource _targetSource;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -121,7 +187,18 @@ namespace System.Windows.Forms
         }
 
         private AudioProvider _provider;
-        private AudioBuffer _buffer;
+
+        private AudioBuffer[] _buffers;
+        private AudioBuffer _buffer 
+        {
+            get
+            {
+                if (_targetIndex < 0)
+                    return null;
+
+                return _buffers[_targetIndex]; 
+            }
+        }
 
         public AudioPlaybackPanel() { InitializeComponent(); }
 
@@ -142,16 +219,23 @@ namespace System.Windows.Forms
             Stop();
 
             //Dispose of buffer
-            if (_buffer != null)
-            {
-                _buffer.Dispose();
-                _buffer = null;
-            }
+            if (_buffers != null)
+                for (int i = 0; i < _buffers.Length; i++)
+                    if (_buffers[i] != null)
+                    {
+                        _buffers[i].Dispose();
+                        _buffers[i] = null;
+                    }
 
-            if (_targetStream != null)
+            if (_targetStreams != null)
             {
-                _targetStream.Dispose();
-                _targetStream = null;
+                for (int i = 0; i < _targetStreams.Length; i++)
+                    if (_targetStreams[i] != null)
+                    {
+                        _targetStreams[i].Dispose();
+                        _targetStreams[i] = null;
+                    }
+                _targetStreams = null;
             }
 
             _targetSource = null;
@@ -169,7 +253,9 @@ namespace System.Windows.Forms
 
             if ((_targetSource = newTarget) == null)
                 return;
-            if ((_targetStream = _targetSource.CreateStream()) == null)
+            if ((TargetStreams = _targetSource.CreateStreams()) == null)
+                return;
+            if (_targetStream == null)
                 return;
 
             //Create provider
@@ -183,7 +269,8 @@ namespace System.Windows.Forms
             chkLoop.Enabled = _targetStream.IsLooping;
 
             //Create buffer for stream
-            _buffer = _provider.CreateBuffer(_targetStream);
+            for (int i = 0; i < _buffers.Length; i++)
+                _buffers[i] = _provider.CreateBuffer(_targetStreams[i]);
 
             if (_targetStream.Frequency > 0)
                 _sampleTime = new DateTime((long)_targetStream.Samples * 10000000 / _targetStream.Frequency);
@@ -292,5 +379,25 @@ namespace System.Windows.Forms
         private void btnRewind_Click(object sender, EventArgs e) { Seek(0); }
         private void trackBar1_ValueChanged(object sender, EventArgs e) { UpdateTimeDisplay(); }
         private void trackBar1_UserSeek(object sender, EventArgs e) { Seek(trackBar1.Value); }
+
+        int _targetIndex = 0;
+        private void lstStreams_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_updating)
+                return;
+
+            bool temp = _isPlaying;
+
+            if (temp)
+                Stop();
+
+            _targetIndex = lstStreams.SelectedIndex;
+
+            if (_buffer != null)
+                _buffer.Loop = _loop;
+
+            if (temp)
+                Play();
+        }
     }
 }

@@ -30,7 +30,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     (e = new U8FolderNode() { index = i, _name = new String(table + (int)entry->_stringOffset) }).Initialize(this, entry, 12);
                     nodes.Add(e);
                 }
-                else                {
+                else
+                {
                     if ((entry->_dataLength == 0) || (e = NodeFactory.FromAddress(this, (VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength) as ARCEntryNode) == null)
                     {
                         VoidPtr addr = (VoidPtr)Header + entry->_dataOffset;

@@ -291,7 +291,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (parent != null && (parent is MRGNode || RootNode is U8Node))
             {
                 _fileType = 0;
-                _fileIndex = (short)_parent._children.IndexOf(this);
+                _fileIndex = (short)Parent._children.IndexOf(this);
                 _group = 0;
                 _unk = 0;
                 _fileId = 0;

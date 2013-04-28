@@ -20,5 +20,17 @@ namespace System
             }
             return l.ToArray();
         }
+        //public static List<BrawlLib.Wii.Audio.RSARConverter.TEntry> ShiftFirst(this IList list, int index)
+        //{
+        //    List<BrawlLib.Wii.Audio.RSARConverter.TEntry> newList = new List<BrawlLib.Wii.Audio.RSARConverter.TEntry>();
+        //    for (int i = index; i < list.Count + index; i++)
+        //    {
+        //        int x = i;
+        //        if (i >= list.Count)
+        //            x = i - list.Count;
+        //        newList.Add((BrawlLib.Wii.Audio.RSARConverter.TEntry)list[x]);
+        //    }
+        //    return newList;
+        //}
     }
 }

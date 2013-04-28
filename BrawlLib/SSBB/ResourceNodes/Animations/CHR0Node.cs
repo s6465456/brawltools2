@@ -161,6 +161,24 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new CHR0EntryNode().Initialize(this, new DataSource(group->First[i].DataAddress, 0));
         }
 
+        #region Extra Functions
+
+        public void Resize(int newFrameCount)
+        {
+            KeyframeEntry kfe = null;
+            float ratio = newFrameCount / FrameCount;
+            foreach (CHR0EntryNode e in Children)
+            {
+                KeyframeCollection newCollection = new KeyframeCollection(newFrameCount);
+                for (int x = 0; x < FrameCount; x++)
+                    for (int i = 0x10; i < 0x19; i++)
+                        if ((kfe = e.GetKeyframe((KeyFrameMode)i, x)) != null)
+                            newCollection.SetFrameValue((KeyFrameMode)i, (int)Math.Round(x * ratio), kfe._value)._tangent = kfe._tangent;
+                e._keyframes = newCollection;
+            }
+            FrameCount = newFrameCount;
+        }
+
         public void MergeWith(CHR0Node external)
         {
             if (external.FrameCount != FrameCount && MessageBox.Show(null, "Frame counts are not equal; the shorter animation will end early. Do you still wish to continue?", "", MessageBoxButtons.YesNo) == DialogResult.No)
@@ -386,6 +404,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 FixChildren(b, axis);
             }
         }
+
+        #endregion
 
         internal override void GetStrings(StringTable table)
         {

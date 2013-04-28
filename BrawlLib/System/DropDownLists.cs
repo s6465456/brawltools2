@@ -102,6 +102,26 @@ namespace System
         }
     }
 
+    public class DropDownListFurPos : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            return new StandardValuesCollection(model._furPosList.Select(n => n.ToString()).ToList());
+        }
+    }
+    
+    public class DropDownListFurVec : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            MDL0Node model = (context.Instance as MDL0EntryNode).Model;
+            return new StandardValuesCollection(model._furVecList.Select(n => n.ToString()).ToList());
+        }
+    }
+
     #endregion
 
     #region MDef

@@ -66,14 +66,14 @@ namespace System.Audio
         internal PCMStream(WaveInfo* pWAVE, VoidPtr dataAddr)
         {
             _frequency = pWAVE->_sampleRate;
-            _numSamples = pWAVE->_nibbles;
+            _numSamples = pWAVE->NumSamples;
             _numChannels = pWAVE->_format._channels;
 
             _bps = pWAVE->_format._encoding == 0 ? 8 : 16;
 
             if (_numSamples <= 0) return;
 
-            _loopStart = (int)pWAVE->_loopStartSample;
+            _loopStart = (int)pWAVE->LoopSample;
             _loopEnd = _numSamples;
 
             _source = (short*)dataAddr;

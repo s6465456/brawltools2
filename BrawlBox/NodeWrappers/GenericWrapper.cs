@@ -52,7 +52,9 @@ namespace BrawlBox
         }
 
         #endregion
-        
+
+        public static bool _modelViewerOpen = false;
+
         public IWin32Window _owner;
         public GenericWrapper(IWin32Window owner) { _owner = owner;  ContextMenuStrip = _menu; }
         public GenericWrapper() { _owner = null; ContextMenuStrip = _menu; }
@@ -60,6 +62,9 @@ namespace BrawlBox
         public void MoveUp() { MoveUp(true); }
         public void MoveUp(bool select)
         {
+            if (_modelViewerOpen)
+                return;
+
             if (PrevVisibleNode == null)
                 return;
 
@@ -81,6 +86,9 @@ namespace BrawlBox
         public void MoveDown() { MoveDown(true); }
         public void MoveDown(bool select)
         {
+            if (_modelViewerOpen)
+                return;
+
             if (NextVisibleNode == null)
                 return;
 
@@ -115,6 +123,9 @@ namespace BrawlBox
 
         public virtual string Export()
         {
+            if (_modelViewerOpen)
+                return null;
+
             string outPath;
             int index = Program.SaveFile(ExportFilter, Text, out outPath);
             if (index != 0)
@@ -129,6 +140,9 @@ namespace BrawlBox
 
         public virtual void Replace()
         {
+            if (_modelViewerOpen)
+                return;
+
             if (Parent == null)
                 return;
 
@@ -145,7 +159,7 @@ namespace BrawlBox
                     if (node == null)
                         return;
 
-                    if ((node as MDL0Node).reopen == true)
+                    if ((node as MDL0Node)._reopen == true)
                     {
                         string tempPath = Path.GetTempFileName();
                         node.Export(tempPath);
@@ -166,10 +180,19 @@ namespace BrawlBox
 
         public virtual void OnReplace(string inStream, int filterIndex) { _resource.Replace(inStream); }
 
-        public void Restore() { _resource.Restore(); }
+        public void Restore()
+        {
+            if (_modelViewerOpen)
+                return; 
+
+            _resource.Restore();
+        }
 
         public void Delete()
         {
+            if (_modelViewerOpen)
+                return;
+
             if (Parent == null)
                 return;
 
@@ -179,6 +202,9 @@ namespace BrawlBox
 
         public void Rename()
         {
+            if (_modelViewerOpen)
+                return;
+
             using (RenameDialog dlg = new RenameDialog()) { dlg.ShowDialog(MainForm.Instance, _resource); }
         }
     }

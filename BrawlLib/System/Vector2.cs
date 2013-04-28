@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Drawing;
 
 namespace System
 {
@@ -26,6 +27,8 @@ namespace System
         public static Vector2 operator +(Vector3 v1, Vector2 v2) { return new Vector2(v1._x + v2._x, v1._y + v2._y); }
 
         public static bool operator ==(Vector2 v1, Vector2 v2) { return (v1._x == v2._x) && (v1._y == v2._y); }
+        public static bool operator <=(Vector2 v1, Vector2 v2) { return (v1._x <= v2._x) && (v1._y <= v2._y); }
+        public static bool operator >=(Vector2 v1, Vector2 v2) { return (v1._x >= v2._x) && (v1._y >= v2._y); }
         public static bool operator !=(Vector2 v1, Vector2 v2) { return (v1._x != v2._x) || (v1._y != v2._y); }
 
         public static float Dot(Vector2 v1, Vector2 v2) { return (v1._x * v2._x) + (v1._y * v2._y); }
@@ -49,7 +52,11 @@ namespace System
 
         public static explicit operator Vector2(Vector3 v) { return new Vector2(v._x, v._y); }
         public static explicit operator Vector3(Vector2 v) { return new Vector3(v._x, v._y, 0.0f); }
-
+        public static explicit operator PointF(Vector2 v) { return new PointF(v._x, v._y); }
+        public static explicit operator Vector2(PointF v) { return new Vector2(v.X, v.Y); }
+        public static explicit operator Point(Vector2 v) { Vector2 t = Truncate(v); return new Point((int)t._x, (int)t._y); }
+        public static explicit operator Vector2(Point v) { return new Vector2(v.X, v.Y); }
+        
         public static Vector2 Truncate(Vector2 v)
         {
             return new Vector2(

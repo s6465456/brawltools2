@@ -94,7 +94,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class ModuleDataNode : ModuleEntryNode
+    public unsafe class ModuleDataNode : ModuleEntryNode, IDisposable
     {
         [Browsable(false)]
         public bool HasNoCode { get { return _code == null; } }
@@ -106,6 +106,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<string>[] _tags;
         public RelCommand _firstCommand;
         internal VoidPtr _initAddr;
+
+        ~ModuleDataNode() { Dispose(); }
+
+        public void Dispose()
+        {
+            if (_dataBuffer != null)
+            {
+                _dataBuffer.Dispose();
+                _dataBuffer = null;
+            }
+        }
 
         public Relocation[] _relocations;
 

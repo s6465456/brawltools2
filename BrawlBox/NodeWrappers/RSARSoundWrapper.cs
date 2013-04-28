@@ -26,14 +26,14 @@ namespace BrawlBox.NodeWrappers
             _menu.Items.Add(new ToolStripMenuItem("View File", null, ViewFileAction, Keys.Control | Keys.V));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("&Export", null, ExportAction, Keys.Control | Keys.E));
-            _menu.Items.Add(new ToolStripMenuItem("&Replace", null, ReplaceAction, Keys.Control | Keys.R));
+            //_menu.Items.Add(new ToolStripMenuItem("&Replace", null, ReplaceAction, Keys.Control | Keys.R));
             _menu.Items.Add(new ToolStripMenuItem("Res&tore", null, RestoreAction, Keys.Control | Keys.T));
-            _menu.Items.Add(new ToolStripSeparator());
-            _menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUpAction, Keys.Control | Keys.Up));
-            _menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDownAction, Keys.Control | Keys.Down));
-            _menu.Items.Add(new ToolStripMenuItem("Re&name", null, RenameAction, Keys.Control | Keys.N));
-            _menu.Items.Add(new ToolStripSeparator());
-            _menu.Items.Add(new ToolStripMenuItem("&Delete", null, DeleteAction, Keys.Control | Keys.Delete));
+            //_menu.Items.Add(new ToolStripSeparator());
+            //_menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUpAction, Keys.Control | Keys.Up));
+            //_menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDownAction, Keys.Control | Keys.Down));
+            //_menu.Items.Add(new ToolStripMenuItem("Re&name", null, RenameAction, Keys.Control | Keys.N));
+            //_menu.Items.Add(new ToolStripSeparator());
+            //_menu.Items.Add(new ToolStripMenuItem("&Delete", null, DeleteAction, Keys.Control | Keys.Delete));
             _menu.Opening += MenuOpening;
             _menu.Closing += MenuClosing;
         }
@@ -41,15 +41,13 @@ namespace BrawlBox.NodeWrappers
         protected static void ViewFileAction(object sender, EventArgs e) { GetInstance<RSARSoundWrapper>().ViewFile(); }
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            _menu.Items[2].Enabled = _menu.Items[3].Enabled = _menu.Items[5].Enabled = _menu.Items[6].Enabled = _menu.Items[9].Enabled = true;
+            _menu.Items[3].Enabled = _menu.Items[4].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             RSARSoundWrapper w = GetInstance<RSARSoundWrapper>();
-            _menu.Items[2].Enabled = _menu.Items[9].Enabled = w.Parent != null;
-            _menu.Items[3].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
-            _menu.Items[5].Enabled = w.PrevNode != null;
-            _menu.Items[6].Enabled = w.NextNode != null;
+            _menu.Items[3].Enabled = w.Parent != null;
+            _menu.Items[4].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
         }
 
         #endregion
@@ -77,6 +75,9 @@ namespace BrawlBox.NodeWrappers
                 {
                     FileType = inPath.Substring(inPath.LastIndexOf(".") + 1);
                     n._dataNode.Sound.Replace(inPath);
+                    n._dataNode.Sound.Parent.Parent.SignalPropertyChange();
+                    n.RSARNode.SignalPropertyChange();
+                    MainForm.Instance.resourceTree_SelectionChanged(null, null);
                 }
             }
         }

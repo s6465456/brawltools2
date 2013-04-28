@@ -159,7 +159,7 @@ namespace BrawlLib.Wii.Audio
             scale = 1 << (_cps & 0x0F);
             cIndex = (_cps >> 4) << 1;
 
-            outSample = (0x400 + (scale * outSample << 11) + (_coefs[cIndex] * _cyn1) + (_coefs[(cIndex + 1)] * _cyn2)) >> 11;
+            outSample = (0x400 + (scale * outSample << 11) + (_coefs[cIndex.Clamp(0, 15)] * _cyn1) + (_coefs[(cIndex + 1).Clamp(0, 15)] * _cyn2)) >> 11;
 
             _cyn2 = _cyn1;
             return _cyn1 = (short)outSample.Clamp(-32768, 32767);

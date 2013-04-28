@@ -19,5 +19,14 @@ namespace System
             }
             return l.ToArray();
         }
+        public static int[] Append(this Array a, int[] array)
+        {
+            List<int> values = new List<int>();
+            foreach (int i in a)
+                values.Add(i);
+            foreach (int i in array)
+                values.Add(i);
+            return values.ToArray();
+        }
     }
 }

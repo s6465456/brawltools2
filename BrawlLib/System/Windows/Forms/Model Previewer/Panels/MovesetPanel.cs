@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using BrawlLib.Wii.Models;
 using BrawlLib.SSBBTypes;
 using System.Globalization;
+using System.Timers;
 
 namespace System.Windows.Forms
 {
@@ -36,10 +37,9 @@ namespace System.Windows.Forms
         internal NumericInputBox numOffY;
         private Label BoxZone;
         private OpenFileDialog dlgOpen;
-        private ContextMenuStrip ctxBox;
+        private ContextMenuStrip ctxSubActions;
         private ToolStripMenuItem add;
         private ToolStripMenuItem subtract;
-        private ContextMenuStrip ctxAnim;
         private ToolStripMenuItem sourceToolStripMenuItem;
         private ToolStripSeparator toolStripMenuItem1;
         private ToolStripMenuItem exportToolStripMenuItem;
@@ -101,6 +101,7 @@ namespace System.Windows.Forms
         public Timer animTimer;
         private Panel ActionFlagsPanel;
         public EventModifier eventModifier1;
+        private ToolStripMenuItem renameToolStripMenuItem;
         private Label BoxBone;
 
         private void InitializeComponent()
@@ -128,13 +129,12 @@ namespace System.Windows.Forms
             this.numOffY = new System.Windows.Forms.NumericInputBox();
             this.BoxZone = new System.Windows.Forms.Label();
             this.BoxBone = new System.Windows.Forms.Label();
-            this.ctxAnim = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.sourceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.replaceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.portToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ctxBox = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ctxSubActions = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.Source = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.add = new System.Windows.Forms.ToolStripMenuItem();
@@ -188,7 +188,9 @@ namespace System.Windows.Forms
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.animTimer = new System.Windows.Forms.Timer(this.components);
+            this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.grpHurtBox.SuspendLayout();
+            this.ctxSubActions.SuspendLayout();
             this.ControlPanel.SuspendLayout();
             this.ActionEditor.SuspendLayout();
             this.SubActionFlagsPanel.SuspendLayout();
@@ -240,8 +242,8 @@ namespace System.Windows.Forms
             // 
             // numRegion
             // 
-            this.numRegion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numRegion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numRegion.Location = new System.Drawing.Point(69, 171);
             this.numRegion.Name = "numRegion";
             this.numRegion.Size = new System.Drawing.Size(155, 20);
@@ -302,8 +304,8 @@ namespace System.Windows.Forms
             // 
             // numOffX
             // 
-            this.numOffX.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numOffX.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numOffX.Location = new System.Drawing.Point(69, 35);
             this.numOffX.Name = "numOffX";
             this.numOffX.Size = new System.Drawing.Size(155, 20);
@@ -323,8 +325,8 @@ namespace System.Windows.Forms
             // 
             // numRadius
             // 
-            this.numRadius.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numRadius.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numRadius.Location = new System.Drawing.Point(70, 191);
             this.numRadius.Name = "numRadius";
             this.numRadius.Size = new System.Drawing.Size(154, 20);
@@ -344,8 +346,8 @@ namespace System.Windows.Forms
             // 
             // numStrZ
             // 
-            this.numStrZ.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numStrZ.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numStrZ.Location = new System.Drawing.Point(69, 143);
             this.numStrZ.Name = "numStrZ";
             this.numStrZ.Size = new System.Drawing.Size(155, 20);
@@ -365,8 +367,8 @@ namespace System.Windows.Forms
             // 
             // numStrY
             // 
-            this.numStrY.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numStrY.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numStrY.Location = new System.Drawing.Point(69, 123);
             this.numStrY.Name = "numStrY";
             this.numStrY.Size = new System.Drawing.Size(155, 20);
@@ -386,8 +388,8 @@ namespace System.Windows.Forms
             // 
             // numStrX
             // 
-            this.numStrX.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numStrX.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numStrX.Location = new System.Drawing.Point(69, 103);
             this.numStrX.Name = "numStrX";
             this.numStrX.Size = new System.Drawing.Size(155, 20);
@@ -407,8 +409,8 @@ namespace System.Windows.Forms
             // 
             // numOffZ
             // 
-            this.numOffZ.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numOffZ.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numOffZ.Location = new System.Drawing.Point(69, 75);
             this.numOffZ.Name = "numOffZ";
             this.numOffZ.Size = new System.Drawing.Size(155, 20);
@@ -428,8 +430,8 @@ namespace System.Windows.Forms
             // 
             // numOffY
             // 
-            this.numOffY.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numOffY.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numOffY.Location = new System.Drawing.Point(69, 55);
             this.numOffY.Name = "numOffY";
             this.numOffY.Size = new System.Drawing.Size(155, 20);
@@ -456,11 +458,6 @@ namespace System.Windows.Forms
             this.BoxBone.Text = "Bone:";
             this.BoxBone.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // ctxAnim
-            // 
-            this.ctxAnim.Name = "ctxAnim";
-            this.ctxAnim.Size = new System.Drawing.Size(61, 4);
-            // 
             // sourceToolStripMenuItem
             // 
             this.sourceToolStripMenuItem.Name = "sourceToolStripMenuItem";
@@ -486,10 +483,13 @@ namespace System.Windows.Forms
             this.portToolStripMenuItem.Name = "portToolStripMenuItem";
             this.portToolStripMenuItem.Size = new System.Drawing.Size(32, 19);
             // 
-            // ctxBox
+            // ctxSubActions
             // 
-            this.ctxBox.Name = "ctxBox";
-            this.ctxBox.Size = new System.Drawing.Size(61, 4);
+            this.ctxSubActions.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.renameToolStripMenuItem});
+            this.ctxSubActions.Name = "ctxBox";
+            this.ctxSubActions.Size = new System.Drawing.Size(153, 48);
+            this.ctxSubActions.Text = "Subaction";
             // 
             // Source
             // 
@@ -702,8 +702,8 @@ namespace System.Windows.Forms
             // 
             // inTransTime
             // 
-            this.inTransTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.inTransTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.inTransTime.Location = new System.Drawing.Point(107, 4);
             this.inTransTime.Name = "inTransTime";
             this.inTransTime.Size = new System.Drawing.Size(89, 20);
@@ -745,8 +745,8 @@ namespace System.Windows.Forms
             // 
             // button1
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.button1.Location = new System.Drawing.Point(101, -1);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(128, 23);
@@ -980,8 +980,15 @@ namespace System.Windows.Forms
             // 
             // animTimer
             // 
-            this.animTimer.Interval = 16;
+            this.animTimer.Interval = 1;
             this.animTimer.Tick += new System.EventHandler(this.animTimer_Tick);
+            // 
+            // renameToolStripMenuItem
+            // 
+            this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
+            this.renameToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.renameToolStripMenuItem.Text = "Rename";
+            this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
             // ModelMovesetPanel
             // 
@@ -992,6 +999,7 @@ namespace System.Windows.Forms
             this.Size = new System.Drawing.Size(229, 615);
             this.grpHurtBox.ResumeLayout(false);
             this.grpHurtBox.PerformLayout();
+            this.ctxSubActions.ResumeLayout(false);
             this.ControlPanel.ResumeLayout(false);
             this.ControlPanel.PerformLayout();
             this.ActionEditor.ResumeLayout(false);
@@ -1080,7 +1088,7 @@ namespace System.Windows.Forms
 
             UpdateCurrentControl();
 
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
         
         Control currentControl = null;
@@ -1334,7 +1342,7 @@ namespace System.Windows.Forms
             {
                 TransformObject = lstHurtboxes.Items[e.Index] as MoveDefHurtBoxNode;
 
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
             }
         }
 
@@ -1346,7 +1354,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).BoneNode = (MDL0BoneNode)TargetModel._linker.BoneCache[SelectedBone.SelectedIndex];
             
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void SelectedZone_SelectedIndexChanged(object sender, EventArgs e)
@@ -1357,7 +1365,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).Zone = (HurtBoxZone)SelectedZone.SelectedIndex;
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -1372,7 +1380,7 @@ namespace System.Windows.Forms
             _selectedHurtboxIndex = lstHurtboxes.SelectedIndex;
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void lstHurtboxes_KeyDown(object sender, KeyEventArgs e)
@@ -1384,7 +1392,7 @@ namespace System.Windows.Forms
                 _selectedHurtboxIndex = -1;
 
                 if (!_updating)
-                    _mainWindow.modelPanel1.Invalidate();
+                    _mainWindow.modelPanel.Invalidate();
             }
         }
 
@@ -1402,7 +1410,7 @@ namespace System.Windows.Forms
 
             _updating = false;
 
-            _mainWindow.modelPanel1.Invalidate();
+            _mainWindow.modelPanel.Invalidate();
         }
 
         private void numOffX_TextChanged(object sender, EventArgs e)
@@ -1414,7 +1422,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void numOffY_TextChanged(object sender, EventArgs e)
@@ -1426,7 +1434,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void numOffZ_TextChanged(object sender, EventArgs e)
@@ -1438,7 +1446,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void numStrX_TextChanged(object sender, EventArgs e)
@@ -1450,7 +1458,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void numStrY_TextChanged(object sender, EventArgs e)
@@ -1462,7 +1470,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void numStrZ_TextChanged(object sender, EventArgs e)
@@ -1474,7 +1482,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void numRegion_TextChanged(object sender, EventArgs e)
@@ -1496,7 +1504,7 @@ namespace System.Windows.Forms
             ((MoveDefHurtBoxNode)SelectedObject).SignalPropertyChange();
 
             if (!_updating)
-                _mainWindow.modelPanel1.Invalidate();
+                _mainWindow.modelPanel.Invalidate();
         }
 
         private void BoxEnabled_CheckedChanged(object sender, EventArgs e)
@@ -1556,7 +1564,7 @@ namespace System.Windows.Forms
             _selectedObject = selectedActionGrp = ActionsList.SelectedItem as MoveDefActionGroupNode;
 
             _mainWindow._maxFrame = 1;
-            _mainWindow.GetFiles(-1);
+            _mainWindow.GetFiles(AnimType.None);
             
             comboBox1_SelectedIndexChanged(this, null);
             UpdateCurrentControl();
@@ -1917,6 +1925,11 @@ namespace System.Windows.Forms
                 selectedSubActionGrp._inTransTime = (byte)inTransTime.Value;
                 selectedSubActionGrp.SignalPropertyChange();
             }
+        }
+
+        private void renameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

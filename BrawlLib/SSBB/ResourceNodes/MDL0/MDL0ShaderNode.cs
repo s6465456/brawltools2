@@ -147,9 +147,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0MaterialNode[] Materials { get { return _materials.ToArray(); } }
         public List<MDL0MaterialNode> _materials = new List<MDL0MaterialNode>();
 
-        public sbyte ref0, ref1, ref2, ref3, ref4, ref5, ref6, ref7;
-        public byte stages, res0, res1, res2;
-        int _datalen, _mdl0offset, pad0, pad1;
+        public sbyte _ref0, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
+        public byte _stages, _res0, _res1, _res2;
+        int _datalen, _mdl0offset, _pad0, _pad1;
 
         [Category("Shader Data"), Browsable(false)]
         public int DataLength { get { return _datalen; } }
@@ -157,21 +157,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int MDL0Offset { get { return _mdl0offset; } }
 
         [Category("Shader Data"), Browsable(false)]
-        public byte Stages { get { return stages; } } //Max 16 (2 stages per group - 8 groups)
+        public byte Stages { get { return _stages; } } //Max 16 (2 stages per group - 8 groups)
         [Browsable(false)]
         public byte STGs 
         {
-            get { return stages; } 
+            get { return _stages; } 
             set 
             {
-                stages = value; 
+                _stages = value; 
                 SignalPropertyChange();
 
                 foreach (MDL0MaterialNode m in Materials)
                 {
-                    m.updating = true;
+                    m._updating = true;
                     m.ActiveShaderStages = value;
-                    m.updating = false;
+                    m._updating = false;
                 }
             }
         }
@@ -184,21 +184,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         //public byte Res2 { get { return res2; } set { res2 = value; SignalPropertyChange(); } }
 
         [Category("Shader Data"), Browsable(true)]
-        public bool TextureRef0 { get { return ref0 != -1; } set { ref0 = (sbyte)(value ? 0 : -1); SignalPropertyChange(); } }
+        public bool TextureRef0 { get { return _ref0 != -1; } set { _ref0 = (sbyte)(value ? 0 : -1); SignalPropertyChange(); } }
         [Category("Shader Data"), Browsable(true)]
-        public bool TextureRef1 { get { return ref1 != -1; } set { ref1 = (sbyte)(value ? 1 : -1); SignalPropertyChange(); } }
+        public bool TextureRef1 { get { return _ref1 != -1; } set { _ref1 = (sbyte)(value ? 1 : -1); SignalPropertyChange(); } }
         [Category("Shader Data"), Browsable(true)]
-        public bool TextureRef2 { get { return ref2 != -1; } set { ref2 = (sbyte)(value ? 2 : -1); SignalPropertyChange(); } }
+        public bool TextureRef2 { get { return _ref2 != -1; } set { _ref2 = (sbyte)(value ? 2 : -1); SignalPropertyChange(); } }
         [Category("Shader Data"), Browsable(true)]
-        public bool TextureRef3 { get { return ref3 != -1; } set { ref3 = (sbyte)(value ? 3 : -1); SignalPropertyChange(); } }
+        public bool TextureRef3 { get { return _ref3 != -1; } set { _ref3 = (sbyte)(value ? 3 : -1); SignalPropertyChange(); } }
         [Category("Shader Data"), Browsable(true)]
-        public bool TextureRef4 { get { return ref4 != -1; } set { ref4 = (sbyte)(value ? 4 : -1); SignalPropertyChange(); } }
+        public bool TextureRef4 { get { return _ref4 != -1; } set { _ref4 = (sbyte)(value ? 4 : -1); SignalPropertyChange(); } }
         [Category("Shader Data"), Browsable(true)]
-        public bool TextureRef5 { get { return ref5 != -1; } set { ref5 = (sbyte)(value ? 5 : -1); SignalPropertyChange(); } }
+        public bool TextureRef5 { get { return _ref5 != -1; } set { _ref5 = (sbyte)(value ? 5 : -1); SignalPropertyChange(); } }
         [Category("Shader Data"), Browsable(true)]
-        public bool TextureRef6 { get { return ref6 != -1; } set { ref6 = (sbyte)(value ? 6 : -1); SignalPropertyChange(); } }
+        public bool TextureRef6 { get { return _ref6 != -1; } set { _ref6 = (sbyte)(value ? 6 : -1); SignalPropertyChange(); } }
         [Category("Shader Data"), Browsable(true)]
-        public bool TextureRef7 { get { return ref7 != -1; } set { ref7 = (sbyte)(value ? 7 : -1); SignalPropertyChange(); } }
+        public bool TextureRef7 { get { return _ref7 != -1; } set { _ref7 = (sbyte)(value ? 7 : -1); SignalPropertyChange(); } }
 
         //[Category("Shader Data"), Browsable(true)]
         //public int Pad0 { get { return pad0; } }
@@ -222,16 +222,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             Name = String.Format("Shader{0}", Index);
             _datalen = 512;
-            ref0 =
-            ref1 =
-            ref2 =
-            ref3 =
-            ref4 =
-            ref5 =
-            ref6 =
-            ref7 = -1;
+            _ref0 =
+            _ref1 =
+            _ref2 =
+            _ref3 =
+            _ref4 =
+            _ref5 =
+            _ref6 =
+            _ref7 = -1;
 
-            stages = 1;
+            _stages = 1;
 
             TEVStage stage = new TEVStage(Children.Count);
             AddChild(stage, true);
@@ -244,28 +244,28 @@ namespace BrawlLib.SSBB.ResourceNodes
             _datalen = 512;
             _autoMetal = true;
 
-            ref0 =
-            ref1 =
-            ref2 =
-            ref3 =
-            ref4 =
-            ref5 =
-            ref6 =
-            ref7 = -1;
+            _ref0 =
+            _ref1 =
+            _ref2 =
+            _ref3 =
+            _ref4 =
+            _ref5 =
+            _ref6 =
+            _ref7 = -1;
 
             switch ((texCount = texcount) - 1)
             {
-                case 0: ref0 = 0; break;
-                case 1: ref1 = 1; break;
-                case 2: ref2 = 2; break;
-                case 3: ref3 = 3; break;
-                case 4: ref4 = 4; break;
-                case 5: ref5 = 5; break;
-                case 6: ref6 = 6; break;
-                case 7: ref7 = 7; break;
+                case 0: _ref0 = 0; break;
+                case 1: _ref1 = 1; break;
+                case 2: _ref2 = 2; break;
+                case 3: _ref3 = 3; break;
+                case 4: _ref4 = 4; break;
+                case 5: _ref5 = 5; break;
+                case 6: _ref6 = 6; break;
+                case 7: _ref7 = 7; break;
             }
 
-            stages = 4;
+            _stages = 4;
 
             Children.Clear();
 
@@ -290,23 +290,23 @@ namespace BrawlLib.SSBB.ResourceNodes
             _datalen = header->_dataLength;
             _mdl0offset = header->_mdl0Offset;
 
-            stages = header->_stages;
+            _stages = header->_stages;
 
-            res0 = header->_res0;
-            res1 = header->_res1;
-            res2 = header->_res2;
+            _res0 = header->_res0;
+            _res1 = header->_res1;
+            _res2 = header->_res2;
 
-            ref0 = header->_ref0;
-            ref1 = header->_ref1;
-            ref2 = header->_ref2;
-            ref3 = header->_ref3;
-            ref4 = header->_ref4;
-            ref5 = header->_ref5;
-            ref6 = header->_ref6;
-            ref7 = header->_ref7;
+            _ref0 = header->_ref0;
+            _ref1 = header->_ref1;
+            _ref2 = header->_ref2;
+            _ref3 = header->_ref3;
+            _ref4 = header->_ref4;
+            _ref5 = header->_ref5;
+            _ref6 = header->_ref6;
+            _ref7 = header->_ref7;
 
-            pad0 = header->_pad0;
-            pad1 = header->_pad1;
+            _pad0 = header->_pad0;
+            _pad1 = header->_pad1;
             
             if (_name == null)
                 _name = String.Format("Shader{0}", Index);
@@ -385,37 +385,37 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (Model._isImport)
             {
-                ref1 =
-                ref2 =
-                ref3 =
-                ref4 =
-                ref5 =
-                ref6 =
-                ref7 = -1;
+                _ref1 =
+                _ref2 =
+                _ref3 =
+                _ref4 =
+                _ref5 =
+                _ref6 =
+                _ref7 = -1;
 
                 if (Model._importOptions._mdlType == 0)
-                    stages = 3;
+                    _stages = 3;
                 else
-                    stages = 1;
+                    _stages = 1;
             }
 
             header->_dataLength = length;
             header->_index = Index;
 
-            header->_stages = Model._isImport ? stages : (byte)Children.Count;
+            header->_stages = Model._isImport ? _stages : (byte)Children.Count;
 
             header->_res0 = 0;
             header->_res1 = 0;
             header->_res2 = 0;
 
-            header->_ref0 = ref0;
-            header->_ref1 = ref1;
-            header->_ref2 = ref2;
-            header->_ref3 = ref3;
-            header->_ref4 = ref4;
-            header->_ref5 = ref5;
-            header->_ref6 = ref6;
-            header->_ref7 = ref7;
+            header->_ref0 = _ref0;
+            header->_ref1 = _ref1;
+            header->_ref2 = _ref2;
+            header->_ref3 = _ref3;
+            header->_ref4 = _ref4;
+            header->_ref5 = _ref5;
+            header->_ref6 = _ref6;
+            header->_ref7 = _ref7;
 
             header->_pad0 = 0;
             header->_pad1 = 0;

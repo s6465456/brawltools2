@@ -203,7 +203,10 @@ namespace BrawlLib.Wii.Animations
             AnimationFrame frame;
             float* dPtr = (float*)&frame;
             for (int x = 0x10; x < 0x19; x++)
+            {
+                frame.SetBool(x, GetKeyframe((KeyFrameMode)x, index) != null);
                 *dPtr++ = GetFrameValue((KeyFrameMode)x, index);
+            }
             return frame;
         }
 
