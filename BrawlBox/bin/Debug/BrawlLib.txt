@@ -12,7 +12,7 @@ they be held accountable for the manner in which it is used.
 |************ Change Log ************|
  ====================================
 
-- v0.15b- (TBA)
+- v0.15b- (5/5/2013)
 	. Fixed loop points when importing an RSAR sound
 	. Fixed problem where edited models would explode in-game
     . Fixed REFT image importer. Works just as good as the TEX0 image importer now

@@ -2311,22 +2311,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                         GL.MatrixMode(MatrixMode.Modelview);
                     }
-                    else
-                        GL.ClientActiveTexture(TextureUnit.Texture0 + mr.Index);
-
-                    switch ((int)mr.UWrapMode)
-                    {
-                        case 0: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge); break;
-                        case 1: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat); break;
-                        case 2: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.MirroredRepeat); break;
-                    }
-
-                    switch ((int)mr.VWrapMode)
-                    {
-                        case 0: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge); break;
-                        case 1: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat); break;
-                        case 2: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.MirroredRepeat); break;
-                    }
+                    //else
+                    //    GL.ClientActiveTexture(TextureUnit.Texture0 + mr.Index);
 
                     mr.Bind(ctx, _shaderProgramHandle);
                     

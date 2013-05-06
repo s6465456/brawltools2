@@ -154,6 +154,20 @@ namespace BrawlLib.SSBB.ResourceNodes
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, filter);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureLodBias, mRef.LODBias);
 
+            switch ((int)mRef.UWrapMode)
+            {
+                case 0: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge); break;
+                case 1: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat); break;
+                case 2: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.MirroredRepeat); break;
+            }
+
+            switch ((int)mRef.VWrapMode)
+            {
+                case 0: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge); break;
+                case 1: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat); break;
+                case 2: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.MirroredRepeat); break;
+            }
+
             float* p = stackalloc float[4];
             p[0] = p[1] = p[2] = p[3] = 1.0f;
             if (Selected && !ObjOnly)
