@@ -78,8 +78,7 @@ namespace BrawlLib
             "Tagged Image File Format (*.tif, *.tiff)|*.tif;*.tiff|" +
             "Bitmap (*.bmp)|*.bmp|" +
             "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
-            "Gif (*.gif)|*.gif|" +
-            "Raw Image Data (*.*)|*.*";
+            "Gif (*.gif)|*.gif|" + "Raw (*.*)|*.*";
 
         public static string EFLS =
             "Effect List (*.efls)|*.efls";
@@ -105,5 +104,8 @@ namespace BrawlLib
 
         public static string RSAR = 
             "Sound File Archive (*.brsar)|*.brsar";
+
+        public static string TPL =
+            "Texture Archive (*.tpl)|*.tpl";
     }
 }

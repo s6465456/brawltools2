@@ -39,10 +39,15 @@ namespace BrawlLib.SSBBTypes
     public class MMLCommand
     {
         public Mml _cmd;
-        public int _value;
-
+        public uint _value;
+        public MMLCommand[] _ex;
+        
         public MMLCommand() { }
-        public MMLCommand(Mml cmd, int value)
+        public MMLCommand(Mml cmd)
+        {
+            _cmd = cmd;
+        }
+        public MMLCommand(Mml cmd, uint value)
         {
             _cmd = cmd;
             _value = value;
@@ -64,7 +69,7 @@ namespace BrawlLib.SSBBTypes
             byte* addr = (byte*)address;
             while ((cmd = (Mml)(*addr++)) != Mml.MML_FIN)
             {
-                MMLCommand mml = new MMLCommand() { _cmd = cmd };
+                MMLCommand mml = new MMLCommand(cmd);
                 if (cmd == Mml.MML_WAIT || cmd == Mml.MML_PRG)
                 {
                     switch ((SeqArgType)(*addr++))
@@ -86,10 +91,29 @@ namespace BrawlLib.SSBBTypes
                 }
                 else if (cmd == Mml.MML_EX_COMMAND)
                 {
-                    //switch ((MmlEx)(*addr++))
-                    //{
-
-                    //}
+                    switch ((MmlEx)(*addr++))
+                    {
+                        case MmlEx.MML_SETVAR: break;
+                        case MmlEx.MML_ADDVAR: break;
+                        case MmlEx.MML_SUBVAR: break;
+                        case MmlEx.MML_MULVAR: break;
+                        case MmlEx.MML_DIVVAR: break;
+                        case MmlEx.MML_SHIFTVAR: break;
+                        case MmlEx.MML_RANDVAR: break;
+                        case MmlEx.MML_ANDVAR: break;
+                        case MmlEx.MML_ORVAR: break;
+                        case MmlEx.MML_XORVAR: break;
+                        case MmlEx.MML_NOTVAR: break;
+                        case MmlEx.MML_MODVAR: break;
+                        case MmlEx.MML_CMP_EQ: break;
+                        case MmlEx.MML_CMP_GE: break;
+                        case MmlEx.MML_CMP_GT: break;
+                        case MmlEx.MML_CMP_LE: break;
+                        case MmlEx.MML_CMP_LT: break;
+                        case MmlEx.MML_CMP_NE: break;
+                        case MmlEx.MML_USERPROC: break;
+                    }
+                    addr += 3;
                 }
             }
             commands.Add(new MMLCommand(Mml.MML_FIN, 0));

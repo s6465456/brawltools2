@@ -137,7 +137,7 @@ namespace BrawlLib.Modeling
                 if (inf._weights.Count > 1)
                 {
                     //Match with manager
-                    inf = infManager.FindOrCreate(inf, false);
+                    inf = infManager.FindOrCreate(inf, true);
                     v = new Vertex3(skin._bindMatrix * pVert[i], inf); //World position
                 }
                 else

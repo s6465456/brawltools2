@@ -173,6 +173,16 @@ namespace System.Windows.Forms
             modelPanel._showCamCoords = showCameraCoordinatesToolStripMenuItem.Checked;
         }
 
+        private void enableTextOverlaysToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            modelPanel._textEnabled = enableTextOverlaysToolStripMenuItem.Checked;
+        }
+
+        private void enablePointAndLineSmoothingToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            modelPanel._enableSmoothing = enablePointAndLineSmoothingToolStripMenuItem.Checked;
+        }
+
         private void stPersonToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             

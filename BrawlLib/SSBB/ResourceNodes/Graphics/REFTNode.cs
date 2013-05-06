@@ -12,7 +12,7 @@ using System.Drawing.Imaging;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class REFTNode : ARCEntryNode
+    public unsafe class REFTNode : NW4RArcEntryNode
     {
         internal REFT* Header { get { return (REFT*)WorkingUncompressed.Address; } }
         internal NW4RCommonHeader* CommonHeader { get { return (NW4RCommonHeader*)WorkingUncompressed.Address; } }
@@ -34,25 +34,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("REFT Object Table")]
         //public short NumEntries { get { return _TableEntries; } }
 
-        [Category("NW4R Node")]
-        public byte VersionMajor { get { return _major; } }
-        [Category("NW4R Node")]
-        public byte VersionMinor { get { return _minor; } }
-        internal byte _minor, _major;
-
-        internal string _tag;
-        internal int _length;
-        internal Endian _endian;
-
         protected override bool OnInitialize()
         {
             base.OnInitialize();
-
-            _major = CommonHeader->VersionMajor;
-            _minor = CommonHeader->VersionMinor;
-            _tag = CommonHeader->_tag;
-            _length = CommonHeader->_length;
-            _endian = CommonHeader->Endian;
 
             REFT* header = Header;
 
@@ -79,7 +63,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 tableLen += n.Name.Length + 11;
                 size += n.CalculateSize(force);
             }
-            return size + (tableLen = tableLen.Align(4));
+            return size + (tableLen = tableLen.Align(0x20));
         }
 
         protected override void OnPopulate()
@@ -101,6 +85,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_header._tag = header->_tag = REFT.Tag;
             header->_header.Endian = Endian.Big;
             header->_header._version = 7;
+            header->_header._length = length;
             header->_header._firstOffset = 0x10;
             header->_header._numEntries = 1;
             header->IdString = Name;
@@ -177,7 +162,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int DataLength { get { return _length; } }
 
         [Browsable(false)]
-        public int ImageCount { get { return 1; } }
+        public int ImageCount { get { return LevelOfDetail; } }
         public Bitmap GetImage(int index)
         {
             try
@@ -227,7 +212,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _width = Header->_width;
             _height = Header->_height;
             _pltLen = (int)Header->_pltSize;
-            _lod = Header->_mipmap;
+            _lod = Header->_mipmap + 1;
             _minFltr = Header->_min_filt;
             _magFltr = Header->_mag_filt;
 

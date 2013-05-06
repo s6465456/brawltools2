@@ -321,26 +321,6 @@ namespace BrawlLib.Wii.Animations
                 + _value;
         }
 
-        public float Interpolate2(int offset, bool linear)
-        {
-            if (offset == 0)
-                return _value; //The offset is this keyframe
-
-            int span = _next._index - _index;
-            if (offset == span)
-                return _next._value; //The offset is the next keyframe
-
-            float t = ((float)offset / span);
-
-            float diff = _next._value - _value;
-            if (linear)
-                return _value + (diff / span * offset);
-                //return _value + t * (_next._value - _value);
-
-            return Maths.Bezier(_value, _tangent, _next._tangent, _next._value, t);
-
-        }
-
         /*-------------------------------------------------------------------------*
           Name:         Hermite(f32, f32, f32, f32, f32)
 

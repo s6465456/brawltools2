@@ -854,7 +854,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             //Clean and sort influence list
             _influences.Clean();
-            _influences.Sort();
+            //_influences.Sort();
 
             //Clean texture list
             CleanTextures();
@@ -936,8 +936,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Rendering
         
         internal bool _isTargetModel = false;
-        public bool _renderPolygons = true;
-        public bool _renderPolygonsWireframe = false;
+        public CheckState _renderPolygons = CheckState.Checked;
         public bool _renderBones = true;
         public bool _renderVertices = false;
         public bool _renderNormals = false;
@@ -1000,17 +999,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             //if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
                 _mainWindow = mainWindow;
 
-            if (_renderPolygons)
+            if (_renderPolygons != CheckState.Unchecked)
             {
                 GL.Enable(EnableCap.Lighting);
                 GL.Enable(EnableCap.DepthTest);
 
-                if (_renderPolygonsWireframe)
-                {
-                    //GL.Disable(EnableCap.Blend);
+                if (_renderPolygons == CheckState.Indeterminate)
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                    //GL.LineWidth(0.1f);
-                }
                 else
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
@@ -1043,7 +1038,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 if (_renderBox)
                 {
-                    GL.LineWidth(1.0f);
+                    //GL.LineWidth(1.0f);
                     GL.Disable(EnableCap.Lighting);
                     //GL.Disable(EnableCap.DepthTest);
 
@@ -1071,7 +1066,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.Disable(EnableCap.Lighting);
                 GL.Disable(EnableCap.DepthTest);
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-                GL.LineWidth(1.0f);
+                //GL.LineWidth(2.0f);
 
                 if (_boneList != null)
                     foreach (MDL0BoneNode bone in _boneList)

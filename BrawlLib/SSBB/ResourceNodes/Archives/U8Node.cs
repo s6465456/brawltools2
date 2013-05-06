@@ -167,7 +167,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void ExportSZS(string outPath)
         {
-            ExportNonYaz0(outPath);
+            ExportCompressed(outPath);
         }
 
         public void ExportPair(string outPath)

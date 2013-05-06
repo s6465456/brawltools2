@@ -162,6 +162,8 @@ namespace BrawlBox
                 case ResourceType.MRG:
                 case ResourceType.BRES:
                 case ResourceType.BRESGroup:
+                case ResourceType.U8:
+                case ResourceType.U8Folder:
                     foreach (ResourceNode n in node.Children)
                         LoadModels(n, models);
                     break;

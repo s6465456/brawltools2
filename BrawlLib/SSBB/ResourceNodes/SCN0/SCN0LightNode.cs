@@ -426,8 +426,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             set
             {
                 int x = value + 1;
+                _numEntries[0] = GetColors(0).Count;
+                _numEntries[1] = GetColors(1).Count;
                 SetNumEntries(0, x);
                 SetNumEntries(1, x);
+                if (_constants[0])
+                    _numEntries[0] = 0;
+                if (_constants[1])
+                    _numEntries[1] = 0;
             }
         }
 

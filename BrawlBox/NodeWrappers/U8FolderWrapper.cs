@@ -20,17 +20,17 @@ namespace BrawlBox
         {
             _menu = new ContextMenuStrip();
             _menu.Items.Add(new ToolStripMenuItem("Ne&w", null,
-                new ToolStripMenuItem("RLYT", null, NewRlytAction),
+                //new ToolStripMenuItem("RLYT", null, NewRlytAction),
                 new ToolStripMenuItem("TPL", null, NewTplAction),
-                new ToolStripMenuItem("RFNT", null, NewRfntAction),
-                new ToolStripMenuItem("WAV", null, NewWavAction),
+                //new ToolStripMenuItem("RFNT", null, NewRfntAction),
+                //new ToolStripMenuItem("WAV", null, NewWavAction),
                 new ToolStripMenuItem("BRRES", null, NewBrresAction),
                 new ToolStripMenuItem("Folder", null, NewFolderAction)));
             _menu.Items.Add(new ToolStripMenuItem("&Import", null,
-                new ToolStripMenuItem("RLYT", null, ImportRlytAction),
+                //new ToolStripMenuItem("RLYT", null, ImportRlytAction),
                 new ToolStripMenuItem("TPL", null, ImportTplAction),
-                new ToolStripMenuItem("RFNT", null, ImportRfntAction),
-                new ToolStripMenuItem("WAV", null, ImportWavAction),
+                //new ToolStripMenuItem("RFNT", null, ImportRfntAction),
+                //new ToolStripMenuItem("WAV", null, ImportWavAction),
                 new ToolStripMenuItem("BRRES", null, ImportBrresAction),
                 new ToolStripMenuItem("U8 Archive", null, ImportU8Action)));
             _menu.Items.Add(new ToolStripSeparator());
@@ -109,11 +109,11 @@ namespace BrawlBox
 
         public void NewTpl()
         {
-            //RlytNode node = ((U8FolderNode)_resource).CreateResource<RlytNode>("NewRLYT");
-            //BaseWrapper res = this.FindResource(node, true);
-            //res = res.FindResource(node, false);
-            //res.EnsureVisible();
-            //res.TreeView.SelectedNode = res;
+            TPLNode node = ((U8FolderNode)_resource).CreateResource<TPLNode>("TPL");
+            BaseWrapper res = this.FindResource(node, true);
+            res = res.FindResource(node, false);
+            res.EnsureVisible();
+            res.TreeView.SelectedNode = res;
         }
 
         public void NewRfnt()

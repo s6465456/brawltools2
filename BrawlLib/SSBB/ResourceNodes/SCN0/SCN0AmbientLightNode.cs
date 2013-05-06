@@ -131,7 +131,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         [Browsable(false)]
-        public int FrameCount { get { return ((SCN0Node)Parent.Parent).FrameCount; } }
+        public int FrameCount
+        {
+            get { return ((SCN0Node)Parent.Parent).FrameCount; }
+            set
+            {
+                _numEntries = _colors.Count;
+                NumEntries = value + 1;
+                if (_constant)
+                    _numEntries = 0;
+            }
+        }
 
         protected override bool OnInitialize()
         {

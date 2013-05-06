@@ -8,6 +8,7 @@ using BrawlLib.Imaging;
 using BrawlLib.IO;
 using System.ComponentModel;
 using System.IO;
+using BrawlLib;
 
 namespace System.Windows.Forms
 {
@@ -62,13 +63,7 @@ namespace System.Windows.Forms
         {
             InitializeComponent();
 
-            dlgOpen.Filter = "All Image Formats (*.png,*.tga,*.tiff,*.tif,*.bmp,*.jpg,*.jpeg,*.gif)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif|" +
-            "Portable Network Graphics (*.png)|*.png|" +
-            "Truevision TARGA (*.tga)|*.tga|" +
-            "Tagged Image File Format (*.tiff,*.tif)|*.tiff;*.tif|" +
-            "Bitmap (*.bmp)|*.bmp|" +
-            "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
-            "Gif (*.gif)|*.gif";
+            dlgOpen.Filter = ExportFilters.Images;
 
             foreach (WiiPixelFormat f in Enum.GetValues(typeof(WiiPixelFormat)))
                 cboFormat.Items.Add(f);
@@ -85,6 +80,37 @@ namespace System.Windows.Forms
         public DialogResult ShowDialog(IWin32Window owner, BRESNode parent)
         {
             _bresParent = parent;
+            _origTEX0 = null;
+            _origREFT = null;
+            _origPLT0 = null;
+            _origTPL = null;
+            _origTPLPlt = null;
+            _paletteData = _textureData = null;
+            DialogResult = DialogResult.Cancel;
+            try { return base.ShowDialog(owner); }
+            //catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
+            finally { DisposeImages(); }
+        }
+        public DialogResult ShowDialog(IWin32Window owner, REFTNode parent)
+        {
+            _bresParent = null;
+            _reftParent = parent;
+            _origTEX0 = null;
+            _origREFT = null;
+            _origPLT0 = null;
+            _origTPL = null;
+            _origTPLPlt = null;
+            _paletteData = _textureData = null;
+            DialogResult = DialogResult.Cancel;
+            try { return base.ShowDialog(owner); }
+            //catch (Exception x) { MessageBox.Show(x.ToString()); return DialogResult.Cancel; }
+            finally { DisposeImages(); }
+        }
+        public DialogResult ShowDialog(IWin32Window owner, TPLNode parent)
+        {
+            _bresParent = null;
+            _reftParent = null;
+            _tplParent = parent;
             _origTEX0 = null;
             _origREFT = null;
             _origPLT0 = null;
@@ -194,7 +220,7 @@ namespace System.Windows.Forms
             {
                 _updating = true;
                 cboFormat.SelectedItem = _origREFT.TextureFormat;
-                numLOD.Value = _origREFT.LevelOfDetail.Clamp(1, int.MaxValue);
+                numLOD.Value = _origREFT.LevelOfDetail.Clamp((int)numLOD.Minimum, (int)numLOD.Maximum);
 
                 FixPaletteFields();
 
@@ -288,28 +314,18 @@ namespace System.Windows.Forms
             if (_source == null)
                 return;
 
-            //Copy source to preview
-            //Rectangle r = new Rectangle(0, 0, _source.Width, _source.Height);
-            //BitmapData srcData = _source.LockBits(r, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            //BitmapData dstData = _preview.LockBits(r, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-            //Memory.Move(dstData.Scan0, srcData.Scan0, (uint)(srcData.Stride * _source.Height));
-
-            //_preview.UnlockBits(dstData);
-            //_source.UnlockBits(srcData);
-
             if (_cmprBuffer != null) { _cmprBuffer.Dispose(); _cmprBuffer = null; }
             if (_indexed != null) { _indexed.Dispose(); _indexed = null; }
 
             WiiPixelFormat format = (WiiPixelFormat)cboFormat.SelectedItem;
             switch (format)
             {
-                case WiiPixelFormat.I4: //_preview.Clamp(WiiPixelFormat.I4); break;
-                case WiiPixelFormat.I8: //_preview.Clamp(WiiPixelFormat.I8); break;
-                case WiiPixelFormat.IA4: //_preview.Clamp(WiiPixelFormat.IA4); break;
-                case WiiPixelFormat.IA8: //_preview.Clamp(WiiPixelFormat.IA8); break;
-                case WiiPixelFormat.RGB565: //_preview.Clamp(WiiPixelFormat.RGB565); break;
-                case WiiPixelFormat.RGB5A3: //_preview.Clamp(WiiPixelFormat.RGB5A3); break;
+                case WiiPixelFormat.I4:
+                case WiiPixelFormat.I8:
+                case WiiPixelFormat.IA4:
+                case WiiPixelFormat.IA8:
+                case WiiPixelFormat.RGB565:
+                case WiiPixelFormat.RGB5A3:
                 case WiiPixelFormat.RGBA8:
                     {
                         CopyPreview(_source);
@@ -507,25 +523,24 @@ namespace System.Windows.Forms
             } 
             else if (_tplParent != null)
             {
-                //_origTEX0 = _bresParent.CreateResource<TEX0Node>(Path.GetFileNameWithoutExtension(_imageSource));
-                //if (_paletteData != null)
-                //{
-                //    _origPLT0 = _bresParent.CreateResource<PLT0Node>(_origTEX0.Name);
-                //    _origPLT0.Name = _origTEX0.Name;
-                //    _origPLT0.ReplaceRaw(_paletteData);
-                //}
-                //_origTEX0.ReplaceRaw(_textureData);
+                _origTPL = new TPLTextureNode() { Name = "Texture" };
+                TPLGroupNode g = new TPLGroupNode() { Name = _tplParent.FindName("Texture") };
+                _tplParent.AddChild(g);
+                g.AddChild(_origTPL);
+                if (_paletteData != null)
+                {
+                    _origTPLPlt = new TPLPaletteNode() { Name = "Palette" };
+                    g.AddChild(_origTPLPlt);
+                    _origTPLPlt.ReplaceRaw(_paletteData);
+                }
+                g._texture = _origTPL;
+                g._palette = _origTPLPlt;
+                _origTPL.ReplaceRaw(_textureData);
             }
             else if (_reftParent != null)
             {
-                //_origTEX0 = _bresParent.CreateResource<TEX0Node>(Path.GetFileNameWithoutExtension(_imageSource));
-                //if (_paletteData != null)
-                //{
-                //    _origPLT0 = _bresParent.CreateResource<PLT0Node>(_origTEX0.Name);
-                //    _origPLT0.Name = _origTEX0.Name;
-                //    _origPLT0.ReplaceRaw(_paletteData);
-                //}
-                //_origTEX0.ReplaceRaw(_textureData);
+                _reftParent.AddChild(_origREFT = new REFTEntryNode() { Name = Path.GetFileNameWithoutExtension(_imageSource) });
+                _origREFT.ReplaceRaw(_textureData);
             }
             else if (_origTEX0 != null)
             {

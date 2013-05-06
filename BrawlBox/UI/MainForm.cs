@@ -247,8 +247,7 @@ namespace BrawlBox
                     {
                         MDL0Node m = node as MDL0Node;
                         m._renderBones = false;
-                        m._renderPolygons = true;
-                        m._renderPolygonsWireframe = false;
+                        m._renderPolygons = CheckState.Checked;
                         m._renderVertices = false;
                         m._renderBox = false;
                     }
@@ -310,13 +309,11 @@ namespace BrawlBox
                     _currentControl.Visible = true;
             }
             if (_currentControl != null)
-            if (_secondaryControl != null)
             {
-                _currentControl.Dock = DockStyle.Left;
-                _currentControl.Width = splitContainer2.Panel2.Width - _secondaryControl.Width;
-            }
-            else
+                if (_secondaryControl != null)
+                    _currentControl.Width = splitContainer2.Panel2.Width - _secondaryControl.Width;
                 _currentControl.Dock = DockStyle.Fill;
+            }
         }
 
         protected override void OnClosing(CancelEventArgs e)

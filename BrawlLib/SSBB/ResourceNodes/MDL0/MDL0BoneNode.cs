@@ -75,7 +75,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         [Browsable(false)]
         public int NodeIndex { get { return _nodeIndex; } }
-        [Browsable(false)]
+        [Browsable(true)]
         public int ReferenceCount { get { return _refCount; } set { _refCount = value; } }
         [Browsable(false)]
         public bool IsPrimaryNode { get { return true; } }
@@ -512,7 +512,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             RecalcOffsets(header, address, length);
 
-            if (_refCount > 0 || InfluencedObjects.Length > 0)
+            if (_refCount > 0 || _weightCount > 0 || InfluencedObjects.Length > 0)
                 _flags1 |= BoneFlags.HasGeometry;
             else
                 _flags1 &= ~BoneFlags.HasGeometry;
@@ -670,11 +670,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return;
 
             if (_boneColor != Color.Transparent)
-                GL.Color4(_boneColor.R, _boneColor.G, _boneColor.B, (byte)255);
+                GL.Color4(_boneColor.R / 255.0f, _boneColor.G / 255.0f, _boneColor.B / 255.0f, 1.0f);
             else
-                GL.Color4(DefaultBoneColor.R, DefaultBoneColor.G, DefaultBoneColor.B, (byte)255);
+                GL.Color4(DefaultBoneColor.R / 255.0f, DefaultBoneColor.G / 255.0f, DefaultBoneColor.B / 255.0f, 1.0f);
 
-            GL.LineWidth(1.0f);
+            //GL.LineWidth(1.0f);
 
             //Draw name if selected
             if (mainWindow != null && _nodeColor != Color.Transparent)
@@ -700,9 +700,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Render node
             GLDisplayList ndl = ctx.FindOrCreate<GLDisplayList>("BoneNodeOrb", CreateNodeOrb);
             if (_nodeColor != Color.Transparent)
-                GL.Color4(_nodeColor.R, _nodeColor.G, _nodeColor.B, (byte)255);
+                GL.Color4(_nodeColor.R / 255.0f, _nodeColor.G / 255.0f, _nodeColor.B / 255.0f, 1.0f);
             else
-                GL.Color4(DefaultNodeColor.R, DefaultNodeColor.G, DefaultNodeColor.B, (byte)255);
+                GL.Color4(DefaultNodeColor.R / 255.0f, DefaultNodeColor.G / 255.0f, DefaultNodeColor.B / 255.0f, 1.0f);
             
             ndl.Call();
             

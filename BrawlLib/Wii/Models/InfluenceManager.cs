@@ -86,7 +86,7 @@ namespace BrawlLib.Wii.Models
         internal Matrix _matrix;
         internal Matrix _invBindMatrix;
         internal Matrix _bindMatrix;
-        internal Matrix _invMatrix;
+        internal Matrix? _invMatrix = null;
         internal List<BoneWeight> _weights;
 
         public List<BoneWeight> Weights { get { return _weights; } }
@@ -124,7 +124,7 @@ namespace BrawlLib.Wii.Models
         public Matrix Matrix { get { return _matrix; } }
         public Matrix InverseBindMatrix { get { return _invBindMatrix; } }
 
-        public Matrix InverseMatrix { get { return _invMatrix; } }
+        public Matrix InverseMatrix { get { return (Matrix)(_invMatrix == null ? _invMatrix = Matrix.Invert(_matrix) : _invMatrix); } }
         public Matrix BindMatrix { get { return _bindMatrix; } }
         
         public bool IsPrimaryNode { get { return false; } }
@@ -142,16 +142,11 @@ namespace BrawlLib.Wii.Models
             {
                 _matrix = new Matrix();
                 _invBindMatrix = new Matrix();
-                _invMatrix = new Matrix();
+                _invMatrix = null;
                 _bindMatrix = new Matrix();
                 foreach (BoneWeight w in _weights)
                     if (w.Bone != null)
-                    {
                         _matrix += (w.Bone.Matrix * w.Bone.InverseBindMatrix) * w.Weight;
-                        //_invMatrix += (w.Bone.InverseMatrix * w.Bone.BindMatrix) * w.Weight;
-                    }
-
-                _invMatrix = Matrix.Invert(_matrix);
             }
             else if (_weights.Count == 1)
             {
@@ -162,7 +157,10 @@ namespace BrawlLib.Wii.Models
                 }
             }
             else
-                _matrix = _invMatrix = _bindMatrix = _invBindMatrix = Matrix.Identity;
+            {
+                _matrix = _bindMatrix = _invBindMatrix = Matrix.Identity;
+                _invMatrix = Matrix.Identity;
+            }
         }
         public static int Compare(Influence i1, Influence i2)
         {

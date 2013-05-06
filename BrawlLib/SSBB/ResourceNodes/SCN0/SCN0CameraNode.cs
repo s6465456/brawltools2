@@ -13,10 +13,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class SCN0CameraNode : SCN0EntryNode, ISCN0KeyframeHolder
     {
-        //Aim is a point in space which the camera looks at. Use lookat matrix / axis angle matrix
-        //Rotate means the rotation of the camera
-        //Ignore rotate if camera type is aim, vice versa
-
         internal SCN0Camera* Data { get { return (SCN0Camera*)WorkingUncompressed.Address; } }
 
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]

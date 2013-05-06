@@ -50,7 +50,7 @@ namespace BrawlBox.NodeWrappers
             MDL0ObjectNode node = ((MDL0ObjectNode)_resource).Clone();
             node.Name += " - Copy";
             ((MDL0ObjectNode)_resource).Model._polyGroup.AddChild(node);
-            ((MDL0ObjectNode)_resource).Model.Rebuild(true);
+            //((MDL0ObjectNode)_resource).Model.Rebuild(true);
         }
     }
 }

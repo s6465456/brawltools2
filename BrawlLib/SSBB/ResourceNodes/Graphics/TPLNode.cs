@@ -44,25 +44,35 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        int size = 0, texHdrLen = 0, pltHdrLen = 0, texLen = 0, pltLen = 0;
         protected override int OnCalculateSize(bool force)
         {
-            int size = TPLHeader.Size + Children.Count * 8;
+            texHdrLen = 0;
+            pltHdrLen = 0;
+            texLen = 0;
+            pltLen = 0;
+
+            size = TPLHeader.Size + Children.Count * 8;
             foreach (TPLGroupNode g in Children)
             {
-                if (g._palette != null)
-                {
-                    size += TPLPaletteHeader.Size;
-                    size = size.Align(0x20);
-                    size += g._palette.CalculateSize(true);
-                }
                 if (g._texture != null)
                 {
-                    size += TPLTextureHeader.Size;
-                    size = size.Align(0x20);
-                    size += g._texture.CalculateSize(true);
+                    texHdrLen += TPLTextureHeader.Size;
+                    texLen += g._texture.CalculateSize(true);
+                }
+                if (g._palette != null)
+                {
+                    pltHdrLen += TPLPaletteHeader.Size;
+                    pltLen += g._palette.CalculateSize(true);
                 }
             }
-            return size;
+
+            pltHdrLen = (pltHdrLen + size).Align(0x20) - size;
+            pltLen = pltLen.Align(0x20);
+            texHdrLen = texHdrLen.Align(0x20);
+            texLen = texLen.Align(0x20);
+
+            return size + pltHdrLen + pltLen + texHdrLen + texLen;
         }
 
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
@@ -74,23 +84,34 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             buint* values = (buint*)address + 3;
 
-            VoidPtr data = address + 0xC + Children.Count * 8;
+            VoidPtr pltHdrs = address + size;
+            VoidPtr pltData = pltHdrs + pltHdrLen;
+            VoidPtr texHdrs = pltData + pltLen;
+            VoidPtr texData = texHdrs + texHdrLen;
 
             foreach (TPLGroupNode g in Children)
             {
                 if (g._palette != null)
                 {
-                    values[1] = (uint)(data - address);
-                    TPLPaletteHeader* plt = (TPLPaletteHeader*)data;
+                    values[1] = (uint)(pltHdrs - address);
+                    TPLPaletteHeader* plt = (TPLPaletteHeader*)pltHdrs;
                     plt->_numEntries = (ushort)g._palette.Colors;
                     plt->PaletteFormat = g._palette.Format;
 
-                    plt->_data = ((uint)(data - address + TPLPaletteHeader.Size)).Align(0x20);
+                    pltHdrs += TPLPaletteHeader.Size;
+
+                    plt->_data = (uint)(pltData - address);
+
+                    g._palette.Rebuild(pltData, g._palette._calcSize, true);
+                    pltData += g._palette._calcSize;
                 }
+                else
+                    values[1] = 0;
+
                 if (g._texture != null)
                 {
-                    values[0] = (uint)(data - address);
-                    TPLTextureHeader* tex = (TPLTextureHeader*)data;
+                    values[0] = (uint)(texHdrs - address);
+                    TPLTextureHeader* tex = (TPLTextureHeader*)texHdrs;
                     tex->_wrapS = g._texture._uWrap;
                     tex->_wrapT = g._texture._vWrap;
                     tex->_minFilter = g._texture._minFltr;
@@ -98,9 +119,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                     tex->PixelFormat = g._texture.Format;
                     tex->_width = (ushort)g._texture.Width;
                     tex->_height = (ushort)g._texture.Height;
+                    tex->_LODBias = g._texture._lodBias;
+                    tex->_edgeLODEnable = (short)g._texture._enableEdgeLod;
+                    tex->_maxLOD = (short)(g._texture.LevelOfDetail - 1);
+                    tex->_minLOD = 0;
 
-                    tex->_data = ((uint)(data - address + TPLTextureHeader.Size)).Align(0x20);
+                    texHdrs += TPLTextureHeader.Size;
+
+                    tex->_data = (uint)(texData - address);
+
+                    g._texture.Rebuild(texData, g._texture._calcSize, true);
+                    texData += g._texture._calcSize;
                 }
+                else
+                    values[0] = 0;
+
                 values += 2;
             }
         }
@@ -108,12 +141,29 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal static ResourceNode TryParse(DataSource source) { return ((TPLHeader*)source.Address)->_tag == TPLHeader.Tag ? new TPLNode() : null; }
     }
 
-    public class TPLGroupNode : ResourceNode
+    public class TPLGroupNode : ResourceNode, IImageSource
     {
-        public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
+        public override ResourceType ResourceType { get { return ResourceType.Container; } }
 
         public TPLTextureNode _texture;
         public TPLPaletteNode _palette;
+
+        [Browsable(false)]
+        public int ImageCount { get { return _texture != null ? _texture.ImageCount : 0; } }
+        public Bitmap GetImage(int index)
+        {
+            if (_texture == null)
+                return null;
+
+            try
+            {
+                if (_palette != null)
+                    return TextureConverter.DecodeIndexed(_texture._dataAddr, _texture.Width, _texture.Height, _palette.Palette, index + 1, _texture.Format);
+                else
+                    return TextureConverter.Decode(_texture._dataAddr, _texture.Width, _texture.Height, index + 1, _texture.Format);
+            }
+            catch { return null; }
+        }
     }
 
     public unsafe class TPLTextureNode : ResourceNode, IImageSource
@@ -121,7 +171,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.TPLTexture; } }
         internal TPLTextureHeader* Header { get { return (TPLTextureHeader*)WorkingUncompressed.Address; } }
 
-        internal VoidPtr _baseAddr;
         internal VoidPtr _dataAddr;
 
         int _width, _height;
@@ -132,6 +181,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal uint _magFltr;
         internal float _lodBias;
         internal bool _hasPalette;
+        internal int _lod;
+        internal int _enableEdgeLod;
 
         [Category("Texture")]
         public int Width { get { return _width; } }
@@ -149,6 +200,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0MaterialRefNode.TextureMagFilter MagFilter { get { return (MDL0MaterialRefNode.TextureMagFilter)_magFltr; } set { _magFltr = (uint)value; SignalPropertyChange(); } }
         [Category("Texture")]
         public float LODBias { get { return _lodBias; } set { _lodBias = value; SignalPropertyChange(); } }
+        [Category("Texture")]
+        public int EnableEdgeLOD { get { return _enableEdgeLod; } set { _enableEdgeLod = value; SignalPropertyChange(); } }
+        [Category("Texture")]
+        public int LevelOfDetail { get { return _lod; } }
 
         public TPLPaletteNode GetPaletteNode() { return (_parent == null) ? null : _parent.FindChild("Palette", false) as TPLPaletteNode; }
 
@@ -165,20 +220,25 @@ namespace BrawlLib.SSBB.ResourceNodes
             _vWrap = Header->_wrapT;
             _minFltr = Header->_minFilter;
             _magFltr = Header->_magFilter;
+            _lod = Header->_maxLOD + 1;
+            _enableEdgeLod = Header->_edgeLODEnable;
+
+            if (_replaced)
+                _dataAddr = WorkingUncompressed.Address + Header->_data;
 
             return false;
         }
 
         [Browsable(false)]
-        public int ImageCount { get { return 0; } }
+        public int ImageCount { get { return LevelOfDetail; } }
         public Bitmap GetImage(int index)
         {
-            TPLPaletteNode plt = GetPaletteNode();
+            //TPLPaletteNode plt = GetPaletteNode();
             try
             {
-                if (plt != null)
-                    return TextureConverter.DecodeIndexed(_dataAddr, Width, Height, plt.Palette, index + 1, _format);
-                else
+                //if (plt != null)
+                //    return TextureConverter.DecodeIndexed(_dataAddr, Width, Height, plt.Palette, index + 1, _format);
+                //else
                     return TextureConverter.Decode(_dataAddr, Width, Height, index + 1, _format);
             }
             catch { return null; }
@@ -201,20 +261,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             FileMap tMap, pMap;
             if (_hasPalette)
             {
-                TPLPaletteNode pn = this.GetPaletteNode();
+                TPLPaletteNode pn = GetPaletteNode();
                 tMap = TextureConverter.Get(Format).EncodeTPLTextureIndexed(bmp, pn.Colors, pn.Format, QuantizationAlgorithm.MedianCut, out pMap);
                 pn.ReplaceRaw(pMap);
             }
             else
                 tMap = TextureConverter.Get(Format).EncodeTPLTexture(bmp, 1);
             ReplaceRaw(tMap);
-        }
-
-        public override unsafe void ReplaceRaw(FileMap map)
-        {
-            base.ReplaceRaw(map);
-
-            _dataAddr = WorkingUncompressed.Address + Header->_data;
         }
 
         public override unsafe void Replace(string fileName)
@@ -255,6 +308,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 base.Export(outPath);
         }
+
+        protected override int OnCalculateSize(bool force)
+        {
+            return TextureConverter.Get(Format).GetMipOffset(Width, Height, LevelOfDetail + 1);
+        }
+
+        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            Memory.Move(address, _dataAddr, (uint)length);
+            _dataAddr = address;
+        }
     }
     
     public unsafe class TPLPaletteNode : ResourceNode, IColorSource
@@ -291,6 +355,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             //_numColors = Header->_numEntries;
             _format = Header->PaletteFormat;
 
+            if (_replaced)
+                _dataAddr = WorkingUncompressed.Address + Header->_data;
+
             return false;
         }
 
@@ -302,13 +369,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void OnRebuild(VoidPtr address, int length, bool force)
         {
             TextureConverter.EncodePalette(address, Palette, _format);
-        }
-
-        public override unsafe void ReplaceRaw(FileMap map)
-        {
-            base.ReplaceRaw(map);
-
-            _dataAddr = WorkingUncompressed.Address;
+            _dataAddr = address;
         }
 
         #region IColorSource Members

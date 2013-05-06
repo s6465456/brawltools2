@@ -38,6 +38,8 @@ namespace BrawlBox
 
                 FileAssociation.Get(".dol"),
                 FileAssociation.Get(".rel"),
+
+                FileAssociation.Get(".tpl"),
             };
 
         private static FileType[] _typeList = new FileType[]{
@@ -73,6 +75,8 @@ namespace BrawlBox
 
             FileType.Get("SSBB.DOL"),
             FileType.Get("SSBB.REL"),
+
+            FileType.Get("SSBB.TPL"),
         };
 
         public SettingsDialog()
@@ -185,6 +189,7 @@ namespace BrawlBox
             System.Windows.Forms.ListViewItem listViewItem26 = new System.Windows.Forms.ListViewItem("Sound Sequence (*.brseq)");
             System.Windows.Forms.ListViewItem listViewItem27 = new System.Windows.Forms.ListViewItem("Static Module (*.dol)");
             System.Windows.Forms.ListViewItem listViewItem28 = new System.Windows.Forms.ListViewItem("Relocatable Module (*.rel)");
+            System.Windows.Forms.ListViewItem listViewItem29 = new System.Windows.Forms.ListViewItem("Texture Archive (*.tpl)");
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.listView1 = new System.Windows.Forms.ListView();
@@ -272,6 +277,7 @@ namespace BrawlBox
             listViewItem26.StateImageIndex = 0;
             listViewItem27.StateImageIndex = 0;
             listViewItem28.StateImageIndex = 0;
+            listViewItem29.StateImageIndex = 0;
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
             listViewItem1,
             listViewItem2,
@@ -300,7 +306,8 @@ namespace BrawlBox
             listViewItem25,
             listViewItem26,
             listViewItem27,
-            listViewItem28});
+            listViewItem28,
+            listViewItem29});
             this.listView1.Location = new System.Drawing.Point(3, 37);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";

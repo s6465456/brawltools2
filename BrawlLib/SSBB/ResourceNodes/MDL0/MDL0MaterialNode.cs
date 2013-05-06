@@ -49,7 +49,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal GXAlphaFunction _alphaFunc = GXAlphaFunction.Default;
         internal ZMode _zMode = ZMode.Default;
         //Mask, does not allow changing the dither/update bits
-        internal BlendMode _blendMode = BlendMode.Default;
+        internal Wii.Graphics.BlendMode _blendMode = Wii.Graphics.BlendMode.Default;
         internal ConstantAlpha _constantAlpha = ConstantAlpha.Default;
         //Tev Color Block
         internal MatTevColorBlock _tevColorBlock = MatTevColorBlock.Default;

@@ -45,67 +45,11 @@ namespace BrawlLib.SSBBTypes
                     *dPtr++ = 0;
 
                 //Set data offset
-                _dataOffset = 0x18 + len - 1;
+                _dataOffset = 0x10 + len - 1;
             }
         }
 
         public REFTypeObjectTable* Table { get { return (REFTypeObjectTable*)(Address + 0x18 + _dataOffset); } }
-    }
-
-    public unsafe struct REFTypeObjectTable
-    {
-        //Table size is aligned to 4 bytes
-        //All entry offsets are relative to this offset
-
-        public bint _length;
-        public bshort _entries;
-        public bshort _unk1;
-
-        public VoidPtr Address { get { fixed (void* p = &this)return p; } }
-
-        public REFTypeObjectEntry* First { get { return (REFTypeObjectEntry*)(Address + 8); } }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct REFTypeObjectEntry
-    {
-        public bshort _strLen;
-        public string Name
-        {
-            get { return new String((sbyte*)Address + 2); }
-            set
-            {
-                int len = value.Length + 1;
-                _strLen = (short)len;//.Align(4);
-
-                byte* dPtr = (byte*)Address + 2;
-                fixed (char* sPtr = value)
-                {
-                    for (int i = 0; i < len; i++)
-                        *dPtr++ = (byte)sPtr[i];
-                }
-
-                //Align to 4 bytes
-                //while ((len++ & 3) != 0)
-                //    *dPtr++ = 0;
-            }
-        }
-
-        public int DataOffset
-        {
-            get { return (int)*(buint*)((byte*)Address + 2 + _strLen); }
-            set { *(buint*)((byte*)Address + 2 + _strLen) = (uint)value; }
-        }
-
-        public int DataLength
-        {
-            get { return (int)*(buint*)((byte*)Address + 2 + _strLen + 4); }
-            set { *(buint*)((byte*)Address + 2 + _strLen + 4) = (uint)value; }
-        }
-
-        private VoidPtr Address { get { fixed (void* p = &this)return p; } }
-
-        public REFTypeObjectEntry* Next { get { return (REFTypeObjectEntry*)(Address + 10 + _strLen); } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -212,34 +156,15 @@ namespace BrawlLib.SSBBTypes
 
         public fixed byte userdata[8];
         //0x94
-        public EmitterDrawSetting drawSetting;
+        public EmitterDrawSetting9 drawSetting;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct EmitterDrawSetting
+    public unsafe struct EmitterDrawSetting7
     {
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        [Flags]
-        public enum DrawFlag : ushort
-        {
-            ZCompEnable = 0x0001, // 0x0001
-            ZUpdate = 0x0002, // 0x0002
-            ZCompBeforeTex = 0x0004, // 0x0004
-            ClippingDisable = 0x0008, // 0x0008
-            UseTex1 = 0x0010, // 0x0010
-            UseTex2 = 0x0020, // 0x0020
-            UseTexInd = 0x0040, // 0x0040
-            ProjTex1 = 0x0080, // 0x0080
-            ProjTex2 = 0x0100, // 0x0100
-            ProjTexInd = 0x0200, // 0x0200
-            Invisible = 0x0400, // 0x0400 1: Does not render
-            DrawOrder = 0x0800, // 0x0800 0: normal order, 1: reverse order
-            FogEnable = 0x1000, // 0x1000
-            XYLinkSize = 0x2000, // 0x2000
-            XYLinkScale = 0x4000  // 0x4000
-        }
         public bushort mFlags;     // DrawFlag
 
         public byte mACmpComp0;
@@ -249,43 +174,14 @@ namespace BrawlLib.SSBBTypes
         public byte mNumTevs;   // TEV uses stages 1 through 4
         public byte mFlagClamp; // Obsolete
 
-        [Flags]
-        public enum IndirectTargetStage
-        {
-            None = 0,
-            Stage0 = 1,
-            Stage1 = 2,
-            Stage2 = 4,
-            Stage3 = 8
-        }
         public byte mIndirectTargetStage;
         //0x8
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct TevStageColor
-        {
-            public byte mA;         // GXTevColorArg / GXTevAlphaArg
-            public byte mB;         // GXTevColorArg / GXTevAlphaArg
-            public byte mC;         // GXTevColorArg / GXTevAlphaArg
-            public byte mD;         // GXTevColorArg / GXTevAlphaArg
-
-            public VoidPtr Address { get { fixed (void* p = &this)return p; } }
-        }
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct TevStageColorOp
-        {
-            public byte mOp;        // GXTevOp
-            public byte mBias;      // GXTevBias
-            public byte mScale;     // GXTevScale
-            public byte mClamp;     // GXBool
-            public byte mOutReg;    // GXTevRegID
-
-            public VoidPtr Address { get { fixed (void* p = &this)return p; } }
-        }
 
         //public byte mTevTexture1;
         //public byte mTevTexture2;
         //public byte mTevTexture3;
         //public byte mTevTexture4;
+
         public TevStageColor mTevColor1;
         public TevStageColor mTevColor2;
         public TevStageColor mTevColor3;
@@ -315,48 +211,8 @@ namespace BrawlLib.SSBBTypes
         public byte mTevKAlphaSel3;
         public byte mTevKAlphaSel4;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct BlendMode
-        {
-            public byte mType;                      // GXBlendMode
-            public byte mSrcFactor;                 // GXBlendFactor
-            public byte mDstFactor;                 // GXBlendFactor
-            public byte mOp;                        // GXLogicOp
-        }
-        public BlendMode mBlendMode;
+        public ReffBlendMode mBlendMode;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct ColorInput
-        {
-            public enum RasColor
-            {
-                Null = 0,      // No request
-                Lighting = 1   // Color lit by lighting
-            }
-            public enum TevColor
-            {
-                Null = 0,            // No request
-                Layer1Primary = 1,   // Layer 1 primary color
-                Layer1Secondary = 2, // Layer 1 Secondary Color
-                Layer2Primary = 3,   // Layer 2 primary color
-                Layer2Secondary = 4, // Layer 2 Secondary Color
-                Layer1Multi = 5,     // Layer 1 primary color x secondary color
-                Layer2Multi = 6      // Layer 2 primary color x secondary color
-            }
-
-            public byte mRasColor; //Rasterize color (only channel 0): RasColor
-
-            //TEV register: TevColor
-            public byte mTevColor1;
-            public byte mTevColor2;
-            public byte mTevColor3;
-              
-            //Constant register: TevColor
-            public byte mTevKColor1;
-            public byte mTevKColor2;
-            public byte mTevKColor3;
-            public byte mTevKColor4;
-        }
         public ColorInput mColorInput;
         //public ColorInput mAlphaInput;
 
@@ -364,45 +220,12 @@ namespace BrawlLib.SSBBTypes
 
         public byte mZCompareFunc;          // GXCompare
 
-        // Alpha Swing
-        public enum AlphaFlickType : byte
-        {
-            None = 0,
-            Triangle,
-            SawTooth1,
-            SawTooth2,
-            Square,
-            Sine
-        }
         public byte mAlphaFlickType;        // AlphaFlickType
 
         public bushort mAlphaFlickCycle;
         public byte mAlphaFlickRandom;
         public byte mAlphaFlickAmplitude;
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct Lighting
-        {
-            public enum Mode
-            {
-                Off = 0,
-                Simple,
-                Hardware
-            }
-            public enum Type
-            {
-                None = 0,
-                Ambient,
-                Point
-            }
-            public byte mMode;                  // Mode
-            public byte mType;                  // Type
-
-            public RGBAPixel mAmbient;
-            public RGBAPixel mDiffuse;
-            public bfloat mRadius;
-            public BVec3 mPosition;
-        }
         public Lighting mLighting;
 
         public fixed float mIndTexOffsetMtx[6]; //2x3 Matrix
@@ -411,140 +234,6 @@ namespace BrawlLib.SSBBTypes
         public sbyte pivotX;
         public sbyte pivotY;
         public byte padding;
-
-        // Expression
-        //
-        // Stored in ptcltype member.
-        public enum Type
-        {
-            Point = 0,
-            Line,
-            Free,
-            Billboard,
-            Directional,
-            Stripe,
-            SmoothStripe
-        }
-
-        // Expression assistance -- everything except billboards
-        //
-        // Stored in typeOption member.
-        public enum Assist
-        {
-            Normal = 0, // Render single Quad to Face surface
-            Cross       // Add Quads so they are orthogonal to Normals.
-        }
-
-        // Expression assistance -- billboards
-        //
-        // Stored in typeOption member.
-        public enum BillboardAssist
-        {
-            Normal = 0,     // Normal
-            Y,              // Y-axis billboard
-            Directional,    // Billboard using the movement direction as its axis
-            NormalNoRoll    // Normal (no roll)
-        }
-
-        // Expression assistance -- stripes
-        public enum StripeAssist
-        {
-            Normal = 0,          // Normal.
-            Cross,               // Add a surface orthogonal to the Normal.
-            Billboard,           // Always faces the screen.
-            Tube                 // Expression of a tube shape.
-        }
-
-        // Movement direction (Y-axis) -- everything except billboard
-        //
-        // Stored in typeDir member.
-        public enum Ahead
-        {
-            Speed = 0,                   // Velocity vector direction
-            EmitterCenter,               // Relative position from the center of emitter
-            EmitterDesign,               // Emitter specified direction
-            Particle,                    // Difference in location from the previous particle
-            User,                        // User specified (unused)
-            NoDesign,                    // Unspecified
-            ParticleBoth,                // Difference in position with both neighboring particles
-            NoDesignYAxis,               // Unspecified (initialized as the world Y-axis)
-        }
-
-        // Movement direction (Y-axis) -- billboards
-        //
-        // Stored in typeDir member.
-        public enum BillboardAhead
-        {
-            Speed = 0,              // Velocity vector direction
-            EmitterCenter,          // Relative position from the center of emitter
-            EmitterDesign,          // Emitter specified direction
-            Particle,               // Difference in location from the previous particle
-            ParticleBoth,           // Difference in position with both neighboring particles
-        }
-
-        // Rotational axis to take into account when rendering
-        //
-        // Stored in typeAxis member.
-        public enum RotateAxis
-        {
-            OnlyX = 0,          // X-axis rotation only
-            OnlyY,              // Y-axis rotation only
-            OnlyZ,              // Z-axis rotation only
-            XYZ,                // 3-axis rotation
-        }
-
-        // Base surface (polygon render surface)
-        //
-        // Stored in typeReference.
-        public enum Face
-        {
-            XY = 0,
-            XZ,
-        }
-
-        // Stripe terminal connections
-        //
-        // Stored in typeOption2. >> 0 & 7
-        public enum StripeConnect
-        {
-            None = 0,    // Does not connect
-            Ring,        // Both ends connected
-            Emitter,     // Connect between the newest particle and the emitter
-            //Mask = 0x07 // StripeConnect mask
-        }
-
-        // Initial value of the reference axis for stripes
-        //
-        // Stored in typeOption2. >> 3 & 7
-        public enum StripeInitialPrevAxis
-        {
-            XAxis = 1,   // X-axis of the emitter
-            YAxis = 0,   // Y-axis of the emitter (assigned to 0 for compatibility)
-            ZAxis = 2,   // Z-axis of the emitter
-            XYZ = 3,      // Direction in emitter coordinates (1, 1, 1)
-            //STRIPE_INITIAL_PREV_AXIS__MASK = 0x07 << 3          // Bitmask
-        }
-
-        // Method of applying texture to stripes
-        //
-        // Stored in typeOption2. >> 6 & 3
-        public enum StripeTexmapType
-        {
-            Stretch = 0,    // Stretch the texture along the stripe's entire length.
-            Repeat = 1,     // Repeats the texture for each segment.
-            //STRIPE_TEXMAP_TYPE__MASK = 0x03 << 6
-        }
-
-        // Directional axis processing
-        //
-        // Stored in typeOption2.
-        [Flags]
-        public enum DirectionalPivot
-        {
-            NoProcessing = 0 << 0,         // No processing
-            Billboard = 1 << 0,   // Convert into a billboard, with the movement direction as its axis
-            //DIRECTIONAL_PIVOT__MASK = 0x03 << 0
-        }
 
         public byte ptcltype;                   // enum Type
 
@@ -586,6 +275,386 @@ namespace BrawlLib.SSBBTypes
         public byte padding4;
         public bfloat zOffset;
     }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct EmitterDrawSetting9
+    {
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+
+        public bushort mFlags;     // DrawFlag
+
+        public byte mACmpComp0;
+        public byte mACmpComp1;
+        public byte mACmpOp;
+
+        public byte mNumTevs;   // TEV uses stages 1 through 4
+        public byte mFlagClamp; // Obsolete
+
+        public byte mIndirectTargetStage;
+        //0x8
+
+        public byte mTevTexture1;
+        public byte mTevTexture2;
+        public byte mTevTexture3;
+        public byte mTevTexture4;
+
+        public TevStageColor mTevColor1;
+        public TevStageColor mTevColor2;
+        public TevStageColor mTevColor3;
+        public TevStageColor mTevColor4;
+        public TevStageColorOp mTevColorOp1;
+        public TevStageColorOp mTevColorOp2;
+        public TevStageColorOp mTevColorOp3;
+        public TevStageColorOp mTevColorOp4;
+        public TevStageColor mTevAlpha1;
+        public TevStageColor mTevAlpha2;
+        public TevStageColor mTevAlpha3;
+        public TevStageColor mTevAlpha4;
+        public TevStageColorOp mTevAlphaOp1;
+        public TevStageColorOp mTevAlphaOp2;
+        public TevStageColorOp mTevAlphaOp3;
+        public TevStageColorOp mTevAlphaOp4;
+
+        // Constant register selector: GXTevKColorSel
+        public byte mTevKColorSel1;
+        public byte mTevKColorSel2;
+        public byte mTevKColorSel3;
+        public byte mTevKColorSel4;
+
+        // Constant register selector: GXTevKAlphaSel
+        public byte mTevKAlphaSel1;
+        public byte mTevKAlphaSel2;
+        public byte mTevKAlphaSel3;
+        public byte mTevKAlphaSel4;
+
+        public ReffBlendMode mBlendMode;
+
+        public ColorInput mColorInput;
+        public ColorInput mAlphaInput;
+
+        //Length below is 0x48
+
+        public byte mZCompareFunc;          // GXCompare
+
+        public byte mAlphaFlickType;        // AlphaFlickType
+
+        public bushort mAlphaFlickCycle;
+        public byte mAlphaFlickRandom;
+        public byte mAlphaFlickAmplitude;
+
+        public Lighting mLighting;
+
+        public fixed float mIndTexOffsetMtx[6]; //2x3 Matrix
+        public sbyte mIndTexScaleExp;
+
+        public sbyte pivotX;
+        public sbyte pivotY;
+        public byte padding;
+
+        public byte ptcltype;                   // enum Type
+
+        public byte typeOption;                 // Expression assistance
+        // Billboard:
+        //   enum BillboardAssist
+        // Linear stripe/smooth stripe:
+        //   enum StripeAssist
+        // Other:
+        //   enum Assist
+
+        public byte typeDir;                    // Movement direction
+        // Other:
+        //   enum Ahead
+        // Billboard:
+        //   enum BillboardAhead
+
+        public byte typeAxis;                   // enum RotateAxis
+
+        public byte typeOption0;                // Various types of parameters corresponding to the particle shapes
+        // Directional:
+        //   Change vertical (Y) based on speed : 0=off, 1=on
+        // Linear stripe/smooth stripe:
+        //   Number of vertices in the tube (3+)
+
+        public byte typeOption1;                // Various types of parameters corresponding to the particle shapes
+        // Directional:
+        //   enum Face
+        // Smooth stripe
+        //   Number of interpolation divisions (1+)
+
+        public byte typeOption2;                // Various types of parameters corresponding to the particle shapes
+        // Linear stripe/smooth stripe:
+        //   enum StripeConnect
+        //   | enum StripeInitialPrevAxis
+        //   | enum StripeTexmapType
+        // Directional:
+        //   enum DirectionalPivot
+        public byte padding4;
+        public bfloat zOffset;
+    }
+
+    [Flags]
+    public enum DrawFlag : ushort
+    {
+        ZCompEnable = 0x0001, // 0x0001
+        ZUpdate = 0x0002, // 0x0002
+        ZCompBeforeTex = 0x0004, // 0x0004
+        ClippingDisable = 0x0008, // 0x0008
+        UseTex1 = 0x0010, // 0x0010
+        UseTex2 = 0x0020, // 0x0020
+        UseTexInd = 0x0040, // 0x0040
+        ProjTex1 = 0x0080, // 0x0080
+        ProjTex2 = 0x0100, // 0x0100
+        ProjTexInd = 0x0200, // 0x0200
+        Invisible = 0x0400, // 0x0400 1: Does not render
+        DrawOrder = 0x0800, // 0x0800 0: normal order, 1: reverse order
+        FogEnable = 0x1000, // 0x1000
+        XYLinkSize = 0x2000, // 0x2000
+        XYLinkScale = 0x4000  // 0x4000
+    }
+
+    [Flags]
+    public enum IndirectTargetStage
+    {
+        None = 0,
+        Stage0 = 1,
+        Stage1 = 2,
+        Stage2 = 4,
+        Stage3 = 8
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct TevStageColor
+    {
+        public byte mA;         // GXTevColorArg / GXTevAlphaArg
+        public byte mB;         // GXTevColorArg / GXTevAlphaArg
+        public byte mC;         // GXTevColorArg / GXTevAlphaArg
+        public byte mD;         // GXTevColorArg / GXTevAlphaArg
+
+        public VoidPtr Address { get { fixed (void* p = &this)return p; } }
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct TevStageColorOp
+    {
+        public byte mOp;        // GXTevOp
+        public byte mBias;      // GXTevBias
+        public byte mScale;     // GXTevScale
+        public byte mClamp;     // GXBool
+        public byte mOutReg;    // GXTevRegID
+
+        public VoidPtr Address { get { fixed (void* p = &this)return p; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct ReffBlendMode
+    {
+        public byte mType;                      // GXBlendMode
+        public byte mSrcFactor;                 // GXBlendFactor
+        public byte mDstFactor;                 // GXBlendFactor
+        public byte mOp;                        // GXLogicOp
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct ColorInput
+    {
+        public enum RasColor
+        {
+            Null = 0,      // No request
+            Lighting = 1   // Color lit by lighting
+        }
+        public enum TevColor
+        {
+            Null = 0,            // No request
+            Layer1Primary = 1,   // Layer 1 primary color
+            Layer1Secondary = 2, // Layer 1 Secondary Color
+            Layer2Primary = 3,   // Layer 2 primary color
+            Layer2Secondary = 4, // Layer 2 Secondary Color
+            Layer1Multi = 5,     // Layer 1 primary color x secondary color
+            Layer2Multi = 6      // Layer 2 primary color x secondary color
+        }
+
+        public byte mRasColor; //Rasterize color (only channel 0): RasColor
+
+        //TEV register: TevColor
+        public byte mTevColor1;
+        public byte mTevColor2;
+        public byte mTevColor3;
+
+        //Constant register: TevColor
+        public byte mTevKColor1;
+        public byte mTevKColor2;
+        public byte mTevKColor3;
+        public byte mTevKColor4;
+    }
+
+    // Alpha Swing
+    public enum AlphaFlickType : byte
+    {
+        None = 0,
+        Triangle,
+        SawTooth1,
+        SawTooth2,
+        Square,
+        Sine
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct Lighting
+    {
+        public enum Mode
+        {
+            Off = 0,
+            Simple,
+            Hardware
+        }
+        public enum Type
+        {
+            None = 0,
+            Ambient,
+            Point
+        }
+        public byte mMode;                  // Mode
+        public byte mType;                  // Type
+
+        public RGBAPixel mAmbient;
+        public RGBAPixel mDiffuse;
+        public bfloat mRadius;
+        public BVec3 mPosition;
+    }
+
+    // Expression
+    //
+    // Stored in ptcltype member.
+    public enum ReffType
+    {
+        Point = 0,
+        Line,
+        Free,
+        Billboard,
+        Directional,
+        Stripe,
+        SmoothStripe
+    }
+
+    // Expression assistance -- everything except billboards
+    //
+    // Stored in typeOption member.
+    public enum Assist
+    {
+        Normal = 0, // Render single Quad to Face surface
+        Cross       // Add Quads so they are orthogonal to Normals.
+    }
+
+    // Expression assistance -- billboards
+    //
+    // Stored in typeOption member.
+    public enum BillboardAssist
+    {
+        Normal = 0,     // Normal
+        Y,              // Y-axis billboard
+        Directional,    // Billboard using the movement direction as its axis
+        NormalNoRoll    // Normal (no roll)
+    }
+
+    // Expression assistance -- stripes
+    public enum StripeAssist
+    {
+        Normal = 0,          // Normal.
+        Cross,               // Add a surface orthogonal to the Normal.
+        Billboard,           // Always faces the screen.
+        Tube                 // Expression of a tube shape.
+    }
+
+    // Movement direction (Y-axis) -- everything except billboard
+    //
+    // Stored in typeDir member.
+    public enum Ahead
+    {
+        Speed = 0,                   // Velocity vector direction
+        EmitterCenter,               // Relative position from the center of emitter
+        EmitterDesign,               // Emitter specified direction
+        Particle,                    // Difference in location from the previous particle
+        User,                        // User specified (unused)
+        NoDesign,                    // Unspecified
+        ParticleBoth,                // Difference in position with both neighboring particles
+        NoDesignYAxis,               // Unspecified (initialized as the world Y-axis)
+    }
+
+    // Movement direction (Y-axis) -- billboards
+    //
+    // Stored in typeDir member.
+    public enum BillboardAhead
+    {
+        Speed = 0,              // Velocity vector direction
+        EmitterCenter,          // Relative position from the center of emitter
+        EmitterDesign,          // Emitter specified direction
+        Particle,               // Difference in location from the previous particle
+        ParticleBoth,           // Difference in position with both neighboring particles
+    }
+
+    // Rotational axis to take into account when rendering
+    //
+    // Stored in typeAxis member.
+    public enum RotateAxis
+    {
+        OnlyX = 0,          // X-axis rotation only
+        OnlyY,              // Y-axis rotation only
+        OnlyZ,              // Z-axis rotation only
+        XYZ,                // 3-axis rotation
+    }
+
+    // Base surface (polygon render surface)
+    //
+    // Stored in typeReference.
+    public enum Face
+    {
+        XY = 0,
+        XZ,
+    }
+
+    // Stripe terminal connections
+    //
+    // Stored in typeOption2. >> 0 & 7
+    public enum StripeConnect
+    {
+        None = 0,    // Does not connect
+        Ring,        // Both ends connected
+        Emitter,     // Connect between the newest particle and the emitter
+        //Mask = 0x07 // StripeConnect mask
+    }
+
+    // Initial value of the reference axis for stripes
+    //
+    // Stored in typeOption2. >> 3 & 7
+    public enum StripeInitialPrevAxis
+    {
+        XAxis = 1,   // X-axis of the emitter
+        YAxis = 0,   // Y-axis of the emitter (assigned to 0 for compatibility)
+        ZAxis = 2,   // Z-axis of the emitter
+        XYZ = 3,      // Direction in emitter coordinates (1, 1, 1)
+        //STRIPE_INITIAL_PREV_AXIS__MASK = 0x07 << 3          // Bitmask
+    }
+
+    // Method of applying texture to stripes
+    //
+    // Stored in typeOption2. >> 6 & 3
+    public enum StripeTexmapType
+    {
+        Stretch = 0,    // Stretch the texture along the stripe's entire length.
+        Repeat = 1,     // Repeats the texture for each segment.
+        //STRIPE_TEXMAP_TYPE__MASK = 0x03 << 6
+    }
+
+    // Directional axis processing
+    //
+    // Stored in typeOption2.
+    [Flags]
+    public enum DirectionalPivot
+    {
+        NoProcessing = 0 << 0,         // No processing
+        Billboard = 1 << 0,   // Convert into a billboard, with the movement direction as its axis
+        //DIRECTIONAL_PIVOT__MASK = 0x03 << 0
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct ParticleParameterHeader
     {
@@ -817,7 +886,7 @@ namespace BrawlLib.SSBBTypes
         EMIT_SPEED_NORMAL = 84,
         EMIT_SPEED_SPECDIR = 92,
         EMIT_EMISSION = 8
-    };
+    }
 
     public enum AnimCurveType
     {
@@ -842,6 +911,8 @@ namespace BrawlLib.SSBBTypes
     }
     public struct AnimCurveHeader
     {
+        //Size == 0x20
+
         public byte magic;
         public byte kindType;
         public byte curveFlag;

@@ -74,6 +74,11 @@ namespace System.Audio
                     else if (loop && end)
                     {
                         stream.Wrap();
+                        if (samplePos == stream.SamplePosition)
+                        {
+                            samplePos = -1;
+                            break;
+                        }
                         samplePos = stream.SamplePosition;
                         end = false;
                     }

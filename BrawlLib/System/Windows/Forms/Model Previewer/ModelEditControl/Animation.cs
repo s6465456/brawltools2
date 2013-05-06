@@ -43,6 +43,20 @@ namespace System.Windows.Forms
             box.Value = value;
             chr0Editor.BoxChanged(box, null);
         }
+        private unsafe void ApplyScale2(int index, float offset)
+        {
+            NumericInputBox box = chr0Editor._transBoxes[index];
+
+            if (box._value == 0)
+                return;
+
+            float scale = (box._value + offset) / box._value;
+            
+            float value = (float)Math.Round(box._value * scale, 3);
+            if (value == 0) return;
+            box.Value = value;
+            chr0Editor.BoxChanged(box, null);
+        }
         public AnimType TargetAnimType
         {
             get { return (AnimType)pnlAssets.fileType.SelectedIndex; }

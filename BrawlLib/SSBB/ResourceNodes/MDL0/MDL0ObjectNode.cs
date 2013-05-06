@@ -484,8 +484,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         _matrixNode.ReferenceCount++;
                         _matrixNode.Users.Add(this);
                     }
-
-                    _rebuild = true;
                 }
             }
         }
@@ -2316,11 +2314,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     else
                         GL.ClientActiveTexture(TextureUnit.Texture0 + mr.Index);
 
-                    mr.Bind(ctx, _shaderProgramHandle);
-                    
-                    if (!ctx._canUseShaders && _manager != null)
-                        _manager.RenderTexture(mr);
-
                     switch ((int)mr.UWrapMode)
                     {
                         case 0: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge); break;
@@ -2334,6 +2327,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                         case 1: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat); break;
                         case 2: GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.MirroredRepeat); break;
                     }
+
+                    mr.Bind(ctx, _shaderProgramHandle);
+                    
+                    if (!ctx._canUseShaders && _manager != null)
+                        _manager.RenderTexture(mr);
 
                     if (!ctx._canUseShaders)
                     {
@@ -2440,8 +2438,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public void Attach(TKContext ctx) { Model.Attach(ctx); _render = true; }
-        public void Detach() { Model.Detach(); _render = false; }
-        public void Refesh() { Model.Refesh(); }
+        public void Detach() { if (Model == null) return; Model.Detach(); _render = false; }
+        public void Refesh() { if (Model == null) return; Model.Refesh(); }
 
         public void Render(TKContext ctx, ModelPanel mainWindow)
         {
@@ -2525,7 +2523,27 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _vertexNode.ForceFloat = true;
         }
 
-        public MDL0ObjectNode Clone() { return MemberwiseClone() as MDL0ObjectNode; }
+        public MDL0ObjectNode Clone() 
+        {
+            MDL0ObjectNode o = new MDL0ObjectNode() { _manager = _manager, Name = Name };
+            o._vertexNode = _vertexNode;
+            o._normalNode = _normalNode;
+            for (int i = 0; i < 2; i++)
+                o._colorSet[i] = _colorSet[i];
+            for (int i = 0; i < 8; i++)
+                o._uvSet[i] = _uvSet[i];
+            o.Nodes = Nodes;
+            o._opaMaterial = _opaMaterial;
+            o._xluMaterial = _xluMaterial;
+            o._furVecNode = _furVecNode;
+            o._furPosNode = _furPosNode;
+            o._bone = _bone;
+            o._matrixNode = _matrixNode;
+            o._elementIndices = _elementIndices;
+            o._uncompSource = o._origSource = new DataSource(WorkingUncompressed.Address, WorkingUncompressed.Length, Wii.Compression.CompressionType.None);
+            return o;
+            //return MemberwiseClone() as MDL0ObjectNode; 
+        }
 
         public override void Remove()
         {

@@ -358,6 +358,8 @@ namespace BrawlLib.Wii.Audio
         public void Wrap()
         {
             _useLoop = true;
+            if (SamplePosition == _loopStartSample)
+                return;
             SamplePosition = _loopStartSample;
         }
 

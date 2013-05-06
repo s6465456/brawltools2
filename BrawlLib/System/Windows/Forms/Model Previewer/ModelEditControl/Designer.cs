@@ -168,6 +168,8 @@ namespace System.Windows.Forms
         public ToolStripMenuItem storeSettingsExternallyToolStripMenuItem;
         private ToolStripMenuItem toggleNormals;
         private ToolStripMenuItem dontHighlightBonesAndVerticesToolStripMenuItem;
+        public ToolStripMenuItem enablePointAndLineSmoothingToolStripMenuItem;
+        public ToolStripMenuItem enableTextOverlaysToolStripMenuItem;
         private Splitter spltMoveset;
 
         private void InitializeComponent()
@@ -210,6 +212,8 @@ namespace System.Windows.Forms
             this.syncLoopToAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.chkDontRenderOffscreen = new System.Windows.Forms.ToolStripMenuItem();
             this.dontHighlightBonesAndVerticesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.enablePointAndLineSmoothingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.enableTextOverlaysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.storeSettingsExternallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveCurrentSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearSavedSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -408,7 +412,7 @@ namespace System.Windows.Forms
             this.kinectToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(307, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(451, 24);
             this.menuStrip1.TabIndex = 13;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -589,7 +593,9 @@ namespace System.Windows.Forms
             this.disableBonesWhenPlayingToolStripMenuItem,
             this.syncLoopToAnimationToolStripMenuItem,
             this.chkDontRenderOffscreen,
-            this.dontHighlightBonesAndVerticesToolStripMenuItem});
+            this.dontHighlightBonesAndVerticesToolStripMenuItem,
+            this.enablePointAndLineSmoothingToolStripMenuItem,
+            this.enableTextOverlaysToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -670,6 +676,22 @@ namespace System.Windows.Forms
             this.dontHighlightBonesAndVerticesToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.dontHighlightBonesAndVerticesToolStripMenuItem.Text = "Don\'t highlight bones and vertices";
             // 
+            // enablePointAndLineSmoothingToolStripMenuItem
+            // 
+            this.enablePointAndLineSmoothingToolStripMenuItem.CheckOnClick = true;
+            this.enablePointAndLineSmoothingToolStripMenuItem.Name = "enablePointAndLineSmoothingToolStripMenuItem";
+            this.enablePointAndLineSmoothingToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
+            this.enablePointAndLineSmoothingToolStripMenuItem.Text = "Enable point and line smoothing";
+            this.enablePointAndLineSmoothingToolStripMenuItem.CheckedChanged += new System.EventHandler(this.enablePointAndLineSmoothingToolStripMenuItem_CheckedChanged);
+            // 
+            // enableTextOverlaysToolStripMenuItem
+            // 
+            this.enableTextOverlaysToolStripMenuItem.CheckOnClick = true;
+            this.enableTextOverlaysToolStripMenuItem.Name = "enableTextOverlaysToolStripMenuItem";
+            this.enableTextOverlaysToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
+            this.enableTextOverlaysToolStripMenuItem.Text = "Enable text overlays";
+            this.enableTextOverlaysToolStripMenuItem.CheckedChanged += new System.EventHandler(this.enableTextOverlaysToolStripMenuItem_CheckedChanged);
+            // 
             // storeSettingsExternallyToolStripMenuItem
             // 
             this.storeSettingsExternallyToolStripMenuItem.CheckOnClick = true;
@@ -717,7 +739,7 @@ namespace System.Windows.Forms
             this.showKeyframes,
             this.detachViewerToolStripMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.editorsToolStripMenuItem.Text = "Panels";
             // 
             // showOptions
@@ -797,7 +819,7 @@ namespace System.Windows.Forms
             this.resetCameraToolStripMenuItem,
             this.showCameraCoordinatesToolStripMenuItem});
             this.backColorToolStripMenuItem.Name = "backColorToolStripMenuItem";
-            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.backColorToolStripMenuItem.Text = "Viewer";
             // 
             // backgroundToolStripMenuItem
@@ -961,7 +983,7 @@ namespace System.Windows.Forms
             this.toggleNormals,
             this.boundingBoxToolStripMenuItem});
             this.modelToolStripMenuItem.Name = "modelToolStripMenuItem";
-            this.modelToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.modelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.modelToolStripMenuItem.Text = "Model";
             // 
             // toggleBones
@@ -1014,7 +1036,7 @@ namespace System.Windows.Forms
             this.hitboxesOffToolStripMenuItem,
             this.hurtboxesOffToolStripMenuItem});
             this.movesetToolStripMenuItem1.Name = "movesetToolStripMenuItem1";
-            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(135, 22);
+            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
             this.movesetToolStripMenuItem1.Text = "Moveset";
             this.movesetToolStripMenuItem1.Visible = false;
             // 
@@ -1050,7 +1072,7 @@ namespace System.Windows.Forms
             this.sCN0ToolStripMenuItem,
             this.firstPersonSCN0CamToolStripMenuItem});
             this.fileTypesToolStripMenuItem.Name = "fileTypesToolStripMenuItem";
-            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.fileTypesToolStripMenuItem.Text = "Animations";
             // 
             // playCHR0ToolStripMenuItem
@@ -1170,7 +1192,7 @@ namespace System.Windows.Forms
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 

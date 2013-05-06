@@ -13,6 +13,7 @@ namespace System
         public byte _version;
         public Bin8 _flags1;
         public Bin16 _flags2;
+        public Bin32 _flags3;
         public bfloat _tScale, _rScale, _zScale, _nearZ, _farz, _yFov;
         public BVec4 _amb, _pos, _diff, _spec, _emis; 
         public BVec3 _defaultCam;
@@ -55,7 +56,10 @@ namespace System
         public bool OrthoCam { get { return _flags2[13]; } set { _flags2[13] = value; } }
         public bool BoundingBox { get { return _flags2[14]; } set { _flags2[14] = value; } }
         public bool HideOffscreen { get { return _flags2[15]; } set { _flags2[15] = value; } }
-        
+
+        public bool EnableSmoothing { get { return _flags3[0]; } set { _flags3[0] = value; } }
+        public bool EnableText { get { return _flags3[1]; } set { _flags3[1] = value; } }
+
         public void SetOptions(bool a, bool b, bool c, bool d, bool e, bool f, bool g, bool h)
         {
             _flags1 = (byte)(

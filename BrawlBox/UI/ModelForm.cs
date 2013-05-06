@@ -157,17 +157,21 @@ namespace BrawlBox
             modelEditControl1.ImgExtIndex = settings.ImageCapFmt;
             modelEditControl1.RenderBones = settings.Bones;
 
-            if (settings.Polys && !settings.Wireframe)
-                modelEditControl1.RenderPolygons = CheckState.Checked;
-            else if (settings.Wireframe)
+            if (settings.Wireframe)
                 modelEditControl1.RenderPolygons = CheckState.Indeterminate;
-
+            else if (settings.Polys)
+                modelEditControl1.RenderPolygons = CheckState.Checked;
+            else
+                modelEditControl1.RenderPolygons = CheckState.Unchecked;
+            
             modelEditControl1.RenderVertices = settings.Vertices;
             modelEditControl1.RenderBox = settings.BoundingBox;
             modelEditControl1.RenderNormals = settings.Normals;
             modelEditControl1.DontRenderOffscreen = settings.HideOffscreen;
             modelEditControl1.showCameraCoordinatesToolStripMenuItem.Checked = settings.ShowCamCoords;
             modelEditControl1.RenderFloor = settings.Floor;
+            modelEditControl1.enablePointAndLineSmoothingToolStripMenuItem.Checked = settings.EnableSmoothing;
+            modelEditControl1.enableTextOverlaysToolStripMenuItem.Checked = settings.EnableText;
 
             if (!String.IsNullOrEmpty(ScreenCapBgLocText))
                 modelEditControl1.ScreenCapBgLocText.Text = ScreenCapBgLocText;

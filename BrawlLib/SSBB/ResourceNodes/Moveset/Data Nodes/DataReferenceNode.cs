@@ -9,6 +9,7 @@ using BrawlLib.IO;
 using BrawlLib.Wii.Animations;
 using BrawlLib.SSBB.ResourceNodes;
 using System.Windows.Forms;
+using System.Runtime.ExceptionServices;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -46,13 +47,15 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
     }
+
     public unsafe class MoveDefReferenceEntryNode : MoveDefExternalNode
     {
         internal bint* Header { get { return (bint*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
         public int[] Offsets { get { return _offsets.ToArray(); } }
-
+        
+        [HandleProcessCorruptedStateExceptions]
         protected override bool OnInitialize()
         {
             _offsets = new List<int>();

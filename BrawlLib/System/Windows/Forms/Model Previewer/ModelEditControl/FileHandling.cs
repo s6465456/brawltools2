@@ -233,7 +233,8 @@ namespace System.Windows.Forms
         {
             try
             {
-                TargetModel.ApplyCHR(null, 0);
+                if (TargetModel != null)
+                    TargetModel.ApplyCHR(null, 0);
                 ResetBoneColors();
                 return CloseExternal() && pnlMoveset.CloseReferences();
             }

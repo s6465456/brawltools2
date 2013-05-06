@@ -82,17 +82,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             Info = *info;
 
             _streamBuffer = new UnsafeBuffer(strmLen);
-            byte* sPtr = (byte*)strmAddr;
-            byte* dPtr = (byte*)_streamBuffer.Address;
-            for (int i = 0; i < strmLen; i++)
-                *dPtr++ = *sPtr++;
-
+            Memory.Move(_streamBuffer.Address, strmAddr, (uint)strmLen);
             _audioSource = new DataSource(_streamBuffer.Address, _streamBuffer.Length);
-
-            //_dataBuffer = new UnsafeBuffer(WorkingUncompressed.Length);
-            //Memory.Move(_dataBuffer.Address, WorkingUncompressed.Address, (uint)WorkingUncompressed.Length);
-
-            //MoveRaw(_dataBuffer.Address, _dataBuffer.Length);
 
             if (info->_format._encoding == 2)
                 _stream = new ADPCMStream(info, _audioSource.Address);
