@@ -31,11 +31,18 @@ namespace BrawlLib.SSBB.ResourceNodes
             set 
             {
                 _frameCount = value;
-                SCN0GroupNode lights = GetFolder<SCN0LightNode>();
-                if (lights != null)
-                    foreach (SCN0LightNode l in lights.Children)
+                SCN0GroupNode grp = GetFolder<SCN0LightNode>();
+                if (grp != null)
+                    foreach (SCN0LightNode l in grp.Children)
                         l.FrameCount = _frameCount;
-
+                grp = GetFolder<SCN0FogNode>();
+                if (grp != null)
+                    foreach (SCN0FogNode l in grp.Children)
+                        l.FrameCount = _frameCount;
+                grp = GetFolder<SCN0AmbientLightNode>();
+                if (grp != null)
+                    foreach (SCN0AmbientLightNode l in grp.Children)
+                        l.FrameCount = _frameCount;
                 SignalPropertyChange(); 
             }
         }

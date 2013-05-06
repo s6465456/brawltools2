@@ -1055,8 +1055,7 @@ namespace System.Windows.Forms
 
                     n._visible = true;
                     n._renderBones = chkBones.Checked;
-                    n._renderPolygons = true;
-                    n._renderPolygonsWireframe = !chkPoly.Checked;
+                    n._renderPolygons = chkPoly.CheckState;
                     _modelPanel.AddTarget(n);
                 }
 
@@ -1884,13 +1883,10 @@ namespace System.Windows.Forms
 
         private void chkPoly_CheckStateChanged(object sender, EventArgs e)
         {
-            bool wire = chkPoly.CheckState == CheckState.Indeterminate;
-            bool show = chkPoly.CheckState != CheckState.Unchecked;
             foreach (TreeNode n in modelTree.Nodes)
             {
                 MDL0Node node = n.Tag as MDL0Node;
-                node._renderPolygonsWireframe = wire;
-                node._renderPolygons = show;
+                node._renderPolygons = chkPoly.CheckState;
             }
             _modelPanel.Invalidate();
         }

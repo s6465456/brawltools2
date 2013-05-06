@@ -120,8 +120,8 @@ namespace BrawlLib.Modeling
                     _matrixNode.ReferenceCount++;
                     _matrixNode.Users.Add(this);
 
-                    if (_object != null)
-                        _object.SignalPropertyChange();
+                    //if (_object != null)
+                    //    _object.SignalPropertyChange();
                 }
             }
         }
@@ -239,17 +239,16 @@ namespace BrawlLib.Modeling
             else
             {
                 Vector3 trans = _weightedPosition - bCenter; 
-
                 for (int i = 0; i < nodes.Length; i++)
                 {
                     MDL0VertexNode set = nodes[i];
-                    set.Vertices[_facepoints[0].VertexIndex] = GetInvMatrix() * (GetMatrix() * set.Vertices[_facepoints[0].VertexIndex] + trans * weights[i]);
+                    set.Vertices[_facepoints[0].VertexIndex] = GetInvMatrix() * ((GetMatrix() * set.Vertices[_facepoints[0].VertexIndex]) + trans);
                     set.ForceRebuild = true;
                     if (set.Format == WiiVertexComponentType.Float)
                         set.ForceFloat = true;
                 }
 
-                _position = GetInvMatrix() * (WeightedPosition + trans * baseWeight);
+                _position = GetInvMatrix() * ((GetMatrix() * _object._vertexNode.Vertices[_facepoints[0].VertexIndex]) + trans);
             }
 
             _object._vertexNode.Vertices[_facepoints[0].VertexIndex] = _position;

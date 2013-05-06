@@ -7,7 +7,7 @@ namespace BrawlLib.SSBBTypes
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct TPLHeader
     {
-        public const int Size = 0x28;
+        public const int Size = 0xC;
         public const uint Tag = 0x30AF2000;
 
         public uint _tag;
@@ -38,13 +38,13 @@ namespace BrawlLib.SSBBTypes
         public bushort _width;
         public buint _format;
         public buint _data;
-
         public buint _wrapS;
+
         public buint _wrapT;
         public buint _minFilter;
         public buint _magFilter;
-
         public bfloat _LODBias;
+
         public bshort _edgeLODEnable;
         public bshort _minLOD;
         public bshort _maxLOD;

@@ -278,7 +278,7 @@ namespace System.Windows.Forms
 
             Zoom(-z * _zoomFactor * _multiplier);
 
-            if (Control.ModifierKeys == Keys.Control)
+            if (Control.ModifierKeys == Keys.Alt)
                 if (z < 0)
                     _multiplier /= 0.9f;
                 else
@@ -433,7 +433,7 @@ namespace System.Windows.Forms
         {
             if (_ortho)
             {
-                float scale = (-amt <= 0 ? amt / 2.0f : 1.0f / -amt * 2.0f) * _multiplier;
+                float scale = (amt >= 0 ? amt / 2.0f : 2.0f / -amt) * _multiplier;
                 Scale(scale, scale, 1.0f);
             }
             else
@@ -469,6 +469,7 @@ namespace System.Windows.Forms
 
         //Call this every time the scene is rendered
         //Otherwise the light will move with the camera
+        //(Which makes sense, since the camera isn't moving and the scene is)
         public void RecalcLight()
         {
             GL.Light(LightName.Light0, LightParameter.SpotCutoff, _spotCutoff);
@@ -503,8 +504,28 @@ namespace System.Windows.Forms
             {
                 GL.Material(MaterialFace.FrontAndBack, MaterialParameter.Emission, (float*)pos);
             }
+
+            GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Modulate);
+
+            if (_enableSmoothing)
+            {
+                GL.Enable(EnableCap.PointSmooth);
+                GL.Enable(EnableCap.PolygonSmooth);
+                GL.Enable(EnableCap.LineSmooth);
+                GL.PointSize(1.0f);
+                GL.LineWidth(1.0f);
+            }
+            else
+            {
+                GL.Disable(EnableCap.PointSmooth);
+                GL.Disable(EnableCap.PolygonSmooth);
+                GL.Disable(EnableCap.LineSmooth);
+                GL.PointSize(3.0f);
+                GL.LineWidth(2.0f);
+            }
         }
 
+        public bool _enableSmoothing = false;
         protected internal unsafe override void OnInit(TKContext ctx)
         {
             Vector3 v = (Vector3)BackColor;
@@ -517,10 +538,10 @@ namespace System.Windows.Forms
             GL.ShadeModel(ShadingModel.Smooth);
 
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-            GL.Hint(HintTarget.LineSmoothHint, HintMode.Nicest);
-            GL.Hint(HintTarget.PointSmoothHint, HintMode.Nicest);
-            GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
-            GL.Hint(HintTarget.GenerateMipmapHint, HintMode.Nicest);
+            GL.Hint(HintTarget.LineSmoothHint, HintMode.Fastest);
+            GL.Hint(HintTarget.PointSmoothHint, HintMode.Fastest);
+            GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Fastest);
+            GL.Hint(HintTarget.GenerateMipmapHint, HintMode.Fastest);
 
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
@@ -528,18 +549,14 @@ namespace System.Windows.Forms
             GL.Enable(EnableCap.AlphaTest);
             GL.AlphaFunc(AlphaFunction.Gequal, 0.1f);
 
-            GL.PointSize(3.0f);
-            GL.Enable(EnableCap.PointSmooth);
-            GL.Enable(EnableCap.PolygonSmooth);
-            GL.Enable(EnableCap.LineSmooth);
+            //GL.PointSize(3.0f);
+            //GL.LineWidth(2.0f);
 
             GL.Enable(EnableCap.Lighting);
             GL.Enable(EnableCap.Light0);
             //GL.Enable(EnableCap.Normalize);
 
             RecalcLight();
-
-            GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (int)TextureEnvMode.Modulate);
 
             //Set client states
             ctx._states["_Node_Refs"] = _resourceList;

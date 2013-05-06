@@ -73,8 +73,25 @@ namespace BrawlLib.SSBBTypes
         public ChannelInfo* GetChannelInfo(int index) { return (ChannelInfo*)(Address + OffsetTable[index]); }
         public ADPCMInfo* GetADPCMInfo(int index) { return (ADPCMInfo*)(Address + GetChannelInfo(index)->_adpcmInfoOffset); }
 
-        public int NumSamples { get { return _format._encoding == 2 ? (_nibbles / 16 * 14) + ((_nibbles % 16) - 2) : (int)_nibbles; } }
-        public int LoopSample { get { return _format._encoding == 2 ? (_loopStartSample / 16 * 14) + ((_loopStartSample % 16) - 2) : (int)_loopStartSample; } }
+        public int NumSamples
+        {
+            get { return Get(_nibbles); }
+            set { _nibbles = Set(value); }
+        }
+        public int LoopSample 
+        {
+            get { return Get(_loopStartSample); }
+            set { _loopStartSample = Set(value); }
+        }
+
+        public int Get(int value)
+        {
+            return _format._encoding == 2 ? (value / 16 * 14) + ((value % 16) - 2) : (int)value; 
+        }
+        public int Set(int value)
+        {
+            return _format._encoding == 2 ? ((8 * value) + 16) / 7 : value;
+        }
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 

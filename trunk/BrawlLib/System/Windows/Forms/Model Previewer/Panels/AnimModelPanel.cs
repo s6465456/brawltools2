@@ -650,8 +650,14 @@ namespace System.Windows.Forms
                 case ResourceType.BRESGroup:
                 default:
                     foreach (ResourceNode n in node.Children)
-                        if (found) LoadAnims(n, type); else found = LoadAnims(n, type);
+                        if (found) 
+                            LoadAnims(n, type);
+                        else 
+                            found = LoadAnims(n, type);
                     break;
+
+                case ResourceType.MDef:
+                    return false;
 
                 case ResourceType.CHR0: found = true; if (type == AnimType.CHR) goto Add; break;
                 case ResourceType.SRT0: found = true; if (type == AnimType.SRT) goto Add; break;

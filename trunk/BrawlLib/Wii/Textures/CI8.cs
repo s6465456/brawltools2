@@ -23,8 +23,13 @@ namespace BrawlLib.Wii.Textures
             {
                 for (int y = 0; y < BlockHeight; y++, dPtr += width)
                     for (int x = 0; x < BlockWidth; x++)
-                        try { dPtr[x] = (ARGBPixel)_workingPalette.Entries[*sPtr++]; }
-                        catch { }
+                    {
+                        byte b = *sPtr++;
+                        if (b >= _workingPalette.Entries.Length)
+                            dPtr[x] = new ARGBPixel();
+                        else
+                            dPtr[x] = (ARGBPixel)_workingPalette.Entries[b];
+                    }
             }
             else
             {

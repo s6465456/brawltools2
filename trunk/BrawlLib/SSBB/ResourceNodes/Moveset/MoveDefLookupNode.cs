@@ -5,6 +5,7 @@ using System.Text;
 using System.ComponentModel;
 using BrawlLib.SSBBTypes;
 using System.Runtime.InteropServices;
+using System.Runtime.ExceptionServices;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -72,6 +73,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return 0;
         }
         public bool remove = false;
+        [HandleProcessCorruptedStateExceptions]
         protected override bool OnInitialize()
         {
             //ResourceNode n;

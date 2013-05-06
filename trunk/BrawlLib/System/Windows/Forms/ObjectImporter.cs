@@ -433,7 +433,7 @@ namespace System.Windows.Forms
                     label2.Text = "With base bone \"" + _baseInf + "\", replace: ";
                     break;
                 case 2:
-                    label2.Text = "Merge base bone \"" + _baseInf + "\" with: ";
+                    label2.Text = "Merge base bone \"" + _baseInf + "\" children of: ";
                     break;
             }
         }

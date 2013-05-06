@@ -253,12 +253,9 @@ namespace System.Windows.Forms
             if (_playing)
                 return;
 
-            modelPanel.BeginUpdate();
+            //modelPanel.BeginUpdate();
 
             bool moving = _scaling || _rotating || _translating;
-
-            if (!moving && (RenderBones || RenderVertices) && (!dontHighlightBonesAndVerticesToolStripMenuItem.Checked || (dontHighlightBonesAndVerticesToolStripMenuItem.Checked && modelPanel._selecting)))
-                HighlightStuff(e);
 
             MDL0BoneNode bone = pnlBones.SelectedBone;
             //Vertex3 vertex = TargetVertex;
@@ -303,17 +300,26 @@ namespace System.Windows.Forms
                             else if (_editType == TransformType.Translation)
                             {
                                 //Get difference
-                                Vector3 trans = bone._frameState._transform * lPoint - bone._frameState._transform * _lastPointBone;
+                                if (!_snapX) point._x = _lastPointWorld._x;
+                                if (!_snapY) point._y = _lastPointWorld._y;
+                                if (!_snapZ) point._z = _lastPointWorld._z;
 
-                                if (!_snapX) trans._x = 0;
-                                if (!_snapY) trans._y = 0;
-                                if (!_snapZ) trans._z = 0;
+                                lPoint = bone._inverseFrameMatrix * point;
+
+                                Vector3 trans = (bone._frameState._transform * lPoint - bone._frameState._transform * _lastPointBone);
 
                                 if (trans._x != 0.0f) ApplyTranslation(0, trans._x);
                                 if (trans._y != 0.0f) ApplyTranslation(1, trans._y);
                                 if (trans._z != 0.0f) ApplyTranslation(2, trans._z);
                             }
                             else if (_editType == TransformType.Scale)
+                            {
+                                if (!_snapX) point._x = _lastPointWorld._x;
+                                if (!_snapY) point._y = _lastPointWorld._y;
+                                if (!_snapZ) point._z = _lastPointWorld._z;
+
+                                lPoint = bone._inverseFrameMatrix * point;
+
                                 if (_snapX && _snapY && _snapZ)
                                 {
                                     //Get scale factor
@@ -329,15 +335,20 @@ namespace System.Windows.Forms
                                 else
                                 {
                                     //Get scale factor
-                                    Vector3 scale = lPoint / _firstPointBone;
+                                    //Vector3 scale = (lPoint / _firstPointBone);
 
-                                    if (scale._x != 0.0f && _snapX)
-                                        ApplyScale(0, scale._x);
-                                    if (scale._y != 0.0f && _snapY)
-                                        ApplyScale(1, scale._y);
-                                    if (scale._z != 0.0f && _snapZ)
-                                        ApplyScale(2, scale._z);
+                                    Vector3 scale = (bone._frameState._transform * lPoint - bone._frameState._transform * _lastPointBone);
+
+                                    Vector3 scale2 = bone._frameState._transform *  (bone._inverseFrameMatrix * (point - _lastPointWorld));
+
+                                    if (scale._x != 0.0f)
+                                        ApplyScale2(0, scale._x);
+                                    if (scale._y != 0.0f)
+                                        ApplyScale2(1, scale._y);
+                                    if (scale._z != 0.0f)
+                                        ApplyScale2(2, scale._z);
                                 }
+                            }
                             _lastPointWorld = point;
                             _lastPointBone = bone._inverseFrameMatrix * point;
                         }
@@ -365,10 +376,13 @@ namespace System.Windows.Forms
                 }
             }
 
-            modelPanel.EndUpdate();
+            //modelPanel.EndUpdate();
 
-            if (RenderBones || RenderVertices)
-                modelPanel.Invalidate();
+            if (!moving && (RenderBones || RenderVertices) && (!dontHighlightBonesAndVerticesToolStripMenuItem.Checked || (dontHighlightBonesAndVerticesToolStripMenuItem.Checked && modelPanel._selecting)))
+                HighlightStuff(e);
+
+            //if (RenderBones || RenderVertices)
+            //    modelPanel.Invalidate();
         }
         public MDL0BoneNode _hiBone = null;
         public Vertex3 _hiVertex = null;

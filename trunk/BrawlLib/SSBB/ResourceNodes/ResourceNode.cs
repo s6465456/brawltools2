@@ -376,7 +376,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _replSrc.Close();
             _compression = _origSource.Compression;
 
-            if (!OnInitialize())
+            if (_origSource != DataSource.Empty && !OnInitialize())
                 _children = new List<ResourceNode>();
 
             _changed = false;
@@ -597,7 +597,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 FileStream stream = new FileStream(Path.GetTempFileName(), FileMode.Open, FileAccess.ReadWrite, FileShare.None, 0x8, FileOptions.DeleteOnClose | FileOptions.SequentialScan);
                 try
                 {
-                    Compressor.Compact(_compression, uncompMap.Address, uncompMap.Length, stream, this);
+                    if (this is U8Node && _compression == CompressionType.RunLength)
+                        RunLength.CompactYAZ0(uncompMap.Address, uncompMap.Length, stream, null);
+                    else
+                        Compressor.Compact(_compression, uncompMap.Address, uncompMap.Length, stream, this);
                     _replSrc = new DataSource(FileMap.FromStreamInternal(stream, FileMapProtect.Read, 0, (int)stream.Length), _compression);
                 }
                 catch (Exception x) { stream.Dispose(); throw x; }

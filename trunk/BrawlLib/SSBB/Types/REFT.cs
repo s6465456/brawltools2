@@ -49,6 +49,62 @@ namespace BrawlLib.SSBBTypes
         public REFTypeObjectTable* Table { get { return (REFTypeObjectTable*)(Address + 0x18 + _dataOffset); } }
     }
 
+    public unsafe struct REFTypeObjectTable
+    {
+        //Table size is aligned to 4 bytes
+        //All entry offsets are relative to this offset
+
+        public bint _length;
+        public bshort _entries;
+        public bshort _unk1;
+
+        public VoidPtr Address { get { fixed (void* p = &this)return p; } }
+
+        public REFTypeObjectEntry* First { get { return (REFTypeObjectEntry*)(Address + 8); } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct REFTypeObjectEntry
+    {
+        public bshort _strLen;
+        public string Name
+        {
+            get { return new String((sbyte*)Address + 2); }
+            set
+            {
+                int len = value.Length + 1;
+                _strLen = (short)len;//.Align(4);
+
+                byte* dPtr = (byte*)Address + 2;
+                fixed (char* sPtr = value)
+                {
+                    for (int i = 0; i < len; i++)
+                        *dPtr++ = (byte)sPtr[i];
+                }
+
+                //Align to 4 bytes
+                //while ((len++ & 3) != 0)
+                //    *dPtr++ = 0;
+            }
+        }
+
+        public int DataOffset
+        {
+            get { return (int)*(buint*)((byte*)Address + 2 + _strLen); }
+            set { *(buint*)((byte*)Address + 2 + _strLen) = (uint)value; }
+        }
+
+        public int DataLength
+        {
+            get { return (int)*(buint*)((byte*)Address + 2 + _strLen + 4); }
+            set { *(buint*)((byte*)Address + 2 + _strLen + 4) = (uint)value; }
+        }
+
+        private VoidPtr Address { get { fixed (void* p = &this)return p; } }
+
+        public REFTypeObjectEntry* Next { get { return (REFTypeObjectEntry*)(Address + 10 + _strLen); } }
+    }
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct REFTImageHeader
     {

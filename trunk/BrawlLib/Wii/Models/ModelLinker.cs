@@ -32,7 +32,7 @@ namespace BrawlLib.Wii.Models
         #region Linker lists
         internal const int BankLen = 13;
 
-        internal static readonly Type[] TypeBank = new Type[] 
+        internal static readonly System.Type[] TypeBank = new System.Type[] 
         {
             null,
             typeof(MDL0BoneNode),

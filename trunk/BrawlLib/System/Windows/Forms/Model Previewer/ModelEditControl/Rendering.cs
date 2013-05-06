@@ -106,7 +106,7 @@ namespace System.Windows.Forms
         public List<MDL0BoneNode> boneCollisions = new List<MDL0BoneNode>();
         private unsafe void modelPanel1_PostRender(object sender, TKContext context)
         {
-            GL.LineWidth(1.0f);
+            //GL.LineWidth(2.0f);
 
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
@@ -264,6 +264,7 @@ namespace System.Windows.Forms
 
             if (!modelPanel._grabbing && !modelPanel._scrolling && !_playing)
             {
+                GL.Color4(Color.Black);
                 GL.ColorMask(false, false, false, false);
 
                 if (RenderVertices)
@@ -1045,42 +1046,42 @@ namespace System.Windows.Forms
                     return true;
                 else
                     normal = camera.Normalize(center);
-            //else if (_editType == TransformType.Translation)
-            //{
-            //    if (_snapX && _snapY)
-            //        normal = new Vector3(0.0f, 0.0f, 1.0f).Normalize();
-            //    else if (_snapX && _snapZ)
-            //        normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-            //    else if (_snapY && _snapZ)
-            //        normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
-            //    else if (_snapX)
-            //        normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-            //    else if (_snapY)
-            //        normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
-            //    else if (_snapZ)
-            //        normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-            //    else if (_editType == TransformType.Scale && _snapX && _snapY && _snapZ)
-            //        normal = camera.Normalize(center);
-            //    return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
-            //}
-            else// if (_editType == TransformType.Scale)
+            else// if (_editType == TransformType.Translation)
             {
                 if (_snapX && _snapY)
-                    normal = (bone._frameMatrix * new Vector3(0.0f, 0.0f, 1.0f)).Normalize(center);
+                    normal = new Vector3(0.0f, 0.0f, 1.0f).Normalize();
                 else if (_snapX && _snapZ)
-                    normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
+                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
                 else if (_snapY && _snapZ)
-                    normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
+                    normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
                 else if (_snapX)
-                    normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
+                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
                 else if (_snapY)
-                    normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
+                    normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
                 else if (_snapZ)
-                    normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
+                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
                 else if (_editType == TransformType.Scale && _snapX && _snapY && _snapZ)
                     normal = camera.Normalize(center);
                 return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
             }
+            //else if (_editType == TransformType.Scale)
+            //{
+            //    if (_snapX && _snapY)
+            //        normal = (bone._frameMatrix * new Vector3(0.0f, 0.0f, 1.0f)).Normalize(center);
+            //    else if (_snapX && _snapZ)
+            //        normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
+            //    else if (_snapY && _snapZ)
+            //        normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
+            //    else if (_snapX)
+            //        normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
+            //    else if (_snapY)
+            //        normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
+            //    else if (_snapZ)
+            //        normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
+            //    else if (_editType == TransformType.Scale && _snapX && _snapY && _snapZ)
+            //        normal = camera.Normalize(center);
+            //    return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
+            //}
 
             if (Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point))
             {

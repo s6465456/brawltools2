@@ -12,9 +12,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public RBNKInstParam hdr = new RBNKInstParam();
 
-        WAVESoundNode _soundNode;
+        RSARFileAudioNode _soundNode;
         [Browsable(false)]
-        public WAVESoundNode Sound
+        public RSARFileAudioNode Sound
         {
             get { return _soundNode; }
             set
@@ -102,7 +102,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             SetSizeInternal(0x30);
 
             if (RBNKNode.Children.Count > 1 && hdr._waveIndex < RBNKNode.Children[1].Children.Count)
-                _soundNode = RBNKNode.Children[1].Children[hdr._waveIndex] as WAVESoundNode;
+                _soundNode = RBNKNode.Children[1].Children[hdr._waveIndex] as RSARFileAudioNode;
 
             return false;
         }

@@ -356,8 +356,11 @@ namespace System.Windows.Forms
 
                 trackBar1.Value = _buffer.ReadSample;
 
-                if (_buffer.ReadSample >= _targetStream.Samples && !_loop)
-                    Stop();
+                if (!_loop)
+                {
+                    if (_buffer.ReadSample >= _targetStream.Samples)
+                        Stop();
+                }
             }
         }
 

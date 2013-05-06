@@ -376,13 +376,13 @@ namespace System.Windows.Forms
                 if (_editingAll)
                     foreach (MDL0Node m in _targetModels)
                     {
-                        m._renderPolygons = value == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
-                        m._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
+                        m._renderPolygons = value;// == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
+                        //m._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
                     }
                 else if (TargetModel != null)
                 {
-                    TargetModel._renderPolygons = value == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
-                    TargetModel._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
+                    TargetModel._renderPolygons = value;// == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
+                    //TargetModel._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
                 }
 
                 _renderPolygons = value;

@@ -1,5 +1,5 @@
 ﻿
-BrawlLib Resource Library - Version 0.15
+BrawlLib Resource Library - Version 0.15b
 Copyright © 2009 - 2013 Bryan Moulton & BlackJax96
 
 This program is provided as-is without any warranty, implied or otherwise.
@@ -12,30 +12,64 @@ they be held accountable for the manner in which it is used.
 |************ Change Log ************|
  ====================================
 
- - v0.15- (TBA)
-	. Fixed "Null weights" MDL0 error
-	. "Export as Single Matrix" 3ds Max export setting for DAE models is not necessary to check anymore
-	. Added support for editing REFF files
-	. Updated UserData handling
-	. MDL0 Objects updated: now support both an OPA and XLU material, added "DrawPriority" value and added the ability to change linked vertex/normal/color/uv nodes.
-	. Updated BRRES "Edit All" dialog
-	. Added TPL support
-	. Added SCN0 & CLR0 editors to the model viewer (however, their effects cannot be literally displayed yet)
-	. SCN0 rebuilder bugfixes
-	. Added various model viewer buttons: take screenshot, save camera, model viewer help
-	. Began working on rendering materials & shaders using GLSL; all OpenGL coded has been modified to use OpenTK. This feature is not yet available for use.
-	. Added "Original Path" string value for all NW4R nodes.
-	. Edited animation editors in model viewer to be a bit more compact
-	. Finished RSAR rebuilder
-	. Added RSAR sound importer
-	. Added RSAR file viewer
-	. Made RSAR file list sortable by columns
-	. Fixed loop point retrieval for RSAR sounds
-	. Added support for stereo RSAR sounds
-	. Added support for modifying RWSD, RBNK, and RSEQ files. RSEQ MML code is not yet editable yet.
-	. Added support for RWAR and RWAV formats, located in other versions of RWSD and RBNK
-	. Created new class to handle format tags in a string format instead of hex
-	. Updated Stage Model Converter
+- v0.15b- (TBA)
+	. Fixed loop points when importing an RSAR sound
+	. Fixed problem where edited models would explode in-game
+    . Fixed REFT image importer. Works just as good as the TEX0 image importer now
+	. Fixed when vertices are moved when modified by a SHP0
+	. Fixed background image to load immediately
+	. Fixed random green/blue/yellow color overlays when clicking bones
+	. Fixed when the last frame of an animation is deleted when clicking "."
+	. Fixed bone translation tool
+	. Fixed duplicated objects to be independent from the original
+	. Changed shortcut to delete the current frame to Shift + Backspace
+	. Changed shortcut when zooming to increase/decrease camera zoom/translate/rotate speeds from Control to Alt
+	. Added support to compress U8 Archives to YAZ0 format with RunLength compression
+	. Added support for v1.9 REFF
+	. Finished REFT and REFF rebuilders
+	. Finished TPL rebuilder
+	. Set point/line smooth to off by default and added a button to toggle it on
+	. Set text overlays to not display by default and added a button to toggle them on
+
+ - v0.15- (4/28/2013)
+   	. Fixed "Null weights" MDL0 error
+   	. "Export as Single Matrix" 3ds Max export setting for DAE models is not necessary to check anymore
+   	. Added support for editing REFF files
+   	. Updated UserData handling
+   	. Updated MDL0 Material Properties
+   	. MDL0 Objects updated: now support both an OPA and XLU material, added "DrawPriority" value and added the ability to change linked vertex/normal/color/uv nodes.
+   	. Updated BRRES "Edit All" dialog
+   	. Added TPL support
+   	. Added SCN0 & CLR0 editors to the model viewer (however, their effects cannot be literally displayed yet)
+   	. SCN0 rebuilder bugfixes
+   	. Finished SCN0 Editor
+   	. Added various model viewer buttons: take screenshot, save camera, model viewer help, load background image
+   	. Revised and added new options to model viewer settings window
+   	. Began working on rendering materials & shaders using GLSL; all OpenGL coded has been modified to use OpenTK. This feature is not yet available.
+   	. Added "Original Path" string value for all NW4R nodes.
+   	. Edited animation editors in model viewer to be a bit more compact
+   	. Finished RSAR rebuilder
+   	. Added RSAR sound importer
+   	. Added RSAR file viewer
+   	. Made RSAR file list sortable by columns
+   	. Fixed loop point retrieval for RSAR sounds
+   	. Added support for stereo RSAR sounds
+   	. Added support for modifying RWSD, RBNK, and RSEQ files. RSEQ MML code is not yet editable yet.
+   	. Added support for all RSAR versions
+   	. Added support for RWAR and RWAV formats, located in other versions of RWSD and RBNK
+   	. Updated Stage Model Converter
+   	. Fixed when an offset parameter is pasted back into moveset code
+   	. Finished bone translation and scale controls in the model previewer
+   	. Implemented vertex editor
+   	. Made bones, vertices and the bone scale/rotation/translation controls highlight when you move the mouse over them
+   	. Added left and right buttons to texture previewer to view the different mipmaps
+   	. Fixed problem with importing mono audio files
+   	. Multi-Channel BRSTMs are now previewable
+   	. Undo and Redo buttons re-coded
+   	. Added buttons to display model and object bounding boxes and to render normals
+   	. Fixed .wav file exporter
+   	. Corrected SHP0 morphing between multiple destinations
+   	. Added a donate button to the About menu dropdown (yay!)
 
  - v0.14b- (7/23/2012)
 	. Move up/down for events doesn't randomly throw an error

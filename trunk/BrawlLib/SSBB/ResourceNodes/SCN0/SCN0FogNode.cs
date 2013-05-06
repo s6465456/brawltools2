@@ -84,7 +84,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         public FogType Type { get { return (FogType)type; } set { type = (int)value; SignalPropertyChange(); } }
         
         [Browsable(false)]
-        public int FrameCount { get { return ((SCN0Node)Parent.Parent).FrameCount; } }
+        public int FrameCount
+        {
+            get { return ((SCN0Node)Parent.Parent).FrameCount; }
+            set
+            {
+                _numEntries = _colors.Count;
+                NumEntries = value + 1; 
+                if (_constant)
+                    _numEntries = 0;
+            }
+        }
 
         internal List<ARGBPixel> _colors = new List<ARGBPixel>();
         [Browsable(false)]
@@ -101,8 +111,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             get { return _numEntries; }
             set
             {
-                if (_numEntries == 0)
-                    return;
+                //if (_numEntries == 0)
+                //    return;
 
                 if (value > _numEntries)
                 {

@@ -28,7 +28,6 @@ namespace BrawlLib.Wii.Textures
         public static readonly TextureConverter RGBA8 = new RGBA8();
 
         public abstract WiiPixelFormat RawFormat { get; }
-        //public abstract PixelFormat DecodedFormat { get; }
         public abstract int BitsPerPixel { get; }
         public abstract int BlockWidth { get; }
         public abstract int BlockHeight { get; }
@@ -48,30 +47,10 @@ namespace BrawlLib.Wii.Textures
             }
             return offset;
         }
-        public int GetFileSize(int width, int height, int mipLevels, bool REFT)
+        public int GetFileSize(int width, int height, int mipLevels)
         {
-            return GetMipOffset(width, height, mipLevels + 1) + (REFT ? 0x20 : 0x40);
+            return GetMipOffset(width, height, mipLevels + 1);
         }
-        public int GetTPLFileSize(int width, int height, int mipLevels)
-        {
-            return GetMipOffset(width, height, mipLevels + 1) + TPLTextureHeader.Size;
-        }
-
-        //public virtual void GeneratePreviewIndexed(Bitmap src, Bitmap dst, int numColors, WiiPaletteFormat format)
-        //{
-        //    _cachedPalette = src.GeneratePalette(QuantizationAlgorithm.WeightedAverage, numColors);
-        //    _paletteFormat = format;
-        //    _cachedPalette.Clamp(format);
-
-        //    src.CopyTo(dst);
-        //    dst.Clamp(_cachedPalette);
-        //}
-
-        //public virtual void GeneratePreview(Bitmap src, Bitmap dst)
-        //{
-        //    src.CopyTo(dst);
-        //    dst.Clamp(RawFormat);
-        //}
         public virtual FileMap EncodeTPLTextureIndexed(Bitmap src, int numColors, WiiPaletteFormat format, QuantizationAlgorithm algorithm, out FileMap paletteFile)
         {
             using (Bitmap indexed = src.Quantize(algorithm, numColors, RawFormat, format, null))
@@ -93,7 +72,7 @@ namespace BrawlLib.Wii.Textures
                 throw new ArgumentException("Source image must be indexed.");
 
             FileMap texMap = EncodeTPLTexture(src, mipLevels);
-            paletteFile = EncodePalette(src.Palette, format);
+            paletteFile = EncodeTPLPalette(src.Palette, format);
             return texMap;
         }
         public virtual FileMap EncodeREFTTextureIndexed(Bitmap src, int mipLevels, WiiPaletteFormat format)
@@ -117,17 +96,17 @@ namespace BrawlLib.Wii.Textures
         {
             int w = src.Width, h = src.Height;
             int bw = BlockWidth, bh = BlockHeight;
-            //int aw = w.Align(bw), ah = h.Align(bh);
+            
             ColorPalette pal = src.Palette;
 
             PixelFormat fmt = src.IsIndexed() ? src.PixelFormat : PixelFormat.Format32bppArgb;
 
-            FileMap fileView = FileMap.FromTempFile(GetFileSize(w, h, 0, true) + (pal != null ? (pal.Entries.Length * 2) : 0));
+            FileMap fileView = FileMap.FromTempFile(GetFileSize(w, h, mipLevels) + 0x20 + (pal != null ? (pal.Entries.Length * 2) : 0));
             try
             {
                 //Build REFT image header
                 REFTImageHeader* header = (REFTImageHeader*)fileView.Address;
-                *header = new REFTImageHeader((ushort)w, (ushort)h, (byte)RawFormat, (byte)format, (ushort)(pal != null ? pal.Entries.Length : 0), (uint)fileView.Length - 0x20 - (uint)(pal != null ? (pal.Entries.Length * 2) : 0), (byte)mipLevels);
+                *header = new REFTImageHeader((ushort)w, (ushort)h, (byte)RawFormat, (byte)format, (ushort)(pal != null ? pal.Entries.Length : 0), (uint)fileView.Length - 0x20 - (uint)(pal != null ? (pal.Entries.Length * 2) : 0), (byte)(mipLevels - 1));
 
                 int sStep = bw * Image.GetPixelFormatSize(fmt) / 8;
                 int dStep = bw * bh * BitsPerPixel / 8;
@@ -170,7 +149,7 @@ namespace BrawlLib.Wii.Textures
             }
             catch (Exception x)
             {
-                //MessageBox.Show(x.ToString());
+                MessageBox.Show(x.ToString());
                 fileView.Dispose();
                 return null;
             }
@@ -180,11 +159,10 @@ namespace BrawlLib.Wii.Textures
         {
             int w = src.Width, h = src.Height;
             int bw = BlockWidth, bh = BlockHeight;
-            //int aw = w.Align(bw), ah = h.Align(bh);
 
             PixelFormat fmt = src.IsIndexed() ? src.PixelFormat : PixelFormat.Format32bppArgb;
 
-            FileMap fileView = FileMap.FromTempFile(GetFileSize(w, h, mipLevels, false));
+            FileMap fileView = FileMap.FromTempFile(GetFileSize(w, h, mipLevels) + 0x40);
             try
             {
                 //Build TEX header
@@ -211,11 +189,10 @@ namespace BrawlLib.Wii.Textures
         {
             int w = src.Width, h = src.Height;
             int bw = BlockWidth, bh = BlockHeight;
-            //int aw = w.Align(bw), ah = h.Align(bh);
 
             PixelFormat fmt = src.IsIndexed() ? src.PixelFormat : PixelFormat.Format32bppArgb;
 
-            FileMap fileView = FileMap.FromTempFile(GetTPLFileSize(w, h, mipLevels));
+            FileMap fileView = FileMap.FromTempFile(GetFileSize(w, h, mipLevels) + TPLTextureHeader.Size);
             try
             {
                 //Build TPL header
@@ -224,6 +201,8 @@ namespace BrawlLib.Wii.Textures
                 tex->_wrapT = 0;
                 tex->_minFilter = 1;
                 tex->_magFilter = 1;
+                tex->_minLOD = 0;
+                tex->_maxLOD = (short)(mipLevels - 1);
                 tex->PixelFormat = RawFormat;
                 tex->_width = (ushort)w;
                 tex->_height = (ushort)h;
@@ -297,6 +276,8 @@ namespace BrawlLib.Wii.Textures
         public static Bitmap Decode(VoidPtr addr, int w, int h, int mipLevel, WiiPixelFormat fmt) { return Get(fmt).DecodeTexture(addr, w, h, mipLevel); }
         public virtual Bitmap DecodeTexture(VoidPtr addr, int w, int h, int mipLevel)
         {
+            addr += GetMipOffset(ref w, ref h, mipLevel);
+
             int aw = w.Align(BlockWidth), ah = h.Align(BlockHeight);
 
             using (DIB dib = new DIB(w, h, BlockWidth, BlockHeight, PixelFormat.Format32bppArgb))
@@ -364,6 +345,28 @@ namespace BrawlLib.Wii.Textures
                 *header = new PLT0v1(pal.Entries.Length, format);
 
                 EncodePalette(fileView.Address + 0x40, pal, format);
+                return fileView;
+            }
+            catch (Exception x)
+            {
+                fileView.Dispose();
+                throw x;
+                //MessageBox.Show(x.ToString());
+                //fileView.Dispose();
+                //return null;
+            }
+        }
+        public static FileMap EncodeTPLPalette(ColorPalette pal, WiiPaletteFormat format)
+        {
+            FileMap fileView = FileMap.FromTempFile((pal.Entries.Length * 2) + 0xC);
+            try
+            {
+                TPLPaletteHeader* header = (TPLPaletteHeader*)fileView.Address;
+                header->_format = (uint)format;
+                header->_numEntries = (ushort)pal.Entries.Length;
+                header->_data = 0xC;
+
+                EncodePalette(fileView.Address + 0xC, pal, format);
                 return fileView;
             }
             catch (Exception x)

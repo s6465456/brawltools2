@@ -96,6 +96,7 @@ namespace BrawlLib.OpenGL
             return val;
         }
 
+        public bool _textEnabled = false;
         public ScreenTextHandler ScreenText { get { return _text; } }
         private ScreenTextHandler _text;
 
@@ -150,6 +151,8 @@ namespace BrawlLib.OpenGL
                     //Render selection overlay and/or text overlays
                     if ((_selecting && !_forceNoSelection) || _text.Count != 0)
                     {
+                        GL.Color4(Color.White);
+
                         //GL.Clear(ClearBufferMask.DepthBufferBit);
                         GL.Disable(EnableCap.DepthTest);
                         GL.Disable(EnableCap.Lighting);
@@ -166,7 +169,7 @@ namespace BrawlLib.OpenGL
                         GL.PushMatrix();
                         GL.LoadIdentity();
 
-                        if (_text.Count != 0)
+                        if (_text.Count != 0 && _textEnabled)
                             _text.Draw();
 
                         if (_selecting && !_forceNoSelection)
@@ -231,6 +234,7 @@ namespace BrawlLib.OpenGL
                 BitmapData data = bmp.LockBits(new Rectangle(0, 0, _bgImage.Width, _bgImage.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 try
                 {
+                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
                     GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Four, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
                     //GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
                 }
@@ -520,7 +524,7 @@ namespace BrawlLib.OpenGL
             {
                 GL.Enable(EnableCap.LineStipple);
                 GL.LineStipple(1, 0x0F0F);
-                GL.Color3(Color.Blue);
+                GL.Color4(Color.Blue);
                 GL.Begin(BeginMode.LineLoop);
                 GL.Vertex2(_selStart.X, _selStart.Y);
                 GL.Vertex2(_selEnd.X, _selStart.Y);
@@ -589,7 +593,9 @@ namespace BrawlLib.OpenGL
         {
             GL.Enable(EnableCap.Texture2D);
             GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.OneMinusSrcAlpha);
+            //GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.OneMinusSrcColor);
+
+            GL.TexEnv(TextureEnvTarget.TextureEnv, TextureEnvParameter.TextureEnvMode, (float)TextureEnvMode.Replace);
 
             if (_size != _panel.ClientSize)
             {
@@ -602,10 +608,12 @@ namespace BrawlLib.OpenGL
                     GL.DeleteTexture(_texId);
                     _texId = -1;
                 }
-
+                
                 //Create a texture over the whole model panel
                 _bitmap = new Bitmap(_size.Width, _size.Height);
 
+                _bitmap.MakeTransparent();
+                
                 _texId = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture2D, _texId);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
@@ -635,10 +643,17 @@ namespace BrawlLib.OpenGL
 
             GL.BindTexture(TextureTarget.Texture2D, _texId);
 
-            BitmapData data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, _size.Width, _size.Height, 0,
-                OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            BitmapData data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height),
+            ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, _bitmap.Width, _bitmap.Height, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
             _bitmap.UnlockBits(data);
+
+            //BitmapData data = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            //GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, _size.Width, _size.Height, 0,
+            //    OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            //_bitmap.UnlockBits(data);
+
+            //GL.Color4(Color.Transparent);
 
             GL.Begin(BeginMode.Quads);
 

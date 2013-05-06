@@ -32,20 +32,20 @@ namespace BrawlLib.Wii.Audio
                 samplesPerBlock = blockLen / 8 * 14;
 
                 //If loop point doesn't land on a block, pad the stream so that it does.
-                if ((tmp = loopStart % samplesPerBlock) != 0)
-                {
-                    loopPadding = samplesPerBlock - tmp;
-                    loopStart += loopPadding;
-                }
-                else
-                    loopPadding = 0;
+                //if ((tmp = loopStart % samplesPerBlock) != 0)
+                //{
+                //    loopPadding = samplesPerBlock - tmp;
+                //    loopStart += loopPadding;
+                //}
+                //else
+                //    loopPadding = 0;
                 
-                totalSamples = loopPadding + samples;
+                totalSamples = /*loopPadding + */samples;
             }
             else
             {
                 loopPadding = 0;
-                loopStart = 2;
+                loopStart = 0;
                 totalSamples = samples = stream.Samples;
 
                 blockLen = (samples.Align(14) / 14 * 8);
@@ -104,11 +104,12 @@ namespace BrawlLib.Wii.Audio
             WaveInfo* wave = &infoBlock->_info;
 
             wave->_format = new AudioFormatInfo(2, (byte)(looped ? 1 : 0), (byte)channels, 0);
-            wave->_loopStartSample = loopStart;
             wave->_sampleRate = (ushort)sampleRate;
             wave->_channelInfoTableOffset = 0x1C;
-            wave->_nibbles = samples.Align(14) / 14 * 16;
             wave->_dataLocation = (uint)(header->Data->Data - map.Address);
+
+            wave->LoopSample = loopStart;
+            wave->NumSamples = totalSamples;
 
             RWAVData* dataBlock = header->Data;
             dataBlock->_header._tag = RWAVData.Tag;
@@ -145,8 +146,8 @@ namespace BrawlLib.Wii.Audio
                 channelBuffers[i] = tPtr = (short*)Marshal.AllocHGlobal(bufferSamples * 2); //Two bytes per sample
 
                 //Zero padding samples and initial yn values
-                for (int x = 0; x < (loopPadding + 2); x++)
-                    *tPtr++ = 0;
+                //for (int x = 0; x < (loopPadding + 2); x++)
+                //    *tPtr++ = 0;
             }
 
             //Fill buffers
@@ -155,8 +156,8 @@ namespace BrawlLib.Wii.Audio
 
             for (int i = 2; i < bufferSamples; i++)
             {
-                if (stream.SamplePosition == stream.LoopEndSample && looped)
-                    stream.SamplePosition = stream.LoopStartSample;
+                //if (stream.SamplePosition == stream.LoopEndSample && looped)
+                //    stream.SamplePosition = stream.LoopStartSample;
 
                 stream.ReadSamples(sampleBuffer, 1);
                 for (int x = 0; x < channels; x++)

@@ -256,7 +256,7 @@ namespace System.Windows.Forms
                 settings.ImageCapFmt = _imgExtIndex;
                 settings.Bones = _renderBones;
                 settings.Polys = _renderPolygons == CheckState.Checked;
-                settings.Wireframe = chkPolygons.CheckState == CheckState.Indeterminate;
+                settings.Wireframe = _renderPolygons == CheckState.Indeterminate;
                 settings.Vertices = _renderVertices;
                 settings.Normals = _renderNormals;
                 settings.HideOffscreen = _dontRenderOffscreen;
@@ -264,6 +264,8 @@ namespace System.Windows.Forms
                 settings.ShowCamCoords = showCameraCoordinatesToolStripMenuItem.Checked;
                 settings.Floor = _renderFloor;
                 settings.OrthoCam = orthographicToolStripMenuItem.Checked;
+                settings.EnableSmoothing = enablePointAndLineSmoothingToolStripMenuItem.Checked;
+                settings.EnableText = enableTextOverlaysToolStripMenuItem.Checked;
 
                 if (BrawlLib.Properties.Settings.Default.External)
                 {
@@ -489,18 +491,6 @@ namespace System.Windows.Forms
             if (m.Msg == 0x100)
             {
                 Keys key = (Keys)m.WParam;
-                if ((key & Keys.Delete) == Keys.Delete)
-                {
-                    //if (Ctrl)
-                    //{
-                        //Delete frame
-                        if (_currentControl is CHR0Editor)
-                        {
-                            chr0Editor.btnDelete.PerformClick();
-                            return true;
-                        }
-                    //}
-                }
                 if (key == Keys.PageUp)
                 {
                     if (Ctrl)
@@ -690,6 +680,15 @@ namespace System.Windows.Forms
                                 chr0Editor.ClearEntry();
                                 return true;
                             }
+                        }
+                    }
+                    else if (ModifierKeys == Keys.Shift)
+                    {
+                        //Delete frame
+                        if (_currentControl is CHR0Editor)
+                        {
+                            chr0Editor.btnDelete.PerformClick();
+                            return true;
                         }
                     }
                 }
