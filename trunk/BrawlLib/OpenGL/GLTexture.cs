@@ -28,8 +28,8 @@ namespace BrawlLib.OpenGL
 
                 GL.BindTexture(TextureTarget.Texture2D, _texId);
 
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Linear);
-                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.NearestMipmapLinear);
+                //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMinFilter.Linear);
+                //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.NearestMipmapLinear);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, _textures.Length - 1);
 
@@ -103,6 +103,15 @@ namespace BrawlLib.OpenGL
         {
             _width = width;
             _height = height;
+        }
+        public unsafe GLTexture(Bitmap b)
+        {
+            _width = b.Width;
+            _height = b.Height;
+            ClearImages();
+            ClearTexture();
+            _textures = new Bitmap[] { b };
+            _remake = true;
         }
 
         public void Bind() { Bind(-1, -1, null); }

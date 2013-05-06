@@ -1,5 +1,5 @@
 ﻿
-BrawlLib Resource Library - Version 0.15
+BrawlLib Resource Library - Version 0.15b
 Copyright © 2009 - 2013 Bryan Moulton & BlackJax96
 
 This program is provided as-is without any warranty, implied or otherwise.
@@ -12,15 +12,24 @@ they be held accountable for the manner in which it is used.
 |************ Change Log ************|
  ====================================
 
- - v0.15b- (TBA)
+- v0.15b- (5/5/2013)
+	. Fixed loop points when importing an RSAR sound
+	. Fixed problem where edited models would explode in-game
     . Fixed REFT image importer. Works just as good as the TEX0 image importer now
 	. Fixed when vertices are moved when modified by a SHP0
 	. Fixed background image to load immediately
 	. Fixed random green/blue/yellow color overlays when clicking bones
 	. Fixed when the last frame of an animation is deleted when clicking "."
-	. Fixed viewer lag on some computers by disabling line and point smooth
+	. Fixed bone translation tool
+	. Fixed duplicated objects to be independent from the original
 	. Changed shortcut to delete the current frame to Shift + Backspace
-	. Changed shortcut when zooming to increase/decrease camera zoom/translate/rotate speeds from control to shift
+	. Changed shortcut when zooming to increase/decrease camera zoom/translate/rotate speeds from Control to Alt
+	. Added support to compress U8 Archives to YAZ0 format with RunLength compression
+	. Added support for v1.9 REFF
+	. Finished REFT and REFF rebuilders
+	. Finished TPL rebuilder
+	. Set point/line smooth to off by default and added a button to toggle it on
+	. Set text overlays to not display by default and added a button to toggle them on
 
  - v0.15- (4/28/2013)
    	. Fixed "Null weights" MDL0 error

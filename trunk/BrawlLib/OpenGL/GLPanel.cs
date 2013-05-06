@@ -215,6 +215,8 @@ namespace BrawlLib.OpenGL
             GL.Color4(Color.White);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
+            GL.Enable(EnableCap.Texture2D);
+
             if (_updateImage)
             {
                 if (_bgImage != null)
@@ -225,30 +227,27 @@ namespace BrawlLib.OpenGL
 
                 GL.ClearColor(Color.Black);
 
-                _bgImage = new GLTexture(BGImage.Width, BGImage.Height);
-
-                GL.BindTexture(TextureTarget.Texture2D, _bgImage._texId);
-
                 Bitmap bmp = BGImage as Bitmap;
 
-                BitmapData data = bmp.LockBits(new Rectangle(0, 0, _bgImage.Width, _bgImage.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                try
-                {
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
-                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Four, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-                    //GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-                }
-                finally
-                {
-                    bmp.UnlockBits(data);
-                    bmp.Dispose();
-                }
+                _bgImage = new GLTexture(bmp);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
+                _bgImage.Bind();
+
+                //BitmapData data = bmp.LockBits(new Rectangle(0, 0, _bgImage.Width, _bgImage.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                //try
+                //{
+                //    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
+                //    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Four, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                //}
+                //finally
+                //{
+                //    bmp.UnlockBits(data);
+                //    bmp.Dispose();
+                //}
                 _updateImage = false;
             }
             else
                 GL.BindTexture(TextureTarget.Texture2D, _bgImage._texId);
-
-            GL.Enable(EnableCap.Texture2D);
 
             float* points = stackalloc float[8];
             float tAspect = (float)_bgImage.Width / _bgImage.Height;

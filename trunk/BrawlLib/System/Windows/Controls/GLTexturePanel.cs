@@ -118,7 +118,8 @@ namespace System.Windows.Forms
         internal static unsafe GLTexture CreateBG(TKContext ctx)
         {
             GLTexture tex = new GLTexture(16, 16);
-            tex.Bind();
+            tex._texId = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, tex._texId);
 
             int* pixelData = stackalloc int[16 * 16];
             RGBAPixel* p = (RGBAPixel*)pixelData;
