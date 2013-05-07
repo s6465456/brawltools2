@@ -53,7 +53,7 @@ namespace BrawlLib.OpenGL
         }
 
         public bool bSupportsGLSLBinding, bSupportsGLSLUBO, bSupportsGLSLATTRBind, bSupportsGLSLCache;
-        public bool _canUseShaders = true;
+        public bool _canUseShaders = true, _needsUpdate = false;
         public int _version = 0;
 
         private Control _window;
@@ -118,7 +118,7 @@ namespace BrawlLib.OpenGL
             catch //(Exception x)
             {
                 //MessageBox.Show(x.ToString()); 
-                _window.Reset();
+                Reset();
             }
         }
         public void Swap() 
@@ -134,8 +134,42 @@ namespace BrawlLib.OpenGL
             catch //(Exception x)
             {
                 //MessageBox.Show(x.ToString());
-                _window.Reset();
+                Reset();
             }
+        }
+
+        public void Reset()
+        {
+            _window.Reset();
+            Dispose();
+            _winInfo = Utilities.CreateWindowsWindowInfo(_window.Handle);
+            _context = new GraphicsContext(GraphicsMode.Default, WindowInfo, 1, 0, GraphicsContextFlags.Default);
+            //_context.MakeCurrent(WindowInfo);
+            Capture();
+            Update();
+            (_context as IGraphicsContextInternal).LoadAll();
+
+            // Check for GLSL support
+            string version = GL.GetString(StringName.Version);
+            _version = int.Parse(version[0].ToString());
+            //if (_version < 2)
+            _canUseShaders = false;
+
+            if (_canUseShaders)
+            {
+                //Now check extensions
+                string extensions = GL.GetString(StringName.Extensions);
+                if (extensions.Contains("GL_ARB_shading_language_420pack"))
+                    bSupportsGLSLBinding = true;
+                if (extensions.Contains("GL_ARB_uniform_buffer_object"))
+                    bSupportsGLSLUBO = true;
+                if ((bSupportsGLSLBinding || bSupportsGLSLUBO) && extensions.Contains("GL_ARB_explicit_attrib_location"))
+                    bSupportsGLSLATTRBind = true;
+                if (extensions.Contains("GL_ARB_get_program_binary"))
+                    bSupportsGLSLCache = true;
+            }
+            CurrentContexts.Add(this);
+            _needsUpdate = true;
         }
         public void Release() 
         {

@@ -571,6 +571,13 @@ namespace System.Windows.Forms
                 ScreenText[String.Format("Position\nX: {0}\nY: {1}\nZ: {2}\n\nRotation\nX: {3}\nY: {4}\nZ: {5}", v._x, v._y, v._z, r._x, r._y, r._z)] = new Vector3(5.0f, 5.0f, 0.5f);
             }
 
+            if (_ctx._needsUpdate)
+            {
+                OnInit(ctx);
+                OnResized();
+                _ctx._needsUpdate = false;
+            }
+
             if (_bgImage == null)
                 GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             

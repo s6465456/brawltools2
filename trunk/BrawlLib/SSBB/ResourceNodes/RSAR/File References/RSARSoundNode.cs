@@ -311,7 +311,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (SoundType == SndType.WAVE && _soundNode != null && !(_soundNode is RSARExtFileNode) && _soundNode.Children[0].Children.Count > _waveInfo._soundIndex && _waveInfo._soundIndex >= 0)
             {
                 _dataNode = _soundNode.Children[0].Children[_waveInfo._soundIndex] as RWSDDataNode;
-                _dataNode._refs.Add(this);
+                if (_dataNode != null)
+                    _dataNode._refs.Add(this);
             }
 
             return false;

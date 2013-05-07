@@ -587,7 +587,7 @@ namespace System.Windows.Forms
             if (_playing)
                 return;
 
-            if (SelectedBone != null && RenderBones) //Render drag and drop control
+            if (SelectedBone != null) //Render drag and drop control
             {
                 if (_editType == TransformType.Rotation)
                     RenderRotationControl(context);
@@ -597,7 +597,7 @@ namespace System.Windows.Forms
                     RenderScaleControl(context);
             }
 
-            if (VertexLoc != null)
+            if (VertexLoc != null && RenderVertices)
                 RenderTranslationControl(context, ((Vector3)VertexLoc), VertexOrbRadius);
         }
         public unsafe void RenderTranslationControl(TKContext context, Vector3 position, float radius)

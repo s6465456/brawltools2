@@ -29,7 +29,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Variables and Attributes
 
         //Changing the version will change the conversion.
-        internal int _version;
+        internal int _version = 9;
         internal int _scalingRule, _texMtxMode, _origPathOffset;
         public byte _needNrmMtxArray, _needTexMtxArray, _enableExtents, _envMtxMode;
         internal int _numFacepoints, _numFaces, _numNodes;

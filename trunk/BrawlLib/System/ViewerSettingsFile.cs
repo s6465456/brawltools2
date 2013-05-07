@@ -7,7 +7,7 @@ namespace System
     public unsafe struct BBVS
     {
         public const uint Tag = 0x53564242;
-        public const uint Size = 0xA0;
+        public const uint Size = 0xA4;
 
         public uint _tag;
         public byte _version;

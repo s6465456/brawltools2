@@ -24,23 +24,21 @@ namespace System.Windows.Forms
         private ColumnHeader clmAudioOffset;
         private ColumnHeader clmEntryOffset;
         private ToolStripMenuItem deleteToolStripMenuItem;
-        private ColumnHeader clmPath;
 
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
             this.clmIndex = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.clmName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clmPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.lstSets = new System.Windows.Forms.ListView();
             this.clmType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.clmDataOffset = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.clmAudioOffset = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.clmEntryOffset = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.mnuPath = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuExport = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuReplace = new System.Windows.Forms.ToolStripMenuItem();
-            this.mnuPath = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -55,11 +53,6 @@ namespace System.Windows.Forms
             this.clmName.Text = "Name";
             this.clmName.Width = 40;
             // 
-            // clmPath
-            // 
-            this.clmPath.Text = "Path";
-            this.clmPath.Width = 129;
-            // 
             // lstSets
             // 
             this.lstSets.AutoArrange = false;
@@ -68,7 +61,6 @@ namespace System.Windows.Forms
             this.clmIndex,
             this.clmType,
             this.clmName,
-            this.clmPath,
             this.clmDataOffset,
             this.clmAudioOffset,
             this.clmEntryOffset});
@@ -117,34 +109,34 @@ namespace System.Windows.Forms
             this.mnuReplace,
             this.deleteToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 114);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(116, 92);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
+            // 
+            // mnuPath
+            // 
+            this.mnuPath.Name = "mnuPath";
+            this.mnuPath.Size = new System.Drawing.Size(115, 22);
+            this.mnuPath.Text = "Path...";
+            this.mnuPath.Click += new System.EventHandler(this.mnuPath_Click);
             // 
             // mnuExport
             // 
             this.mnuExport.Name = "mnuExport";
-            this.mnuExport.Size = new System.Drawing.Size(152, 22);
+            this.mnuExport.Size = new System.Drawing.Size(115, 22);
             this.mnuExport.Text = "Export";
             this.mnuExport.Click += new System.EventHandler(this.mnuExport_Click);
             // 
             // mnuReplace
             // 
             this.mnuReplace.Name = "mnuReplace";
-            this.mnuReplace.Size = new System.Drawing.Size(152, 22);
+            this.mnuReplace.Size = new System.Drawing.Size(115, 22);
             this.mnuReplace.Text = "Replace";
             this.mnuReplace.Click += new System.EventHandler(this.mnuReplace_Click);
-            // 
-            // mnuPath
-            // 
-            this.mnuPath.Name = "mnuPath";
-            this.mnuPath.Size = new System.Drawing.Size(152, 22);
-            this.mnuPath.Text = "Path...";
-            this.mnuPath.Click += new System.EventHandler(this.mnuPath_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(115, 22);
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
@@ -217,7 +209,7 @@ namespace System.Windows.Forms
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     _selectedItem._node.FullExtPath = dlg.FilePath;
-                    _selectedItem.SubItems[2].Text = _selectedItem.SubItems[3].Text = _selectedItem._node._extPath;
+                    _selectedItem.SubItems[2].Text = _selectedItem._node._extPath;
                 }
             }
         }
@@ -330,7 +322,7 @@ namespace System.Windows.Forms
             SubItems.Add(s);
             int i = Helpers.FindFirst(file.Name, 0, ']');
             SubItems.Add(file.Name.Substring(i + 1));
-            SubItems.Add(file.ExtPath);
+            //SubItems.Add(file.ExtPath);
             SubItems.Add("0x" + file.DataOffset);
             SubItems.Add("0x" + file.AudioOffset);
             SubItems.Add("0x" + file.InfoHeaderOffset);

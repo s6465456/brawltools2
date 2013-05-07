@@ -62,9 +62,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                             addr += 4;
                             break;
                         case UserValueType.String:
-                            string s = new String((sbyte*)(addr + 2));
-                            d._entries.Add(s);
-                            addr += s.Length + 3;
+                            //string s = new String((sbyte*)(addr + 2));
+                            //d._entries.Add(s);
+                            //addr += s.Length + 3;
                             break;
                     }
                 Add(d);

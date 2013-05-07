@@ -1405,7 +1405,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 REFFTEVStage s = (REFFTEVStage)Children[i];
 
-                byte* p = (byte*)hdr->drawSetting.mTevColor1.Address;
+                byte* p = (byte*)(*(EmitterDrawSetting7*)&hdr->drawSetting).mTevColor1.Address;
                 {
                     p[csel1 + i] = (byte)s.kcsel;
                     p[csel1 + 4 + i] = (byte)s.kasel;

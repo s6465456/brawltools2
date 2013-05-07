@@ -83,7 +83,7 @@ namespace BrawlLib.Wii.Models
         #endregion
 
         public MDL0Header* Header;
-        public int Version;
+        public int Version = 9;
         //Build relocation offsets in this order:
         public ResourceGroup* Defs; //1
         public ResourceGroup* Bones; //2
@@ -142,6 +142,8 @@ namespace BrawlLib.Wii.Models
 
             linker.Model = model;
             linker.Version = model._version;
+
+            linker.BoneCache = new ResourceNode[0];
 
             MDLResourceType resType;
             int index;
