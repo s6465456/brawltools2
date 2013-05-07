@@ -107,6 +107,7 @@ namespace System.Windows.Forms
                         {
                             ResetVertexColors();
                             _selectedVertices.Clear();
+                            _hiVertex = null;
                         }
                         ok = true;
                         goto GetVertex;
@@ -378,7 +379,7 @@ namespace System.Windows.Forms
 
             //modelPanel.EndUpdate();
 
-            if (!moving && (RenderBones || RenderVertices) && (!dontHighlightBonesAndVerticesToolStripMenuItem.Checked || (dontHighlightBonesAndVerticesToolStripMenuItem.Checked && modelPanel._selecting)))
+            if (!moving && (!dontHighlightBonesAndVerticesToolStripMenuItem.Checked || (dontHighlightBonesAndVerticesToolStripMenuItem.Checked && modelPanel._selecting)))
                 HighlightStuff(e);
 
             //if (RenderBones || RenderVertices)

@@ -23,7 +23,7 @@ namespace BrawlBox.NodeWrappers
         {
             _menu = new ContextMenuStrip();
             _menu.Items.Add(new ToolStripMenuItem("Change Sound", null, ChangeSoundAction, Keys.Control | Keys.W));
-            _menu.Items.Add(new ToolStripMenuItem("View File", null, ViewFileAction, Keys.Control | Keys.V));
+            _menu.Items.Add(new ToolStripMenuItem("View File", null, ViewFileAction, Keys.Control | Keys.I));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("&Export", null, ExportAction, Keys.Control | Keys.E));
             //_menu.Items.Add(new ToolStripMenuItem("&Replace", null, ReplaceAction, Keys.Control | Keys.R));

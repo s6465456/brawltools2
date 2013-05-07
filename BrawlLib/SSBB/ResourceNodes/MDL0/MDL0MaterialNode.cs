@@ -2186,7 +2186,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             StringTable table = new StringTable();
             GetStrings(table);
-            int dataLen = OnCalculateSize(true);
+            int dataLen = CalculateSize(false);
             int totalLen = dataLen + table.GetTotalSize();
 
             using (FileStream stream = new FileStream(outPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 8, FileOptions.RandomAccess))

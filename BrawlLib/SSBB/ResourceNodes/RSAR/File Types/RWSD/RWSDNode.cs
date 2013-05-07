@@ -129,8 +129,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             int count2 = Header->Data->_list._numEntries;
             if ((_labels == null) && ((parent = RSARNode) != null))
             {
-                _labels = new LabelItem[count2];
-
                 //Get them from RSAR
                 SYMBHeader* symb2 = parent.Header->SYMBBlock;
                 INFOHeader* info = parent.Header->INFOBlock;
@@ -139,10 +137,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RuintList* soundList2 = info->Sounds;
                 count2 = soundList2->_numEntries;
 
+                _labels = new LabelItem[count2];
+
                 INFOSoundEntry* entry;
                 for (uint i = 0; i < count2; i++)
                     if ((entry = (INFOSoundEntry*)soundList2->Get(offset, (int)i))->_fileId == _fileIndex)
-                        _labels[((WaveSoundInfo*)entry->GetSoundInfoRef(offset))->_soundIndex] = new LabelItem() { Tag = i, String = symb2->GetStringEntry(entry->_stringId) };
+                    {
+                        int x = ((WaveSoundInfo*)entry->GetSoundInfoRef(offset))->_soundIndex;
+                        _labels[x] = new LabelItem() { Tag = i, String = symb2->GetStringEntry(entry->_stringId) };
+                    }
             }
         }
 
