@@ -16,7 +16,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal int _unk1;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -31,7 +31,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         private int _pointCount, _planeCount;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _pointCount = _planeCount = 0;
             foreach (CollisionObject obj in _objects)
@@ -43,7 +43,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return CollisionHeader.Size + (_pointCount * 8) + (_planeCount * ColPlane.Size) + (_objects.Count * ColObject.Size);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             CollisionHeader* header = (CollisionHeader*)address;
             *header = new CollisionHeader(_pointCount, _planeCount, _objects.Count, _unk1);

@@ -98,7 +98,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("REL")]
         public uint fixSize { get { return _fixSize; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _files.Add(this);
 
@@ -133,7 +133,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             RELGroupNode g;
             g = new RELGroupNode() { _name = "Sections" };
@@ -168,7 +168,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             new RELMethodNode() { _name = "Undefined" }.Initialize(this, s._sectionAddr + (Header->_unresolvedOffset - s._offset), 0);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = RELHeader.Size + Children[0].Children.Count * RELSection.Size + Children[1].Children.Count * RELImport.Size;
             foreach (RELSectionNode s in Children[0].Children)
@@ -178,7 +178,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             RELHeader* header = (RELHeader*)address;
 

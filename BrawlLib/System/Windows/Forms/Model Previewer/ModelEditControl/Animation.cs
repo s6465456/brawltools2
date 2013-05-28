@@ -17,7 +17,7 @@ using BrawlLib.Imaging;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
         //Updates specified angle by applying an offset.
         //Allows pnlAnim to handle the changes so keyframes are updated.
@@ -57,19 +57,32 @@ namespace System.Windows.Forms
             box.Value = value;
             chr0Editor.BoxChanged(box, null);
         }
+
+        public BindingList<AnimType> AnimTypes = new BindingList<AnimType>()
+        {
+            AnimType.CHR,
+            AnimType.SRT,
+            AnimType.SHP,
+            AnimType.PAT,
+            AnimType.VIS,
+            AnimType.SCN,
+            AnimType.CLR
+        };
+
         public AnimType TargetAnimType
         {
-            get { return (AnimType)pnlAssets.fileType.SelectedIndex; }
-            set { pnlAssets.fileType.SelectedIndex = (int)value; }
+            get { return (AnimType)leftPanel.fileType.SelectedIndex; }
+            set { leftPanel.fileType.SelectedIndex = (int)value; }
         }
+
         private Control _currentControl = null;
         public int prevHeight = 0, prevWidth = 0;
         public void ToggleWeightEditor()
         {
             if (weightEditor.Visible)
             {
-                panel3.Height = prevHeight;
-                panel3.Width = prevWidth;
+                animCtrlPnl.Height = prevHeight;
+                animCtrlPnl.Width = prevWidth;
                 weightEditor.Visible = false;
                 _currentControl.Visible = true;
             }
@@ -78,10 +91,10 @@ namespace System.Windows.Forms
                 if (vertexEditor.Visible)
                     ToggleVertexEditor();
 
-                prevHeight = panel3.Height;
-                prevWidth = panel3.Width;
-                panel3.Width = 320;
-                panel3.Height = 78;
+                prevHeight = animCtrlPnl.Height;
+                prevWidth = animCtrlPnl.Width;
+                animCtrlPnl.Width = 320;
+                animCtrlPnl.Height = 78;
                 weightEditor.Visible = true;
                 _currentControl.Visible = false;
             }
@@ -92,8 +105,8 @@ namespace System.Windows.Forms
         {
             if (vertexEditor.Visible)
             {
-                panel3.Height = prevHeight;
-                panel3.Width = prevWidth;
+                animCtrlPnl.Height = prevHeight;
+                animCtrlPnl.Width = prevWidth;
                 vertexEditor.Visible = false;
                 _currentControl.Visible = true;
             }
@@ -102,10 +115,10 @@ namespace System.Windows.Forms
                 if (weightEditor.Visible)
                     ToggleWeightEditor();
 
-                prevHeight = panel3.Height;
-                prevWidth = panel3.Width;
-                panel3.Width = 118;
-                panel3.Height = 85;
+                prevHeight = animCtrlPnl.Height;
+                prevWidth = animCtrlPnl.Width;
+                animCtrlPnl.Width = 118;
+                animCtrlPnl.Height = 85;
                 vertexEditor.Visible = true;
                 _currentControl.Visible = false;
             }
@@ -154,47 +167,47 @@ namespace System.Windows.Forms
                     if (_currentControl is CHR0Editor)
                     {
                         animEditors.Height = 78;
-                        panel3.Width = 582;
-                        pnlKeyframes.SetEditType(0);
+                        animCtrlPnl.Width = 582;
+                        rightPanel.pnlKeyframes.SetEditType(0);
                     }
                     else if (_currentControl is SRT0Editor)
                     {
                         animEditors.Height = 78;
-                        panel3.Width = 483;
-                        pnlKeyframes.SetEditType(0);
+                        animCtrlPnl.Width = 483;
+                        rightPanel.pnlKeyframes.SetEditType(0);
                     }
                     else if (_currentControl is SHP0Editor)
                     {
                         animEditors.Height = 106;
-                        panel3.Width = 533;
-                        pnlKeyframes.SetEditType(0);
+                        animCtrlPnl.Width = 533;
+                        rightPanel.pnlKeyframes.SetEditType(0);
                     }
                     else if (_currentControl is PAT0Editor)
                     {
                         animEditors.Height = 78;
-                        panel3.Width = 402;
+                        animCtrlPnl.Width = 402;
                     }
                     else if (_currentControl is VIS0Editor)
                     {
                         animEditors.Height = 62;
-                        panel3.Width = 210;
-                        pnlKeyframes.SetEditType(1);
+                        animCtrlPnl.Width = 210;
+                        rightPanel.pnlKeyframes.SetEditType(1);
                     }
                     else if (_currentControl is CLR0Editor)
                     {
                         animEditors.Height = 62;
-                        panel3.Width = 168;
-                        pnlKeyframes.SetEditType(2);
+                        animCtrlPnl.Width = 168;
+                        rightPanel.pnlKeyframes.SetEditType(2);
                     }
                     else if (_currentControl is SCN0Editor)
                     {
                         scn0Editor.GetDimensions();
-                        pnlKeyframes.SetEditType(3);
+                        rightPanel.pnlKeyframes.SetEditType(3);
                     }
                     else
-                        animEditors.Height = panel3.Width = 0;
+                        animEditors.Height = animCtrlPnl.Width = 0;
                 }
-                else animEditors.Height = panel3.Width = 0;
+                else animEditors.Height = animCtrlPnl.Width = 0;
                 return;
             }
             CheckDimensions();
@@ -223,12 +236,12 @@ namespace System.Windows.Forms
 
             if (TargetAnimType == AnimType.VIS)
             {
-                if (pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))
+                if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))
                 {
-                    pnlKeyframes.visEditor._updating = true;
-                    pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
-                    pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame;
-                    pnlKeyframes.visEditor._updating = false;
+                    rightPanel.pnlKeyframes.visEditor._updating = true;
+                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
+                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame;
+                    rightPanel.pnlKeyframes.visEditor._updating = false;
                 }
             }
 
@@ -298,8 +311,8 @@ namespace System.Windows.Forms
         public void AnimChanged(AnimType type)
         {
             //Update animation editors
-            if (type != AnimType.SRT) pnlAssets.UpdateSRT0Selection(null);
-            if (type != AnimType.PAT) pnlAssets.UpdatePAT0Selection(null);
+            if (type != AnimType.SRT) leftPanel.UpdateSRT0Selection(null);
+            if (type != AnimType.PAT) leftPanel.UpdatePAT0Selection(null);
             if (type != AnimType.SCN)
                 foreach (MDL0Node m in _targetModels)
                     m.SetSCN0(null);
@@ -309,14 +322,14 @@ namespace System.Windows.Forms
                 case AnimType.CHR:
                     break;
                 case AnimType.SRT:
-                    pnlAssets.UpdateSRT0Selection(SelectedSRT0);
+                    leftPanel.UpdateSRT0Selection(SelectedSRT0);
                     break;
                 case AnimType.SHP:
                     shp0Editor.UpdateSHP0Indices();
                     break;
                 case AnimType.PAT:
                     pat0Editor.UpdateBoxes();
-                    pnlAssets.UpdatePAT0Selection(SelectedPAT0);
+                    leftPanel.UpdatePAT0Selection(SelectedPAT0);
                     break;
                 case AnimType.VIS: 
                     vis0Editor.UpdateAnimation();
@@ -332,21 +345,21 @@ namespace System.Windows.Forms
             }
 
             //Update keyframe panel
-            pnlKeyframes.TargetSequence = null;
-            btnAnimToggle.Enabled = true;
+            rightPanel.pnlKeyframes.TargetSequence = null;
+            btnRightToggle.Enabled = true;
             switch (TargetAnimType)
             {
                 case AnimType.CHR:
                     if (_chr0 != null && SelectedBone != null)
-                        pnlKeyframes.TargetSequence = _chr0.FindChild(SelectedBone.Name, false);
+                        rightPanel.pnlKeyframes.TargetSequence = _chr0.FindChild(SelectedBone.Name, false);
                     break;
                 case AnimType.SRT:
                     if (_srt0 != null && TargetTexRef != null)
-                        pnlKeyframes.TargetSequence = srt0Editor.TexEntry;
+                        rightPanel.pnlKeyframes.TargetSequence = srt0Editor.TexEntry;
                     break;
                 case AnimType.SHP:
                     if (_shp0 != null)
-                        pnlKeyframes.TargetSequence = shp0Editor.VertexSetDest;
+                        rightPanel.pnlKeyframes.TargetSequence = shp0Editor.VertexSetDest;
                     break;
                 case AnimType.CLR:
                 case AnimType.VIS:
@@ -363,9 +376,9 @@ namespace System.Windows.Forms
                     //}
                     break;
                 default:
-                    if (pnlKeyframes.Visible)
+                    if (rightPanel.pnlKeyframes.Visible)
                         btnAnimToggle_Click(null, null);
-                    btnAnimToggle.Enabled = false;
+                    btnRightToggle.Enabled = false;
                     break;
             }
 
@@ -388,7 +401,7 @@ namespace System.Windows.Forms
             {
                 int oldMax = _maxFrame;
 
-                _maxFrame = ((BRESEntryNode)GetSelectedBRRESFile(type)).tFrameCount;
+                _maxFrame = ((BRESEntryNode)GetSelectedBRRESFile(type)).FrameCount;
 
                 _updating = true;
                 pnlPlayback.btnPlay.Enabled =
@@ -397,7 +410,7 @@ namespace System.Windows.Forms
                 pnlPlayback.Enabled = true;
                 pnlPlayback.numTotalFrames.Value = _maxFrame;
                 if (syncLoopToAnimationToolStripMenuItem.Checked)
-                    pnlPlayback.chkLoop.Checked = ((BRESEntryNode)GetSelectedBRRESFile(type)).tLoop;
+                    pnlPlayback.chkLoop.Checked = ((BRESEntryNode)GetSelectedBRRESFile(type)).Loop;
                 _updating = false;
 
                 if (_maxFrame < oldMax)

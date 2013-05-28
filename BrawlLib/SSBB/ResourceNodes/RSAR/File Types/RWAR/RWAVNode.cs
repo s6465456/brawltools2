@@ -137,7 +137,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal RWAV* Header { get { return (RWAV*)WorkingUncompressed.Address; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = String.Format("Audio[{0}]", Index);

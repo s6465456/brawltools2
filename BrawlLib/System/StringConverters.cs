@@ -111,9 +111,9 @@ namespace System
                 byte.TryParse(arr[3], out p.A);
             }
 
-            d.Color = (Color)(ARGBPixel)p;
-            if (!d.Visible && d.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                p = new RGBAPixel() { R = d.Color.R, G = d.Color.G, B = d.Color.B, A = d.Color.A };
+            //d.Color = (Color)(ARGBPixel)p;
+            //if (!d.Visible && d.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            //    p = new RGBAPixel() { R = d.Color.R, G = d.Color.G, B = d.Color.B, A = d.Color.A };
 
             return p;
         }

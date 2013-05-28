@@ -319,7 +319,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             MDL0TextureRef* header = Header;
 
@@ -406,7 +406,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(_palette.Name);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             MDL0TextureRef* header = (MDL0TextureRef*)address;
             header->_texPtr = 0;
@@ -451,17 +451,16 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal void Bind(TKContext ctx, int prog)
         {
-            if (_texture != null)
-                _texture.Prepare(this, prog);
-
             if (!String.IsNullOrEmpty(PAT0Texture))
             {
                 if (!PAT0Textures.ContainsKey(PAT0Texture))
-                    PAT0Textures[PAT0Texture] = new MDL0TextureNode(PAT0Texture) { Source = null, palette = PAT0Palette != null ? RootNode.FindChildByType(PAT0Palette, true, ResourceNodes.ResourceType.PLT0) as PLT0Node : null };
+                    PAT0Textures[PAT0Texture] = new MDL0TextureNode(PAT0Texture) { Source = null, palette = !String.IsNullOrEmpty(PAT0Palette) ? RootNode.FindChildByType(PAT0Palette, true, ResourceNodes.ResourceType.PLT0) as PLT0Node : null };
                 MDL0TextureNode t = PAT0Textures[PAT0Texture];
                 t.Bind(ctx);
                 t.Prepare(this, prog);
             }
+            else if (_texture != null)
+                _texture.Prepare(this, prog);
         }
 
         internal override void Unbind()
@@ -507,7 +506,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     TEX0Node texture = RootNode.FindChildByType(PAT0Texture, true, ResourceNodes.ResourceType.TEX0) as TEX0Node;
                     if (texture != null)
-                        PAT0Textures[PAT0Texture] = new MDL0TextureNode(texture.Name) { Source = texture, palette = PAT0Palette != null ? RootNode.FindChildByType(PAT0Palette, true, ResourceNodes.ResourceType.PLT0) as PLT0Node : null };
+                        PAT0Textures[PAT0Texture] = new MDL0TextureNode(texture.Name) { Source = texture, palette = !String.IsNullOrEmpty(PAT0Palette) ? RootNode.FindChildByType(PAT0Palette, true, ResourceNodes.ResourceType.PLT0) as PLT0Node : null };
                 }
                 return;
             }

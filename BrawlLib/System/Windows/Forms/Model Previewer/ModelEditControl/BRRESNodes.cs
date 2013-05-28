@@ -17,7 +17,7 @@ using BrawlLib.Imaging;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
         public void GetFiles(AnimType focusType)
         {
@@ -150,7 +150,7 @@ namespace System.Windows.Forms
                 (group = n.Parent.Parent as BRESNode) != null)
             {
                 _vis0 = group.CreateResource<VIS0Node>(SelectedCHR0.Name);
-                foreach (string s in pnlAssets.VIS0Indices.Keys)
+                foreach (string s in leftPanel.VIS0Indices.Keys)
                 {
                     VIS0EntryNode node = null;
                     if ((node = (VIS0EntryNode)_vis0.FindChild(s, true)) == null && ((MDL0BoneNode)_targetModel.FindChildByType(s, true, ResourceType.MDL0Bone)).BoneIndex != 0 && s != "EyeYellowM")
@@ -172,11 +172,11 @@ namespace System.Windows.Forms
             Start:
             if (_vis0 != null)
             {
-                int index = pnlAssets._polyIndex;
+                int index = leftPanel._polyIndex;
                 if (index == -1)
                     return;
 
-                MDL0BoneNode bone = ((MDL0ObjectNode)pnlAssets.lstObjects.Items[index])._bone;
+                MDL0BoneNode bone = ((MDL0ObjectNode)leftPanel.lstObjects.Items[index])._bone;
 
                 VIS0EntryNode node = null;
                 if ((node = (VIS0EntryNode)_vis0.FindChild(bone.Name, true)) == null && bone.BoneIndex != 0 && bone.Name != "EyeYellowM")
@@ -188,7 +188,7 @@ namespace System.Windows.Forms
 
                 //Item is in the process of being un/checked; it's not un/checked at the given moment.
                 //Use opposite of current check state.
-                bool ANIMval = !pnlAssets.lstObjects.GetItemChecked(index);
+                bool ANIMval = !leftPanel.lstObjects.GetItemChecked(index);
 
                 bool nowAnimated = false, alreadyConstant = false;
             Top:
@@ -233,7 +233,7 @@ namespace System.Windows.Forms
                     if (constant) node.MakeConstant(node.GetEntry(0));
                 }
 
-                if (node != null && ((VIS0EntryNode)pnlKeyframes.visEditor.TargetNode).Name == node.Name)
+                if (node != null && ((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Name == node.Name)
                     vis0Editor.UpdateEntry();
             }
             else
@@ -245,32 +245,32 @@ namespace System.Windows.Forms
         }
         public void ReadVIS0()
         {
-            if (_animFrame == 0 || pnlAssets.lstObjects.Items.Count == 0)
+            if (_animFrame == 0 || leftPanel.lstObjects.Items.Count == 0)
                 return;
 
-            pnlAssets._vis0Updating = true;
+            leftPanel._vis0Updating = true;
             if (_vis0 != null)
             {
                 //if (GetSelectedBRRESFile(TargetAnimType) != null && _vis0.FrameCount != ((BRESEntryNode)GetSelectedBRRESFile(TargetAnimType)).tFrameCount)
                 //    UpdateVis0(null, null);
 
-                foreach (string n in pnlAssets.VIS0Indices.Keys)
+                foreach (string n in leftPanel.VIS0Indices.Keys)
                 {
                     VIS0EntryNode node = null;
-                    List<int> indices = pnlAssets.VIS0Indices[n];
+                    List<int> indices = leftPanel.VIS0Indices[n];
                     for (int i = 0; i < indices.Count; i++)
                     {
-                        if ((node = (VIS0EntryNode)_vis0.FindChild(((MDL0ObjectNode)pnlAssets.lstObjects.Items[indices[i]])._bone.Name, true)) != null)
+                        if ((node = (VIS0EntryNode)_vis0.FindChild(((MDL0ObjectNode)leftPanel.lstObjects.Items[indices[i]])._bone.Name, true)) != null)
                         {
                             if (node._entryCount != 0 && _animFrame > 0)
-                                pnlAssets.lstObjects.SetItemChecked(indices[i], node.GetEntry(_animFrame));
+                                leftPanel.lstObjects.SetItemChecked(indices[i], node.GetEntry(_animFrame));
                             else
-                                pnlAssets.lstObjects.SetItemChecked(indices[i], node._flags.HasFlag(VIS0Flags.Enabled));
+                                leftPanel.lstObjects.SetItemChecked(indices[i], node._flags.HasFlag(VIS0Flags.Enabled));
                         }
                     }
                 }
             }
-            pnlAssets._vis0Updating = false;
+            leftPanel._vis0Updating = false;
         }
     }
 }

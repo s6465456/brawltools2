@@ -36,7 +36,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public List<RSARFileNode> Files { get { return _files; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -54,7 +54,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public RSARGroupNode _nullGroup;
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             //Retrieve all files to attach to entries
             GetFiles();
@@ -289,7 +289,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         private RSAREntryList _entryList = new RSAREntryList();
         private RSARConverter _converter = new RSARConverter();
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _entryList.Clear();
             _entryList._files = Files;
@@ -310,7 +310,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string t = null;
         bool l = true;
         public VoidPtr _rebuildBase;
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             _rebuildBase = address;
 

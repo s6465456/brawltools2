@@ -17,29 +17,29 @@ using BrawlLib.Imaging;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
-        private void btnLoadMoveset_Click(object sender, EventArgs e)
-        {
-            if (btnLoadMoveset.Text == "Load")
-            {
-                if (pnlMoveset.LoadMoveset())
-                {
-                    showMoveset.Checked = true;
-                    btnLoadMoveset.Text = "Close";
-                }
-            }
-            else
-            {
-                if (pnlMoveset.CloseMoveset())
-                {
-                    showMoveset.Checked = false;
-                    btnLoadMoveset.Text = "Load";
-                }
-            }
-        }
+        //private void btnLoadMoveset_Click(object sender, EventArgs e)
+        //{
+        //    if (btnLoadMoveset.Text == "Load")
+        //    {
+        //        if (pnlMoveset.LoadMoveset())
+        //        {
+        //            showMoveset.Checked = true;
+        //            btnLoadMoveset.Text = "Close";
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (pnlMoveset.CloseMoveset())
+        //        {
+        //            showMoveset.Checked = false;
+        //            btnLoadMoveset.Text = "Load";
+        //        }
+        //    }
+        //}
 
-        private void btnSaveMoveset_Click(object sender, EventArgs e) { pnlMoveset.SaveMoveset(); }
+        //private void btnSaveMoveset_Click(object sender, EventArgs e) { pnlMoveset.SaveMoveset(); }
 
         public ResourceNode _externalAnimationsNode;
         private SaveFileDialog dlgSave = new SaveFileDialog();
@@ -50,7 +50,7 @@ namespace System.Windows.Forms
             if (dlgOpen.ShowDialog() == DialogResult.OK)
             {
                 ResourceNode node = null;
-                pnlAssets.listAnims.BeginUpdate();
+                leftPanel.listAnims.BeginUpdate();
                 try
                 {
                     if ((node = NodeFactory.FromFile(null, dlgOpen.FileName)) != null)
@@ -58,7 +58,7 @@ namespace System.Windows.Forms
                         if (!CloseExternal())
                             return false;
 
-                        if (!pnlAssets.LoadAnims(node, TargetAnimType))
+                        if (!leftPanel.LoadAnims(node, TargetAnimType))
                             MessageBox.Show(this, "No animations could be found in external file.", "Error");
                         else
                         {
@@ -79,7 +79,7 @@ namespace System.Windows.Forms
                 {
                     if (node != null)
                         node.Dispose();
-                    pnlAssets.listAnims.EndUpdate();
+                    leftPanel.listAnims.EndUpdate();
                 }
             }
             return false;
@@ -96,16 +96,16 @@ namespace System.Windows.Forms
                 }
 
                 modelPanel.RemoveReference(_externalAnimationsNode);
-                pnlAssets._closing = true;
-                pnlAssets.listAnims.Items.Clear();
-                pnlAssets._closing = false;
+                leftPanel._closing = true;
+                leftPanel.listAnims.Items.Clear();
+                leftPanel._closing = false;
                 _externalAnimationsNode.Dispose();
                 _externalAnimationsNode = null;
 
                 if (SelectedBone != null)
                     SelectedBone._boneColor = SelectedBone._nodeColor = Color.Transparent;
 
-                pnlAssets.UpdateAnimations(TargetAnimType);
+                leftPanel.UpdateAnimations(TargetAnimType);
                 SetSelectedBRRESFile(TargetAnimType, null);
                 GetFiles(AnimType.None);
                 UpdatePropDisplay();
@@ -150,10 +150,10 @@ namespace System.Windows.Forms
             if (btnOpenClose.Text == "Load")
             {
                 if (LoadExternal())
-                    btnOpenClose.Text = pnlAssets.Load.Text = "Close";
+                    btnOpenClose.Text = leftPanel.Load.Text = "Close";
             }
             else if (btnOpenClose.Text == "Close" && CloseExternal())
-                btnOpenClose.Text = pnlAssets.Load.Text = "Load";
+                btnOpenClose.Text = leftPanel.Load.Text = "Load";
         }
         public void btnSave_Click(object sender, EventArgs e) { SaveExternal(false); }
         private void btnSaveAs_Click(object sender, EventArgs e) { SaveExternal(true); }
@@ -236,7 +236,7 @@ namespace System.Windows.Forms
                 if (TargetModel != null)
                     TargetModel.ApplyCHR(null, 0);
                 ResetBoneColors();
-                return CloseExternal() && pnlMoveset.CloseReferences();
+                return CloseExternal()/* && pnlMoveset.CloseReferences()*/;
             }
             catch { return true; }
         }
@@ -257,7 +257,7 @@ namespace System.Windows.Forms
             if ((_targetModel = model) != null)
             {
                 modelPanel.AddTarget(_targetModel);
-                pnlAssets.VIS0Indices = _targetModel.VIS0Indices;
+                leftPanel.VIS0Indices = _targetModel.VIS0Indices;
                 _targetModel._isTargetModel = true;
                 ResetVertexColors();
             }
@@ -270,8 +270,8 @@ namespace System.Windows.Forms
             else
                 _resetCam = true;
 
-            pnlAssets.Reset();
-            pnlBones.Reset();
+            leftPanel.Reset();
+            rightPanel.Reset();
 
             if (TargetModelChanged != null)
                 TargetModelChanged(this, null);

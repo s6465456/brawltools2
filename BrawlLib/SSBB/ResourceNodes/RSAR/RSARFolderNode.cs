@@ -42,7 +42,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        //protected override bool OnInitialize()
+        //public override bool OnInitialize()
         //{
         //    switch (Index)
         //    {
@@ -62,7 +62,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //    return true;
         //}
 
-        //protected override void OnPopulate()
+        //public override void OnPopulate()
         //{
         //    RSARHeader* rsar = Header;
         //    INFOHeader* info = Header->INFOBlock;

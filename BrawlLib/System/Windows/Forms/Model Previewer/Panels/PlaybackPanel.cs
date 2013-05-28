@@ -226,7 +226,7 @@ namespace System.Windows.Forms
 
         public ModelPlaybackPanel() { InitializeComponent(); }
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
 
         public void chkLoop_CheckedChanged(object sender, EventArgs e)
         {

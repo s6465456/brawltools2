@@ -118,7 +118,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _extFileSize = (uint)ExternalFileInfo.Length;
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
             _groups = new List<RSARGroupNode>();

@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace BrawlLib.Modeling
 {
-    unsafe class PrimitiveManager : IDisposable
+    public unsafe class PrimitiveManager : IDisposable
     {
         public List<Vertex3> _vertices;
         internal UnsafeBuffer _indices;
@@ -35,17 +35,22 @@ namespace BrawlLib.Modeling
 
         public UnsafeBuffer _graphicsBuffer;
         
-        //Graphics buffer is a combination of the _faceData streams.
+        //Graphics buffer is a combination of the _faceData streams
         //Vertex (Vertex3 - 12 bytes), Normal (Vertex3 - 12 bytes),
-        //Color1 & Color2 (Float - 4 bytes each), UVs 0 - 7 (Vertex2 - 8 bytes each),
-        //Repeat. It is read as a pointer. 
+        //Color1 & Color2 (4 bytes each), UVs 0 - 7 (Vertex2 - 8 bytes each),
+        //Repeat 
 
         internal NewPrimitive _triangles, _lines, _points;
         //internal List<Primitive2> Primitives = new List<Primitive2>();
 
         #region Asset Lists
         private Vector3[] _rawVertices;
-        public Vector3[] RawVertices(bool force)
+        /// <summary>
+        /// Returns vertex positions from each vertex.
+        /// </summary>
+        /// <param name="force">If not forced, will return values created by a previous call (if there was one).</param>
+        /// <returns></returns>
+        public Vector3[] GetVertices(bool force)
         {
             if (_rawVertices != null && _rawVertices.Length != 0 && !force)
                 return _rawVertices;
@@ -57,7 +62,12 @@ namespace BrawlLib.Modeling
             return _rawVertices;
         }
         private Vector3[] _rawNormals;
-        public Vector3[] RawNormals(bool force)
+        /// <summary>
+        /// Retrieves normals from raw facedata in a remapped array.
+        /// </summary>
+        /// <param name="force">If not forced, will return values created by a previous call (if there was one).</param>
+        /// <returns></returns>
+        public Vector3[] GetNormals(bool force)
         {
             if (_rawNormals != null && _rawNormals.Length != 0 && !force)
                 return _rawNormals;
@@ -73,8 +83,16 @@ namespace BrawlLib.Modeling
             return _rawNormals;
         }
         private Vector2[][] _uvs = new Vector2[8][];
-        public Vector2[] UVs(int index, bool force)
+        /// <summary>
+        /// Retrieves texture coordinates from raw facedata in a remapped array.
+        /// </summary>
+        /// <param name="index">The UV set to retrieve. Values 0 - 7</param>
+        /// <param name="force">If not forced, will return values created by a previous call (if there was one).</param>
+        /// <returns></returns>
+        public Vector2[] GetUVs(int index, bool force)
         {
+            index.Clamp(0, 7);
+
             if (_uvs[index] != null && _uvs[index].Length != 0 && !force) 
                 return _uvs[index];
 
@@ -89,8 +107,16 @@ namespace BrawlLib.Modeling
             return _uvs[index];
         }
         private RGBAPixel[][] _colors = new RGBAPixel[2][];
-        public RGBAPixel[] Colors(int index, bool force)
+        /// <summary>
+        /// Retrieves color values from raw facedata in a remapped array.
+        /// </summary>
+        /// <param name="index">The color set to retrieve. Values 0 - 1</param>
+        /// <param name="force">If not forced, will return values created by a previous call (if there was one).</param>
+        /// <returns></returns>
+        public RGBAPixel[] GetColors(int index, bool force)
         {
+            index.Clamp(0, 1);
+
             if (_colors[index] != null && _colors[index].Length != 0 && !force) 
                 return _colors[index];
 
@@ -121,31 +147,28 @@ namespace BrawlLib.Modeling
             _faceCount = polygon->_numFaces;
 
             //Grab asset lists in sequential order.
-            if (polygon->_vertexFormat.PosFormat != XFDataFormat.None)
-                pOutList[0] = (byte*)(_faceData[0] = new UnsafeBuffer(12 * _pointCount)).Address;
             if ((id = polygon->_vertexId) >= 0)
+            {
+                pOutList[0] = (byte*)(_faceData[0] = new UnsafeBuffer(12 * _pointCount)).Address;
                 pAssetList[0] = (byte*)assets.Assets[0][id].Address;
-
-            if (polygon->_vertexFormat.NormalFormat != XFDataFormat.None)
-                pOutList[1] = (byte*)(_faceData[1] = new UnsafeBuffer(12 * _pointCount)).Address;
+            }
             if ((id = polygon->_normalId) >= 0)
+            {
+                pOutList[1] = (byte*)(_faceData[1] = new UnsafeBuffer(12 * _pointCount)).Address;
                 pAssetList[1] = (byte*)assets.Assets[1][id].Address;
-
+            }
             for (int i = 0, x = 2; i < 2; i++, x++)
-            {
-                if (polygon->_vertexFormat.GetColorFormat(i) != XFDataFormat.None)
-                    pOutList[x] = (byte*)(_faceData[x] = new UnsafeBuffer(4 * _pointCount)).Address;
                 if ((id = ((bshort*)polygon->_colorIds)[i]) >= 0)
+                {
+                    pOutList[x] = (byte*)(_faceData[x] = new UnsafeBuffer(4 * _pointCount)).Address;
                     pAssetList[x] = (byte*)assets.Assets[2][id].Address;
-            }
-
+                }
             for (int i = 0, x = 4; i < 8; i++, x++)
-            {
-                if (polygon->_vertexFormat.GetUVFormat(i) != XFDataFormat.None)
-                    pOutList[x] = (byte*)(_faceData[x] = new UnsafeBuffer(8 * _pointCount)).Address;
                 if ((id = ((bshort*)polygon->_uids)[i]) >= 0)
+                {
+                    pOutList[x] = (byte*)(_faceData[x] = new UnsafeBuffer(8 * _pointCount)).Address;
                     pAssetList[x] = (byte*)assets.Assets[3][id].Address;
-            }
+                }
 
             //Compile decode script by reading the polygon def list
             //This sets how to read the facepoints
@@ -215,8 +238,8 @@ namespace BrawlLib.Modeling
                     {
                         //Re-assign node ids, just in case the nodes were moved. The count won't change
                         foreach (Facepoint point in g._points[i])
-                            if (!g._nodeIds.Contains(point.NodeId))
-                                g._nodeIds.Add(point.NodeId);
+                            if (!g._nodeIds.Contains(point._nodeId))
+                                g._nodeIds.Add(point._nodeId);
                     }
                 }
 
@@ -318,7 +341,7 @@ namespace BrawlLib.Modeling
                 {
                     case GXAttr.GX_VA_PNMTXIDX:
                         if (d.type == XFDataFormat.Direct)
-                            *(byte*)address++ = (byte)(3 * g._nodeIds.IndexOf(f.NodeId));
+                            *(byte*)address++ = (byte)(3 * g._nodeIds.IndexOf(f._nodeId));
                         break;
                     case GXAttr.GX_VA_TEX0MTXIDX:
                     case GXAttr.GX_VA_TEX1MTXIDX:
@@ -329,21 +352,21 @@ namespace BrawlLib.Modeling
                     case GXAttr.GX_VA_TEX6MTXIDX:
                     case GXAttr.GX_VA_TEX7MTXIDX:
                         if (d.type == XFDataFormat.Direct)
-                            *(byte*)address++ = (byte)(30 + (3 * g._nodeIds.IndexOf(f.NodeId)));
+                            *(byte*)address++ = (byte)(30 + (3 * g._nodeIds.IndexOf(f._nodeId)));
                         break;
                     case GXAttr.GX_VA_POS:
                         switch (d.type)
                         {
                             case XFDataFormat.Direct:
                                 byte* addr = (byte*)address;
-                                node.Model._linker._vertices[node._elementIndices[0]].Write(ref addr, f.VertexIndex);
+                                node.Model._linker._vertices[node._elementIndices[0]].Write(ref addr, f._vertexIndex);
                                 address = addr;
                                 break;
                             case XFDataFormat.Index8:
-                                *(byte*)address++ = (byte)f.VertexIndex;
+                                *(byte*)address++ = (byte)f._vertexIndex;
                                 break;
                             case XFDataFormat.Index16:
-                                *(bushort*)address = (ushort)f.VertexIndex;
+                                *(bushort*)address = (ushort)f._vertexIndex;
                                 address += 2;
                                 break;
                         }
@@ -353,14 +376,14 @@ namespace BrawlLib.Modeling
                         {
                             case XFDataFormat.Direct:
                                 byte* addr = (byte*)address;
-                                node.Model._linker._normals[node._elementIndices[1]].Write(ref addr, f.NormalIndex);
+                                node.Model._linker._normals[node._elementIndices[1]].Write(ref addr, f._normalIndex);
                                 address = addr;
                                 break;
                             case XFDataFormat.Index8:
-                                *(byte*)address++ = (byte)f.NormalIndex;
+                                *(byte*)address++ = (byte)f._normalIndex;
                                 break;
                             case XFDataFormat.Index16:
-                                *(bushort*)address = (ushort)f.NormalIndex;
+                                *(bushort*)address = (ushort)f._normalIndex;
                                 address += 2;
                                 break;
                         }
@@ -372,7 +395,7 @@ namespace BrawlLib.Modeling
                             case XFDataFormat.Direct:
                                 int index = (int)d.attr - 11;
                                 byte* addr = (byte*)address;
-                                node.Model._linker._colors[node._elementIndices[index + 2]].Write(ref addr, f.ColorIndex[index]);
+                                node.Model._linker._colors[node._elementIndices[index + 2]].Write(ref addr, f._colorIndices[index]);
                                 address = addr;
                                 break;
                             case XFDataFormat.Index8:
@@ -380,14 +403,14 @@ namespace BrawlLib.Modeling
                                     (_polygon._c1Changed && d.attr == GXAttr.GX_VA_CLR1 && _polygon._colorSet[1] != null))
                                     *(byte*)address++ = 0;
                                 else
-                                    *(byte*)address++ = (byte)f.ColorIndex[(int)d.attr - 11];
+                                    *(byte*)address++ = (byte)f._colorIndices[(int)d.attr - 11];
                                 break;
                             case XFDataFormat.Index16:
                                 if ((_polygon._c0Changed && d.attr == GXAttr.GX_VA_CLR0 && _polygon._colorSet[0] != null) ||
                                     (_polygon._c1Changed && d.attr == GXAttr.GX_VA_CLR1 && _polygon._colorSet[1] != null))
                                     *(bushort*)address = 0;
                                 else
-                                    *(bushort*)address = (ushort)f.ColorIndex[(int)d.attr - 11];
+                                    *(bushort*)address = (ushort)f._colorIndices[(int)d.attr - 11];
                                 address += 2;
                                 break;
                         }
@@ -405,14 +428,14 @@ namespace BrawlLib.Modeling
                             case XFDataFormat.Direct:
                                 int index = (int)d.attr - 13;
                                 byte* addr = (byte*)address;
-                                node.Model._linker._uvs[node._elementIndices[index + 4]].Write(ref addr, f.UVIndex[index]);
+                                node.Model._linker._uvs[node._elementIndices[index + 4]].Write(ref addr, f._UVIndices[index]);
                                 address = addr;
                                 break;
                             case XFDataFormat.Index8:
-                                *(byte*)address++ = (byte)f.UVIndex[(int)d.attr - 13];
+                                *(byte*)address++ = (byte)f._UVIndices[(int)d.attr - 13];
                                 break;
                             case XFDataFormat.Index16:
-                                *(bushort*)address = (ushort)f.UVIndex[(int)d.attr - 13];
+                                *(bushort*)address = (ushort)f._UVIndices[(int)d.attr - 13];
                                 address += 2;
                                 break;
                         }
@@ -673,26 +696,26 @@ namespace BrawlLib.Modeling
                             if (_vertices.Count != 0)
                             {
                                 Facepoint f = _facepoints[i] = new Facepoint();
-                                f.VertexIndex = *pIndex++;
-                                if (f.VertexIndex < _vertices.Count && f.VertexIndex >= 0)
-                                    f._vertex = _vertices[f.VertexIndex];
+                                f._vertexIndex = *pIndex++;
+                                if (f._vertexIndex < _vertices.Count && f._vertexIndex >= 0)
+                                    f._vertex = _vertices[f._vertexIndex];
                             }
                         break;
                     case 1:
                         Vector3* pIn1 = (Vector3*)_faceData[x].Address;
                         for (int i = 0; i < _pointCount; i++)
-                            _facepoints[i].NormalIndex = Array.IndexOf(RawNormals(false), *pIn1++); 
+                            _facepoints[i]._normalIndex = Array.IndexOf(GetNormals(false), *pIn1++); 
                         break;
                     case 2:
                     case 3:
                         RGBAPixel* pIn2 = (RGBAPixel*)_faceData[x].Address;
                         for (int i = 0; i < _pointCount; i++)
-                            _facepoints[i].ColorIndex[x - 2] = Array.IndexOf(Colors(x - 2, false), *pIn2++); 
+                            _facepoints[i]._colorIndices[x - 2] = Array.IndexOf(GetColors(x - 2, false), *pIn2++); 
                         break;
                     default:
                         Vector2* pIn3 = (Vector2*)_faceData[x].Address;
                         for (int i = 0; i < _pointCount; i++)
-                            _facepoints[i].UVIndex[x - 4] = Array.IndexOf(UVs(x - 4, false), *pIn3++); 
+                            _facepoints[i]._UVIndices[x - 4] = Array.IndexOf(GetUVs(x - 4, false), *pIn3++); 
                         break;
                 }
             }
@@ -797,7 +820,7 @@ namespace BrawlLib.Modeling
             if (indices[0] > -1 && _faceData[0] != null) //Positions
             {
                 polygon._arrayFlags.HasPositions = true;
-                fmt = (forceDirect != null && forceDirect.Length > 0 && forceDirect[0] == true) ? XFDataFormat.Direct : (XFDataFormat)(RawVertices(false).Length > byte.MaxValue ? 3 : 2);
+                fmt = (forceDirect != null && forceDirect.Length > 0 && forceDirect[0] == true) ? XFDataFormat.Direct : (XFDataFormat)(GetVertices(false).Length > byte.MaxValue ? 3 : 2);
 
                 polygon._vertexFormat.PosFormat = fmt;
 
@@ -810,7 +833,7 @@ namespace BrawlLib.Modeling
             {
                 polygon._arrayFlags.HasNormals = true;
 
-                fmt = (forceDirect != null && forceDirect.Length > 1 && forceDirect[1] == true) ? XFDataFormat.Direct : (XFDataFormat)(RawNormals(false).Length > byte.MaxValue ? 3 : 2);
+                fmt = (forceDirect != null && forceDirect.Length > 1 && forceDirect[1] == true) ? XFDataFormat.Direct : (XFDataFormat)(GetNormals(false).Length > byte.MaxValue ? 3 : 2);
 
                 polygon._vertexFormat.NormalFormat = fmt;
 
@@ -825,7 +848,7 @@ namespace BrawlLib.Modeling
                     colors++;
                     polygon._arrayFlags.SetHasColor(i - 2, true);
 
-                    fmt = (forceDirect != null && forceDirect.Length > 2 && forceDirect[2] == true) ? XFDataFormat.Direct : (XFDataFormat)(Colors(i - 2, false).Length > byte.MaxValue ? 3 : 2);
+                    fmt = (forceDirect != null && forceDirect.Length > 2 && forceDirect[2] == true) ? XFDataFormat.Direct : (XFDataFormat)(GetColors(i - 2, false).Length > byte.MaxValue ? 3 : 2);
 
                     polygon._vertexFormat.SetColorFormat(i - 2, fmt);
 
@@ -840,7 +863,7 @@ namespace BrawlLib.Modeling
                     textures++;
                     polygon._arrayFlags.SetHasUVs(i - 4, true);
 
-                    fmt = (forceDirect != null && forceDirect.Length > 3 && forceDirect[3] == true) ? XFDataFormat.Direct : (XFDataFormat)(UVs(i - 4, false).Length > byte.MaxValue ? 3 : 2);
+                    fmt = (forceDirect != null && forceDirect.Length > 3 && forceDirect[3] == true) ? XFDataFormat.Direct : (XFDataFormat)(GetUVs(i - 4, false).Length > byte.MaxValue ? 3 : 2);
 
                     polygon._vertexFormat.SetUVFormat(i - 4, fmt);
 
@@ -1257,6 +1280,40 @@ namespace BrawlLib.Modeling
 
         #region Rendering
 
+        public void Bind()
+        {
+            for (int i = 0; i < 12; i++)
+                if (_faceData[i] != null)
+                {
+                    GL.GenVertexArrays(1, out _arrayHandles[i]);
+                    GL.BindVertexArray(_arrayHandles[i]);
+                    GL.GenBuffers(1, out _bufferHandles[i]);
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, _bufferHandles[i]);
+                    int stride = 0;
+                    switch (i)
+                    {
+                        case 0:
+                        case 1:
+                            stride = 12;
+                            break;
+
+                        case 2:
+                        case 3:
+                            stride = 4;
+                            break;
+
+                        default:
+                            stride = 8;
+                            break;
+                    }
+                    GL.BufferData(BufferTarget.ArrayBuffer,
+                        new IntPtr(_pointCount * stride),
+                        _faceData[i].Address, BufferUsageHint.StaticDraw);
+                }
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.GenBuffers(1, out _indexBufferHandle);
+        }
+
         internal void UpdateStream(int index)
         {
             _dirty[index] = false;
@@ -1361,66 +1418,45 @@ namespace BrawlLib.Modeling
                             break;
                     }
         }
-
-        public int _bufferHandle;
+        
+        public int[] _arrayHandles = new int[12] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        public int[] _bufferHandles = new int[12] { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
+        public int _indexBufferHandle = -1;
         internal unsafe void PrepareStream()
         {
-            int positionVboHandle, normalVboHandle, eboHandle;
             IntPtr d;
 
-            d = _faceData[0].Address;
-            GL.GenBuffers(1, out positionVboHandle);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, positionVboHandle);
-            GL.BufferData(BufferTarget.ArrayBuffer,
-                new IntPtr(_pointCount * 12),
-                ref d, BufferUsageHint.StaticDraw);
-
-            d = _faceData[1].Address;
-            GL.GenBuffers(1, out normalVboHandle);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, normalVboHandle);
-            GL.BufferData(BufferTarget.ArrayBuffer,
-                new IntPtr(_pointCount * 12),
-                ref d, BufferUsageHint.StaticDraw);
-
-            d = _indices.Address;
-            GL.GenBuffers(1, out eboHandle);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, eboHandle);
-            d = _indices.Address;
-            GL.BufferData(BufferTarget.ElementArrayBuffer,
-                new IntPtr(_pointCount * 4),
-                ref d, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-
-            int pData = 0;
             for (int i = 0; i < 12; i++)
                 if (_faceData[i] != null)
+                {
+                    GL.EnableVertexAttribArray(i);
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, _bufferHandles[i]);
                     switch (i)
                     {
                         case 0:
                         case 1:
-                            GL.EnableVertexAttribArray(i);
-                            GL.VertexAttribPointer(i, 3, VertexAttribPointerType.Float, false, _stride, pData);
+                            GL.VertexAttribPointer(i, 3, VertexAttribPointerType.Float, false, 12, 0);
                             GL.BindAttribLocation(_polygon._shaderProgramHandle, i, (i == 0 ? "Position" : "Normal"));
-                            pData += 12;
                             break;
 
                         case 2:
                         case 3:
-                            GL.EnableVertexAttribArray(i);
-                            GL.VertexAttribPointer(i, 4, VertexAttribPointerType.Byte, false, _stride, pData);
+                            GL.VertexAttribPointer(i, 4, VertexAttribPointerType.Byte, false, 4, 0);
                             GL.BindAttribLocation(_polygon._shaderProgramHandle, i, "Color" + (i - 2));
-                            pData += 4;
                             break;
 
                         default:
-                            GL.EnableVertexAttribArray(i);
-                            GL.VertexAttribPointer(i, 2, VertexAttribPointerType.Float, false, _stride, pData);
+                            GL.VertexAttribPointer(i, 2, VertexAttribPointerType.Float, false, 8, 0);
                             GL.BindAttribLocation(_polygon._shaderProgramHandle, i, "UV" + (i - 4));
-                            pData += 8;
                             break;
                     }
+                }
+
+            d = _triangles._indices.Address;
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBufferHandle);
+            GL.BufferData(BufferTarget.ElementArrayBuffer,
+                new IntPtr(_triangles._elementCount * 2),
+                d, BufferUsageHint.StaticDraw);
         }
 
         internal unsafe void DetachFixedStreams()
@@ -1435,6 +1471,8 @@ namespace BrawlLib.Modeling
 
         internal unsafe void DetachStreams()
         {
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
             for (int i = 0; i < 12; i++)
                 if (_faceData[i] != null)
                     GL.DisableVertexAttribArray(i);
@@ -1518,7 +1556,7 @@ namespace BrawlLib.Modeling
         public bool _render = true;
         public bool _renderNormals = true;
         public float _normalLength = 1.0f;
-        internal unsafe void RenderVerts(TKContext ctx, IMatrixNode _singleBind, ModelPanel mainWindow, bool pass2)
+        internal unsafe void RenderVerts(TKContext ctx, IMatrixNode _singleBind, MDL0BoneNode selectedBone, Vector3 cam, bool pass2)
         {
             if (!_render)
                 return;
@@ -1533,18 +1571,15 @@ namespace BrawlLib.Modeling
 
             foreach (Vertex3 v in _vertices)
             {
-                Color w = v._highlightColor != Color.Transparent ? v._highlightColor : (_singleBind != null && _singleBind == mainWindow._mainWindow.SelectedBone) ? Color.Red : v.GetWeightColor(mainWindow._mainWindow.SelectedBone);
+                Color w = v._highlightColor != Color.Transparent ? v._highlightColor : (_singleBind != null && _singleBind == selectedBone) ? Color.Red : v.GetWeightColor(selectedBone);
                 if (w != Color.Transparent)
                     GL.Color4(w);
                 else
                     GL.Color4(DefaultVertColor);
 
-                if (mainWindow != null)
-                {
-                    float d = mainWindow._camera.GetPoint().DistanceTo(_singleBind == null ? v.WeightedPosition : _singleBind.Matrix * v.WeightedPosition);
-                    if (d == 0) d = 0.000000000001f;
-                    GL.PointSize((5000 / d).Clamp(1.0f, !pass2 ? 5.0f : 8.0f));
-                }
+                float d = cam.DistanceTo(_singleBind == null ? v.WeightedPosition : _singleBind.Matrix * v.WeightedPosition);
+                if (d == 0) d = 0.000000000001f;
+                GL.PointSize((5000 / d).Clamp(1.0f, !pass2 ? 5.0f : 8.0f));
 
                 GL.Begin(BeginMode.Points);
                 GL.Vertex3(v.WeightedPosition._x, v.WeightedPosition._y, v.WeightedPosition._z);

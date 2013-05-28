@@ -16,7 +16,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public RawDataNode(string name) { _name = name; }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             data = new byte[WorkingUncompressed.Length];
 
@@ -26,7 +26,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return data.Length;
         }
@@ -45,7 +45,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //}
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             byte* header = (byte*)address;
             for (int i = 0; i < data.Length; i++)

@@ -44,7 +44,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             set { _colors = value.ToList<RGBAPixel>(); SignalPropertyChange(); }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -55,7 +55,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public ColorCodec _enc;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             if (Model._isImport || _changed)
             {
@@ -65,7 +65,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             else return base.OnCalculateSize(force);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             if (Model._isImport || _changed)
             {

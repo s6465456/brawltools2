@@ -6,7 +6,6 @@ using System.ComponentModel;
 using BrawlLib.OpenGL;
 using BrawlLib;
 using System.IO;
-using BrawlBox;
 using System.Collections.Generic;
 
 namespace System.Windows.Forms
@@ -97,8 +96,8 @@ namespace System.Windows.Forms
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.portToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.createNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.createNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pnlObjects.SuspendLayout();
             this.pnlAnims.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -263,14 +262,6 @@ namespace System.Windows.Forms
             // 
             this.fileType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.fileType.FormattingEnabled = true;
-            this.fileType.Items.AddRange(new object[] {
-            "CHR",
-            "SRT",
-            "SHP",
-            "PAT",
-            "VIS",
-            "SCN",
-            "CLR"});
             this.fileType.Location = new System.Drawing.Point(82, 0);
             this.fileType.Name = "fileType";
             this.fileType.Size = new System.Drawing.Size(53, 21);
@@ -498,13 +489,6 @@ namespace System.Windows.Forms
             this.renameToolStripMenuItem.Text = "Rename";
             this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
-            // createNewToolStripMenuItem
-            // 
-            this.createNewToolStripMenuItem.Name = "createNewToolStripMenuItem";
-            this.createNewToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
-            this.createNewToolStripMenuItem.Text = "Create New Animation";
-            this.createNewToolStripMenuItem.Click += new System.EventHandler(this.createNewToolStripMenuItem_Click);
-            // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
@@ -512,14 +496,21 @@ namespace System.Windows.Forms
             this.deleteToolStripMenuItem.Text = "Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
-            // ModelAssetPanel
+            // createNewToolStripMenuItem
+            // 
+            this.createNewToolStripMenuItem.Name = "createNewToolStripMenuItem";
+            this.createNewToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.createNewToolStripMenuItem.Text = "Create New Animation";
+            this.createNewToolStripMenuItem.Click += new System.EventHandler(this.createNewToolStripMenuItem_Click);
+            // 
+            // AnimModelPanel
             // 
             this.Controls.Add(this.pnlObjects);
             this.Controls.Add(this.spltObjTex);
             this.Controls.Add(this.spltAnimObj);
             this.Controls.Add(this.pnlAnims);
             this.Controls.Add(this.pnlTextures);
-            this.Name = "ModelAssetPanel";
+            this.Name = "AnimModelPanel";
             this.Size = new System.Drawing.Size(137, 500);
             this.pnlObjects.ResumeLayout(false);
             this.pnlAnims.ResumeLayout(false);
@@ -528,6 +519,7 @@ namespace System.Windows.Forms
             this.pnlTextures.ResumeLayout(false);
             this.ctxAnim.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
 
         #endregion
@@ -570,12 +562,12 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0MaterialRefNode TargetTexRef
         {
-            get { return _mainWindow._targetTexRef; }
+            get { return _mainWindow.TargetTexRef; }
             set
             {
                 _mainWindow.TargetTexRef = value; 
-                if (_mainWindow._srt0 != null && TargetTexRef != null)
-                    _mainWindow.pnlKeyframes.TargetSequence = _mainWindow.srt0Editor.TexEntry;
+                if (_mainWindow.SelectedSRT0 != null && TargetTexRef != null)
+                    _mainWindow.KeyframePanel.TargetSequence = _mainWindow.SRT0Editor.TexEntry;
             }
         }
 
@@ -594,31 +586,31 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public CHR0Node SelectedCHR0
         {
-            get  { return _mainWindow._chr0; }
-            set  { _mainWindow.SelectedCHR0 = value; }
+            get { return _mainWindow.SelectedCHR0; }
+            set { _mainWindow.SelectedCHR0 = value; }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SRT0Node SelectedSRT0
         {
-            get { return _mainWindow._srt0; }
+            get { return _mainWindow.SelectedSRT0; }
             set { _mainWindow.SelectedSRT0 = value; }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SHP0Node SelectedSHP0
         {
-            get { return _mainWindow._shp0; }
+            get { return _mainWindow.SelectedSHP0; }
             set { _mainWindow.SelectedSHP0 = value; }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public PAT0Node SelectedPAT0
         {
-            get { return _mainWindow._pat0; }
+            get { return _mainWindow.SelectedPAT0; }
             set { _mainWindow.SelectedPAT0 = value; }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public VIS0Node SelectedVIS0
         {
-            get { return _mainWindow._vis0; }
+            get { return _mainWindow.SelectedVIS0; }
             set { _mainWindow.SelectedVIS0 = value; }
         }
 
@@ -676,7 +668,7 @@ namespace System.Windows.Forms
         public bool UpdateAnimations() { return UpdateAnimations(TargetAnimType); }
         public bool UpdateAnimations(AnimType type)
         {
-            _mainWindow._updating = true;
+            _mainWindow.Updating = true;
 
             string Name = listAnims.SelectedItems != null && listAnims.SelectedItems.Count > 0 ? listAnims.SelectedItems[0].Tag.ToString() : null;
             int frame = CurrentFrame;
@@ -692,9 +684,9 @@ namespace System.Windows.Forms
 
             int count = listAnims.Items.Count;
 
-            if (_mainWindow._externalAnimationsNode != null)
+            if (_mainWindow.ExternalAnimationsNode != null)
                 if (BRRESRelative != CheckState.Checked)
-                    LoadAnims(_mainWindow._externalAnimationsNode.RootNode, type);
+                    LoadAnims(_mainWindow.ExternalAnimationsNode.RootNode, type);
 
             listAnims.EndUpdate();
 
@@ -706,22 +698,14 @@ namespace System.Windows.Forms
                     break;
                 }
 
-            _mainWindow._updating = false;
+            _mainWindow.Updating = false;
             CurrentFrame = frame;
 
             if ((_mainWindow.GetSelectedBRRESFile((AnimType)TargetAnimType) == null) && (listAnims.SelectedItems.Count == 0))
             {
-                _mainWindow._chr0 = null;
-                _mainWindow._srt0 = null;
-                _mainWindow._shp0 = null;
-                _mainWindow._pat0 = null;
-                _mainWindow._vis0 = null;
-                _mainWindow._scn0 = null;
-                _mainWindow._clr0 = null;
-                _mainWindow.UpdatePropDisplay();
+                _mainWindow.GetFiles(AnimType.None);
                 _mainWindow.UpdateModel();
-                _mainWindow.AnimChanged(TargetAnimType);
-                _mainWindow.modelPanel.Invalidate();
+                _mainWindow.ModelPanel.Invalidate();
             }
 
             return count != listAnims.Items.Count;
@@ -756,7 +740,7 @@ namespace System.Windows.Forms
 
         public void UpdateTextures()
         {
-            _mainWindow._updating = true;
+            _mainWindow.Updating = true;
 
             string Name = lstTextures.SelectedItems != null && lstTextures.SelectedItems.Count > 0 ? lstTextures.SelectedItems[0].ToString() : null;
 
@@ -784,7 +768,7 @@ namespace System.Windows.Forms
                     break;
                 }
 
-            _mainWindow._updating = false;
+            _mainWindow.Updating = false;
         }
 
         public void Reset()
@@ -948,7 +932,7 @@ namespace System.Windows.Forms
                 }
             }
 
-            if (!_updating) _mainWindow.modelPanel.Invalidate();
+            if (!_updating) _mainWindow.ModelPanel.Invalidate();
         }
 
         //public event EventHandler Key;
@@ -995,7 +979,7 @@ namespace System.Windows.Forms
 
                 TargetTexRef = _selectedPolygon != null ? _selectedPolygon.UsableMaterialNode.FindChild(_selectedTexture.Name, true) as MDL0MaterialRefNode : null;
             }
-            if (!_updating) _mainWindow.modelPanel.Invalidate();
+            if (!_updating) _mainWindow.ModelPanel.Invalidate();
         }
 
         private void chkAllPoly_CheckStateChanged(object sender, EventArgs e)
@@ -1012,7 +996,7 @@ namespace System.Windows.Forms
 
             _updating = false;
 
-            _mainWindow.modelPanel.Invalidate();
+            _mainWindow.ModelPanel.Invalidate();
         }
 
         private void btnObjects_Click(object sender, EventArgs e)
@@ -1071,7 +1055,7 @@ namespace System.Windows.Forms
             tref.Enabled = e.NewValue == CheckState.Checked;
 
             if (!_updating)
-                _mainWindow.modelPanel.Invalidate();
+                _mainWindow.ModelPanel.Invalidate();
         }
 
         private void chkAllTextures_CheckStateChanged(object sender, EventArgs e)
@@ -1085,7 +1069,7 @@ namespace System.Windows.Forms
 
             _updating = false;
 
-            _mainWindow.modelPanel.Invalidate();
+            _mainWindow.ModelPanel.Invalidate();
         }
 
         private void viewToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1093,9 +1077,9 @@ namespace System.Windows.Forms
             if (_selectedTexture != null)
                 using (GLTextureWindow w = new GLTextureWindow())
                 {
-                    _mainWindow.modelPanel.Release();
+                    _mainWindow.ModelPanel.Release();
                     w.ShowDialog(this, _selectedTexture.Texture);
-                    _mainWindow.modelPanel.Capture();
+                    _mainWindow.ModelPanel.Capture();
                 }
         }
 
@@ -1114,7 +1098,7 @@ namespace System.Windows.Forms
                         lstTextures.SetSelected(index, false);
                         _updating = false;
 
-                        _mainWindow.modelPanel.Invalidate();
+                        _mainWindow.ModelPanel.Invalidate();
                     }
             }
         }
@@ -1174,7 +1158,7 @@ namespace System.Windows.Forms
             if (_selectedTexture != null)
             {
                 _selectedTexture.Reload();
-                _mainWindow.modelPanel.Invalidate();
+                _mainWindow.ModelPanel.Invalidate();
             }
         }
 
@@ -1218,10 +1202,9 @@ namespace System.Windows.Forms
 
         private void chkSyncVis_CheckedChanged(object sender, EventArgs e)
         {
-            _syncVis0 = chkSyncVis.Checked;
-            _mainWindow._updating = true;
-            _mainWindow.syncObjectsListToVIS0ToolStripMenuItem.Checked = _syncVis0;
-            _mainWindow._updating = false;
+            _mainWindow.Updating = true;
+            _mainWindow.SyncVIS0 = _syncVis0 = chkSyncVis.Checked;
+            _mainWindow.Updating = false;
         }
 
         private void listAnims_SelectedIndexChanged(object sender, EventArgs e)
@@ -1230,43 +1213,44 @@ namespace System.Windows.Forms
                 return;
             if (listAnims.SelectedItems.Count > 0)
             {
+                _mainWindow.Updating = true;
                 switch (TargetAnimType)
                 {
-                    case AnimType.CHR: _mainWindow._chr0 = listAnims.SelectedItems[0].Tag as CHR0Node;
+                    case AnimType.CHR: _mainWindow.SelectedCHR0 = listAnims.SelectedItems[0].Tag as CHR0Node;
                         createNewToolStripMenuItem.Text = "Create New CHR0";
                         break;
-                    case AnimType.SRT: _mainWindow._srt0 = listAnims.SelectedItems[0].Tag as SRT0Node;
+                    case AnimType.SRT: _mainWindow.SelectedSRT0 = listAnims.SelectedItems[0].Tag as SRT0Node;
                         createNewToolStripMenuItem.Text = "Create New SRT0";
                         break;
-                    case AnimType.SHP: _mainWindow._shp0 = listAnims.SelectedItems[0].Tag as SHP0Node;
+                    case AnimType.SHP: _mainWindow.SelectedSHP0 = listAnims.SelectedItems[0].Tag as SHP0Node;
                         createNewToolStripMenuItem.Text = "Create New SHP0";
                         break;
-                    case AnimType.PAT: _mainWindow._pat0 = listAnims.SelectedItems[0].Tag as PAT0Node;
+                    case AnimType.PAT: _mainWindow.SelectedPAT0 = listAnims.SelectedItems[0].Tag as PAT0Node;
                         createNewToolStripMenuItem.Text = "Create New PAT0";
                         break;
-                    case AnimType.VIS: _mainWindow._vis0 = listAnims.SelectedItems[0].Tag as VIS0Node;
+                    case AnimType.VIS: _mainWindow.SelectedVIS0 = listAnims.SelectedItems[0].Tag as VIS0Node;
                         createNewToolStripMenuItem.Text = "Create New VIS0";
                         break;
-                    case AnimType.SCN: _mainWindow._scn0 = listAnims.SelectedItems[0].Tag as SCN0Node;
+                    case AnimType.SCN: _mainWindow.SelectedSCN0 = listAnims.SelectedItems[0].Tag as SCN0Node;
                         createNewToolStripMenuItem.Text = "Create New SCN0";
                         break;
-                    case AnimType.CLR: _mainWindow._clr0 = listAnims.SelectedItems[0].Tag as CLR0Node;
+                    case AnimType.CLR: _mainWindow.SelectedCLR0 = listAnims.SelectedItems[0].Tag as CLR0Node;
                         createNewToolStripMenuItem.Text = "Create New CLR0";
                         break;
                 }
-                if (_mainWindow.syncAnimationsTogetherToolStripMenuItem.Checked)
-                    _mainWindow.GetFiles(TargetAnimType);
+                _mainWindow.Updating = false;
                 _mainWindow.AnimChanged(TargetAnimType);
-                _mainWindow.UpdatePropDisplay();
+                _mainWindow.GetFiles(TargetAnimType);
             }
             else
             {
-                _mainWindow.GetFiles(AnimType.None);
-                _mainWindow.UpdatePropDisplay();
-                _mainWindow.UpdateModel();
                 _mainWindow.AnimChanged(AnimType.None);
-                _mainWindow.modelPanel.Invalidate();
+                _mainWindow.GetFiles(AnimType.None);
             }
+
+            _mainWindow.UpdatePropDisplay();
+            _mainWindow.UpdateModel();
+            _mainWindow.ModelPanel.Invalidate();
 
             //if (_selectedAnim != null)
             //    portToolStripMenuItem.Enabled = !_selectedAnim.IsPorted;
@@ -1351,7 +1335,7 @@ namespace System.Windows.Forms
                     SelectedCHR0.Port(TargetModel, model);
 
             _mainWindow.UpdateModel();
-            _mainWindow.modelPanel.Invalidate();
+            _mainWindow.ModelPanel.Invalidate();
         }
         #endregion
 
@@ -1475,7 +1459,7 @@ namespace System.Windows.Forms
             _mainWindow.UpdatePropDisplay();
             _mainWindow.UpdateModel();
             _mainWindow.AnimChanged(AnimType.None);
-            _mainWindow.modelPanel.Invalidate();
+            _mainWindow.ModelPanel.Invalidate();
         }
     }
     public enum AnimType : int

@@ -17,22 +17,19 @@ using BrawlLib.Imaging;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
-        public AnimModelPanel pnlAssets;
-        public ModelMovesetPanel pnlMoveset;
         public ModelPanel modelPanel;
-        public ModelAnimPanel pnlBones;
         
         #region Designer
 
         private ColorDialog dlgColor;
-        private Button btnAssetToggle;
-        private Button btnAnimToggle;
+        private Button btnLeftToggle;
+        private Button btnRightToggle;
         private System.ComponentModel.IContainer components;
         private Button btnPlaybackToggle;
         public Timer animTimer;
-        private Splitter spltAssets;
+        private Splitter spltLeft;
         private Button btnOptionToggle;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem fileToolStripMenuItem;
@@ -66,15 +63,14 @@ namespace System.Windows.Forms
         private ToolStripMenuItem toggleFloor;
         private ToolStripMenuItem resetCameraToolStripMenuItem;
         private ToolStripMenuItem editorsToolStripMenuItem;
-        private ToolStripMenuItem showAssets;
-        private ToolStripMenuItem showBones;
+        private ToolStripMenuItem showLeft;
         private ToolStripMenuItem showAnim;
         private ToolStripMenuItem showOptions;
-        private ToolStripMenuItem showMoveset;
+        //private ToolStripMenuItem showMoveset;
         public CHR0Editor chr0Editor;
         public ComboBox models;
         private Panel controlPanel;
-        private Splitter spltAnims;
+        private Splitter spltRight;
         private Panel panel1;
         public SRT0Editor srt0Editor;
         private ToolStripMenuItem fileTypesToolStripMenuItem;
@@ -104,17 +100,14 @@ namespace System.Windows.Forms
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripSeparator toolStripSeparator1;
         public ModelPlaybackPanel pnlPlayback;
-        private ToolStripMenuItem showPlay;
         private ToolStripMenuItem displayBRRESRelativeAnimationsToolStripMenuItem;
         private Splitter splitter1;
-        public Panel panel3;
-        private ToolStripMenuItem toolStripMenuItem1;
+        public Panel animCtrlPnl;
         private ToolStripButton chkShaders;
         public ToolStripButton btnSaveCam;
         private SCN0Editor scn0Editor;
-        public KeyframePanel pnlKeyframes;
         private Splitter splitter2;
-        private ToolStripMenuItem showKeyframes;
+        private ToolStripMenuItem showRight;
         public ToolStripMenuItem showCameraCoordinatesToolStripMenuItem;
         private ToolStripMenuItem sCN0ToolStripMenuItem;
         private ToolStripMenuItem displayAmbienceToolStripMenuItem;
@@ -158,8 +151,6 @@ namespace System.Windows.Forms
         private ToolStripMenuItem perspectiveToolStripMenuItem;
         public ToolStripMenuItem orthographicToolStripMenuItem;
         private ToolStripMenuItem firstPersonSCN0CamToolStripMenuItem;
-        private ToolStripMenuItem btnLoadMoveset;
-        private ToolStripMenuItem btnSaveMoveset;
         private VertexEditor vertexEditor;
         private ToolStripMenuItem boundingBoxToolStripMenuItem;
         private ToolStripMenuItem chkDontRenderOffscreen;
@@ -170,17 +161,18 @@ namespace System.Windows.Forms
         private ToolStripMenuItem dontHighlightBonesAndVerticesToolStripMenuItem;
         public ToolStripMenuItem enablePointAndLineSmoothingToolStripMenuItem;
         public ToolStripMenuItem enableTextOverlaysToolStripMenuItem;
-        private Splitter spltMoveset;
+        private RightPanel rightPanel;
+        public AnimModelPanel leftPanel;
 
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
             this.dlgColor = new System.Windows.Forms.ColorDialog();
-            this.btnAssetToggle = new System.Windows.Forms.Button();
-            this.btnAnimToggle = new System.Windows.Forms.Button();
+            this.btnLeftToggle = new System.Windows.Forms.Button();
+            this.btnRightToggle = new System.Windows.Forms.Button();
             this.btnPlaybackToggle = new System.Windows.Forms.Button();
             this.animTimer = new System.Windows.Forms.Timer(this.components);
-            this.spltAssets = new System.Windows.Forms.Splitter();
+            this.spltLeft = new System.Windows.Forms.Splitter();
             this.btnOptionToggle = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -220,12 +212,9 @@ namespace System.Windows.Forms
             this.kinectToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.editorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showOptions = new System.Windows.Forms.ToolStripMenuItem();
-            this.showBones = new System.Windows.Forms.ToolStripMenuItem();
-            this.showAssets = new System.Windows.Forms.ToolStripMenuItem();
-            this.showMoveset = new System.Windows.Forms.ToolStripMenuItem();
+            this.showLeft = new System.Windows.Forms.ToolStripMenuItem();
             this.showAnim = new System.Windows.Forms.ToolStripMenuItem();
-            this.showPlay = new System.Windows.Forms.ToolStripMenuItem();
-            this.showKeyframes = new System.Windows.Forms.ToolStripMenuItem();
+            this.showRight = new System.Windows.Forms.ToolStripMenuItem();
             this.detachViewerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -270,9 +259,6 @@ namespace System.Windows.Forms
             this.stPersonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.firstPersonSCN0CamToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnLoadMoveset = new System.Windows.Forms.ToolStripMenuItem();
-            this.btnSaveMoveset = new System.Windows.Forms.ToolStripMenuItem();
             this.targetModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideFromSceneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -284,7 +270,6 @@ namespace System.Windows.Forms
             this.syncKinectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notYetImplementedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startTrackingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.spltMoveset = new System.Windows.Forms.Splitter();
             this.models = new System.Windows.Forms.ComboBox();
             this.controlPanel = new System.Windows.Forms.Panel();
             this.splitter1 = new System.Windows.Forms.Splitter();
@@ -301,14 +286,14 @@ namespace System.Windows.Forms
             this.button1 = new System.Windows.Forms.ToolStripButton();
             this.btnSaveCam = new System.Windows.Forms.ToolStripButton();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.spltAnims = new System.Windows.Forms.Splitter();
+            this.spltRight = new System.Windows.Forms.Splitter();
             this.panel1 = new System.Windows.Forms.Panel();
             this.KinectPanel = new System.Windows.Forms.TransparentPanel();
             this.label1 = new System.Windows.Forms.Label();
             this.modelPanel = new System.Windows.Forms.ModelPanel();
             this.animEditors = new System.Windows.Forms.Panel();
             this.pnlPlayback = new System.Windows.Forms.ModelPlaybackPanel();
-            this.panel3 = new System.Windows.Forms.Panel();
+            this.animCtrlPnl = new System.Windows.Forms.Panel();
             this.vis0Editor = new System.Windows.Forms.VIS0Editor();
             this.pat0Editor = new System.Windows.Forms.PAT0Editor();
             this.shp0Editor = new System.Windows.Forms.SHP0Editor();
@@ -318,11 +303,9 @@ namespace System.Windows.Forms
             this.clr0Editor = new System.Windows.Forms.CLR0Editor();
             this.weightEditor = new System.Windows.Forms.WeightEditor();
             this.vertexEditor = new System.Windows.Forms.VertexEditor();
-            this.pnlMoveset = new System.Windows.Forms.ModelMovesetPanel();
-            this.pnlBones = new System.Windows.Forms.ModelAnimPanel();
-            this.pnlAssets = new System.Windows.Forms.AnimModelPanel();
-            this.pnlKeyframes = new System.Windows.Forms.KeyframePanel();
             this.splitter2 = new System.Windows.Forms.Splitter();
+            this.leftPanel = new System.Windows.Forms.AnimModelPanel();
+            this.rightPanel = new System.Windows.Forms.RightPanel();
             this.menuStrip1.SuspendLayout();
             this.controlPanel.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -330,7 +313,7 @@ namespace System.Windows.Forms
             this.panel1.SuspendLayout();
             this.KinectPanel.SuspendLayout();
             this.animEditors.SuspendLayout();
-            this.panel3.SuspendLayout();
+            this.animCtrlPnl.SuspendLayout();
             this.SuspendLayout();
             // 
             // dlgColor
@@ -338,36 +321,36 @@ namespace System.Windows.Forms
             this.dlgColor.AnyColor = true;
             this.dlgColor.FullOpen = true;
             // 
-            // btnAssetToggle
+            // btnLeftToggle
             // 
-            this.btnAssetToggle.Dock = System.Windows.Forms.DockStyle.Left;
-            this.btnAssetToggle.Location = new System.Drawing.Point(249, 24);
-            this.btnAssetToggle.Name = "btnAssetToggle";
-            this.btnAssetToggle.Size = new System.Drawing.Size(15, 391);
-            this.btnAssetToggle.TabIndex = 5;
-            this.btnAssetToggle.TabStop = false;
-            this.btnAssetToggle.Text = ">";
-            this.btnAssetToggle.UseVisualStyleBackColor = false;
-            this.btnAssetToggle.Click += new System.EventHandler(this.btnAssetToggle_Click);
+            this.btnLeftToggle.Dock = System.Windows.Forms.DockStyle.Left;
+            this.btnLeftToggle.Location = new System.Drawing.Point(142, 24);
+            this.btnLeftToggle.Name = "btnLeftToggle";
+            this.btnLeftToggle.Size = new System.Drawing.Size(15, 391);
+            this.btnLeftToggle.TabIndex = 5;
+            this.btnLeftToggle.TabStop = false;
+            this.btnLeftToggle.Text = ">";
+            this.btnLeftToggle.UseVisualStyleBackColor = false;
+            this.btnLeftToggle.Click += new System.EventHandler(this.btnAssetToggle_Click);
             // 
-            // btnAnimToggle
+            // btnRightToggle
             // 
-            this.btnAnimToggle.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnAnimToggle.Location = new System.Drawing.Point(685, 24);
-            this.btnAnimToggle.Name = "btnAnimToggle";
-            this.btnAnimToggle.Size = new System.Drawing.Size(15, 391);
-            this.btnAnimToggle.TabIndex = 6;
-            this.btnAnimToggle.TabStop = false;
-            this.btnAnimToggle.Text = "<";
-            this.btnAnimToggle.UseVisualStyleBackColor = false;
-            this.btnAnimToggle.Click += new System.EventHandler(this.btnAnimToggle_Click);
+            this.btnRightToggle.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnRightToggle.Location = new System.Drawing.Point(993, 24);
+            this.btnRightToggle.Name = "btnRightToggle";
+            this.btnRightToggle.Size = new System.Drawing.Size(15, 391);
+            this.btnRightToggle.TabIndex = 6;
+            this.btnRightToggle.TabStop = false;
+            this.btnRightToggle.Text = "<";
+            this.btnRightToggle.UseVisualStyleBackColor = false;
+            this.btnRightToggle.Click += new System.EventHandler(this.btnAnimToggle_Click);
             // 
             // btnPlaybackToggle
             // 
             this.btnPlaybackToggle.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnPlaybackToggle.Location = new System.Drawing.Point(264, 400);
+            this.btnPlaybackToggle.Location = new System.Drawing.Point(157, 400);
             this.btnPlaybackToggle.Name = "btnPlaybackToggle";
-            this.btnPlaybackToggle.Size = new System.Drawing.Size(421, 15);
+            this.btnPlaybackToggle.Size = new System.Drawing.Size(836, 15);
             this.btnPlaybackToggle.TabIndex = 8;
             this.btnPlaybackToggle.TabStop = false;
             this.btnPlaybackToggle.UseVisualStyleBackColor = false;
@@ -378,22 +361,22 @@ namespace System.Windows.Forms
             this.animTimer.Interval = 1;
             this.animTimer.Tick += new System.EventHandler(this.animTimer_Tick);
             // 
-            // spltAssets
+            // spltLeft
             // 
-            this.spltAssets.BackColor = System.Drawing.SystemColors.Control;
-            this.spltAssets.Location = new System.Drawing.Point(245, 24);
-            this.spltAssets.Name = "spltAssets";
-            this.spltAssets.Size = new System.Drawing.Size(4, 391);
-            this.spltAssets.TabIndex = 9;
-            this.spltAssets.TabStop = false;
-            this.spltAssets.Visible = false;
+            this.spltLeft.BackColor = System.Drawing.SystemColors.Control;
+            this.spltLeft.Location = new System.Drawing.Point(138, 24);
+            this.spltLeft.Name = "spltLeft";
+            this.spltLeft.Size = new System.Drawing.Size(4, 391);
+            this.spltLeft.TabIndex = 9;
+            this.spltLeft.TabStop = false;
+            this.spltLeft.Visible = false;
             // 
             // btnOptionToggle
             // 
             this.btnOptionToggle.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnOptionToggle.Location = new System.Drawing.Point(264, 24);
+            this.btnOptionToggle.Location = new System.Drawing.Point(157, 24);
             this.btnOptionToggle.Name = "btnOptionToggle";
-            this.btnOptionToggle.Size = new System.Drawing.Size(421, 15);
+            this.btnOptionToggle.Size = new System.Drawing.Size(836, 15);
             this.btnOptionToggle.TabIndex = 11;
             this.btnOptionToggle.TabStop = false;
             this.btnOptionToggle.UseVisualStyleBackColor = false;
@@ -407,12 +390,11 @@ namespace System.Windows.Forms
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
             this.kinectToolStripMenuItem1,
-            this.toolStripMenuItem1,
             this.targetModelToolStripMenuItem,
             this.kinectToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(451, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(243, 24);
             this.menuStrip1.TabIndex = 13;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -547,11 +529,10 @@ namespace System.Windows.Forms
             // 
             // btnExportToAnimatedGIF
             // 
-            this.btnExportToAnimatedGIF.Enabled = false;
             this.btnExportToAnimatedGIF.Name = "btnExportToAnimatedGIF";
             this.btnExportToAnimatedGIF.Size = new System.Drawing.Size(292, 22);
             this.btnExportToAnimatedGIF.Text = "To Animated GIF";
-            this.btnExportToAnimatedGIF.Visible = false;
+            this.btnExportToAnimatedGIF.Click += new System.EventHandler(this.btnExportToAnimatedGIF_Click);
             // 
             // saveLocationToolStripMenuItem
             // 
@@ -731,12 +712,9 @@ namespace System.Windows.Forms
             // 
             this.editorsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.showOptions,
-            this.showBones,
-            this.showAssets,
-            this.showMoveset,
+            this.showLeft,
             this.showAnim,
-            this.showPlay,
-            this.showKeyframes,
+            this.showRight,
             this.detachViewerToolStripMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
             this.editorsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
@@ -744,61 +722,35 @@ namespace System.Windows.Forms
             // 
             // showOptions
             // 
+            this.showOptions.CheckOnClick = true;
             this.showOptions.Name = "showOptions";
             this.showOptions.Size = new System.Drawing.Size(162, 22);
             this.showOptions.Text = "Menu Bar";
             this.showOptions.CheckedChanged += new System.EventHandler(this.showOptions_CheckedChanged);
-            this.showOptions.Click += new System.EventHandler(this.showOptions_Click);
             // 
-            // showBones
+            // showLeft
             // 
-            this.showBones.Name = "showBones";
-            this.showBones.Size = new System.Drawing.Size(162, 22);
-            this.showBones.Text = "Bones Panel";
-            this.showBones.CheckedChanged += new System.EventHandler(this.showAnim_CheckedChanged);
-            this.showBones.Click += new System.EventHandler(this.showAnim_Click);
-            // 
-            // showAssets
-            // 
-            this.showAssets.Name = "showAssets";
-            this.showAssets.Size = new System.Drawing.Size(162, 22);
-            this.showAssets.Text = "Assets Panel";
-            this.showAssets.CheckedChanged += new System.EventHandler(this.showAssets_CheckedChanged);
-            this.showAssets.Click += new System.EventHandler(this.showAssets_Click);
-            // 
-            // showMoveset
-            // 
-            this.showMoveset.Name = "showMoveset";
-            this.showMoveset.Size = new System.Drawing.Size(162, 22);
-            this.showMoveset.Text = "Moveset Panel";
-            this.showMoveset.CheckedChanged += new System.EventHandler(this.showMoveset_CheckedChanged);
-            this.showMoveset.Click += new System.EventHandler(this.showMoveset_Click_1);
+            this.showLeft.CheckOnClick = true;
+            this.showLeft.Name = "showLeft";
+            this.showLeft.Size = new System.Drawing.Size(162, 22);
+            this.showLeft.Text = "Left Panel";
+            this.showLeft.CheckedChanged += new System.EventHandler(this.showAssets_CheckedChanged);
             // 
             // showAnim
             // 
+            this.showAnim.CheckOnClick = true;
             this.showAnim.Name = "showAnim";
             this.showAnim.Size = new System.Drawing.Size(162, 22);
             this.showAnim.Text = "Animation Panel";
             this.showAnim.CheckedChanged += new System.EventHandler(this.showPlay_CheckedChanged);
-            this.showAnim.Click += new System.EventHandler(this.showPlay_Click);
             // 
-            // showPlay
+            // showRight
             // 
-            this.showPlay.Checked = true;
-            this.showPlay.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showPlay.Name = "showPlay";
-            this.showPlay.Size = new System.Drawing.Size(162, 22);
-            this.showPlay.Text = "Playback Panel";
-            this.showPlay.CheckedChanged += new System.EventHandler(this.showPlay_CheckedChanged_1);
-            this.showPlay.Click += new System.EventHandler(this.showPlay_Click_1);
-            // 
-            // showKeyframes
-            // 
-            this.showKeyframes.Name = "showKeyframes";
-            this.showKeyframes.Size = new System.Drawing.Size(162, 22);
-            this.showKeyframes.Text = "Keyframe Panel";
-            this.showKeyframes.CheckedChanged += new System.EventHandler(this.showKeyframes_CheckedChanged);
-            this.showKeyframes.Click += new System.EventHandler(this.showKeyframes_Click);
+            this.showRight.CheckOnClick = true;
+            this.showRight.Name = "showRight";
+            this.showRight.Size = new System.Drawing.Size(162, 22);
+            this.showRight.Text = "Right Panel";
+            this.showRight.CheckedChanged += new System.EventHandler(this.showAnim_CheckedChanged);
             // 
             // detachViewerToolStripMenuItem
             // 
@@ -991,7 +943,7 @@ namespace System.Windows.Forms
             this.toggleBones.Checked = true;
             this.toggleBones.CheckState = System.Windows.Forms.CheckState.Checked;
             this.toggleBones.Name = "toggleBones";
-            this.toggleBones.ShortcutKeyDisplayString = "V Key";
+            this.toggleBones.ShortcutKeyDisplayString = "B Key";
             this.toggleBones.Size = new System.Drawing.Size(159, 22);
             this.toggleBones.Text = "Bones";
             this.toggleBones.Click += new System.EventHandler(this.toggleBonesToolStripMenuItem_Click);
@@ -1045,7 +997,7 @@ namespace System.Windows.Forms
             this.hitboxesOffToolStripMenuItem.Checked = true;
             this.hitboxesOffToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.hitboxesOffToolStripMenuItem.Name = "hitboxesOffToolStripMenuItem";
-            this.hitboxesOffToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.hitboxesOffToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.hitboxesOffToolStripMenuItem.Text = "Hitboxes";
             this.hitboxesOffToolStripMenuItem.CheckedChanged += new System.EventHandler(this.RenderStateChanged);
             this.hitboxesOffToolStripMenuItem.Click += new System.EventHandler(this.hitboxesOffToolStripMenuItem_Click);
@@ -1055,7 +1007,7 @@ namespace System.Windows.Forms
             this.hurtboxesOffToolStripMenuItem.Checked = true;
             this.hurtboxesOffToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.hurtboxesOffToolStripMenuItem.Name = "hurtboxesOffToolStripMenuItem";
-            this.hurtboxesOffToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+            this.hurtboxesOffToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.hurtboxesOffToolStripMenuItem.Text = "Hurtboxes";
             this.hurtboxesOffToolStripMenuItem.CheckedChanged += new System.EventHandler(this.RenderStateChanged);
             this.hurtboxesOffToolStripMenuItem.Click += new System.EventHandler(this.hurtboxesOffToolStripMenuItem_Click);
@@ -1196,29 +1148,6 @@ namespace System.Windows.Forms
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
-            // toolStripMenuItem1
-            // 
-            this.toolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btnLoadMoveset,
-            this.btnSaveMoveset});
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(64, 20);
-            this.toolStripMenuItem1.Text = "Moveset";
-            // 
-            // btnLoadMoveset
-            // 
-            this.btnLoadMoveset.Name = "btnLoadMoveset";
-            this.btnLoadMoveset.Size = new System.Drawing.Size(100, 22);
-            this.btnLoadMoveset.Text = "Load";
-            this.btnLoadMoveset.Click += new System.EventHandler(this.btnLoadMoveset_Click);
-            // 
-            // btnSaveMoveset
-            // 
-            this.btnSaveMoveset.Name = "btnSaveMoveset";
-            this.btnSaveMoveset.Size = new System.Drawing.Size(100, 22);
-            this.btnSaveMoveset.Text = "Save";
-            this.btnSaveMoveset.Click += new System.EventHandler(this.btnSaveMoveset_Click);
-            // 
             // targetModelToolStripMenuItem
             // 
             this.targetModelToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1312,15 +1241,6 @@ namespace System.Windows.Forms
             this.startTrackingToolStripMenuItem.Text = "Start Tracking";
             this.startTrackingToolStripMenuItem.Click += new System.EventHandler(this.startTrackingToolStripMenuItem_Click);
             // 
-            // spltMoveset
-            // 
-            this.spltMoveset.Location = new System.Drawing.Point(138, 24);
-            this.spltMoveset.Name = "spltMoveset";
-            this.spltMoveset.Size = new System.Drawing.Size(4, 391);
-            this.spltMoveset.TabIndex = 18;
-            this.spltMoveset.TabStop = false;
-            this.spltMoveset.Visible = false;
-            // 
             // models
             // 
             this.models.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -1329,9 +1249,9 @@ namespace System.Windows.Forms
             this.models.FormattingEnabled = true;
             this.models.Items.AddRange(new object[] {
             "All"});
-            this.models.Location = new System.Drawing.Point(310, 1);
+            this.models.Location = new System.Drawing.Point(245, 1);
             this.models.Name = "models";
-            this.models.Size = new System.Drawing.Size(138, 21);
+            this.models.Size = new System.Drawing.Size(106, 21);
             this.models.TabIndex = 21;
             this.models.SelectedIndexChanged += new System.EventHandler(this.models_SelectedIndexChanged);
             // 
@@ -1349,7 +1269,7 @@ namespace System.Windows.Forms
             // 
             // splitter1
             // 
-            this.splitter1.Location = new System.Drawing.Point(448, 0);
+            this.splitter1.Location = new System.Drawing.Point(351, 0);
             this.splitter1.Name = "splitter1";
             this.splitter1.Size = new System.Drawing.Size(3, 24);
             this.splitter1.TabIndex = 31;
@@ -1371,10 +1291,10 @@ namespace System.Windows.Forms
             this.chkFloor,
             this.button1,
             this.btnSaveCam});
-            this.toolStrip1.Location = new System.Drawing.Point(448, 0);
+            this.toolStrip1.Location = new System.Drawing.Point(351, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
-            this.toolStrip1.Size = new System.Drawing.Size(693, 24);
+            this.toolStrip1.Size = new System.Drawing.Size(790, 24);
             this.toolStrip1.TabIndex = 30;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -1493,27 +1413,27 @@ namespace System.Windows.Forms
             this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(448, 24);
+            this.panel2.Size = new System.Drawing.Size(351, 24);
             this.panel2.TabIndex = 29;
             // 
-            // spltAnims
+            // spltRight
             // 
-            this.spltAnims.Dock = System.Windows.Forms.DockStyle.Right;
-            this.spltAnims.Location = new System.Drawing.Point(700, 24);
-            this.spltAnims.Name = "spltAnims";
-            this.spltAnims.Size = new System.Drawing.Size(4, 391);
-            this.spltAnims.TabIndex = 23;
-            this.spltAnims.TabStop = false;
-            this.spltAnims.Visible = false;
+            this.spltRight.Dock = System.Windows.Forms.DockStyle.Right;
+            this.spltRight.Location = new System.Drawing.Point(1008, 24);
+            this.spltRight.Name = "spltRight";
+            this.spltRight.Size = new System.Drawing.Size(4, 391);
+            this.spltRight.TabIndex = 23;
+            this.spltRight.TabStop = false;
+            this.spltRight.Visible = false;
             // 
             // panel1
             // 
             this.panel1.Controls.Add(this.KinectPanel);
             this.panel1.Controls.Add(this.modelPanel);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(264, 39);
+            this.panel1.Location = new System.Drawing.Point(157, 39);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(421, 361);
+            this.panel1.Size = new System.Drawing.Size(836, 361);
             this.panel1.TabIndex = 25;
             // 
             // KinectPanel
@@ -1522,7 +1442,7 @@ namespace System.Windows.Forms
             this.KinectPanel.BackColor = System.Drawing.Color.Transparent;
             this.KinectPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.KinectPanel.Controls.Add(this.label1);
-            this.KinectPanel.Location = new System.Drawing.Point(376, 0);
+            this.KinectPanel.Location = new System.Drawing.Point(791, 0);
             this.KinectPanel.Name = "KinectPanel";
             this.KinectPanel.Size = new System.Drawing.Size(45, 38);
             this.KinectPanel.TabIndex = 14;
@@ -1545,7 +1465,7 @@ namespace System.Windows.Forms
             this.modelPanel.Location = new System.Drawing.Point(0, 0);
             this.modelPanel.Name = "modelPanel";
             this.modelPanel.RotationScale = 0.4F;
-            this.modelPanel.Size = new System.Drawing.Size(421, 361);
+            this.modelPanel.Size = new System.Drawing.Size(836, 361);
             this.modelPanel.TabIndex = 0;
             this.modelPanel.TranslationScale = 0.05F;
             this.modelPanel.ZoomScale = 2.5F;
@@ -1559,7 +1479,7 @@ namespace System.Windows.Forms
             // 
             this.animEditors.AutoScroll = true;
             this.animEditors.Controls.Add(this.pnlPlayback);
-            this.animEditors.Controls.Add(this.panel3);
+            this.animEditors.Controls.Add(this.animCtrlPnl);
             this.animEditors.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.animEditors.Location = new System.Drawing.Point(0, 415);
             this.animEditors.Name = "animEditors";
@@ -1578,23 +1498,23 @@ namespace System.Windows.Forms
             this.pnlPlayback.TabIndex = 15;
             this.pnlPlayback.Resize += new System.EventHandler(this.pnlPlayback_Resize);
             // 
-            // panel3
+            // animCtrlPnl
             // 
-            this.panel3.AutoScroll = true;
-            this.panel3.Controls.Add(this.vis0Editor);
-            this.panel3.Controls.Add(this.pat0Editor);
-            this.panel3.Controls.Add(this.shp0Editor);
-            this.panel3.Controls.Add(this.srt0Editor);
-            this.panel3.Controls.Add(this.chr0Editor);
-            this.panel3.Controls.Add(this.scn0Editor);
-            this.panel3.Controls.Add(this.clr0Editor);
-            this.panel3.Controls.Add(this.weightEditor);
-            this.panel3.Controls.Add(this.vertexEditor);
-            this.panel3.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panel3.Location = new System.Drawing.Point(0, 0);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(264, 60);
-            this.panel3.TabIndex = 29;
+            this.animCtrlPnl.AutoScroll = true;
+            this.animCtrlPnl.Controls.Add(this.vis0Editor);
+            this.animCtrlPnl.Controls.Add(this.pat0Editor);
+            this.animCtrlPnl.Controls.Add(this.shp0Editor);
+            this.animCtrlPnl.Controls.Add(this.srt0Editor);
+            this.animCtrlPnl.Controls.Add(this.chr0Editor);
+            this.animCtrlPnl.Controls.Add(this.scn0Editor);
+            this.animCtrlPnl.Controls.Add(this.clr0Editor);
+            this.animCtrlPnl.Controls.Add(this.weightEditor);
+            this.animCtrlPnl.Controls.Add(this.vertexEditor);
+            this.animCtrlPnl.Dock = System.Windows.Forms.DockStyle.Left;
+            this.animCtrlPnl.Location = new System.Drawing.Point(0, 0);
+            this.animCtrlPnl.Name = "animCtrlPnl";
+            this.animCtrlPnl.Size = new System.Drawing.Size(264, 60);
+            this.animCtrlPnl.TabIndex = 29;
             // 
             // vis0Editor
             // 
@@ -1681,55 +1601,34 @@ namespace System.Windows.Forms
             this.vertexEditor.TabIndex = 32;
             this.vertexEditor.Visible = false;
             // 
-            // pnlMoveset
-            // 
-            this.pnlMoveset.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.pnlMoveset.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlMoveset.Location = new System.Drawing.Point(927, 24);
-            this.pnlMoveset.Name = "pnlMoveset";
-            this.pnlMoveset.Size = new System.Drawing.Size(214, 391);
-            this.pnlMoveset.TabIndex = 17;
-            this.pnlMoveset.Visible = false;
-            this.pnlMoveset.FileChanged += new System.EventHandler(this.FileChanged);
-            // 
-            // pnlBones
-            // 
-            this.pnlBones.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pnlBones.Location = new System.Drawing.Point(142, 24);
-            this.pnlBones.Name = "pnlBones";
-            this.pnlBones.Size = new System.Drawing.Size(103, 391);
-            this.pnlBones.TabIndex = 20;
-            this.pnlBones.Visible = false;
-            // 
-            // pnlAssets
-            // 
-            this.pnlAssets.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pnlAssets.Location = new System.Drawing.Point(0, 24);
-            this.pnlAssets.Name = "pnlAssets";
-            this.pnlAssets.Size = new System.Drawing.Size(138, 391);
-            this.pnlAssets.TabIndex = 4;
-            this.pnlAssets.TargetAnimType = System.Windows.Forms.AnimType.None;
-            this.pnlAssets.Visible = false;
-            // 
-            // pnlKeyframes
-            // 
-            this.pnlKeyframes.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlKeyframes.FrameCount = -1;
-            this.pnlKeyframes.Location = new System.Drawing.Point(704, 24);
-            this.pnlKeyframes.Name = "pnlKeyframes";
-            this.pnlKeyframes.Size = new System.Drawing.Size(219, 391);
-            this.pnlKeyframes.TabIndex = 30;
-            this.pnlKeyframes.Visible = false;
-            // 
             // splitter2
             // 
             this.splitter2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.splitter2.Location = new System.Drawing.Point(923, 24);
+            this.splitter2.Location = new System.Drawing.Point(1137, 24);
             this.splitter2.Name = "splitter2";
             this.splitter2.Size = new System.Drawing.Size(4, 391);
             this.splitter2.TabIndex = 31;
             this.splitter2.TabStop = false;
             this.splitter2.Visible = false;
+            // 
+            // leftPanel
+            // 
+            this.leftPanel.Dock = System.Windows.Forms.DockStyle.Left;
+            this.leftPanel.Location = new System.Drawing.Point(0, 24);
+            this.leftPanel.Name = "leftPanel";
+            this.leftPanel.Size = new System.Drawing.Size(138, 391);
+            this.leftPanel.TabIndex = 4;
+            this.leftPanel.TargetAnimType = System.Windows.Forms.AnimType.None;
+            this.leftPanel.Visible = false;
+            // 
+            // rightPanel
+            // 
+            this.rightPanel.Dock = System.Windows.Forms.DockStyle.Right;
+            this.rightPanel.Location = new System.Drawing.Point(1012, 24);
+            this.rightPanel.Name = "rightPanel";
+            this.rightPanel.Size = new System.Drawing.Size(125, 391);
+            this.rightPanel.TabIndex = 32;
+            this.rightPanel.Visible = false;
             // 
             // ModelEditControl
             // 
@@ -1737,16 +1636,13 @@ namespace System.Windows.Forms
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.btnOptionToggle);
             this.Controls.Add(this.btnPlaybackToggle);
-            this.Controls.Add(this.btnAnimToggle);
-            this.Controls.Add(this.spltAnims);
-            this.Controls.Add(this.pnlKeyframes);
+            this.Controls.Add(this.btnRightToggle);
+            this.Controls.Add(this.spltRight);
+            this.Controls.Add(this.rightPanel);
             this.Controls.Add(this.splitter2);
-            this.Controls.Add(this.pnlMoveset);
-            this.Controls.Add(this.btnAssetToggle);
-            this.Controls.Add(this.spltAssets);
-            this.Controls.Add(this.pnlBones);
-            this.Controls.Add(this.spltMoveset);
-            this.Controls.Add(this.pnlAssets);
+            this.Controls.Add(this.btnLeftToggle);
+            this.Controls.Add(this.spltLeft);
+            this.Controls.Add(this.leftPanel);
             this.Controls.Add(this.controlPanel);
             this.Controls.Add(this.animEditors);
             this.Name = "ModelEditControl";
@@ -1766,7 +1662,7 @@ namespace System.Windows.Forms
             this.KinectPanel.ResumeLayout(false);
             this.KinectPanel.PerformLayout();
             this.animEditors.ResumeLayout(false);
-            this.panel3.ResumeLayout(false);
+            this.animCtrlPnl.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1777,12 +1673,9 @@ namespace System.Windows.Forms
         public ModelEditControl()
         {
             InitializeComponent();
-            pnlAssets._mainWindow =
-            pnlBones._mainWindow =
-            pnlMoveset._mainWindow =
-            pnlPlayback._mainWindow =
-            pnlKeyframes._mainWindow =
-            chr0Editor._mainWindow =
+            leftPanel._mainWindow = this;
+            rightPanel.pnlKeyframes._mainWindow =
+            rightPanel.pnlBones._mainWindow =
             srt0Editor._mainWindow =
             shp0Editor._mainWindow =
             pat0Editor._mainWindow =
@@ -1791,11 +1684,15 @@ namespace System.Windows.Forms
             clr0Editor._mainWindow =
             weightEditor._mainWindow =
             vertexEditor._mainWindow =
-            modelPanel._mainWindow = this;
+            pnlPlayback._mainWindow =
+            chr0Editor._mainWindow =
+            this;
 
-            pnlKeyframes.visEditor._mainWindow = vis0Editor;
+            rightPanel.pnlKeyframes.visEditor._mainWindow = vis0Editor;
 
-            animEditors.HorizontalScroll.Enabled = addedHeight = (!(animEditors.Width - panel3.Width >= pnlPlayback.MinimumSize.Width));
+            modelPanel._attached = true;
+
+            animEditors.HorizontalScroll.Enabled = addedHeight = (!(animEditors.Width - animCtrlPnl.Width >= pnlPlayback.MinimumSize.Width));
             if (pnlPlayback.Width <= pnlPlayback.MinimumSize.Width)
             {
                 pnlPlayback.Dock = DockStyle.Left;
@@ -1804,10 +1701,9 @@ namespace System.Windows.Forms
             else
                 pnlPlayback.Dock = DockStyle.Fill;
 
+            leftPanel.fileType.DataSource = AnimTypes;
             TargetAnimType = AnimType.CHR;
-
-            m_DelegateOpenFile = new DelegateOpenFile(this.OpenFile);
-
+            m_DelegateOpenFile = new DelegateOpenFile(OpenFile);
             ScreenCapBgLocText.Text = Application.StartupPath;
         }
 
@@ -1843,14 +1739,14 @@ namespace System.Windows.Forms
             if (_updating)
                 return;
 
-            if (animEditors.Width - panel3.Width >= pnlPlayback.MinimumSize.Width)
+            if (animEditors.Width - animCtrlPnl.Width >= pnlPlayback.MinimumSize.Width)
             {
-                pnlPlayback.Width += animEditors.Width - panel3.Width - pnlPlayback.MinimumSize.Width;
+                pnlPlayback.Width += animEditors.Width - animCtrlPnl.Width - pnlPlayback.MinimumSize.Width;
                 pnlPlayback.Dock = DockStyle.Fill;
             }
             else pnlPlayback.Dock = DockStyle.Left;
 
-            if (panel3.Width + pnlPlayback.Width <= animEditors.Width)
+            if (animCtrlPnl.Width + pnlPlayback.Width <= animEditors.Width)
             {
                 if (addedHeight)
                 {
@@ -1871,6 +1767,68 @@ namespace System.Windows.Forms
                 }
             }
         }
+    }
+
+    public interface IMainWindow
+    {
+        void numFPS_ValueChanged(object sender, EventArgs e);
+        void numFrameIndex_ValueChanged(object sender, EventArgs e);
+        void numTotalFrames_ValueChanged(object sender, EventArgs e);
+        void SelectedPolygonChanged(object sender, EventArgs e);
+        void chkLoop_CheckedChanged(object sender, EventArgs e);
+        void btnPlay_Click(object sender, EventArgs e);
+        void UpdateVis0(object sender, EventArgs e);
+
+        void CheckDimensions();
+        void ReadVIS0();
+        void SetCurrentControl();
+        void UpdateModel();
+        void UpdatePropDisplay();
+        void SetFrame(int index);
+        void BoneChange(MDL0BoneNode bone);
+        void GetFiles(AnimType focusType);
+        void AnimChanged(AnimType type);
+        
+        ResourceNode GetSelectedBRRESFile(AnimType type);
+
+        KeyframePanel KeyframePanel { get; }
+        BonesPanel BonesPanel { get; }
+        ModelPanel ModelPanel { get; }
+        CHR0Editor CHR0Editor { get; }
+        SRT0Editor SRT0Editor { get; }
+        SHP0Editor SHP0Editor { get; }
+        PAT0Editor PAT0Editor { get; }
+        VIS0Editor VIS0Editor { get; }
+        SCN0Editor SCN0Editor { get; }
+        CLR0Editor CLR0Editor { get; }
+        Panel AnimCtrlPnl { get; }
+        Panel AnimEditors { get; }
+        
+        CHR0Node SelectedCHR0 { get; set; }
+        SRT0Node SelectedSRT0 { get; set; }
+        SHP0Node SelectedSHP0 { get; set; }
+        PAT0Node SelectedPAT0 { get; set; }
+        VIS0Node SelectedVIS0 { get; set; }
+        SCN0Node SelectedSCN0 { get; set; }
+        CLR0Node SelectedCLR0 { get; set; }
+        MDL0BoneNode SelectedBone { get; set; }
+
+        int CurrentFrame { get; set; }
+        int MaxFrame { get; set; }
+        bool Playing { get; set; }
+        bool Loop { get; set; }
+        
+        bool Updating { get; set; }
+        bool EnableTransformEdit { get; set; }
+        bool SyncVIS0 { get; set; }
+        bool RenderLightDisplay { get; set; }
+        uint AllowedUndos { get; set; }
+
+        MDL0Node TargetModel { get; set; }
+        VIS0EntryNode TargetVisEntry { get; set; }
+        MDL0MaterialRefNode TargetTexRef { get; set; }
+        ResourceNode ExternalAnimationsNode { get; }
+        AnimType TargetAnimType { get; set; }
     }
 
     public class TransparentPanel : Panel

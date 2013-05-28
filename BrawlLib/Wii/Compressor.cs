@@ -63,7 +63,7 @@ namespace BrawlLib.Wii.Compression
         {
             RunLength.ExpandYAZ0(header, dstAddr, dstLen);
         }
-        internal static unsafe void Compact(CompressionType type, VoidPtr srcAddr, int srcLen, Stream outStream, ResourceNode r)
+        public static unsafe void Compact(CompressionType type, VoidPtr srcAddr, int srcLen, Stream outStream, ResourceNode r)
         {
             switch (type)
             {

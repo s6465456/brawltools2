@@ -18,7 +18,7 @@ using System.Collections;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
         public uint _allowedUndos = 50;
         public List<SaveState> _undoSaves = new List<SaveState>();
@@ -52,7 +52,12 @@ namespace System.Windows.Forms
             UpdateUndoButtons();
         }
 
-        public void BoneChange(MDL0BoneNode bone, bool before)
+        bool before = true;
+
+        /// <summary>
+        /// Call twice; before and after changes
+        /// </summary>
+        public void BoneChange(MDL0BoneNode bone)
         {
             SaveState state = new SaveState();
             state._bone = bone;
@@ -64,9 +69,13 @@ namespace System.Windows.Forms
                 AddUndo(state);
             else
                 AddRedo(state);
-        }
 
-        public void VertexChange(List<Vertex3> vertices, bool before)
+            before = !before;
+        }
+        /// <summary>
+        /// Call twice; before and after changes
+        /// </summary>
+        public void VertexChange(List<Vertex3> vertices)
         {
             SaveState state = new SaveState();
             state._vertices = vertices;
@@ -77,6 +86,8 @@ namespace System.Windows.Forms
                 AddUndo(state);
             else
                 AddRedo(state);
+
+            before = !before;
         }
 
         public bool CanUndo { get { return _saveIndex > -1; } }
@@ -132,7 +143,7 @@ namespace System.Windows.Forms
             {
                 SelectedCHR0 = s._animation;
                 CurrentFrame = s._frameIndex;
-                pnlBones.SelectedBone = s._bone;
+                SelectedBone = s._bone;
                 chr0Editor.ApplyState(s);
             }
             else if (s._vertices != null)

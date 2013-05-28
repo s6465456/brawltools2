@@ -132,7 +132,7 @@ namespace System.Windows.Forms
         private Button btnCopy;
         private Button btnCut;
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
 
         StringInputComboBox texture, palette;
 
@@ -142,7 +142,7 @@ namespace System.Windows.Forms
         public MDL0BoneNode TargetBone { get { return _mainWindow.SelectedBone; } set { _mainWindow.SelectedBone = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
+        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow.TargetTexRef; } set { _mainWindow.TargetTexRef = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrame
@@ -268,19 +268,19 @@ namespace System.Windows.Forms
             TargetModel.ApplyPAT(SelectedAnimation, CurrentFrame);
             ResetTexture();
             ResetPalette();
-            _mainWindow.modelPanel.Invalidate();
+            _mainWindow.ModelPanel.Invalidate();
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
         {
-            get { return _mainWindow._enableTransform; }
+            get { return _mainWindow.EnableTransformEdit; }
             set { grpEdit.Enabled = (_mainWindow.EnableTransformEdit = value) && (TargetTexRef != null); }
         }
 
-        internal void UpdateBoxes()
+        public void UpdateBoxes()
         {
-            if (_mainWindow._externalAnimationsNode == null && TargetModel == null)
+            if (_mainWindow.ExternalAnimationsNode == null && TargetModel == null)
                 return;
 
             texBox.Items.Clear();
@@ -293,11 +293,11 @@ namespace System.Windows.Forms
                 foreach (ResourceNode s in TargetModel.RootNode.FindChildrenByType(null, ResourceType.PLT0))
                     pltBox.Items.Add(s.Name);
             }
-            if (_mainWindow._externalAnimationsNode != null)
+            if (_mainWindow.ExternalAnimationsNode != null)
             {
-                foreach (ResourceNode s in _mainWindow._externalAnimationsNode.FindChildrenByType(null, ResourceType.TEX0))
+                foreach (ResourceNode s in _mainWindow.ExternalAnimationsNode.FindChildrenByType(null, ResourceType.TEX0))
                     texBox.Items.Add(s.Name);
-                foreach (ResourceNode s in _mainWindow._externalAnimationsNode.FindChildrenByType(null, ResourceType.PLT0))
+                foreach (ResourceNode s in _mainWindow.ExternalAnimationsNode.FindChildrenByType(null, ResourceType.PLT0))
                     pltBox.Items.Add(s.Name);
             }
         }

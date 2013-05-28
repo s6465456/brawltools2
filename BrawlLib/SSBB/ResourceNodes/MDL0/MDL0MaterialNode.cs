@@ -764,7 +764,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Reading & Writing
         internal int _initVersion;
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             MDL0Material* header = Header;
 
@@ -873,7 +873,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             MDL0TextureRef* first = Header->First;
             for (int i = 0; i < Header->_numTextures; i++)
@@ -892,7 +892,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public int _dataAlign = 0, _mdlOffset = 0;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int temp, size;
 
@@ -923,7 +923,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public bool New = false;
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             MDL0Material* header = (MDL0Material*)address;
 

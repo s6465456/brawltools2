@@ -14,8 +14,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal U8* Header { get { return (U8*)WorkingUncompressed.Address; } }
         
         public override ResourceType ResourceType { get { return ResourceType.U8; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(U8EntryNode) };
+            }
+        }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             U8Entry* first = Header->Entries;
             uint count = first->_dataLength - 1;
@@ -79,7 +86,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             IsDirty = false; //Clear up changes from parent reassignments
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             return true;
         }
@@ -102,7 +109,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return 0;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             entrySize = 12;
             id = 1;
@@ -138,7 +145,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         int entryLength = 0;
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             U8* header = (U8*)address;
             header->_tag = U8.Tag;
@@ -223,7 +230,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public int ID { get { return index; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
             type = U8EntryHeader->_type;
@@ -235,13 +242,20 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class U8FolderNode : U8EntryNode
     {
         public override ResourceType ResourceType { get { return ResourceType.U8Folder; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(U8EntryNode) };
+            }
+        }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             return base.OnInitialize();
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0;
         }

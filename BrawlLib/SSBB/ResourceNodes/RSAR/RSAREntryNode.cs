@@ -31,7 +31,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public VoidPtr _rebuildBase;
         public int _rebuildIndex, _rebuildStringId;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
             {

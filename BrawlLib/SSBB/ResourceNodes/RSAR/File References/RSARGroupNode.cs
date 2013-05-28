@@ -25,7 +25,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public List<RSARFileNode> Files { get { return _files; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -50,13 +50,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return INFOGroupHeader.Size + 4 + _files.Count * (8 + INFOGroupEntry.Size);
         }
 
         internal INFOGroupHeader* _rebuildAddr;
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             INFOGroupHeader* header = (INFOGroupHeader*)address;
             _rebuildAddr = header;

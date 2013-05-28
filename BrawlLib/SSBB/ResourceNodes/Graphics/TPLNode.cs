@@ -16,7 +16,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.TPL; } }
         internal TPLHeader* Header { get { return (TPLHeader*)WorkingUncompressed.Address; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_origPath != null && _name == null)
                 _name = Path.GetFileNameWithoutExtension(_origPath);
@@ -26,7 +26,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Header->_numEntries > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             TPLGroupNode g;
             VoidPtr p;
@@ -45,7 +45,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         int size = 0, texHdrLen = 0, pltHdrLen = 0, texLen = 0, pltLen = 0;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             texHdrLen = 0;
             pltHdrLen = 0;
@@ -75,7 +75,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size + pltHdrLen + pltLen + texHdrLen + texLen;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             TPLHeader* header = (TPLHeader*)address;
             header->_tag = TPLHeader.Tag;
@@ -207,7 +207,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public TPLPaletteNode GetPaletteNode() { return (_parent == null) ? null : _parent.FindChild("Palette", false) as TPLPaletteNode; }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -309,12 +309,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 base.Export(outPath);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return TextureConverter.Get(Format).GetMipOffset(Width, Height, LevelOfDetail + 1);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             Memory.Move(address, _dataAddr, (uint)length);
             _dataAddr = address;
@@ -344,7 +344,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Palette")]
         public WiiPaletteFormat Format { get { return _format; } set { _format = value; SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -361,12 +361,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return Palette.Entries.Length.Align(16) * 2;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             TextureConverter.EncodePalette(address, Palette, _format);
             _dataAddr = address;

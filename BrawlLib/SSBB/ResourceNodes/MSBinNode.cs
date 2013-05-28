@@ -10,7 +10,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.MSBin; } }
         public List<string> _strings = new List<string>();
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -34,7 +34,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int len = (_strings.Count + 1) << 2;
             foreach (string s in _strings)
@@ -43,7 +43,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return len;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             bint* offsets = (bint*)address;
             byte* current = (byte*)(offsets + _strings.Count + 1);

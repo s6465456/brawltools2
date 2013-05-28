@@ -30,7 +30,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public VoidPtr _sectionAddr;
         public bool _isDynamic = false;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _isCodeSection = Header->IsCodeSection;
             _off = Header->Offset;
@@ -63,7 +63,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Index > 1 && Index < 6;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             switch (Index)
             {
@@ -74,7 +74,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             new RELDeConStructorNode() { _destruct = Index == 3, _index = i }.Initialize(this, (VoidPtr)BaseAddress + _relocations[i].FormalValue, 0);
                         break;
                 case 4: //Display Constants
-                    new MoveDefSectionParamNode().Initialize(this, _dataBuffer.Address, _dataBuffer.Length);
+                    //new MoveDefSectionParamNode().Initialize(this, _dataBuffer.Address, _dataBuffer.Length);
                     break;
                 case 5: //Parse Objects
                     new ObjectParser().Parse(this);

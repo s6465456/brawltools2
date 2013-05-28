@@ -19,7 +19,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Offensive AI Node")]
         public int NumEntries { get { return Children.Count; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 this._name = "CE " + this.Parent.Name.Replace("ai_", "");
@@ -30,7 +30,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Header->_numEntries > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             new CEGroupNode("Events").Initialize(this, new DataSource(Header, 0x0));
             new CEGroupNode("Strings").Initialize(this, new DataSource(Header, 0x0));
@@ -45,7 +45,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return new CENode();
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             CEHeader* header = (CEHeader*)address;
             header->_unk1 = unk1;
@@ -77,7 +77,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return n;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0x10 + Children[0].Children.Count * 0x4 + Children[1].Children.Count * 0x4;//CEheader size
             if (size % 0x10 != 0)
@@ -96,12 +96,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         public CEGroupNode(string name) : base() { this._name = name; }
 
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             return true;
         }
         //when use this you must send first address or string address
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             CEHeader* header = (CEHeader*)address;
             VoidPtr entry = null;
@@ -130,7 +130,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             Type t = null;//switch by name
             if (_name == "Events")
@@ -162,7 +162,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
         }
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0;
             if (this._name == "Events")//calculate size of all CEEntryNode
@@ -209,7 +209,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             entries.Clear();
             if (_name == null || _name == "")
@@ -230,7 +230,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             CEEvent* currentEvent = null;
             VoidPtr current = Header->Event;
@@ -268,7 +268,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             return insertID;//if there's no change
         }
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             CEEntry* header = (CEEntry*)address;
             int eventSize = 0;
@@ -296,7 +296,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->part2[i] = Part2Entries[i];
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int eventSize = 0;
             int part2Size = 0;
@@ -387,7 +387,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null || _name == "")
                 _name = "Event " + ((int)Header->_type).ToString("X");
@@ -398,7 +398,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             CEEvent* e = (CEEvent*)address;
             e->_entrySize = (short)EntrySize;
@@ -408,7 +408,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 e->Entries[i] = Entries[i];
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return EntrySize;
         }
@@ -435,7 +435,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("AI StringNode Entry"), Description("Unknown strings")]
         public string[] Strings { get { return strings; } set { strings = value; SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null || _name == "")
                 _name = "StringEntry" + Parent.Children.IndexOf(this).ToString();
@@ -473,7 +473,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return returnStrings;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             CEString* strings = (CEString*)address;
             strings->_numEntries = Strings.Length;
@@ -501,7 +501,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0x10;
             foreach (int[] array in Entries)

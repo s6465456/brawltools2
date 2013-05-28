@@ -207,8 +207,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         internal void SetNumEntries(int id, int value)
         {
-            //if (_numEntries[id] == 0)
-            //    return;
+            if (_numEntries[id] == 0)
+                return;
 
             if (value > _numEntries[id])
             {
@@ -562,7 +562,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             return new Vector3(k0, k1, k2);
         }
 
-        protected override bool OnInitialize()
+        public int LightOffset { get { return !_constants[0] ? (int)*(bint*)&Data->_lightColor + (int)(&Data->_lightColor - Parent.Parent.WorkingUncompressed.Address) : 0; } }
+        public int SpecOffset { get { return !_constants[1] ? (int)*(bint*)&Data->_specularColor + (int)(&Data->_specularColor - Parent.Parent.WorkingUncompressed.Address) : 0; } }
+        
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -595,6 +598,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _data = new byte[numBytes];
                 Marshal.Copy((IntPtr)Data->visBitEntries, _data, 0, numBytes);
 
+                SCN0Node.strings[(int)(Data->visBitEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Vis";
+
                 //byte* addr = Data->visBitEntries;
                 //int index = -1;
                 //for (int x = 0; x <= FrameCount; x++) //Read each bit, progress in bytes
@@ -615,7 +620,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RGBAPixel* addr = Data->lightColorEntries;
                 for (int x = 0; x <= FrameCount; x++)
                     _lightColor.Add(*addr++);
+
+                SCN0Node.strings[(int)(Data->lightColorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Pixels Light";
             }
+            //_constants[1] = flags.HasFlag(FixedFlags.SpecColorConstant);
+            if (SpecularEnabled)
             if (flags.HasFlag(FixedFlags.SpecColorConstant))
                 _solidColors[1] = Data->_specularColor;
             else
@@ -625,6 +634,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RGBAPixel* addr = Data->specColorEntries;
                 for (int x = 0; x <= FrameCount; x++)
                     _specColor.Add(*addr++);
+
+                SCN0Node.strings[(int)(Data->specColorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Pixels Spec";
             }
 
             bint* values = (bint*)&Data->_startPoint;
@@ -632,37 +643,94 @@ namespace BrawlLib.SSBB.ResourceNodes
             int index = 0;
             for (int i = 0; i < 14; i++)
                 if (!(i == 3 || i == 7 || i == 10 || i == 12))
+                {
+                    if (((int)_flags1 & (int)Ordered[index]) == 0)
+                        SCN0Node.strings[(int)((&values[i] - Parent.Parent.WorkingUncompressed.Address + values[i]))] = "Light" + Index + " Keys " + Ordered[index].ToString();
+
                     DecodeFrames(GetKeys(index), &values[i], (int)_flags1, (int)Ordered[index++]);
+                }
 
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        SCN0LightNode match1 = null, match2 = null;
+        public override int OnCalculateSize(bool force)
         {
-            lightLen = 0;
-            keyLen = 0;
+            match1 = null;
+            match2 = null;
+            _lightLen = 0;
+            _keyLen = 0;
+            _visLen = 0;
             if (_name != "<null>")
             {
                 if (!SetConstant)
-                    lightLen += _entryCount.Align(32) / 8;
+                    _visLen += _entryCount.Align(32) / 8;
                 if (!_constants[0])
-                    lightLen += 4 * (FrameCount + 1);
+                {
+                    foreach (SCN0LightNode n in Parent.Children)
+                    {
+                        if (n == this)
+                            break;
+
+                        if (!n._constants[0])
+                        {
+                            for (int i = 0; i < FrameCount + 1; i++)
+                            {
+                                if (n.GetColors(0)[i] != GetColors(0)[i])
+                                    break;
+                                if (i == FrameCount)
+                                    match1 = n;
+                            }
+                        }
+
+                        if (match1 != null)
+                            break;
+                    }
+                    if (match1 == null)
+                        _lightLen += 4 * (FrameCount + 1);
+                }
                 if (!_constants[1])
-                    lightLen += 4 * (FrameCount + 1);
+                {
+                    foreach (SCN0LightNode n in Parent.Children)
+                    {
+                        if (n == this)
+                            break;
+
+                        if (!n._constants[1])
+                        {
+                            for (int i = 0; i < FrameCount + 1; i++)
+                            {
+                                if (n.GetColors(1)[i] != GetColors(1)[i])
+                                    break;
+                                if (i == FrameCount)
+                                    match2 = n;
+                            }
+                        }
+
+                        if (match2 != null)
+                            break;
+                    }
+                    if (match2 == null)
+                        _lightLen += 4 * (FrameCount + 1);
+                }
                 for (int i = 0; i < 10; i++)
                     if (GetKeys(i)._keyCount > 1)
-                        keyLen += 4 + GetKeys(i)._keyCount * 12;
-            }
+                        _keyLen += 8 + GetKeys(i)._keyCount * 12;
 
-            if (UsageFlags.HasFlag(UsageFlags.SpecularEnabled))
-                ((SCN0Node)Parent.Parent)._specLights++;
+                if (UsageFlags.HasFlag(UsageFlags.SpecularEnabled))
+                    ((SCN0Node)Parent.Parent)._specLights++;
+            }
 
             return SCN0Light.Size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        VoidPtr lightAddress, specularAddress;
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
+
+            lightAddress = null;
+            specularAddress = null;
 
             SCN0Light* header = (SCN0Light*)address;
 
@@ -678,12 +746,18 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 if (_lightColor.Count > 1)
                 {
-                    *((bint*)header->_lightColor.Address) = (int)lightAddr - (int)header->_lightColor.Address;
-                    for (int x = 0; x <= FrameCount; x++)
-                        if (x < _lightColor.Count)
-                            *lightAddr++ = _lightColor[x];
-                        else
-                            *lightAddr++ = new RGBAPixel();
+                    lightAddress = lightAddr;
+                    if (match2 == null)
+                    {
+                        *((bint*)header->_lightColor.Address) = (int)lightAddr - (int)header->_lightColor.Address;
+                        for (int x = 0; x <= FrameCount; x++)
+                            if (x < _lightColor.Count)
+                                *lightAddr++ = _lightColor[x];
+                            else
+                                *lightAddr++ = new RGBAPixel();
+                    }
+                    else
+                        *((bint*)header->_lightColor.Address) = (int)match1.lightAddress - (int)header->_lightColor.Address;
                 }
                 else
                 {
@@ -692,29 +766,29 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 if (_specColor.Count > 1)
                 {
-                    *((bint*)header->_specularColor.Address) = (int)lightAddr - (int)header->_specularColor.Address;
-                    for (int x = 0; x <= FrameCount; x++)
-                        if (x < _specColor.Count)
-                            *lightAddr++ = _specColor[x];
-                        else
-                            *lightAddr++ = new RGBAPixel();
+                    specularAddress = lightAddr;
+                    if (match2 == null)
+                    {
+                        *((bint*)header->_specularColor.Address) = (int)lightAddr - (int)header->_specularColor.Address;
+                        for (int x = 0; x <= FrameCount; x++)
+                            if (x < _specColor.Count)
+                                *lightAddr++ = _specColor[x];
+                            else
+                                *lightAddr++ = new RGBAPixel();
+                    }
+                    else
+                        *((bint*)header->_specularColor.Address) = (int)match2.specularAddress - (int)header->_specularColor.Address;
                 }
                 else
                 {
                     newFlags |= (int)FixedFlags.SpecColorConstant;
                     header->_specularColor = _solidColors[1];
                 }
-                //if (_enabled.Count > 1)
                 if (!SetConstant && _entryCount != 0)
                 {
-                    header->_visOffset = (int)lightAddr - (int)header->_visOffset.Address;
-                    Marshal.Copy(_data, 0, (IntPtr)lightAddr, _data.Length);
-                    //byte* addr = (byte*)lightAddr;
-                    //int index = -1;
-                    //for (int x = 0; x <= FrameCount; x++)
-                    //    addr[(x % 8 == 0 ? ++index : index)] |= (byte)((x < _enabled.Count ? (_enabled[x] ? 1 : 0) : 0) << (7 - (x & 7)));
-                    //addr += ((FrameCount + 1).Align(32) / 8); //Align pointer
-                    lightAddr = (RGBAPixel*)((VoidPtr)lightAddr + EntryCount.Align(32) / 8);
+                    header->_visOffset = (int)visAddr - (int)header->_visOffset.Address;
+                    Marshal.Copy(_data, 0, (IntPtr)visAddr, _data.Length);
+                    visAddr = ((VoidPtr)visAddr + EntryCount.Align(32) / 8);
                 }
                 else
                     newFlags |= (int)FixedFlags.EnabledConstant;
@@ -750,7 +824,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return frame;
         }
 
-        internal float GetFrameValue(LightKeyframeMode keyFrameMode, int index)
+        public float GetFrameValue(LightKeyframeMode keyFrameMode, int index)
         {
             return GetKeys((int)keyFrameMode - 0x10).GetFrameValue(index);
         }

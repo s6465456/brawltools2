@@ -3,7 +3,7 @@ using BrawlLib.SSBBTypes;
 
 namespace BrawlLib.Wii.Models
 {
-    internal unsafe class AssetStorage : IDisposable
+    public unsafe class AssetStorage : IDisposable
     {
         public UnsafeBuffer[][] Assets = new UnsafeBuffer[4][];
 

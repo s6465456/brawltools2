@@ -473,7 +473,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             return node;
         }
-        internal MDL0BoneNode FindBone(string name)
+        public MDL0BoneNode FindBone(string name)
         {
             foreach (MDL0BoneNode b in _linker.BoneCache)
                 if (b.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
@@ -663,7 +663,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Parsing
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -702,7 +702,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             InitGroups();
             _linker = new ModelLinker(Header);
@@ -850,7 +850,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _reopen = true;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             //Clean and sort influence list
             _influences.Clean();
@@ -862,7 +862,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _linker = ModelLinker.Prepare(this);
             return ModelEncoder.CalcSize(_linker);
         }
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             ModelEncoder.Build(_linker, (MDL0Header*)address, length, force);
             _rebuildAllObj = false;
@@ -935,7 +935,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Rendering
         
-        internal bool _isTargetModel = false;
+        public bool _isTargetModel = false;
         public CheckState _renderPolygons = CheckState.Checked;
         public bool _renderBones = true;
         public bool _renderVertices = false;
@@ -987,7 +987,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public Matrix floorShadow;
-        public ModelPanel _mainWindow = null;
+        public MDL0BoneNode _selectedBone;
+        public ModelPanel _mainWindow;
         public void Render(TKContext ctx, ModelPanel mainWindow)
         {
             if (!_visible)
@@ -996,8 +997,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-            //if (_mainWindow == null || (_mainWindow != mainWindow && mainWindow != null))
-                _mainWindow = mainWindow;
+            _mainWindow = mainWindow;
 
             if (_renderPolygons != CheckState.Unchecked)
             {
@@ -1101,12 +1101,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     MDL0ObjectNode o = (MDL0ObjectNode)_polyList[_polyIndex];
                     if (o._render)
-                        o._manager.RenderVerts(ctx, o._matrixNode, _mainWindow, pass2);
+                        o._manager.RenderVerts(ctx, o._matrixNode, _selectedBone, _mainWindow._camera.GetPoint(), pass2);
                 }
                 else
                     foreach (MDL0ObjectNode p in _polyList)
                         if (p._render)
-                            p._manager.RenderVerts(ctx, p._matrixNode, _mainWindow, pass2);
+                            p._manager.RenderVerts(ctx, p._matrixNode, _selectedBone, _mainWindow._camera.GetPoint(), pass2);
             }
         }
 
@@ -1175,7 +1175,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             GL.End();
         }
 
-        internal void ApplyCHR(CHR0Node node, int index)
+        public void ApplyCHR(CHR0Node node, int index)
         {
             //Transform bones
             if (_boneList != null)
@@ -1196,7 +1196,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     poly.WeightVertices();
         }
 
-        internal void ApplySRT(SRT0Node node, int index)
+        public void ApplySRT(SRT0Node node, int index)
         {
             //Transform textures
             if (_matList != null)
@@ -1204,7 +1204,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     m.ApplySRT0(node, index);
         }
 
-        internal void ApplyCLR(CLR0Node node, int index)
+        public void ApplyCLR(CLR0Node node, int index)
         {
             //Apply color changes
             if (_matList != null)
@@ -1212,7 +1212,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     m.ApplyCLR0(node, index);
         }
 
-        internal void ApplyPAT(PAT0Node node, int index)
+        public void ApplyPAT(PAT0Node node, int index)
         {
             //Change textures
             if (_matList != null)
@@ -1220,7 +1220,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     m.ApplyPAT0(node, index);
         }
 
-        internal void ApplyVIS(VIS0Node _vis0, int _animFrame)
+        public void ApplyVIS(VIS0Node _vis0, int _animFrame)
         {
             foreach (string n in VIS0Indices.Keys)
             {
@@ -1235,13 +1235,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal unsafe void SetSCN0(SCN0Node node)
+        public unsafe void SetSCN0(SCN0Node node)
         {
             if (_matList != null)
                 foreach (MDL0MaterialNode mat in _matList)
                     mat.SetSCN0(node);
         }
-        internal unsafe void SetSCN0Frame(int frame)
+        public unsafe void SetSCN0Frame(int frame)
         {
             if (_matList != null)
                 foreach (MDL0MaterialNode mat in _matList)
@@ -1253,7 +1253,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //This only modifies vertices after ApplyCHR0 has weighted them.
         //It cannot be used without calling ApplyCHR0 first.
-        internal void ApplySHP(SHP0Node node, int index)
+        public void ApplySHP(SHP0Node node, int index)
         {
             _currentSHP = node;
             _currentSHPIndex = index;
@@ -1297,7 +1297,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                             foreach (MDL0VertexNode vNode in nodes)
                                 if (vNode != null)
-                                    v3._weightedPosition += (v3.GetMatrix() * vNode.Vertices[v3._facepoints[0].VertexIndex]) * weights[x++];
+                                    v3._weightedPosition += (v3.GetMatrix() * vNode.Vertices[v3._facepoints[0]._vertexIndex]) * weights[x++];
                             
                             v3._weightedPosition /= (totalWeight + baseWeight);
 
@@ -1307,37 +1307,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                             v3.bCenter = v3._weightedPosition;
                         }
                     }
-        }
-
-        public Matrix shadowMatrix(Vector4 groundplane, Vector4 lightpos)
-        {
-            Matrix shadowMat = new Matrix();
-            float dot = groundplane._x * lightpos._x +
-                        groundplane._y * lightpos._y +
-                        groundplane._z * lightpos._z +
-                        groundplane._w * lightpos._w;
-
-            shadowMat[0, 0] = dot - lightpos._x * groundplane._x;
-            shadowMat[1, 0] = 0.0f - lightpos._x * groundplane._y;
-            shadowMat[2, 0] = 0.0f - lightpos._x * groundplane._z;
-            shadowMat[3, 0] = 0.0f - lightpos._x * groundplane._w;
-
-            shadowMat[0, 1] = 0.0f - lightpos._y * groundplane._x;
-            shadowMat[1, 1] = dot - lightpos._y * groundplane._y;
-            shadowMat[2, 1] = 0.0f - lightpos._y * groundplane._z;
-            shadowMat[3, 1] = 0.0f - lightpos._y * groundplane._w;
-
-            shadowMat[0, 2] = 0.0f - lightpos._z * groundplane._x;
-            shadowMat[1, 2] = 0.0f - lightpos._z * groundplane._y;
-            shadowMat[2, 2] = dot - lightpos._z * groundplane._z;
-            shadowMat[3, 2] = 0.0f - lightpos._z * groundplane._w;
-
-            shadowMat[0, 3] = 0.0f - lightpos._w * groundplane._x;
-            shadowMat[1, 3] = 0.0f - lightpos._w * groundplane._y;
-            shadowMat[2, 3] = 0.0f - lightpos._w * groundplane._z;
-            shadowMat[3, 3] = dot - lightpos._w * groundplane._w;
-
-            return shadowMat;
         }
         #endregion
 

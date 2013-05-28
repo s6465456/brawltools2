@@ -64,7 +64,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return new IAudioStream[] { null };
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if ((_name == null) && (_origPath != null))
                 _name = Path.GetFileNameWithoutExtension(_origPath);

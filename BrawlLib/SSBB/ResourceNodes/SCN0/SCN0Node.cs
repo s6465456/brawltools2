@@ -14,18 +14,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal SCN0v4* Header4 { get { return (SCN0v4*)WorkingUncompressed.Address; } }
         internal SCN0v5* Header5 { get { return (SCN0v5*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.SCN0; } }
-
+        
+        //public static List<string> strings = new List<string>();
+        //public static List<int> offsets = new List<int>();
+        public static SortedDictionary<int, string> strings = new SortedDictionary<int, string>();
+    
         public int _version = 4, _origPathOffset, _frameCount = 1, _specLights, _loop, _lightset, _amblights, _lights, _fog, _camera;
-
-        [Browsable(false)]
-        public override int tFrameCount { get { return FrameCount; } set { FrameCount = value; } }
-        [Browsable(false)]
-        public override bool tLoop { get { return Loop; } set { Loop = value; } }
 
         [Category("Scene Data")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
-        public int FrameCount 
+        public override int FrameCount 
         {
             get { return _frameCount; }
             set 
@@ -49,16 +48,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("Scene Data")]
         //public int SpecularLightCount { get { return _specLights; } set { _specLights = value; SignalPropertyChange(); } }
         [Category("Scene Data")]
-        public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
+        public override bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
 
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
         internal UserDataCollection _userEntries = new UserDataCollection();
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
-
+            strings.Clear();
             _version = Header->_version;
             if (_version == 5)
             {
@@ -98,7 +97,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             if (Header->_version == 5)
             {
@@ -152,6 +151,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (SCN0LightSetNode t in lightsets.Children)
                     t.AttachNodes();
             }
+
+            for (int i = 0; i < strings.Count; i++)
+                Console.WriteLine(strings.Keys.ElementAt(i) + " " + strings.Values.ElementAt(i));
         }
 
         public SCN0GroupNode GetOrCreateFolder<T>() where T : SCN0EntryNode
@@ -213,7 +215,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(s._name);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _specLights = 0;
             int size = SCN0v4.Size + 0x18 + Children.Count * 0x10;
@@ -223,9 +225,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        internal VoidPtr _header;
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             int GroupLen = 0, LightSetLen = 0, AmbLightSetLen = 0, LightLen = 0, FogLen = 0, CameraLen = 0;
+
+            _header = address;
 
             ResourceGroup* group;
             if (_version == 5)
@@ -273,7 +278,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr lightArrayAddress = keyframeAddress;
             foreach (SCN0GroupNode g in Children)
                 foreach (SCN0EntryNode e in g.Children)
-                    lightArrayAddress += e.keyLen;
+                    lightArrayAddress += e._keyLen;
+
+            VoidPtr visibilityAddress = lightArrayAddress;
+            foreach (SCN0GroupNode g in Children)
+                foreach (SCN0EntryNode e in g.Children)
+                    visibilityAddress += e._lightLen;
 
             short _lightSetCount = 0, _ambientCount = 0, _lightCount = 0, _fogCount = 0, _cameraCount = 0;
 
@@ -322,6 +332,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     g._dataAddr = entryAddress;
                     g.keyframeAddress = keyframeAddress;
                     g.lightArrayAddress = lightArrayAddress;
+                    g.visibilityAddress = visibilityAddress;
 
                     g.Rebuild(groupAddress, g._groupLen, true);
 
@@ -330,6 +341,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     entryAddress += g._entryLen;
                     keyframeAddress += g.keyLen;
                     lightArrayAddress += g.lightLen;
+                    visibilityAddress += g.visLen;
                 }
             }
             if (_version == 5)

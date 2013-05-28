@@ -205,6 +205,61 @@ namespace System
             p[14] = z;
             return m;
         }
+
+        public static Matrix RotationAboutX(float angle)
+        {
+            angle *= Maths._deg2radf;
+
+            Matrix m = Identity;
+            float* p = (float*)&m;
+
+            float cos = (float)Math.Cos(angle);
+            float sin = (float)Math.Sin(angle);
+
+            m[5] = cos;
+            m[6] = -sin;
+            m[9] = sin;
+            m[10] = cos;
+
+            return m;
+        }
+
+        public static Matrix RotationAboutY(float angle)
+        {
+            angle *= Maths._deg2radf;
+
+            Matrix m = Identity;
+            float* p = (float*)&m;
+
+            float cos = (float)Math.Cos(angle);
+            float sin = (float)Math.Sin(angle);
+
+            m[0] = cos;
+            m[2] = sin;
+            m[8] = -sin;
+            m[10] = cos;
+
+            return m;
+        }
+
+        public static Matrix RotationAboutZ(float angle)
+        {
+            angle *= Maths._deg2radf;
+
+            Matrix m = Identity;
+            float* p = (float*)&m;
+
+            float cos = (float)Math.Cos(angle);
+            float sin = (float)Math.Sin(angle);
+
+            m[0] = cos;
+            m[1] = -sin;
+            m[4] = sin;
+            m[5] = cos;
+
+            return m;
+        }
+
         public static Matrix RotationMatrix(Vector3 angles) { return RotationMatrix(angles._x, angles._y, angles._z); }
         public static Matrix RotationMatrix(float x, float y, float z)
         {
@@ -239,27 +294,6 @@ namespace System
                 p[13] += (p[1] * x) + (p[5] * y) + (p[9] * z);
                 p[14] += (p[2] * x) + (p[6] * y) + (p[10] * z);
                 p[15] += (p[3] * x) + (p[7] * y) + (p[11] * z);
-            }
-        }
-
-        public void Multiply(Matrix* m)
-        {
-            Matrix m2 = this;
-
-            float* s1 = (float*)m, s2 = (float*)&m2;
-
-            fixed (float* dPtr = _values)
-            {
-                int index = 0;
-                float val;
-                for (int b = 0; b < 16; b += 4)
-                    for (int a = 0; a < 4; a++)
-                    {
-                        val = 0.0f;
-                        for (int x = b, y = a; y < 16; y += 4)
-                            val += s1[x++] * s2[y];
-                        dPtr[index++] = val;
-                    }
             }
         }
 
@@ -327,6 +361,11 @@ namespace System
                 for (int i = 0; i < 16; i++)
                     dPtr[i] *= p;
             }
+        }
+
+        public void Multiply(Matrix m)
+        {
+            this *= m;
         }
 
         public static Matrix operator *(Matrix m1, Matrix m2)
@@ -664,7 +703,14 @@ namespace System
         internal void Scale(float x, float y, float z)
         {
             Matrix m = ScaleMatrix(x, y, z);
-            this.Multiply(&m);
+            this.Multiply(m);
+        }
+
+        internal void Rotate(Vector3 v) { Rotate(v._x, v._y, v._z); }
+        internal void Rotate(float x, float y, float z)
+        {
+            Matrix m = RotationMatrix(x, y, z);
+            this.Multiply(m);
         }
 
         public static explicit operator Matrix(Matrix43 m)

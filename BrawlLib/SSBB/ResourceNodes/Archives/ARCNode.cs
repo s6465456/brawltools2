@@ -13,7 +13,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         private bool _isPair;
 
-        internal ARCHeader* Header { get { return (ARCHeader*)WorkingUncompressed.Address; } }
+        [Browsable(false)]
+        public ARCHeader* Header { get { return (ARCHeader*)WorkingUncompressed.Address; } }
         
         public override ResourceType ResourceType 
         {
@@ -24,6 +25,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //else
                     return ResourceType.ARC;
             } 
+        }
+
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(ARCEntryNode) };
+            }
         }
 
         [Browsable(false)]
@@ -80,14 +89,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             "Fighter"};
 #endregion
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             ARCFileHeader* entry = Header->First;
             for (int i = 0; i < Header->_numFiles; i++, entry = entry->Next)
                 if ((entry->_size == 0) || (NodeFactory.FromAddress(this, entry->Data, entry->Length) == null))
-                    if (((SpecialName.Contains(_name) && RootNode == this) || ((FileType == ARCFileType.Type7 && Name.EndsWith("Param")) || Name == "Fighter")) && i == 0)
-                        new MoveDefNode().Initialize(this, entry->Data, entry->Length);
-                    else
+                    //if (((SpecialName.Contains(_name) && RootNode == this) || ((FileType == ARCFileType.Type7 && Name.EndsWith("Param")) || Name == "Fighter")) && i == 0)
+                    //    new MoveDefNode().Initialize(this, entry->Data, entry->Length);
+                    //else
                     {
                         VoidPtr addr = entry->Data;
                         CompressionHeader* cmpr = (CompressionHeader*)addr;
@@ -104,7 +113,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     }
         }
 
-        internal override void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
+        public override void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
         {
             base.Initialize(parent, origSource, uncompSource);
             if (_origPath != null)
@@ -114,10 +123,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
             _name = Header->Name;
+            Populate();
             return Header->_numFiles > 0;
         }
 
@@ -169,7 +179,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //    base.Replace(fileName);
         //}
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = ARCHeader.Size + (Children.Count * 0x20);
             foreach (ResourceNode node in Children)
@@ -177,7 +187,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        internal protected override void OnRebuild(VoidPtr address, int size, bool force)
+        public override void OnRebuild(VoidPtr address, int size, bool force)
         {
             ARCHeader* header = (ARCHeader*)address;
             *header = new ARCHeader((ushort)Children.Count, Name);
@@ -200,6 +210,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 ExportPair(outPath);
             else if (outPath.EndsWith(".mrg", StringComparison.OrdinalIgnoreCase))
                 ExportAsMRG(outPath);
+            else if (outPath.EndsWith(".pcs", StringComparison.OrdinalIgnoreCase))
+                ExportPCS(outPath);
+            else if (outPath.EndsWith(".pac", StringComparison.OrdinalIgnoreCase))
+                ExportPAC(outPath);
             else
                 base.Export(outPath);
         }
@@ -229,7 +243,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             Rebuild();
             if (Compression == CompressionType.LZ77)
-                Export(outPath);
+                base.Export(outPath);
             else
             {
                 using (FileStream inStream = new FileStream(Path.GetTempFileName(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 0x8, FileOptions.SequentialScan | FileOptions.DeleteOnClose))
@@ -284,7 +298,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Name = String.Format("{0}[{1}]", _fileType, _fileIndex);
         }
 
-        internal override void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
+        public override void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
         {
             base.Initialize(parent, origSource, uncompSource);
 

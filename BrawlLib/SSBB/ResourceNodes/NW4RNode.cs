@@ -25,7 +25,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal int _length;
         internal Endian _endian;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _major = CommonHeader->VersionMajor;
             _minor = CommonHeader->VersionMinor;
@@ -51,7 +51,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal int _length;
         internal Endian _endian;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _major = CommonHeader->VersionMajor;
             _minor = CommonHeader->VersionMinor;

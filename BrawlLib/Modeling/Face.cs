@@ -13,12 +13,26 @@ namespace BrawlLib.Modeling
         public Vertex3 _vertex;
         public IMatrixNode _node = null;
 
-        public int NodeId { get { return _vertex != null && _vertex.MatrixNode != null ? _vertex.MatrixNode.NodeIndex : _node != null ? _node.NodeIndex : -1; } }
+        public int _nodeId { get { return _vertex != null && _vertex.MatrixNode != null ? _vertex.MatrixNode.NodeIndex : _node != null ? _node.NodeIndex : -1; } }
 
-        public int VertexIndex = -1;
-        public int NormalIndex = -1;
-        public int[] ColorIndex = new int[2] { -1, -1 };
-        public int[] UVIndex = new int[8] { -1, -1, -1, -1, -1, -1, -1, -1 };
+        public int _vertexIndex = -1;
+        public int _normalIndex = -1;
+        public int[] _colorIndices = new int[2] { -1, -1 };
+        public int[] _UVIndices = new int[8] { -1, -1, -1, -1, -1, -1, -1, -1 };
+
+        [Category("Facepoint"), Browsable(true)]
+        public int VertexIndex { get { return _vertexIndex; } }
+        [Category("Facepoint"), Browsable(true)]
+        public int NormalIndex { get { return _normalIndex; } }
+        [Category("Facepoint"), Browsable(true)]
+        public int[] ColorIndices { get { return _colorIndices; } }
+        [Category("Facepoint"), Browsable(true)]
+        public int[] UVIndices { get { return _UVIndices; } }
+
+        public override string ToString()
+        {
+            return String.Format("M({12}), V({0}), N({1}), C({2}, {3}), U({4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})", _vertexIndex, _normalIndex, _colorIndices[0], _colorIndices[1], _UVIndices[0], _UVIndices[1], _UVIndices[2], _UVIndices[3], _UVIndices[4], _UVIndices[5], _UVIndices[6], _UVIndices[7], _nodeId);
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -54,17 +68,17 @@ namespace BrawlLib.Modeling
         public void AddTriangle(Triangle t)
         {
             _triangles.Add(t);
-            if (!_nodeIds.Contains(t._x.NodeId)) _nodeIds.Add(t._x.NodeId);
-            if (!_nodeIds.Contains(t._y.NodeId)) _nodeIds.Add(t._y.NodeId);
-            if (!_nodeIds.Contains(t._z.NodeId)) _nodeIds.Add(t._z.NodeId);
+            if (!_nodeIds.Contains(t._x._nodeId)) _nodeIds.Add(t._x._nodeId);
+            if (!_nodeIds.Contains(t._y._nodeId)) _nodeIds.Add(t._y._nodeId);
+            if (!_nodeIds.Contains(t._z._nodeId)) _nodeIds.Add(t._z._nodeId);
         }
 
         public bool CanAdd(Triangle t)
         {
             int count = 0;
-            if (!_nodeIds.Contains(t._x.NodeId)) count++;
-            if (!_nodeIds.Contains(t._y.NodeId)) count++;
-            if (!_nodeIds.Contains(t._z.NodeId)) count++;
+            if (!_nodeIds.Contains(t._x._nodeId)) count++;
+            if (!_nodeIds.Contains(t._y._nodeId)) count++;
+            if (!_nodeIds.Contains(t._z._nodeId)) count++;
             if (count + _nodeIds.Count <= 10)
             {
                 AddTriangle(t);

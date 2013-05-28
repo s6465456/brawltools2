@@ -14,10 +14,14 @@ using System.Drawing.Imaging;
 using Gif.Components;
 using OpenTK.Graphics.OpenGL;
 using BrawlLib.Imaging;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using System.Windows;
+using System.Threading;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
         private void ScreenCapBgLocText_Click(object sender, EventArgs e)
         {
@@ -126,35 +130,71 @@ namespace System.Windows.Forms
             SaveBitmap(modelPanel.GrabScreenshot(false));
         }
 
-        private void showMoveset_Click_1(object sender, EventArgs e)
-        {
-            if (pnlMoveset._mainMoveset != null)
-                showMoveset.Checked = !showMoveset.Checked;
-            else
-                showMoveset.Checked = false;
-        }
+        //private void showMoveset_Click_1(object sender, EventArgs e)
+        //{
+        //    if (pnlMoveset._mainMoveset != null)
+        //        showMoveset.Checked = !showMoveset.Checked;
+        //    else
+        //        showMoveset.Checked = false;
+        //}
 
         bool _capture = false;
         List<Image> images = new List<Image>();
-        private void exportToAnimatedGIFToolStripMenuItem_Click(object sender, EventArgs e)
+        private void btnExportToAnimatedGIF_Click(object sender, EventArgs e)
         {
             SetFrame(1);
             images = new List<Image>();
             _loop = false;
             _capture = true;
+            Enabled = false;
             btnPlay_Click(null, null);
+            Enabled = true;
         }
 
+        ProgressWindow p;
         private void RenderToGIF(Image[] images)
         {
             string outputFilePath = Application.StartupPath + "\\test.gif";
+
+            //FileStream stream = new FileStream(outputFilePath, FileMode.Create);
+            //GifBitmapEncoder encoder = new GifBitmapEncoder();
+            //for (int i = 0; i < images.Length; i++)
+            //    encoder.Frames.Add(BitmapFrame.Create(Imaging.CreateBitmapSourceFromBitmap((Bitmap)images[i])));
+            //encoder.Save(stream);
+
             AnimatedGifEncoder e = new AnimatedGifEncoder();
             e.Start(outputFilePath);
-            e.SetDelay(0);
+            e.SetDelay(1000 / (int)pnlPlayback.numFPS.Value);
             e.SetRepeat(0);
-            e.SetQuality(20);
-            for (int i = 0, count = images.Length; i < count; i++) e.AddFrame(images[i]);
-            e.Finish();
+            e.SetQuality(1);
+            using (ProgressWindow progress = new ProgressWindow(this, "GIF Encoder", "Encoding, please wait...", true))
+            {
+                progress.TopMost = true;
+                progress.Begin(0, images.Length, 0);
+
+                //BackgroundWorker b = new BackgroundWorker();
+
+                //b.WorkerReportsProgress = true;
+
+                //b.DoWork += new DoWorkEventHandler(
+                //delegate(object o, DoWorkEventArgs args)
+                //{
+                    for (int i = 0, count = images.Length; i < count; i++)
+                    {
+                        e.AddFrame(images[i]);
+                        progress.Update(progress.CurrentValue + 1);
+                    }
+                //});
+
+                //b.RunWorkerCompleted += new RunWorkerCompletedEventHandler(
+                //delegate(object o, RunWorkerCompletedEventArgs args)
+                //{
+                    progress.Finish();
+                    e.Finish();
+                //});
+
+                //b.RunWorkerAsync();
+            }
         }
 
         private void btnSaveCam_Click(object sender, EventArgs e)
@@ -175,13 +215,6 @@ namespace System.Windows.Forms
             }
         }
         private void helpToolStripMenuItem_Click(object sender, EventArgs e) { new ModelViewerHelp().Show(this); }
-        private void showKeyframes_Click(object sender, EventArgs e)
-        {
-            if (pnlKeyframes.panelEnabled)
-                showKeyframes.Checked = !showKeyframes.Checked;
-            else
-                showKeyframes.Checked = false;
-        }
         Form popoutForm;
         private void detachViewerToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -194,22 +227,20 @@ namespace System.Windows.Forms
                 panel1.Dock = DockStyle.Fill;
                 popoutForm.Show();
                 detachViewerToolStripMenuItem.Text = "Attach Viewer";
-                btnAssetToggle.Visible = false;
-                btnAnimToggle.Visible = false;
+                btnLeftToggle.Visible = false;
+                btnRightToggle.Visible = false;
                 btnOptionToggle.Visible = false;
                 btnPlaybackToggle.Visible = false;
-                spltAnims.Visible = false;
+                spltRight.Visible = false;
                 controlPanel.Visible = true;
                 animEditors.Visible = true;
-                pnlBones.Visible = true;
-                pnlAssets.Visible = true;
-                pnlKeyframes.Visible = true;
-                spltMoveset.Visible = true;
+                //pnlBones.Visible = true;
+                leftPanel.Visible = true;
+                //spltMoveset.Visible = true;
                 pnlPlayback.Parent = this;
                 pnlPlayback.SendToBack();
                 animEditors.SendToBack();
                 pnlPlayback.Dock = DockStyle.Bottom;
-                pnlKeyframes.Dock = DockStyle.Fill;
             }
             else
             {
@@ -333,10 +364,6 @@ namespace System.Windows.Forms
             catch (Exception ex) { MessageBox.Show(ex.ToString()); }
         }
 
-        private void showPlay_Click_1(object sender, EventArgs e)
-        {
-            showPlay.Checked = !showPlay.Checked;
-        }
         private void chkBones_Click(object sender, EventArgs e)
         {
             chkBones.Checked = !chkBones.Checked;
@@ -387,8 +414,8 @@ namespace System.Windows.Forms
         }
         private void syncTexObjToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            pnlAssets._syncObjTex = syncTexObjToolStripMenuItem.Checked;
-            pnlAssets.UpdateTextures();
+            leftPanel._syncObjTex = syncTexObjToolStripMenuItem.Checked;
+            leftPanel.UpdateTextures();
         }
         private void syncObjectAndTexturesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -422,16 +449,7 @@ namespace System.Windows.Forms
         }
         private void btnAssetToggle_Click(object sender, EventArgs e)
         {
-            if (!showAssets.Checked)
-                if (!showBones.Checked)
-                    showAssets.Checked = true;
-                else
-                    showBones.Checked = false;
-            else
-                if (!showBones.Checked)
-                    showBones.Checked = true;
-                else
-                    showAssets.Checked = false;
+            showLeft.Checked = !showLeft.Checked;
         }
         private void btnOptionToggle_Click(object sender, EventArgs e) 
         {
@@ -450,30 +468,18 @@ namespace System.Windows.Forms
         private void btnPlaybackToggle_Click(object sender, EventArgs e) { showAnim.Checked = !showAnim.Checked; CheckDimensions(); }
         private void btnAnimToggle_Click(object sender, EventArgs e)
         {
-            if (!showKeyframes.Checked/* || !pnlKeyframes.panelEnabled*/)
-                if (!showMoveset.Checked || pnlMoveset._mainMoveset == null)
-                    showKeyframes.Checked = true;
-                else
-                    showMoveset.Checked = false;
-            else
-                if (!showMoveset.Checked && pnlMoveset._mainMoveset != null)
-                    showMoveset.Checked = true;
-                else
-                    showKeyframes.Checked = false;
-            
-            //if (pnlMoveset._mainMoveset != null)
-            //    showMoveset.Checked = !showMoveset.Checked;
+            showRight.Checked = !showRight.Checked;
         }
         public void btnPrevFrame_Click(object sender, EventArgs e) { pnlPlayback.numFrameIndex.Value--; }
         public void btnNextFrame_Click(object sender, EventArgs e) { pnlPlayback.numFrameIndex.Value++; }
         public void btnPlay_Click(object sender, EventArgs e)
         {
-            if (pnlMoveset._mainMoveset != null && pnlMoveset.selectedActionNodes.Count > 0)
-                if (pnlMoveset.animTimer.Enabled)
-                    pnlMoveset.StopScript();
-                else
-                    pnlMoveset.RunScript();
-            else
+            //if (pnlMoveset._mainMoveset != null && pnlMoveset.selectedActionNodes.Count > 0)
+            //    if (pnlMoveset.animTimer.Enabled)
+            //        pnlMoveset.StopScript();
+            //    else
+            //        pnlMoveset.RunScript();
+            //else
             {
                 if (animTimer.Enabled)
                     StopAnim();
@@ -545,10 +551,10 @@ namespace System.Windows.Forms
                 else if (key == Keys.D)
                 {
                     if (Control.ModifierKeys == (Keys.Control | Keys.Alt))
-                        if (pnlAssets.Visible || pnlBones.Visible || animEditors.Visible || pnlMoveset.Visible || controlPanel.Visible)
-                            showAnim.Checked = showAssets.Checked = showBones.Checked = showMoveset.Checked = showOptions.Checked = false;
+                        if (leftPanel.Visible || rightPanel.Visible || animEditors.Visible || controlPanel.Visible)
+                            showAnim.Checked = showRight.Checked = showLeft.Checked = showOptions.Checked = false;
                         else
-                            showAnim.Checked = showAssets.Checked = showBones.Checked = showMoveset.Checked = showOptions.Checked = true;
+                            showAnim.Checked = showRight.Checked = showLeft.Checked = showOptions.Checked = true;
                     else
                         btnAnimToggle_Click(null, null);
                     return true;
@@ -740,28 +746,6 @@ namespace System.Windows.Forms
                         return true;
                     }
                 }
-                //if (key == Keys.H)
-                //{
-                //    ModelSwitcher switcher = new ModelSwitcher();
-                //    switcher.ShowDialog(this, _targetModels);
-                //    return true;
-                //}
-                else if (key == Keys.L)
-                {
-                    if (ModifierKeys == Keys.Control)
-                    {
-                        Unkey(null, null);
-                        return true;
-                    }
-                }
-                else if (key == Keys.K)
-                {
-                    if (ModifierKeys == Keys.Control)
-                    {
-                        Key(null, null);
-                        return true;
-                    }
-                }
                 else if (key == Keys.Escape)
                 {
                     //Undo transformations, make sure to reset keyframes
@@ -817,32 +801,6 @@ namespace System.Windows.Forms
             }
             return base.ProcessKeyPreview(ref m);
         }
-        private void Key(object sender, EventArgs e)
-        {
-            if (pnlBones.SelectedBone != null && _chr0 != null)
-            {
-                CHR0EntryNode entry = _chr0.FindChild(((MDL0BoneNode)pnlBones.SelectedBone).Name, false) as CHR0EntryNode;
-                if (entry != null)
-                    for (int i = 0x10; i < 0x19; i++)
-                    {
-                        entry.SetKeyframe((KeyFrameMode)i, _animFrame - 1, chr0Editor._transBoxes[i - 0x10].Value);
-                        chr0Editor.BoxChanged(chr0Editor._transBoxes[i - 0x10], null);
-                    }
-            }
-        }
-        private void Unkey(object sender, EventArgs e)
-        {
-            if (pnlBones.SelectedBone != null && _chr0 != null)
-            {
-                CHR0EntryNode entry = _chr0.FindChild(((MDL0BoneNode)pnlBones.SelectedBone).Name, false) as CHR0EntryNode;
-                if (entry != null)
-                    for (int i = 0x10; i < 0x19; i++)
-                    {
-                        entry.RemoveKeyframe((KeyFrameMode)i, _animFrame - 1);
-                        chr0Editor.BoxChanged(chr0Editor._transBoxes[i - 0x10], null);
-                    }
-            }
-        }
         private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog d = new OpenFileDialog();
@@ -897,10 +855,6 @@ namespace System.Windows.Forms
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
             RenderVertices = !RenderVertices;
-            if (RenderVertices == false)
-                toggleVertices.Checked = false;
-            else
-                toggleVertices.Checked = true;
         }
 
         private void renderWireframeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -961,8 +915,6 @@ namespace System.Windows.Forms
             modelPanel.Invalidate();
         }
         private void modifyLightingToolStripMenuItem_Click(object sender, EventArgs e) { new ModelViewerSettingsDialog().Show(this); }
-        private void showMoveset_Click(object sender, EventArgs e) { showMoveset.Checked = !showMoveset.Checked; }
-        private void showAssets_Click(object sender, EventArgs e) { showAssets.Checked = !showAssets.Checked; }
         private void hitboxesOffToolStripMenuItem_Click(object sender, EventArgs e)
         {
             chkHitboxes.Checked = !chkHitboxes.Checked;
@@ -979,17 +931,65 @@ namespace System.Windows.Forms
 
             modelPanel.Invalidate();
         }
-        private void showAnim_Click(object sender, EventArgs e) { showBones.Checked = !showBones.Checked; }
-        private void showPlay_Click(object sender, EventArgs e) { showAnim.Checked = !showAnim.Checked; }
-        private void showOptions_Click(object sender, EventArgs e) { showOptions.Checked = !showOptions.Checked; }
         private void toggleFloor_Click(object sender, EventArgs e)
         {
             RenderFloor = !RenderFloor;
-            if (RenderFloor == false)
-                toggleFloor.Checked = false;
-            else
-                toggleFloor.Checked = true;
         }
         private void resetCameraToolStripMenuItem_Click_1(object sender, EventArgs e) { modelPanel.ResetCamera(); }
     }
+
+    public static class Imaging
+    {
+        public static BitmapSource CreateBitmapSourceFromBitmap(Bitmap bitmap)
+        {
+            if (bitmap == null)
+                throw new ArgumentNullException("bitmap");
+
+            //if (System.Windows.Application.Current.Dispatcher == null)
+            //    return null; // Is it possible?
+
+            try
+            {
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    // You need to specify the image format to fill the stream. 
+                    // I'm assuming it is PNG
+                    bitmap.Save(memoryStream, ImageFormat.Png);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+
+                    // Make sure to create the bitmap in the UI thread
+                    //if (InvokeRequired)
+                    //    return (BitmapSource)System.Windows.Application.Current.Dispatcher.Invoke(
+                    //        new Func<Stream, BitmapSource>(CreateBitmapSourceFromBitmap),
+                    //        DispatcherPriority.Normal,
+                    //        memoryStream);
+
+                    return CreateBitmapSourceFromBitmap(memoryStream);
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private static bool InvokeRequired
+        {
+            get { return Dispatcher.CurrentDispatcher != System.Windows.Application.Current.Dispatcher; }
+        }
+
+        private static BitmapSource CreateBitmapSourceFromBitmap(Stream stream)
+        {
+            BitmapDecoder bitmapDecoder = BitmapDecoder.Create(
+                stream,
+                BitmapCreateOptions.PreservePixelFormat,
+                BitmapCacheOption.OnLoad);
+
+            // This will disconnect the stream from the image completely...
+            WriteableBitmap writable = new WriteableBitmap(bitmapDecoder.Frames[0]);
+            writable.Freeze();
+
+            return writable;
+        }
+    } 
 }

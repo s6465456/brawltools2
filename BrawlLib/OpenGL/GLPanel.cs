@@ -24,11 +24,11 @@ namespace BrawlLib.OpenGL
     }
     public abstract unsafe class GLPanel : UserControl
     {
-        internal protected TKContext _ctx;
+        public TKContext _ctx;
         
         public bool _projectionChanged = true;
         private int _updateCounter;
-        internal GLCamera _camera;
+        public GLCamera _camera;
         
         public GLPanel()
         {
@@ -501,7 +501,7 @@ namespace BrawlLib.OpenGL
             }
         }
 
-        internal protected virtual void OnResized()
+        public virtual void OnResized()
         {
             if (_ctx == null)
                 return;

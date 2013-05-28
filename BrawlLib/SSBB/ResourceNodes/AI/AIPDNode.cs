@@ -13,14 +13,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override ResourceType ResourceType { get { return ResourceType.AIPD; } }
         internal AIPD* Header { get { return (AIPD*)WorkingUncompressed.Address; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null || _name == "")
                 _name = "AIPD_" + Parent.Name.Replace("ai_", "");
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             new AIPDDefBlockNode().Initialize(this, new DataSource(Header->DefBlock1, 0x60));
             new AIPDDefBlockNode().Initialize(this, new DataSource(Header->DefBlock2, 0x60));
@@ -31,7 +31,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             new AIPDType2OffsetsNode().Initialize(this, new DataSource(Header->Type2Offsets, 0x0));//size cannot be recognized
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             AIPD* header = (AIPD*)address;
             header->_tag = AIPD.Tag;
@@ -59,7 +59,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0x10;//AIPD header
             int type2OffsetSize = 0;
@@ -163,7 +163,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string Byte4 { get { return byte4.ToString("X"); } set { byte4 = Convert.ToByte(value, 16); SignalPropertyChange(); } }
         #endregion
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = "DefBlock";
@@ -205,7 +205,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             AIPDDefBlock* header = (AIPDDefBlock*)address;
             #region Rebuilding
@@ -245,7 +245,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             #endregion
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x60;
         }
@@ -305,7 +305,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string Int3 { get { return int3.ToString("X"); } set { int3 = Convert.ToInt32(value, 16); SignalPropertyChange(); } }
         #endregion
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = "SubBlock";
@@ -335,7 +335,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             AIPDSubBlock* header = (AIPDSubBlock*)address;
             #region Rebuilding
@@ -363,7 +363,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             #endregion
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x30;
         }
@@ -377,7 +377,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Padding")]
         public byte[] Padding { get { return padding; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = "UnkBlock";
@@ -385,13 +385,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             for (int i = 0; i < padding.Length; i++)
                 ((byte*)address)[i] = padding[i];
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x40;
         }
@@ -405,7 +405,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public int Type2OffsetSize { get; set; }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = "Type1";
@@ -413,13 +413,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             foreach (VoidPtr ptr in Entries)
                 new AIPDType1Node().Initialize(this, new DataSource(ptr, 0x0));
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             bint* Offsets = (bint*)address;
             int offset = Type2OffsetSize + 0x70 + 0x170;
@@ -435,7 +435,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x70;
         }
@@ -454,7 +454,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal AIPDType1* Header { get { return (AIPDType1*)WorkingUncompressed.Address; } }
         internal List<VoidPtr> Entries = new List<VoidPtr>();
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if ((VoidPtr)Header != 0x0)
             {
@@ -468,13 +468,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             foreach (VoidPtr ptr in Entries)
                 new AIPDType1EntryNode().Initialize(this, new DataSource(ptr, 0x3));
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             foreach (AIPDType1EntryNode n in Children)
             { n.Rebuild(address, 0x3, true); address += 0x3; }
@@ -482,7 +482,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 *(byte*)address = 0x0;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0;
             foreach (AIPDType1EntryNode n in Children)
@@ -506,7 +506,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Attributes"), Description("No description yet.")]
         public string Control2 { get { return control2.ToString("X"); } set { control2 = Convert.ToByte(value, 16); SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
 
             if (_name == null)
@@ -517,7 +517,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             AIPDType1Entry* header = (AIPDType1Entry*)address;
             header->_command = command;//test code
@@ -525,7 +525,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_control2 = control2;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x3;
         }
@@ -538,7 +538,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public int Type1EntrySize { get; set; }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = "Type2";
@@ -546,13 +546,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             foreach (VoidPtr ptr in Entries)
                 new AIPDType2Node().Initialize(this, new DataSource(ptr, 0x0));
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             bint* Offsets = (bint*)address;
             int offset = Type1EntrySize + Children.Count * 0x4 + 0x1E0;
@@ -567,7 +567,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0x0;
             size += Children.Count * 0x4;//Offsets size
@@ -594,7 +594,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Type2"), Description("Entry flag")]
         public string Flag { get { return flag.ToString("X"); } set { flag = Convert.ToByte(value, 16); SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             id = Header->_id;
             flag = Header->_flag;
@@ -605,13 +605,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             foreach (VoidPtr ptr in Entries)
                 new AIPDType2EntryNode().Initialize(this, new DataSource(ptr, 0x0));
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             AIPDType2* header = (AIPDType2*)address;
             header->_flag = flag;
@@ -622,7 +622,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             { n.Rebuild(entry, 0x6, true); entry++; }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0x4;//id and flag, numEntries
             size += Entries.Count * 0x6;
@@ -647,7 +647,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Type2 Entry"), Description("No description yet")]
         public string Unknown5 { get { return unk5.ToString("X"); } set { unk5 = Convert.ToInt16(value, 16); SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = "Type2Entry " + Parent.Children.IndexOf(this).ToString();
@@ -659,7 +659,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             AIPDType2Entry* header = (AIPDType2Entry*)address;
             header->_unk1 = unk1;
@@ -669,7 +669,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_unk5 = unk5;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x6;
         }

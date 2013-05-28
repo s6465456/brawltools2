@@ -14,9 +14,9 @@ namespace BrawlLib.Modeling
 
         public static readonly FrameState Neutral = new FrameState(new Vector3(1.0f), new Vector3(), new Vector3());
 
-        internal Vector3 _scale;
-        internal Vector3 _rotate;
-        internal Vector3 _translate;
+        public Vector3 _scale;
+        public Vector3 _rotate;
+        public Vector3 _translate;
 
         public Vector3 Translate
         {
@@ -34,7 +34,7 @@ namespace BrawlLib.Modeling
             set { _scale = value; CalcTransforms(); }
         }
 
-        internal Matrix _transform, _iTransform;
+        public Matrix _transform, _iTransform;
 
         public FrameState(AnimationFrame frame)
         {

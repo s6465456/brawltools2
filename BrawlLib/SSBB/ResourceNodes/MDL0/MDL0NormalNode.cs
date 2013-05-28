@@ -56,7 +56,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             set { _normals = value; SignalPropertyChange(); }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -71,7 +71,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public VertexCodec _enc;
         public bool _forceRebuild = false;
         public bool _forceFloat = false;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             if (Model._isImport || _forceRebuild)
             {
@@ -81,7 +81,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             else return base.OnCalculateSize(force);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             if (Model._isImport || _forceRebuild)
             {

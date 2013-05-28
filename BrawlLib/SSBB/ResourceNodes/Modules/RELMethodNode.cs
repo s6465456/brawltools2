@@ -14,7 +14,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class RELMethodNode : ModuleDataNode
     {
         internal buint* Header { get { return (buint*)WorkingUncompressed.Address; } }
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             RELSectionNode section = Location;
             if (section == null)

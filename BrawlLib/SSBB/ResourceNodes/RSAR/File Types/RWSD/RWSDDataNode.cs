@@ -121,7 +121,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("Data Note Info")]
         //public List<RWSD_NoteInfo> Part3 { get { return _part3; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             RuintList* list;
             
@@ -146,12 +146,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return (RWSD_DATAEntry.Size + RWSD_WSDEntry.Size + 0x20 + RWSD_NoteEvent.Size + 12 + RWSD_NoteInfo.Size);
         }
         public VoidPtr _baseAddr;
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address;
 

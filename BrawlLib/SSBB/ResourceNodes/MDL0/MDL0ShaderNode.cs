@@ -283,7 +283,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //We DO NOT want to add the name to the string table!
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             MDL0Shader* header = Header;
 
@@ -331,7 +331,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             StageGroup* grp = Header->First;
             for (int r = 0; r < 8; r++, grp = grp->Next)
@@ -379,7 +379,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             MDL0Shader* header = (MDL0Shader*)address;
 
@@ -511,7 +511,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 512;
         }

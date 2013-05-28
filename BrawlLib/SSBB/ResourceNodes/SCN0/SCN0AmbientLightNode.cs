@@ -143,7 +143,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override bool OnInitialize()
+        public int DataOffset { get { return !_constant ? (int)*(bint*)&Data->_lighting + (int)(&Data->_lighting - Parent.Parent.WorkingUncompressed.Address) : 0; } }
+
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -164,30 +166,57 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RGBAPixel* addr = Data->lightEntries;
                 for (int i = 0; i < _numEntries; i++)
                     _colors.Add((ARGBPixel)(*addr++));
+
+                SCN0Node.strings[(int)(Data->lightEntries - Parent.Parent.WorkingUncompressed.Address)] = "Ambient" + Index + " Pixels Light";
             }
 
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        SCN0AmbientLightNode match;
+        public override int OnCalculateSize(bool force)
         {
+            _visLen = 0;
+            match = null;
             if (_name != "<null>")
                 if (_numEntries != 0)
                 {
                     fixedFlags &= 0xFF - 128;
-                    lightLen = 4 * (FrameCount + 1);
+                    foreach (SCN0AmbientLightNode n in Parent.Children)
+                    {
+                        if (n == this)
+                            break;
+
+                        if (!n._constant)
+                        {
+                            for (int i = 0; i < FrameCount + 1; i++)
+                            {
+                                if (n._colors[i] != _colors[i])
+                                    break;
+                                if (i == FrameCount)
+                                    match = n;
+                            }
+                        }
+
+                        if (match != null)
+                            break;
+                    }
+                    if (match == null)
+                        _lightLen += 4 * (FrameCount + 1);
                 }
                 else
                 {
                     fixedFlags |= 128;
-                    lightLen = 0;
+                    _lightLen = 0;
                 }
             return SCN0AmbientLight.Size;
         }
-
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        VoidPtr matchAddr;
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
+
+            matchAddr = null;
 
             SCN0AmbientLight* header = (SCN0AmbientLight*)address;
             header->_header._length = _length = SCN0AmbientLight.Size;
@@ -201,12 +230,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_numEntries != 0)
                 {
                     header->_fixedFlags = 0;
-                    *((bint*)header->_lighting.Address) = (int)lightAddr - (int)header->_lighting.Address;
-                    for (int i = 0; i <= FrameCount; i++)
-                        if (i < _colors.Count)
-                            *lightAddr++ = (RGBAPixel)_colors[i];
-                        else
-                            *lightAddr++ = new RGBAPixel();
+
+                    matchAddr = lightAddr;
+                    if (match == null)
+                    {
+                        *((bint*)header->_lighting.Address) = (int)lightAddr - (int)header->_lighting.Address;
+                        for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
+                            if (i < _colors.Count)
+                                *lightAddr++ = (RGBAPixel)_colors[i];
+                            else
+                                *lightAddr++ = new RGBAPixel();
+                    }
+                    else
+                        *((bint*)header->_lighting.Address) = (int)match.matchAddr - (int)header->_lighting.Address;
                 }
                 else
                     header->_lighting = (RGBAPixel)_solidColor;

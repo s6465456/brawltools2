@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using BrawlLib.Imaging;
 using System.Drawing.Design;
+using System.ComponentModel;
+using System.Windows.Forms.Design;
 
 namespace System.Windows.Forms
 {
@@ -48,11 +50,11 @@ namespace System.Windows.Forms
             this.numA = new System.Windows.Forms.NumericUpDown();
             this.lblA = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.panel3 = new System.Windows.Forms.Panel();
-            this.pnlAlpha = new System.Windows.Forms.BufferedPanel();
             this.pnlColorBox = new System.Windows.Forms.BufferedPanel();
             this.pnlColorBar = new System.Windows.Forms.BufferedPanel();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.pnlAlpha = new System.Windows.Forms.BufferedPanel();
+            this.panel3 = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.numB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numG)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numR)).BeginInit();
@@ -97,8 +99,8 @@ namespace System.Windows.Forms
             // 
             // numB
             // 
-            this.numB.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numB.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numB.Location = new System.Drawing.Point(19, 130);
             this.numB.Maximum = new decimal(new int[] {
             255,
@@ -116,8 +118,8 @@ namespace System.Windows.Forms
             // 
             // numG
             // 
-            this.numG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numG.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numG.Location = new System.Drawing.Point(19, 111);
             this.numG.Maximum = new decimal(new int[] {
             255,
@@ -130,8 +132,8 @@ namespace System.Windows.Forms
             // 
             // numR
             // 
-            this.numR.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numR.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numR.Location = new System.Drawing.Point(19, 92);
             this.numR.Maximum = new decimal(new int[] {
             255,
@@ -144,8 +146,8 @@ namespace System.Windows.Forms
             // 
             // numH
             // 
-            this.numH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numH.Location = new System.Drawing.Point(19, 20);
             this.numH.Maximum = new decimal(new int[] {
             360,
@@ -158,8 +160,8 @@ namespace System.Windows.Forms
             // 
             // numS
             // 
-            this.numS.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numS.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numS.Location = new System.Drawing.Point(19, 39);
             this.numS.Name = "numS";
             this.numS.Size = new System.Drawing.Size(43, 20);
@@ -167,8 +169,8 @@ namespace System.Windows.Forms
             // 
             // numV
             // 
-            this.numV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numV.Location = new System.Drawing.Point(19, 58);
             this.numV.Name = "numV";
             this.numV.Size = new System.Drawing.Size(43, 20);
@@ -206,8 +208,8 @@ namespace System.Windows.Forms
             // 
             // numA
             // 
-            this.numA.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numA.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numA.Location = new System.Drawing.Point(19, 149);
             this.numA.Maximum = new decimal(new int[] {
             255,
@@ -238,6 +240,30 @@ namespace System.Windows.Forms
             this.panel1.Size = new System.Drawing.Size(217, 187);
             this.panel1.TabIndex = 16;
             // 
+            // pnlColorBox
+            // 
+            this.pnlColorBox.BackColor = System.Drawing.Color.Transparent;
+            this.pnlColorBox.Location = new System.Drawing.Point(3, 3);
+            this.pnlColorBox.Name = "pnlColorBox";
+            this.pnlColorBox.Size = new System.Drawing.Size(180, 180);
+            this.pnlColorBox.TabIndex = 0;
+            this.pnlColorBox.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlColorBox_Paint);
+            this.pnlColorBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlColorBox_MouseDown);
+            this.pnlColorBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlColorBox_MouseMove);
+            this.pnlColorBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlColorBox_MouseUp);
+            // 
+            // pnlColorBar
+            // 
+            this.pnlColorBar.BackColor = System.Drawing.Color.Transparent;
+            this.pnlColorBar.Location = new System.Drawing.Point(189, 3);
+            this.pnlColorBar.Name = "pnlColorBar";
+            this.pnlColorBar.Size = new System.Drawing.Size(25, 180);
+            this.pnlColorBar.TabIndex = 1;
+            this.pnlColorBar.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlColorBar_Paint);
+            this.pnlColorBar.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlColorBar_MouseDown);
+            this.pnlColorBar.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlColorBar_MouseMove);
+            this.pnlColorBar.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlColorBar_MouseUp);
+            // 
             // panel2
             // 
             this.panel2.Controls.Add(this.pnlAlpha);
@@ -246,6 +272,20 @@ namespace System.Windows.Forms
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(20, 187);
             this.panel2.TabIndex = 17;
+            // 
+            // pnlAlpha
+            // 
+            this.pnlAlpha.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlAlpha.BackColor = System.Drawing.Color.Transparent;
+            this.pnlAlpha.Location = new System.Drawing.Point(3, 3);
+            this.pnlAlpha.Name = "pnlAlpha";
+            this.pnlAlpha.Size = new System.Drawing.Size(14, 180);
+            this.pnlAlpha.TabIndex = 2;
+            this.pnlAlpha.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlAlpha_Paint);
+            this.pnlAlpha.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlAlpha_MouseDown);
+            this.pnlAlpha.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlAlpha_MouseMove);
+            this.pnlAlpha.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlAlpha_MouseUp);
             // 
             // panel3
             // 
@@ -268,44 +308,6 @@ namespace System.Windows.Forms
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(73, 187);
             this.panel3.TabIndex = 18;
-            // 
-            // pnlAlpha
-            // 
-            this.pnlAlpha.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnlAlpha.BackColor = System.Drawing.Color.Transparent;
-            this.pnlAlpha.Location = new System.Drawing.Point(3, 3);
-            this.pnlAlpha.Name = "pnlAlpha";
-            this.pnlAlpha.Size = new System.Drawing.Size(14, 180);
-            this.pnlAlpha.TabIndex = 2;
-            this.pnlAlpha.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlAlpha_Paint);
-            this.pnlAlpha.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlAlpha_MouseMove);
-            this.pnlAlpha.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlAlpha_MouseDown);
-            this.pnlAlpha.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlAlpha_MouseUp);
-            // 
-            // pnlColorBox
-            // 
-            this.pnlColorBox.BackColor = System.Drawing.Color.Transparent;
-            this.pnlColorBox.Location = new System.Drawing.Point(3, 3);
-            this.pnlColorBox.Name = "pnlColorBox";
-            this.pnlColorBox.Size = new System.Drawing.Size(180, 180);
-            this.pnlColorBox.TabIndex = 0;
-            this.pnlColorBox.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlColorBox_Paint);
-            this.pnlColorBox.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlColorBox_MouseMove);
-            this.pnlColorBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlColorBox_MouseDown);
-            this.pnlColorBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlColorBox_MouseUp);
-            // 
-            // pnlColorBar
-            // 
-            this.pnlColorBar.BackColor = System.Drawing.Color.Transparent;
-            this.pnlColorBar.Location = new System.Drawing.Point(189, 3);
-            this.pnlColorBar.Name = "pnlColorBar";
-            this.pnlColorBar.Size = new System.Drawing.Size(25, 180);
-            this.pnlColorBar.TabIndex = 1;
-            this.pnlColorBar.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlColorBar_Paint);
-            this.pnlColorBar.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pnlColorBar_MouseMove);
-            this.pnlColorBar.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pnlColorBar_MouseDown);
-            this.pnlColorBar.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pnlColorBar_MouseUp);
             // 
             // GoodColorControl
             // 
@@ -378,7 +380,27 @@ namespace System.Windows.Forms
                 numA.Value = value.A;
                 _updating = false;
 
-                OnColorChanged(); 
+                //OnColorChanged(); 
+
+                pnlColorBox.Invalidate();
+                pnlColorBar.Invalidate();
+
+                _updating = true;
+
+                numH.Value = _hsv.H;
+                numS.Value = _hsv.S;
+                numV.Value = _hsv.V;
+
+                _rgb = (ARGBPixel)value;
+                _rgb.A = (byte)numA.Value;
+                numR.Value = _rgb.R;
+                numG.Value = _rgb.G;
+                numB.Value = _rgb.B;
+
+                _updating = false;
+
+                if (ColorChanged != null)
+                    ColorChanged(this, null);
             }
         }
 
@@ -447,7 +469,7 @@ namespace System.Windows.Forms
             pnlColorBox.Invalidate();
             pnlColorBar.Invalidate();
 
-            _rgb = (ARGBPixel)_hsv;
+            //_rgb = (ARGBPixel)_hsv;
             _rgb.A = (byte)numA.Value;
 
             if (ColorChanged != null)
@@ -658,9 +680,38 @@ namespace System.Windows.Forms
 
         #endregion
 
-        private void pnlColorBox_Resize(object sender, EventArgs e)
+        internal class ColorEditor : UITypeEditor
         {
+            public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context)
+            {
+                return UITypeEditorEditStyle.DropDown;
+            }
 
+            public override object EditValue(
+                ITypeDescriptorContext context,
+                IServiceProvider provider,
+                object value)
+            {
+                IWindowsFormsEditorService editorService = null;
+                if (provider != null)
+                {
+                    editorService =
+                        provider.GetService(
+                        typeof(IWindowsFormsEditorService))
+                        as IWindowsFormsEditorService;
+                }
+
+                if (editorService != null)
+                {
+                    GoodColorControl selectionControl = new GoodColorControl();
+                    selectionControl.Color = (Color)(ARGBPixel)(RGBAPixel)value;
+                    editorService.DropDownControl(selectionControl);
+
+                    value = (RGBAPixel)(ARGBPixel)selectionControl.Color;
+                }
+
+                return value;
+            }
         }
     }
 }

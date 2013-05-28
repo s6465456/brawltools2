@@ -26,7 +26,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Attributes
 
-        //public List<Vertex3> Vertices { get { return _manager != null ? _manager._vertices : null; } }
+        public List<Vertex3> Vertices { get { return _manager != null ? _manager._vertices : null; } }
 
         public List<IMatrixNode> Nodes = new List<IMatrixNode>();
 
@@ -429,7 +429,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 MatrixNode = String.IsNullOrEmpty(value) ? null : Model.FindBone(value); 
                 Model.SignalPropertyChange();
                 //Model._rebuildAllObj = true;
-                Model.Rebuild(false);
+                //Model.Rebuild(false);
             }
         }
         internal IMatrixNode _matrixNode;
@@ -581,7 +581,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Bone linkage
-        internal MDL0BoneNode _bone;
+        public MDL0BoneNode _bone;
         [Browsable(false)]
         public MDL0BoneNode BoneNode
         {
@@ -609,7 +609,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Reading & Writing
 
-        internal PrimitiveManager _manager;
+        public PrimitiveManager _manager;
 
         public override void Dispose()
         {
@@ -626,7 +626,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             MatrixNode = (_nodeId >= 0 && _nodeId < Model._linker.NodeCache.Length) ? Model._linker.NodeCache[_nodeId] : null;
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             MDL0Object* header = Header;
             _nodeId = header->_nodeId;
@@ -783,7 +783,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         //This should be done after node indices have been assigned
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             //Reset everything!
             _tableLen =
@@ -952,7 +952,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return base.OnCalculateSize(force);
         }
         
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             MDL0Object* header = (MDL0Object*)address;
 
@@ -2015,7 +2015,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         #endregion
 
-        internal bool _render = true;
+        public bool _render = true;
         public void PreRender()
         {
             //if (_singleBind != null)
@@ -2259,6 +2259,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     _renderUpdate = false;
 
+                    GL.BindAttribLocation(_shaderProgramHandle, 0, "Position");
+                    GL.BindAttribLocation(_shaderProgramHandle, 1, "Normal");
+                    GL.BindAttribLocation(_shaderProgramHandle, 2, "Color0");
+                    GL.BindAttribLocation(_shaderProgramHandle, 3, "UV0");
+
                     GL.LinkProgram(_shaderProgramHandle);
                 }
 
@@ -2273,18 +2278,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                     SetLightUniforms(_shaderProgramHandle);
             }
 
-            //if (ctx._canUseShaders)
-            //{
-            //    GL.Enable(EnableCap.Texture2D);
-            //    _manager.PrepareStream();
-            //}
-            //else
+            GL.Enable(EnableCap.Texture2D);
             if (_manager != null)
-                _manager.PrepareFixedStream();
+                if (ctx._canUseShaders)
+                    _manager.PrepareStream();
+                else
+                    _manager.PrepareFixedStream();
 
             PreRender();
 
             GL.MatrixMode(MatrixMode.Modelview);
+
+            if (ctx._canUseShaders)
+                foreach (int i in _manager._arrayHandles)
+                    if (i != -1)
+                        GL.BindVertexArray(i);
 
             if (UsableMaterialNode != null)
                 if (UsableMaterialNode.Children.Count == 0) _manager.RenderTexture(null);
@@ -2311,8 +2319,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                         GL.MatrixMode(MatrixMode.Modelview);
                     }
-                    //else
-                    //    GL.ClientActiveTexture(TextureUnit.Texture0 + mr.Index);
 
                     mr.Bind(ctx, _shaderProgramHandle);
                     
@@ -2334,11 +2340,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (ctx._canUseShaders)
                 _manager.RenderTexture(null);
 
-            //if (ctx._canUseShaders)
-            //    _manager.DetachStreams();
-            //else
             if (_manager != null)
-                _manager.DetachFixedStreams();
+                if (ctx._canUseShaders)
+                    _manager.DetachStreams();
+                else
+                    _manager.DetachFixedStreams();
 
             //if (_singleBind != null)
             //    GL.PopMatrix();
@@ -2407,6 +2413,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _fragmentShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
 
                 _renderUpdate = true;
+
+                _manager.Bind();
             }
         }
         internal override void Unbind() 
@@ -2475,7 +2483,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 Vertex3 vec = _manager._vertices[i];
                 //if (vec._moved)
-                    _vertexNode.Vertices[_manager._vertices[i]._facepoints[0].VertexIndex] = vec.UnweightPos(vec._weightedPosition);
+                    _vertexNode.Vertices[_manager._vertices[i]._facepoints[0]._vertexIndex] = vec.UnweightPos(vec._weightedPosition);
             }
 
             _vertexNode.ForceRebuild = true; 
@@ -2501,7 +2509,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 Vertex3 vec = _manager._vertices[i];
                 //if (vec._moved)
-                    _vertexNode.Vertices[_manager._vertices[i]._facepoints[0].VertexIndex] = vec._position;
+                    _vertexNode.Vertices[_manager._vertices[i]._facepoints[0]._vertexIndex] = vec._position;
             }
             
             _vertexNode.ForceRebuild = true;
@@ -2509,7 +2517,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _vertexNode.ForceFloat = true;
         }
 
-        public MDL0ObjectNode Clone() 
+        public MDL0ObjectNode HardCopy() 
         {
             MDL0ObjectNode o = new MDL0ObjectNode() { _manager = _manager, Name = Name };
             o._vertexNode = _vertexNode;
@@ -2524,11 +2532,16 @@ namespace BrawlLib.SSBB.ResourceNodes
             o._furVecNode = _furVecNode;
             o._furPosNode = _furPosNode;
             o._bone = _bone;
+            o._primGroups = _primGroups;
             o._matrixNode = _matrixNode;
             o._elementIndices = _elementIndices;
             o._uncompSource = o._origSource = new DataSource(WorkingUncompressed.Address, WorkingUncompressed.Length, Wii.Compression.CompressionType.None);
             return o;
-            //return MemberwiseClone() as MDL0ObjectNode; 
+        }
+
+        public MDL0ObjectNode SoftCopy()
+        {
+            return MemberwiseClone() as MDL0ObjectNode; 
         }
 
         public override void Remove()

@@ -611,7 +611,7 @@ namespace System
             if (eventId.Length > 8)
                 eventId = eventId.Substring(eventId.Length - 8);
 
-            lParameters = (eventEvent & 0xFF00) / 0x100;
+            lParameters = (eventEvent >> 8) & 0xFF;
 
             Array.Resize<Param>(ref parameters, (int)lParameters);
             for (int i = 0; i < lParameters; i++) parameters[i] = new Param();
@@ -628,5 +628,20 @@ namespace System
     {
         public ArgVarType _type;
         public long _data;
+
+        public static implicit operator int(Param val) { return (int)val._data; }
+        public static implicit operator uint(Param val) { return (uint)val._data; }
+        public static implicit operator long(Param val) { return val._data; }
+    }
+
+    public enum ArgVarType : int
+    {
+        Value = 0,
+        Scalar = 1,
+        Offset = 2,
+        Boolean = 3,
+        Unknown = 4,
+        Variable = 5,
+        Requirement = 6
     }
 }

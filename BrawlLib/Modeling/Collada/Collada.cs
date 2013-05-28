@@ -20,24 +20,20 @@ namespace BrawlLib.Modeling
             model.Populate();
             model.ApplyCHR(null, 0);
 
-            bool weightNormals;
-
-            DialogResult d = MessageBox.Show("Do you want to export weighted normals?", "", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
-            if (d == DialogResult.Cancel)
-                return;
-
-            weightNormals = d == DialogResult.Yes;
-
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 0x1000, FileOptions.SequentialScan))
             using (XmlWriter writer = XmlWriter.Create(stream, _writerSettings))
             {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("COLLADA", "http://www.collada.org/2008/03/COLLADASchema");
-                writer.WriteAttributeString("version", "1.4.0");
+                writer.WriteAttributeString("version", "1.4.1");
 
                 writer.WriteStartElement("asset");
                 writer.WriteStartElement("contributor");
                 writer.WriteElementString("authoring_tool", "Brawlbox");
+                writer.WriteEndElement();
+                writer.WriteStartElement("unit");
+                writer.WriteAttributeString("meter", "0.01");
+                writer.WriteAttributeString("name", "centimeter");
                 writer.WriteEndElement();
                 writer.WriteElementString("up_axis", "Y_UP");
                 writer.WriteEndElement();
@@ -53,7 +49,7 @@ namespace BrawlLib.Modeling
 
                 //Define geometry
                 //Create a geometry object for each polygon
-                WriteGeometry(model, writer, weightNormals);
+                WriteGeometry(model, writer);
 
                 //Define controllers
                 //Each weighted polygon needs a controller, which assigns weights to each vertex.
@@ -173,11 +169,10 @@ namespace BrawlLib.Modeling
                 writer.WriteEndElement(); //effect
             }
 
-
             writer.WriteEndElement(); //library
         }
 
-        private static unsafe void WriteGeometry(MDL0Node model, XmlWriter writer, bool weightNorms)
+        private static unsafe void WriteGeometry(MDL0Node model, XmlWriter writer)
         {
             ResourceNode grp = model._polyGroup;
             if (grp == null)
@@ -212,16 +207,16 @@ namespace BrawlLib.Modeling
                             break;
 
                         case 1:
-                            WriteNormals(poly._name, (Vector3*)manager._faceData[i].Address, manager._pointCount, writer, weightNorms, manager);
+                            WriteNormals(poly._name, writer, manager);
                             break;
 
                         case 2:
                         case 3:
-                            WriteColors(poly._name, (RGBAPixel*)manager._faceData[i].Address, manager._pointCount, i - 2, writer);
+                            WriteColors(poly._name, manager, i - 2, writer);
                             break;
 
                         default:
-                            WriteUVs(poly._name, (Vector2*)manager._faceData[i].Address, manager._pointCount, i - 4, writer);
+                            WriteUVs(poly._name, manager, i - 4, writer);
                             break;
                     }
                 }
@@ -242,13 +237,6 @@ namespace BrawlLib.Modeling
                     WritePrimitive(poly, manager._lines, writer);
                 if (manager._points != null)
                     WritePrimitive(poly, manager._points, writer);
-
-                //Write primitives
-                //WritePrimitiveType(poly, GLPrimitiveType.Lines, writer);
-                //WritePrimitiveType(poly, GLPrimitiveType.LineStrip, writer);
-                //WritePrimitiveType(poly, GLPrimitiveType.Triangles, writer);
-                //WritePrimitiveType(poly, GLPrimitiveType.TriangleFan, writer);
-                //WritePrimitiveType(poly, GLPrimitiveType.TriangleStrip, writer);
 
                 writer.WriteEndElement(); //mesh
                 writer.WriteEndElement(); //geometry
@@ -309,11 +297,27 @@ namespace BrawlLib.Modeling
 
             writer.WriteEndElement(); //source
         }
-        private static void WriteNormals(string name, Vector3* pData, int count, XmlWriter writer, bool weight, PrimitiveManager p)
+
+        static Vector3[] _normals;
+        static List<int> _normRemap;
+        private static void WriteNormals(string name, XmlWriter writer, PrimitiveManager p)
         {
             bool first = true;
             ushort* pIndex = (ushort*)p._indices.Address;
+            Vector3* pData = (Vector3*)p._faceData[1].Address;
             Vector3 v;
+
+            HashSet<Vector3> list = new HashSet<Vector3>();
+            for (int i = 0; i < p._pointCount; i++)
+                list.Add(p._vertices[pIndex[i]].GetMatrix().GetRotationMatrix() * pData[i]);
+
+            _normals = new Vector3[list.Count];
+            list.CopyTo(_normals);
+
+            int count = _normals.Length;
+            _normRemap = new List<int>();
+            for (int i = 0; i < p._pointCount; i++)
+                _normRemap.Add(Array.IndexOf(_normals, p._vertices[pIndex[i]].GetMatrix().GetRotationMatrix() * pData[i]));
 
             //Position source
             writer.WriteStartElement("source");
@@ -331,10 +335,7 @@ namespace BrawlLib.Modeling
                 else
                     writer.WriteString(" ");
 
-                if (weight && *pIndex < p._vertices.Count)
-                    v = p._vertices[*pIndex++].GetMatrix().GetRotationMatrix() * *pData++;
-                else
-                    v = *pData++;
+                v = _normals[i];
 
                 writer.WriteString(String.Format("{0} {1} {2}", v._x, v._y, v._z));
             }
@@ -367,10 +368,19 @@ namespace BrawlLib.Modeling
 
             writer.WriteEndElement(); //source
         }
+        static RGBAPixel[][] _colors = new RGBAPixel[2][];
+        static List<int>[] _colorRemap = new List<int>[2];
         const float cFactor = 1.0f / 255.0f;
-        private static void WriteColors(string name, RGBAPixel* pData, int count, int set, XmlWriter writer)
+        private static void WriteColors(string name, PrimitiveManager p, int set, XmlWriter writer)
         {
             bool first = true;
+
+            _colors[set] = p.GetColors(set, true);
+            int count = _colors[set].Length;
+            _colorRemap[set] = new List<int>();
+            RGBAPixel* ptr = (RGBAPixel*)p._faceData[set + 2].Address;
+            for (int i = 0; i < p._pointCount; i++)
+                _colorRemap[set].Add(Array.IndexOf(_colors[set], ptr[i]));
 
             //Position source
             writer.WriteStartElement("source");
@@ -387,9 +397,10 @@ namespace BrawlLib.Modeling
                     first = false;
                 else
                     writer.WriteString(" ");
+                
+                RGBAPixel r = _colors[set][i];
 
-                writer.WriteString(String.Format("{0} {1} {2} {3}", pData->R * cFactor, pData->G * cFactor, pData->B * cFactor, pData->A * cFactor));
-                pData++;
+                writer.WriteString(String.Format("{0} {1} {2} {3}", r.R * cFactor, r.G * cFactor, r.B * cFactor, r.A * cFactor));
             }
 
             writer.WriteEndElement(); //int_array
@@ -425,9 +436,18 @@ namespace BrawlLib.Modeling
             writer.WriteEndElement(); //source
         }
 
-        private static void WriteUVs(string name, Vector2* pData, int count, int set, XmlWriter writer)
+        static Vector2[][] _uvs = new Vector2[8][];
+        static List<int>[] _uvRemap = new List<int>[8];
+        private static void WriteUVs(string name, PrimitiveManager p, int set, XmlWriter writer)
         {
             bool first = true;
+
+            _uvs[set] = p.GetUVs(set, true);
+            int count = _uvs[set].Length;
+            _uvRemap[set] = new List<int>();
+            Vector2* ptr = (Vector2*)p._faceData[set + 4].Address;
+            for (int i = 0; i < p._pointCount; i++)
+                _uvRemap[set].Add(Array.IndexOf(_uvs[set], ptr[i]));
 
             //Position source
             writer.WriteStartElement("source");
@@ -446,8 +466,9 @@ namespace BrawlLib.Modeling
                     writer.WriteString(" ");
 
                 //Reverse T component to a top-down form
-                writer.WriteString(String.Format("{0} {1}", pData->_x, 1.0 - pData->_y));
-                pData++;
+                //writer.WriteString(String.Format("{0} {1}", pData->_x, 1.0 - pData->_y));
+                //pData++;
+                writer.WriteString(String.Format("{0} {1}", _uvs[set][i]._x, 1.0f - _uvs[set][i]._y));
             }
 
             writer.WriteEndElement(); //int_array
@@ -509,6 +530,7 @@ namespace BrawlLib.Modeling
 
             writer.WriteAttributeString("count", count.ToString());
 
+            List<int> elementType = new List<int>();
             for (int i = 0; i < 12; i++)
             {
                 if (manager._faceData[i] == null)
@@ -548,6 +570,7 @@ namespace BrawlLib.Modeling
                 writer.WriteEndElement(); //input
 
                 elements++;
+                elementType.Add(i);
             }
 
             for (int i = 0; i < count; i++)
@@ -564,10 +587,16 @@ namespace BrawlLib.Modeling
                         else
                             writer.WriteString(" ");
 
-                        if (y == 0)
-                            writer.WriteString(pVert[index].ToString());
+                        if (elementType[y] < 4)
+                            if (elementType[y] < 2)
+                                if (elementType[y] == 0)
+                                    writer.WriteString(pVert[index].ToString());
+                                else
+                                    writer.WriteString(_normRemap[index].ToString());
+                            else
+                                writer.WriteString(_colorRemap[elementType[y] - 2][index].ToString());
                         else
-                            writer.WriteString(index.ToString());
+                            writer.WriteString(_uvRemap[elementType[y] - 4][index].ToString());
                     }
                 }
                 writer.WriteEndElement(); //p
@@ -885,6 +914,7 @@ namespace BrawlLib.Modeling
             writer.WriteStartElement("node");
             writer.WriteAttributeString("id", bone._name);
             writer.WriteAttributeString("name", bone._name);
+            writer.WriteAttributeString("sid", bone._name);
             writer.WriteAttributeString("type", "JOINT");
 
             writer.WriteStartElement("matrix");
@@ -917,21 +947,12 @@ namespace BrawlLib.Modeling
             writer.WriteAttributeString("id", poly.Name);
             writer.WriteAttributeString("name", poly.Name);
 
-            //if (poly._singleBind != null)
-            //{
-            //    //Doesn't create a skin modifier, but works
-            //    writer.WriteStartElement("instance_geometry");
-            //    writer.WriteAttributeString("url", String.Format("#{0}", poly.Name));
-            //}
-            //else
-            //{
-                writer.WriteStartElement("instance_controller");
-                writer.WriteAttributeString("url", String.Format("#{0}_Controller", poly.Name));
-            //}
-
-            //writer.WriteStartElement("skeleton");
-            //writer.WriteString("#" + poly.Model._linker.BoneCache[0].Name);
-            //writer.WriteEndElement();
+            writer.WriteStartElement("instance_controller");
+            writer.WriteAttributeString("url", String.Format("#{0}_Controller", poly.Name));
+            
+            writer.WriteStartElement("skeleton");
+            writer.WriteString("#" + poly.Model._linker.BoneCache[0].Name);
+            writer.WriteEndElement();
 
             if (poly.UsableMaterialNode != null)
             {

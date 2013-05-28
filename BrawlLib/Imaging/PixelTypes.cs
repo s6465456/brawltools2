@@ -4,6 +4,7 @@ using System.Drawing;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Drawing.Design;
+using System.Windows.Forms.Design;
 
 namespace BrawlLib.Imaging
 {
@@ -169,8 +170,7 @@ namespace BrawlLib.Imaging
         }
     }
 
-    //[Editor(typeof(UITypeEditor), typeof(UITypeEditor))]
-    [TypeConverter(typeof(ExpandableObjectCustomConverter))]
+    [EditorAttribute(typeof(GoodColorControl.ColorEditor), typeof(UITypeEditor))]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct RGBAPixel : IComparable//, ICustomTypeDescriptor
     {
@@ -191,8 +191,8 @@ namespace BrawlLib.Imaging
         public byte Blue { get { return B; } set { B = value; } }
         [Category("RGBA Pixel")]
         public byte Alpha { get { return A; } set { A = value; } }
-        [Category("RGBA Pixel"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel Value { get { return this; } set { this = value; } }
+        //[Category("RGBA Pixel"), TypeConverter(typeof(RGBAStringConverter))]
+        //public RGBAPixel Value { get { return this; } set { this = value; } }
 
         public override string ToString()
         {

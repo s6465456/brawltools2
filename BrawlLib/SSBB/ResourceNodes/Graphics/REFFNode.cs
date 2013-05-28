@@ -7,15 +7,12 @@ using System.ComponentModel;
 using BrawlLib.Imaging;
 using System.Windows.Forms;
 using BrawlLib.Wii.Graphics;
-using BrawlLib.SSBBTypes;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class REFFNode : NW4RArcEntryNode
     {
         internal REFF* Header { get { return (REFF*)WorkingUncompressed.Address; } }
-        internal NW4RCommonHeader* CommonHeader { get { return (NW4RCommonHeader*)WorkingUncompressed.Address; } }
-
         public override ResourceType ResourceType { get { return ResourceType.REFF; } }
 
         private int _unk1, _unk2, _unk3, _dataLen, _dataOff;
@@ -33,7 +30,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("REFF Object Table")]
         //public short NumEntries { get { return _TableEntries; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -54,7 +51,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return header->Table->_entries > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             REFTypeObjectTable* table = Header->Table;
             REFTypeObjectEntry* Entry = table->First;
@@ -62,7 +59,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new REFFEntryNode() { _name = Entry->Name, _offset = (int)Entry->DataOffset, _length = (int)Entry->DataLength }.Initialize(this, new DataSource((byte*)table->Address + Entry->DataOffset, (int)Entry->DataLength));
         }
         int tableLen = 0;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0x28 + (Name.Length + 1).Align(4);
             tableLen = 0x8;
@@ -73,7 +70,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             return size + (tableLen = tableLen.Align(4));
         }
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             REFF* header = (REFF*)address;
             header->_linkPrev = 0;
@@ -121,14 +118,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int _offset;
         public int _length;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             if (((REFFNode)Parent).VersionMinor == 7)
                 new REFFEmitterNode7().Initialize(this, (VoidPtr)Header + 8, (int)Header->_headerSize);
@@ -147,7 +144,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             .Initialize(this, Header->_animations, WorkingUncompressed.Length - ((int)Header->_animations - (int)Header));
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 8;
             foreach (ResourceNode r in Children)
@@ -155,7 +152,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             REFFDataHeader* d = (REFFDataHeader*)address;
             d->_headerSize = (uint)Children[0]._calcSize;
@@ -181,14 +178,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Animation Table")]
         public ushort EmitInitTrackCount { get { return _emitInitTrackCount; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = "Animations";
 
             return PtclTrackCount > 0 || EmitTrackCount > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             int offset = 0;
             buint* addr = _ptclTrackAddr;
@@ -208,7 +205,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public ushort ptcl, emit;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             ptcl = 0;
             emit = 0;
@@ -222,7 +219,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             buint* addr = (buint*)address;
             ((bushort*)addr)[0] = ptcl;
@@ -383,7 +380,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         Random random = null;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             hdr = *Header;
             _name = "AnimCurve" + Index;
@@ -393,7 +390,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return KeyTableSize > 4 || RangeTableSize > 4 || RandomTableSize > 4 || NameTableSize > 4 || InfoTableSize > 4;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             if (KeyTableSize > 4)
                 new REFFAnimCurveTableNode() { _name = "Key Table" }.Initialize(this, (VoidPtr)Header + 0x20, (int)KeyTableSize);
@@ -407,12 +404,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new REFFAnimCurveTableNode() { _name = "Info Table" }.Initialize(this, (VoidPtr)Header + 0x20 + KeyTableSize + RangeTableSize + RandomTableSize + NameTableSize, (int)InfoTableSize);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return base.OnCalculateSize(force);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
         }
@@ -426,7 +423,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string[] Names { get { return _names.ToArray(); } set { _names = value.ToList<string>(); SignalPropertyChange(); } }
         public List<string> _names = new List<string>();
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = "Name Table";
             _names = new List<string>();
@@ -452,7 +449,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("AnimCurve Table")]
         public int Pad { get { return Header->pad; } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = "Table" + Index;
@@ -460,7 +457,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             //VoidPtr addr = (VoidPtr)Header + 4;
             //int s = (WorkingUncompressed.Length - 4) / Count;
@@ -498,14 +495,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Post Field Info")]
         public Vector3 SpeedFactor { get { return hdr.mSpeedFactor; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = "Entry" + Index;
             hdr = *Header;
             return false;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             base.OnPopulate();
         }
@@ -583,7 +580,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public List<string> _textureNames = new List<string>(3);
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = "Particle";
             hdr = *Params;
@@ -602,7 +599,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0x8C;
             foreach (string s in _textureNames)
@@ -614,7 +611,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size.Align(4);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             ParticleParameterHeader* p = (ParticleParameterHeader*)address;
             p->headersize = (uint)length - 4;
@@ -1324,7 +1321,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         EmitterDrawSetting7 drawSetting;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -1337,7 +1334,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return TevStageCount > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             int col1 = 0;
             int colop1 = col1 + 16;
@@ -1385,12 +1382,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x140;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             EmitterDesc* hdr = (EmitterDesc*)address;
             *hdr = desc;
@@ -2130,7 +2127,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         EmitterDrawSetting9 drawSetting;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -2143,7 +2140,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return TevStageCount > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             int col1 = 0;
             int colop1 = col1 + 16;
@@ -2191,12 +2188,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x14C;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             EmitterDesc* hdr = (EmitterDesc*)address;
             *hdr = desc;

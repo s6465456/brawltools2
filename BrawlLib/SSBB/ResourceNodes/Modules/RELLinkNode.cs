@@ -25,7 +25,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("REL Link")]
         public uint Operand { get { return Header->_value; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = Type.ToString();
 

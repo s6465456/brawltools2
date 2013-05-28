@@ -65,7 +65,7 @@ namespace BrawlLib.Modeling
             if (base.ShowDialog() == DialogResult.OK)
             {
                 panel1.Visible = false;
-                Height = 63;
+                Height = 70;
                 UseWaitCursor = true;
                 Text = "Please wait...";
                 Show();
@@ -383,7 +383,7 @@ namespace BrawlLib.Modeling
                                     There was a problem decoding weighted primitives for the object " + (node._name != null ? node._name : node._id) + 
                                     ".\nOne or more vertices may not be weighted correctly.";
                                     Say("Decoding weighted primitives for " + (g._name != null ? g._name : g._id) + "...");
-                                    manager = DecodePrimitivesWeighted(g, skin, scene, model._influences, ref Error);
+                                    manager = DecodePrimitivesWeighted(node, g, skin, scene, model._influences, ref Error);
                                     break;
                                 }
                             break;
@@ -396,7 +396,7 @@ namespace BrawlLib.Modeling
                         {
                             Error = "There was a problem decoding unweighted primitives for the object " + (node._name != null ? node._name : node._id) + ".";
                             Say("Decoding unweighted primitives for " + (g._name != null ? g._name : g._id) + "...");
-                            manager = DecodePrimitivesUnweighted(g);
+                            manager = DecodePrimitivesUnweighted(node, g);
                             break;
                         }
                 }
@@ -556,6 +556,7 @@ namespace BrawlLib.Modeling
         {
             internal NodeType _type = NodeType.NONE;
             internal FrameState _transform;
+            internal Matrix _matrix;
             //internal NodeEntry _parent;
             internal List<NodeEntry> _children = new List<NodeEntry>();
             internal List<InstanceEntry> _instances = new List<InstanceEntry>();
@@ -1380,7 +1381,7 @@ namespace BrawlLib.Modeling
 
                     _reader.EndElement();
                 }
-                node._transform = m.Derive();
+                node._transform = (node._matrix = m).Derive();
                 return node;
             }
 

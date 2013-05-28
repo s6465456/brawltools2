@@ -215,7 +215,7 @@ namespace System.Windows.Forms
         public MDL0BoneNode[] Bones { get { return _targetWeights.Select(x => x.Bone).ToArray(); } }
         public float[] Weights { get { return _targetWeights.Select(x => x.Weight).ToArray(); } }
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
         private Button btnSetWeight;
         private NumericInputBox numWeight;
         private Button btnBlend;
@@ -259,7 +259,7 @@ namespace System.Windows.Forms
             {
                 if ((_targetBoneWeight = value) != null)
                 {
-                    _mainWindow.pnlBones.SelectedBone = TargetBoneWeight.Bone;
+                    _mainWindow.SelectedBone = TargetBoneWeight.Bone;
                     btnAdd.Enabled = _targetBoneWeight.Weight != 1.0f && lstBoneWeights.Items.Count != 1;
                     btnSubtract.Enabled = _targetBoneWeight.Weight != 0.0f && lstBoneWeights.Items.Count != 1;
                     btnRemove.Enabled = true;
@@ -270,7 +270,7 @@ namespace System.Windows.Forms
                     btnAdd.Enabled = false;
                     btnSubtract.Enabled = false;
                 } 
-                _mainWindow.modelPanel.Invalidate();
+                _mainWindow.ModelPanel.Invalidate();
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -607,7 +607,7 @@ namespace System.Windows.Forms
         private void splitter2_SplitterMoving(object sender, SplitterEventArgs e)
         {
             int diff = e.Y - e.SplitY;
-            _mainWindow.panel3.Height += diff;
+            _mainWindow.AnimCtrlPnl.Height += diff;
         }
 
         bool _resizing = false;
@@ -621,7 +621,7 @@ namespace System.Windows.Forms
         private void splitter2_MouseMove(object sender, MouseEventArgs e)
         {
             if (_resizing)
-                _mainWindow.animEditors.Height += o - e.Y; 
+                _mainWindow.AnimEditors.Height += o - e.Y; 
         }
 
         private void splitter2_MouseUp(object sender, MouseEventArgs e)
@@ -644,7 +644,7 @@ namespace System.Windows.Forms
         private void splitter1_MouseMove(object sender, MouseEventArgs e)
         {
             if (_resizing)
-                _mainWindow.panel3.Width += e.X - o;
+                _mainWindow.AnimCtrlPnl.Width += e.X - o;
         }
     }
 

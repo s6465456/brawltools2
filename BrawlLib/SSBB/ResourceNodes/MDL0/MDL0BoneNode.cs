@@ -48,17 +48,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         public BoneFlags _flags1 = (BoneFlags)0x100;
         public BillboardFlags _flags2;
         public uint _bbNodeId;
-        
-        internal List<MDL0ObjectNode> _infPolys = new List<MDL0ObjectNode>();
-        internal List<MDL0ObjectNode> _manPolys = new List<MDL0ObjectNode>();
+
+        public List<MDL0ObjectNode> _infPolys = new List<MDL0ObjectNode>();
+        public List<MDL0ObjectNode> _manPolys = new List<MDL0ObjectNode>();
         [Category("Bone")]
         public MDL0ObjectNode[] AttachedObjects { get { return _manPolys.ToArray(); } }
         [Category("Bone")]
         public MDL0ObjectNode[] InfluencedObjects { get { return _infPolys.ToArray(); } }
 
-        internal FrameState _bindState = FrameState.Neutral;
+        public FrameState _bindState = FrameState.Neutral;
         public Matrix _bindMatrix = Matrix.Identity, _inverseBindMatrix = Matrix.Identity;
-        internal FrameState _frameState = FrameState.Neutral;
+        public FrameState _frameState = FrameState.Neutral;
         public Matrix _frameMatrix = Matrix.Identity, _inverseFrameMatrix = Matrix.Identity;
 
         private Vector3 _bMin, _bMax;
@@ -75,7 +75,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         [Browsable(false)]
         public int NodeIndex { get { return _nodeIndex; } }
-        [Browsable(true)]
+        [Browsable(false)]
         public int ReferenceCount { get { return _refCount; } set { _refCount = value; } }
         [Browsable(false)]
         public bool IsPrimaryNode { get { return true; } }
@@ -344,7 +344,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //Initialize should only be called from parent group during parse.
         //Bones need not be imported/exported anyways
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             MDL0Bone* header = Header;
 
@@ -421,7 +421,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //    }
         //}
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int len = 0xD0;
             len += _userEntries.GetSize();
@@ -506,7 +506,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _flags1 += (int)BoneFlags.NoTransform;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             MDL0Bone* header = (MDL0Bone*)address;
 
@@ -577,7 +577,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //}
 
         //Change has been made to bind state, need to recalculate matrices
-        internal void RecalcBindState()
+        public void RecalcBindState()
         {
             if (_parent is MDL0BoneNode)
             {
@@ -595,7 +595,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             SignalPropertyChange();
         }
-        internal void RecalcFrameState()
+        public void RecalcFrameState()
         {
             if (_parent is MDL0BoneNode)
             {
@@ -636,7 +636,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //    bone.MuliplyRotation();
         }
 
-        internal unsafe List<MDL0BoneNode> ChildTree(List<MDL0BoneNode> list)
+        public unsafe List<MDL0BoneNode> ChildTree(List<MDL0BoneNode> list)
         {
             list.Add(this);
             foreach (MDL0BoneNode c in _children)
@@ -645,7 +645,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return list;
         }
 
-        internal Vector3 RecursiveScale()
+        public Vector3 RecursiveScale()
         {
             if (_parent is MDL0GroupNode)
                 return _frameState._scale;
@@ -658,8 +658,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public static Color DefaultBoneColor = Color.FromArgb(0, 0, 128);
         public static Color DefaultNodeColor = Color.FromArgb(0, 128, 0);
 
-        internal Color _boneColor = Color.Transparent;
-        internal Color _nodeColor = Color.Transparent;
+        public Color _boneColor = Color.Transparent;
+        public Color _nodeColor = Color.Transparent;
 
         public const float _nodeRadius = 0.20f;
 

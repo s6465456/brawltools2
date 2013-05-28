@@ -53,7 +53,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public int _fileId;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -67,12 +67,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return INFOBankEntry.Size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             INFOBankEntry* header = (INFOBankEntry*)address;
             header->_stringId = _rebuildStringId;

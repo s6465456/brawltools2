@@ -14,7 +14,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal STPM* Header { get { return (STPM*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.STPM; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -24,18 +24,18 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Header->_count > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             for (int i = 0; i < Header->_count; i++)
                 new STPMEntryNode().Initialize(this, new DataSource((*Header)[i], 260));
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0x10 + Children.Count * 4 + Children.Count * 260;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             STPM* header = (STPM*)address;
             *header = new STPM(Children.Count);
@@ -233,7 +233,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("STPM Values")]
         public int Value64 { get { return _values.GetInt(63); } set { _values.SetInt(63, value); SignalPropertyChange(); } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -249,7 +249,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             STPMEntry* header = (STPMEntry*)address;
             *header = new STPMEntry(id, echo, id2);

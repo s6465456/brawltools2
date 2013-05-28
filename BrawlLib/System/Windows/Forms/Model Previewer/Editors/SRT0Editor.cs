@@ -508,7 +508,7 @@ namespace System.Windows.Forms
         private Label lblScaleX;
         private NumericInputBox numScaleX;
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
 
         public event EventHandler CreateUndo;
 
@@ -520,7 +520,7 @@ namespace System.Windows.Forms
         public MDL0BoneNode TargetBone { get { return _mainWindow.SelectedBone; } set { _mainWindow.SelectedBone = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
+        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow.TargetTexRef; } set { _mainWindow.TargetTexRef = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrame
@@ -543,7 +543,7 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
         {
-            get { return _mainWindow._enableTransform; }
+            get { return _mainWindow.EnableTransformEdit; }
             set { grpTransform.Enabled = grpTransAll.Enabled = (_mainWindow.EnableTransformEdit = value) && (TargetTexRef != null); }
         }
 
@@ -647,7 +647,7 @@ namespace System.Windows.Forms
 
             if ((SelectedAnimation != null) && (CurrentFrame > 0))
             {
-                int kfIndex = _mainWindow.pnlKeyframes.FindKeyframe(CurrentFrame - 1);
+                int kfIndex = _mainWindow.KeyframePanel.FindKeyframe(CurrentFrame - 1);
                 int x;
                 if (TexEntry == null)
                 {
@@ -673,11 +673,11 @@ namespace System.Windows.Forms
                         kf.Index = CurrentFrame - 1;
                         pkf[index] = box.Value;
 
-                        int count = _mainWindow.pnlKeyframes.listKeyframes.Items.Count;
-                        for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.pnlKeyframes.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
+                        int count = _mainWindow.KeyframePanel.listKeyframes.Items.Count;
+                        for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
 
-                        _mainWindow.pnlKeyframes.listKeyframes.Items.Insert(x, kf);
-                        _mainWindow.pnlKeyframes.listKeyframes.SelectedIndex = x;
+                        _mainWindow.KeyframePanel.listKeyframes.Items.Insert(x, kf);
+                        _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = x;
 
                         //Finally, replace with the changed value
                         newEntry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
@@ -689,7 +689,7 @@ namespace System.Windows.Forms
                         //Value removed, find keyframe and zero it out
                         if (kfIndex >= 0)
                         {
-                            kf = (AnimationFrame)_mainWindow.pnlKeyframes.listKeyframes.Items[kfIndex];
+                            kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
                             kf.forKeyframeSRT = true;
                             kf.SetBool(index + 0x10, false);
                             pkf[index] = box.Value;
@@ -697,11 +697,11 @@ namespace System.Windows.Forms
                             for (x = 0; (x < 9) && (float.IsNaN(pkf[x]) || !kf.GetBool(x + 0x10)); x++) ;
                             if (x == 9)
                             {
-                                _mainWindow.pnlKeyframes.listKeyframes.Items.RemoveAt(kfIndex);
-                                _mainWindow.pnlKeyframes.listKeyframes.SelectedIndex = -1;
+                                _mainWindow.KeyframePanel.listKeyframes.Items.RemoveAt(kfIndex);
+                                _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = -1;
                             }
                             else
-                                _mainWindow.pnlKeyframes.listKeyframes.Items[kfIndex] = kf;
+                                _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
                         }
                         TexEntry.RemoveKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1);
                     }
@@ -710,11 +710,11 @@ namespace System.Windows.Forms
                         TexEntry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
                         if (kfIndex >= 0)
                         {
-                            kf = (AnimationFrame)_mainWindow.pnlKeyframes.listKeyframes.Items[kfIndex];
+                            kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
                             kf.forKeyframeSRT = true;
                             kf.SetBool(index + 0x10, true);
                             pkf[index] = box.Value;
-                            _mainWindow.pnlKeyframes.listKeyframes.Items[kfIndex] = kf;
+                            _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
                         }
                         else
                         {
@@ -724,11 +724,11 @@ namespace System.Windows.Forms
                             kf.Index = CurrentFrame - 1;
                             pkf[index] = box.Value;
 
-                            int count = _mainWindow.pnlKeyframes.listKeyframes.Items.Count;
-                            for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.pnlKeyframes.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
+                            int count = _mainWindow.KeyframePanel.listKeyframes.Items.Count;
+                            for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
 
-                            _mainWindow.pnlKeyframes.listKeyframes.Items.Insert(x, kf);
-                            _mainWindow.pnlKeyframes.listKeyframes.SelectedIndex = x;
+                            _mainWindow.KeyframePanel.listKeyframes.Items.Insert(x, kf);
+                            _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = x;
                         }
                     }
             }
@@ -746,7 +746,7 @@ namespace System.Windows.Forms
             ResetBox(index);
 
             _mainWindow.UpdateModel();
-            _mainWindow.modelPanel.Invalidate();
+            _mainWindow.ModelPanel.Invalidate();
         }
 
         private static Dictionary<string, AnimationFrame> _copyAllState = new Dictionary<string, AnimationFrame>();
@@ -1154,7 +1154,7 @@ namespace System.Windows.Forms
                 return;
 
             SelectedAnimation.InsertKeyframe(CurrentFrame - 1);
-            _mainWindow.SRT0StateChanged(this, null);
+            //_mainWindow.SRT0StateChanged(this, null);
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -1163,7 +1163,7 @@ namespace System.Windows.Forms
                 return;
 
             SelectedAnimation.DeleteKeyframe(CurrentFrame - 1);
-            _mainWindow.SRT0StateChanged(this, null);
+            //_mainWindow.SRT0StateChanged(this, null);
         }
 
         private void btnClearFrame_Click(object sender, EventArgs e)

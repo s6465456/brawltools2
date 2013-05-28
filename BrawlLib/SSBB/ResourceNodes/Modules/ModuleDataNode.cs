@@ -9,7 +9,8 @@ using System.PowerPcAssembly;
 using System.Drawing;
 
 namespace BrawlLib.SSBB.ResourceNodes
-{
+{   
+    ///<summary>Represents 4 bytes in a rel memory section.</summary>
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public unsafe class Relocation
     {

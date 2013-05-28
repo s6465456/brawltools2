@@ -16,7 +16,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //public int Entries { get { return Header->_numEntries; } }
 
         //RASD is found in "External" bres group nodes
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
             //SetSizeInternal(Header->_header._length);
@@ -24,17 +24,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             //DATA Entries
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return base.OnCalculateSize(force);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
         }
@@ -46,7 +46,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     //{
     //    internal RASDDataEntry* Header { get { return (RASDDataEntry*)WorkingUncompressed.Address; } }
         
-    //    protected override bool OnInitialize()
+    //    public override bool OnInitialize()
     //    {
     //        return false;
     //    }

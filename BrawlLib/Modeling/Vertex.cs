@@ -34,7 +34,8 @@ namespace BrawlLib.Modeling
         //Contains all the facepoints with the same position and influence.
         //Note that the normal, uv and color indices may differ per facepoint
         public List<Facepoint> _facepoints = new List<Facepoint>();
-        
+        public Facepoint[] Facepoints { get { return _facepoints.ToArray(); } }
+
         public Matrix GetMatrix()
         {
             if (_object != null && _object.MatrixNode != null)
@@ -91,7 +92,7 @@ namespace BrawlLib.Modeling
                     _position *= ((MDL0BoneNode)value).InverseMatrix;
                     //_normal *= ((MDL0BoneNode)value).InverseMatrix.GetRotationMatrix();
 
-                    _object._vertexNode.Vertices[_facepoints[0].VertexIndex] = _position;
+                    _object._vertexNode.Vertices[_facepoints[0]._vertexIndex] = _position;
                     _object._vertexNode.ForceRebuild = true;
                     if (_object._vertexNode.Format == WiiVertexComponentType.Float)
                         _object._vertexNode.ForceFloat = true;
@@ -102,7 +103,7 @@ namespace BrawlLib.Modeling
                     _position *= ((MDL0BoneNode)_matrixNode).Matrix;
                     //_normal *= ((MDL0BoneNode)_matrixNode).Matrix.GetRotationMatrix();
 
-                    _object._vertexNode.Vertices[_facepoints[0].VertexIndex] = _position;
+                    _object._vertexNode.Vertices[_facepoints[0]._vertexIndex] = _position;
                     _object._vertexNode.ForceRebuild = true;
                     if (_object._vertexNode.Format == WiiVertexComponentType.Float)
                         _object._vertexNode.ForceFloat = true;
@@ -220,6 +221,8 @@ namespace BrawlLib.Modeling
         {
             Position = position;
             MatrixNode = influence;
+            if (influence == null)
+                Console.WriteLine();
         }
 
         //Pre-multiply vertex using influence.
@@ -242,16 +245,16 @@ namespace BrawlLib.Modeling
                 for (int i = 0; i < nodes.Length; i++)
                 {
                     MDL0VertexNode set = nodes[i];
-                    set.Vertices[_facepoints[0].VertexIndex] = GetInvMatrix() * ((GetMatrix() * set.Vertices[_facepoints[0].VertexIndex]) + trans);
+                    set.Vertices[_facepoints[0]._vertexIndex] = GetInvMatrix() * ((GetMatrix() * set.Vertices[_facepoints[0]._vertexIndex]) + trans);
                     set.ForceRebuild = true;
                     if (set.Format == WiiVertexComponentType.Float)
                         set.ForceFloat = true;
                 }
 
-                _position = GetInvMatrix() * ((GetMatrix() * _object._vertexNode.Vertices[_facepoints[0].VertexIndex]) + trans);
+                _position = GetInvMatrix() * ((GetMatrix() * _object._vertexNode.Vertices[_facepoints[0]._vertexIndex]) + trans);
             }
 
-            _object._vertexNode.Vertices[_facepoints[0].VertexIndex] = _position;
+            _object._vertexNode.Vertices[_facepoints[0]._vertexIndex] = _position;
             _object._vertexNode.ForceRebuild = true;
             if (_object._vertexNode.Format == WiiVertexComponentType.Float)
                 _object._vertexNode.ForceFloat = true;

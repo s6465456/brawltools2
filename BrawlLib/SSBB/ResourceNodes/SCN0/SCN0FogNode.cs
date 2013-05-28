@@ -142,7 +142,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             NumEntries = entries;
         }
 
-        protected override bool OnInitialize()
+        public int DataOffset { get { return !_constant ? ((int)Data->colorEntries - (int)Parent.Parent.WorkingUncompressed.Address) : 0; } }
+
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -158,12 +160,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (flags.HasFlag(SCN0FogFlags.FixedStart))
                     _startKeys[0] = Data->_start;
                 else if (!_replaced)
-                    SCN0EntryNode.DecodeFrames(_startKeys, Data->startKeyframes);
+                {
+                    DecodeFrames(_startKeys, Data->startKeyframes);
+
+                    SCN0Node.strings[(int)(Data->startKeyframes - Parent.Parent.WorkingUncompressed.Address)] = "Fog" +Index+" Keys Start";
+                }
                 
                 if (flags.HasFlag(SCN0FogFlags.FixedEnd))
                     _endKeys[0] = Data->_end;
                 else if (!_replaced)
-                    SCN0EntryNode.DecodeFrames(_endKeys, Data->endKeyframes);
+                {
+                    DecodeFrames(_endKeys, Data->endKeyframes);
+
+                    SCN0Node.strings[(int)(Data->endKeyframes - Parent.Parent.WorkingUncompressed.Address)] = "Fog" + Index + " Keys End";
+                }
                 
                 if (flags.HasFlag(SCN0FogFlags.FixedColor))
                 {
@@ -178,40 +188,78 @@ namespace BrawlLib.SSBB.ResourceNodes
                     RGBAPixel* addr = Data->colorEntries;
                     for (int i = 0; i <= FrameCount; i++)
                         _colors.Add((ARGBPixel)(*addr++));
+
+                    SCN0Node.strings[(int)(Data->colorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Fog" + Index + " Pixels Color";
                 }
             }
 
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        SCN0FogNode match;
+        public override int OnCalculateSize(bool force)
         {
-            keyLen = 0;
-            lightLen = 0;
-            if (_startKeys._keyCount > 1)
-                keyLen += 4 + _startKeys._keyCount * 12;
-            if (_endKeys._keyCount > 1)
-                keyLen += 4 + _endKeys._keyCount * 12;
-            if (!_constant)
-                lightLen += 4 * (FrameCount + 1);
+            match = null;
+            _keyLen = 0;
+            _lightLen = 0;
+            _visLen = 0;
+            if (_name != "<null>")
+            {
+                if (_startKeys._keyCount > 1)
+                    _keyLen += 8 + _startKeys._keyCount * 12;
+                if (_endKeys._keyCount > 1)
+                    _keyLen += 8 + _endKeys._keyCount * 12;
+                if (!_constant)
+                {
+                    foreach (SCN0FogNode n in Parent.Children)
+                    {
+                        if (n == this)
+                            break;
+
+                        if (!n._constant)
+                        {
+                            for (int i = 0; i < FrameCount + 1; i++)
+                            {
+                                if (n._colors[i] != _colors[i])
+                                    break;
+                                if (i == FrameCount)
+                                    match = n;
+                            }
+                        }
+
+                        if (match != null)
+                            break;
+                    }
+                    if (match == null)
+                        _lightLen += 4 * (FrameCount + 1);
+                }
+            }
             return SCN0Fog.Size;
         }
-
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        VoidPtr matchAddr;
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
+
+            matchAddr = null;
 
             SCN0Fog* header = (SCN0Fog*)address;
 
             flags = SCN0FogFlags.None;
             if (_colors.Count > 1)
             {
-                *((bint*)header->_color.Address) = (int)lightAddr - (int)header->_color.Address;
-                for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
-                    if (i < _colors.Count)
-                        *lightAddr++ = (RGBAPixel)_colors[i];
-                    else
-                        *lightAddr++ = new RGBAPixel();
+                matchAddr = lightAddr;
+                if (match == null)
+                {
+                    *((bint*)header->_color.Address) = (int)lightAddr - (int)header->_color.Address;
+                    for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
+                        if (i < _colors.Count)
+                            *lightAddr++ = (RGBAPixel)_colors[i];
+                        else
+                            *lightAddr++ = new RGBAPixel();
+                }
+                else
+                    *((bint*)header->_color.Address) = (int)match.matchAddr - (int)header->_color.Address;
             }
             else
             {

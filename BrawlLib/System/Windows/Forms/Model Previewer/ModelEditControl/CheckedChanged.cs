@@ -17,7 +17,7 @@ using BrawlLib.Imaging;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
         private void toggleNormals_CheckedChanged(object sender, EventArgs e)
         {
@@ -157,17 +157,6 @@ namespace System.Windows.Forms
             modelPanel.Invalidate();
         }
 
-        private void showKeyframes_CheckedChanged(object sender, EventArgs e)
-        {
-            if (TargetAnimType != AnimType.SCN &&
-                TargetAnimType != AnimType.PAT &&
-                TargetAnimType != AnimType.None)
-                pnlKeyframes.Visible = spltAnims.Visible = showKeyframes.Checked;
-            else
-                pnlKeyframes.Visible = spltAnims.Visible = false;
-            DetermineRight();
-        }
-
         private void showCameraCoordinatesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             modelPanel._showCamCoords = showCameraCoordinatesToolStripMenuItem.Checked;
@@ -237,9 +226,9 @@ namespace System.Windows.Forms
         }
         private void displayBRRESRelativeAnimationsToolStripMenuItem_CheckStateChanged(object sender, EventArgs e)
         {
-            pnlAssets.BRRESRelative = displayBRRESRelativeAnimationsToolStripMenuItem.CheckState;
-            pnlAssets.UpdateAnimations(TargetAnimType);
-            switch (pnlAssets.BRRESRelative)
+            leftPanel.BRRESRelative = displayBRRESRelativeAnimationsToolStripMenuItem.CheckState;
+            leftPanel.UpdateAnimations(TargetAnimType);
+            switch (leftPanel.BRRESRelative)
             {
                 case CheckState.Checked:
                     displayBRRESRelativeAnimationsToolStripMenuItem.Text = "Displaying only BRRES animations"; break;
@@ -254,11 +243,6 @@ namespace System.Windows.Forms
         {
             if (!_updating)
                 RenderPolygons = chkPolygons.CheckState;
-        }
-
-        private void showPlay_CheckedChanged_1(object sender, EventArgs e)
-        {
-            pnlPlayback.Visible = showPlay.Checked;
         }
 
         private void displayFrameCountDifferencesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -283,7 +267,7 @@ namespace System.Windows.Forms
             if (_updating)
                 return;
 
-            pnlAssets.chkSyncVis.Checked = syncObjectsListToVIS0ToolStripMenuItem.Checked;
+            leftPanel.chkSyncVis.Checked = syncObjectsListToVIS0ToolStripMenuItem.Checked;
         }
 
         private void syncAnimationsTogetherToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -374,48 +358,49 @@ namespace System.Windows.Forms
             if (val != _animFrame)
             {
                 int difference = val - _animFrame;
-                if (pnlMoveset._mainMoveset != null && pnlMoveset.selectedActionNodes.Count > 0)
-                {
-                    //Run frame value through the moveset panel.
-                    if (val < _animFrame)
-                    {
-                        if (pnlMoveset._animFrame > 0)
-                            pnlMoveset.SetFrame(pnlMoveset._animFrame + difference);
-                        else if (pnlMoveset.subactions)
-                            pnlMoveset.SetFrame(_maxFrame - 1);
-                    }
-                    else if (val > _animFrame)
-                        if (pnlMoveset.ActionsIdling || (pnlMoveset.subactions && pnlMoveset._animFrame >= _maxFrame - 1))
-                        {
-                            if (pnlMoveset.subactions && pnlMoveset.selectedSubActionGrp != null)
-                                if (_animFrame < _maxFrame)
-                                {
-                                    SetFrame(_animFrame + difference);
-                                    pnlMoveset._animFrame += difference;
-                                }
-                                else
-                                    pnlMoveset.SetFrame(0);
-                        }
-                        else
-                            pnlMoveset.SetFrame(pnlMoveset._animFrame + difference);
-                }
-                else if (GetSelectedBRRESFile(TargetAnimType) != null)
-                    SetFrame(_animFrame += (val - _animFrame));
-                pnlKeyframes.numFrame_ValueChanged();
+                //if (pnlMoveset._mainMoveset != null && pnlMoveset.selectedActionNodes.Count > 0)
+                //{
+                //    //Run frame value through the moveset panel.
+                //    if (val < _animFrame)
+                //    {
+                //        if (pnlMoveset._animFrame > 0)
+                //            pnlMoveset.SetFrame(pnlMoveset._animFrame + difference);
+                //        else if (pnlMoveset.subactions)
+                //            pnlMoveset.SetFrame(_maxFrame - 1);
+                //    }
+                //    else if (val > _animFrame)
+                //        if (pnlMoveset.ActionsIdling || (pnlMoveset.subactions && pnlMoveset._animFrame >= _maxFrame - 1))
+                //        {
+                //            if (pnlMoveset.subactions && pnlMoveset.selectedSubActionGrp != null)
+                //                if (_animFrame < _maxFrame)
+                //                {
+                //                    SetFrame(_animFrame + difference);
+                //                    pnlMoveset._animFrame += difference;
+                //                }
+                //                else
+                //                    pnlMoveset.SetFrame(0);
+                //        }
+                //        else
+                //            pnlMoveset.SetFrame(pnlMoveset._animFrame + difference);
+                //}
+                //else 
+                if (GetSelectedBRRESFile(TargetAnimType) != null)
+                    SetFrame(_animFrame += difference);
+                rightPanel.pnlKeyframes.numFrame_ValueChanged();
             }
         }
-        public void numFPS_ValueChanged(object sender, EventArgs e) { pnlMoveset.animTimer.Interval = animTimer.Interval = pnlPlayback.numFPS.Value == 60 ? 1 : 1000 / (int)pnlPlayback.numFPS.Value; }
+        public void numFPS_ValueChanged(object sender, EventArgs e) { /*pnlMoveset.animTimer.Interval = */animTimer.Interval = pnlPlayback.numFPS.Value == 60 ? 1 : 1000 / (int)pnlPlayback.numFPS.Value; }
         public void chkLoop_CheckedChanged(object sender, EventArgs e) 
         {
             _loop = pnlPlayback.chkLoop.Checked;
             if (syncLoopToAnimationToolStripMenuItem.Checked && !_updating)
-                ((BRESEntryNode)GetSelectedBRRESFile(TargetAnimType)).tLoop = _loop;
+                ((BRESEntryNode)GetSelectedBRRESFile(TargetAnimType)).Loop = _loop;
         }
 
-        private void FileChanged(object sender, EventArgs e)
-        {
-            movesetToolStripMenuItem1.Visible = chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = pnlMoveset._mainMoveset != null;
-        }
+        //private void FileChanged(object sender, EventArgs e)
+        //{
+        //    movesetToolStripMenuItem1.Visible = chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = pnlMoveset._mainMoveset != null;
+        //}
 
         private void RenderStateChanged(object sender, EventArgs e)
         {
@@ -439,17 +424,17 @@ namespace System.Windows.Forms
 
         public void SelectedPolygonChanged(object sender, EventArgs e) 
         {
-            _targetModel._polyIndex = _targetModel._polyList.IndexOf(pnlAssets.SelectedPolygon);
+            _targetModel._polyIndex = _targetModel._polyList.IndexOf(leftPanel.SelectedPolygon);
 
-            if (pnlAssets._syncObjTex)
-                pnlAssets.UpdateTextures();
+            if (leftPanel._syncObjTex)
+                leftPanel.UpdateTextures();
 
             if (TargetAnimType == AnimType.VIS)
-                if (pnlAssets.TargetObject != null && vis0Editor.listBox1.Items.Count != 0)
+                if (leftPanel.TargetObject != null && vis0Editor.listBox1.Items.Count != 0)
                 {
                     int x = 0;
                     foreach (object i in vis0Editor.listBox1.Items)
-                        if (i.ToString() == pnlAssets.TargetObject.VisibilityBone)
+                        if (i.ToString() == leftPanel.TargetObject.VisibilityBone)
                         {
                             vis0Editor.listBox1.SelectedIndex = x;
                             break;
@@ -475,50 +460,42 @@ namespace System.Windows.Forms
                 for (int i = 0; i < 5; i++)
                     if ((n = GetSelectedBRRESFile((AnimType)i)) != null) 
                         //if (i == 5) ((BRESEntryNode)n).tFrameCount = _maxFrame - 1; else 
-                        ((BRESEntryNode)n).tFrameCount = _maxFrame;
+                        ((BRESEntryNode)n).FrameCount = _maxFrame;
                     else { }
             else
             {
                 if ((n = GetSelectedBRRESFile(TargetAnimType)) != null)
-                    ((BRESEntryNode)n).tFrameCount = _maxFrame;
+                    ((BRESEntryNode)n).FrameCount = _maxFrame;
                 if (displayFrameCountDifferencesToolStripMenuItem.Checked)
                     if (MessageBox.Show("Do you want to update the frame counts of the other animation types?", "Update Frame Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     for (int i = 0; i < 5; i++)
                         if (i != (int)TargetAnimType && (n = GetSelectedBRRESFile((AnimType)i)) != null)
-                            ((BRESEntryNode)n).tFrameCount = _maxFrame;
+                            ((BRESEntryNode)n).FrameCount = _maxFrame;
             }
 
             pnlPlayback.numFrameIndex.Maximum = _maxFrame;
         }
         private void showAssets_CheckedChanged(object sender, EventArgs e)
         {
-            pnlAssets.Visible = spltMoveset.Visible = showAssets.Checked;
-
-            if (showAssets.Checked == false && showBones.Checked == false)
-                btnAssetToggle.Text = ">";
-            else if (showAssets.Checked == true && showBones.Checked == true)
-                btnAssetToggle.Text = "<";
+            leftPanel.Visible = spltLeft.Visible = showLeft.Checked;
+            btnLeftToggle.Text = showLeft.Checked == false ? ">" : "<";
         }
         private void showAnim_CheckedChanged(object sender, EventArgs e)
         {
-            pnlBones.Visible = spltAssets.Visible = showBones.Checked;
-
-            if (showAssets.Checked == false && showBones.Checked == false)
-                btnAssetToggle.Text = ">";
-            else if (showAssets.Checked == true && showBones.Checked == true)
-                btnAssetToggle.Text = "<";
+            rightPanel.Visible = spltRight.Visible = showRight.Checked;
+            btnRightToggle.Text = showRight.Checked == false ? "<" : ">";
         }
-        private void showMoveset_CheckedChanged(object sender, EventArgs e)
-        {
-            pnlMoveset.Visible = spltAnims.Visible = showMoveset.Checked;
-            DetermineRight();
-        }
+        //private void showMoveset_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    pnlMoveset.Visible = spltAnims.Visible = showMoveset.Checked;
+        //    DetermineRight();
+        //}
         public void DetermineRight()
         {
-            if (pnlKeyframes.Visible && (pnlMoveset.Visible || pnlMoveset._mainMoveset == null))
-                btnAnimToggle.Text = ">";
+            if (rightPanel.Visible)
+                btnRightToggle.Text = ">";
             else
-                btnAnimToggle.Text = "<";
+                btnRightToggle.Text = "<";
         }
         private void showPlay_CheckedChanged(object sender, EventArgs e) 
         {
@@ -580,9 +557,8 @@ namespace System.Windows.Forms
                 TargetModel = _targetModels != null && _targetModels.Count > 0 ? _targetModels[0] : null;
 
             _undoSaves.Clear();
-            //_redoSaves.Clear();
+            _redoSaves.Clear();
             _saveIndex = -1;
-            //_firstUndo = true;
         }
 
         private void chkBones_CheckedChanged(object sender, EventArgs e)

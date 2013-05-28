@@ -541,17 +541,17 @@ namespace BrawlLib.Wii.Models
                             switch (pDef->Type)
                             {
                                 case 0:
-                                    f.VertexIndex = index;
+                                    f._vertexIndex = index;
                                     break;
                                 case 1:
-                                    f.NormalIndex = index;
+                                    f._normalIndex = index;
                                     break;
                                 case 2:
                                 case 3:
-                                    f.ColorIndex[pDef->Type - 2] = index;
+                                    f._colorIndices[pDef->Type - 2] = index;
                                     break;
                                 default:
-                                    f.UVIndex[pDef->Type - 4] = index;
+                                    f._UVIndices[pDef->Type - 4] = index;
                                     break;
                             }
 

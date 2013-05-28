@@ -266,7 +266,22 @@ namespace System.PowerPcAssembly
                 //return data.Formal(0) + "," + data.Formal(2);
                 return _data.Formal(0) + " = " + _data.Formal(2);
 
-            return _data.Formal(0) + " = " + _data.Formal(1) + " + " + _data.Formal(2);
+            if (_data.Formal(0) == _data.Formal(1))
+            {
+                string s = _data.Formal(2);
+                if (s.StartsWith("-"))
+                    return _data.Formal(0) + " -= " + s;
+                else
+                    return _data.Formal(0) + " += " + s;
+            }
+            else
+            {
+                string s = _data.Formal(2);
+                if (s.StartsWith("-"))
+                    return _data.Formal(0) + " = " + _data.Formal(1) + " - " + s.Substring(1);
+                else
+                    return _data.Formal(0) + " = " + _data.Formal(1) + " + " + s;
+            }
 
             //return base.FormOps();
         }
@@ -658,7 +673,16 @@ namespace System.PowerPcAssembly
         public override string FormOps()
         {
             //return data.Formal(0) + "," + data.Formal(2) + "(" + data.Formal(1) + ")";
-            return "*(" + _data.Formal(1) + " + " + _data.Formal(2) + ") = " + _data.Formal(0);
+            if (_data.Formal(2) == "0" || _data.Formal(2) == "-0")
+                return _data.Formal(1) + " = " + _data.Formal(0);
+            else
+            {
+                string s = _data.Formal(2);
+                if (s.StartsWith("-"))
+                    return "*(" + _data.Formal(1) + " - " + s.Substring(1) + ") = " + _data.Formal(0);
+                else
+                    return "*(" + _data.Formal(1) + " + " + s + ") = " + _data.Formal(0);
+            }
         }
     }
 

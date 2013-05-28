@@ -38,7 +38,7 @@ namespace System.Windows.Forms
 
         public ListBox listBox1;
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
 
         public VIS0Editor() { InitializeComponent(); }
 
@@ -57,19 +57,19 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public VIS0Node SelectedAnimation
         {
-            get { return _mainWindow._vis0; }
+            get { return _mainWindow.SelectedVIS0; }
             set { _mainWindow.SelectedVIS0 = value; }
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public VIS0EntryNode TargetVisEntry { get { return _mainWindow._targetVisEntry; } set { _mainWindow.TargetVisEntry = value; } }
+        public VIS0EntryNode TargetVisEntry { get { return _mainWindow.TargetVisEntry; } set { _mainWindow.TargetVisEntry = value; } }
         
         public void UpdateAnimation()
         {
             listBox1.Items.Clear();
             listBox1.BeginUpdate();
-            if (_mainWindow._vis0 != null)
-            foreach (VIS0EntryNode n in _mainWindow._vis0.Children)
+            if (_mainWindow.SelectedVIS0 != null)
+            foreach (VIS0EntryNode n in _mainWindow.SelectedVIS0.Children)
                 listBox1.Items.Add(n);
 
             listBox1.EndUpdate();
@@ -78,20 +78,20 @@ namespace System.Windows.Forms
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             TargetVisEntry = listBox1.Items[listBox1.SelectedIndex] as VIS0EntryNode;
-            if (_mainWindow._animFrame > 0 && _mainWindow._animFrame < _mainWindow.pnlKeyframes.visEditor.listBox1.Items.Count)
-                _mainWindow.pnlKeyframes.visEditor.listBox1.SelectedIndex = _mainWindow._animFrame;
+            if (_mainWindow.CurrentFrame > 0 && _mainWindow.CurrentFrame < _mainWindow.KeyframePanel.visEditor.listBox1.Items.Count)
+                _mainWindow.KeyframePanel.visEditor.listBox1.SelectedIndex = _mainWindow.CurrentFrame;
         }
 
         public void UpdateEntry()
         {
-            _mainWindow.pnlKeyframes.visEditor.listBox1.BeginUpdate();
-            _mainWindow.pnlKeyframes.visEditor.listBox1.Items.Clear();
+            _mainWindow.KeyframePanel.visEditor.listBox1.BeginUpdate();
+            _mainWindow.KeyframePanel.visEditor.listBox1.Items.Clear();
 
-            if (_mainWindow.pnlKeyframes.visEditor.TargetNode != null && _mainWindow.pnlKeyframes.visEditor.TargetNode.EntryCount > -1)
-                for (int i = 0; i < _mainWindow.pnlKeyframes.visEditor.TargetNode.EntryCount; i++)
-                    _mainWindow.pnlKeyframes.visEditor.listBox1.Items.Add(_mainWindow.pnlKeyframes.visEditor.TargetNode.GetEntry(i));
+            if (_mainWindow.KeyframePanel.visEditor.TargetNode != null && _mainWindow.KeyframePanel.visEditor.TargetNode.EntryCount > -1)
+                for (int i = 0; i < _mainWindow.KeyframePanel.visEditor.TargetNode.EntryCount; i++)
+                    _mainWindow.KeyframePanel.visEditor.listBox1.Items.Add(_mainWindow.KeyframePanel.visEditor.TargetNode.GetEntry(i));
 
-            _mainWindow.pnlKeyframes.visEditor.listBox1.EndUpdate();
+            _mainWindow.KeyframePanel.visEditor.listBox1.EndUpdate();
         }
 
         public void EntryChanged()
@@ -102,7 +102,7 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
         {
-            get { return _mainWindow._enableTransform; }
+            get { return _mainWindow.EnableTransformEdit; }
             set { /*_mainWindow.pnlKeyframes.Enabled = (_mainWindow.EnableTransformEdit = value) && (SelectedAnimation != null);*/ }
         }
     }

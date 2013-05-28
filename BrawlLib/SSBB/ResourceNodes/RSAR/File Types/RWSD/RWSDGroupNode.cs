@@ -8,13 +8,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal RWSD_DATAHeader* Header { get { return (RWSD_DATAHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.RWSDDataGroup; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = "Data";
             return Header->_list._numEntries > 0;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0xC + Children.Count * 8;
             foreach (RSARFileEntryNode g in Children)
@@ -22,7 +22,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size.Align(0x20);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             RWSD_DATAHeader* header = (RWSD_DATAHeader*)address;
             header->_tag = RWSD_DATAHeader.Tag;
@@ -46,14 +46,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public VoidPtr _audioAddr;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = "Audio";
 
             return Header->_numEntries > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             for (int i = 0; i < Header->_numEntries; i++)
                 new WAVESoundNode().Initialize(this, Header->GetEntry(i), 0);
@@ -61,7 +61,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 n.GetAudio();
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0xC + Children.Count * 4;
             foreach (WAVESoundNode g in Children)
@@ -69,7 +69,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size.Align(0x20);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             uint offset = 0;
             WAVEHeader* header = (WAVEHeader*)address;

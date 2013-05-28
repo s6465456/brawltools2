@@ -21,7 +21,7 @@ namespace BrawlLib.Wii.Graphics
             MDL0ShaderNode shader = mat.ShaderNode;
 
             foreach (MDL0MaterialRefNode r in mat.Children)
-                w("uniform sampler2D Texture{0};\n", r.Index);
+                w("uniform sampler2D Texture{0};\n", r.TextureCoordId);
 
             w("uniform vec4 C1Amb;\n");
             w("uniform vec4 C2Amb;\n");
@@ -49,7 +49,7 @@ namespace BrawlLib.Wii.Graphics
             //    w("prev.a = {0};\n", tevAOutputTable[(int)((TEVStage)shader.Children[shader._stages - 1]).AlphaRegister]);
             //}
 
-            w("gl_FragColor = texture2D(Texture0, gl_TexCoord[0].xy);");
+            w("gl_FragColor = texture2D(Texture0, gl_TexCoord[0].st);");
 
             w("\n}");
 
@@ -64,20 +64,22 @@ namespace BrawlLib.Wii.Graphics
             MDL0ShaderNode shader = mat.ShaderNode;
 
             if (obj._manager._faceData[0] != null)
-                w("uniform vec3 Position;\n");
+                w("layout (location = 0) in vec3 Position;\n");
             if (obj._manager._faceData[1] != null)
-                w("uniform vec3 Normal;\n");
+                w("layout (location = 0) in vec3 Normal;\n");
             for (int i = 0; i < 2; i++)
                 if (obj._manager._faceData[i + 2] != null)
-                    w("uniform vec3 Color{0};\n", i);
+                    w("layout (location = {1}) in vec4 Color{0};\n", i, i + 2);
             for (int i = 0; i < 8; i++)
                 if (obj._manager._faceData[i + 4] != null)
-                    w("uniform vec3 UV{0};\n", i);
+                    w("layout (location = {1}) in vec2 UV{0};\n", i, i + 4);
 
             w("void main(void)\n{\n");
 
-            w("gl_Position = ftransform();");
-            //w("gl_Normal = Normal;");
+            w("gl_TexCoord[0] = gl_MultiTexCoord0;");
+
+            w("gl_Position = gl_ModelViewProjectionMatrix * Position;");
+            w("gl_Normal = Normal;");
 
             w("\n}");
 

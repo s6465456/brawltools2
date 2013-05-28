@@ -5,7 +5,6 @@ using System.ComponentModel;
 using BrawlLib.Wii.Compression;
 using System.Reflection;
 using System.IO;
-using System.Windows;
 using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
@@ -71,11 +70,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal protected CompressionType _compression;
 
         public string _name, _origPath;
-        internal protected ResourceNode _parent;
-        internal protected List<ResourceNode> _children = new List<ResourceNode>();
+        public ResourceNode _parent;
+        public List<ResourceNode> _children = new List<ResourceNode>();
 
         //LinkedList<ResourceNode> _list = new LinkedList<ResourceNode>();
-        internal int _calcSize;
+        public int _calcSize;
 
         internal protected ResourceNode _first, _last;
         internal protected bool _hasChildren;
@@ -221,6 +220,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Browsable(false)]
+        public virtual Type[] AllowedChildTypes { get { return _allowedChildTypes; } }
+        private Type[] _allowedChildTypes = new Type[] { };
+
+        [Browsable(false)]
         public virtual CompressionType Compression { get { return _compression; } set { _compression = value; _changed = true; } }
 
         ~ResourceNode() { Dispose(); }
@@ -352,11 +355,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         //Called when children are first requested. Allows node to cache child nodes.
-        protected virtual void OnPopulate() { }
+        public virtual void OnPopulate() { }
 
         //Called when property values are requested. Allows node to cache values from source data.
         //Return true to indicate there are child nodes.
-        protected virtual bool OnInitialize() { return false; }
+        public virtual bool OnInitialize() { return false; }
 
         //Restores node to its original form using the backing tree. 
         public virtual void Restore()
@@ -401,10 +404,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal void Initialize(ResourceNode parent, FileMap source) { Initialize(parent, new DataSource(source)); }
-        internal void Initialize(ResourceNode parent, VoidPtr address, int length) { Initialize(parent, new DataSource(address, length)); }
-        internal void Initialize(ResourceNode parent, DataSource origSource) { Initialize(parent, origSource, origSource); }
-        internal virtual void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
+        public void Initialize(ResourceNode parent, FileMap source) { Initialize(parent, new DataSource(source)); }
+        public void Initialize(ResourceNode parent, VoidPtr address, int length) { Initialize(parent, new DataSource(address, length)); }
+        public void Initialize(ResourceNode parent, DataSource origSource) { Initialize(parent, origSource, origSource); }
+        public virtual void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
         {
             _origSource = origSource;
             _uncompSource = uncompSource;
@@ -607,7 +610,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        //internal protected virtual void RebuildUncompressed(VoidPtr address, int length, bool force)
+        //public virtual void RebuildUncompressed(VoidPtr address, int length, bool force)
         //{
         //    if (!IsDirty && !force)
         //    {
@@ -625,7 +628,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //Called on child nodes in order to rebuild them at a specified address.
         //This will occur after CalculateSize, so compressed nodes will already be rebuilt.
-        internal protected virtual void Rebuild(VoidPtr address, int length, bool force)
+        public virtual void Rebuild(VoidPtr address, int length, bool force)
         {
             if (!IsDirty && !force)
                 MoveRaw(address, length);
@@ -645,7 +648,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Overridden by parent nodes in order to rebuild children.
         //Size is the value returned by OnCalculateSize (or _calcSize)
         //Node MUST dispose of and assign both repl sources before exiting. (Not exactly, see Rebuild())
-        internal protected virtual void OnRebuild(VoidPtr address, int length, bool force) { MoveRaw(address, length); }
+        public virtual void OnRebuild(VoidPtr address, int length, bool force) { MoveRaw(address, length); }
 
         //Shouldn't this move compressed data? YES!
         internal virtual void MoveRaw(VoidPtr address, int length)
@@ -696,7 +699,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Calculate size to be passed to parent node.
         //If node is compressed, rebuild now and compress to temp file. Return temp file size.
         //Called on child nodes only, because it can trigger a rebuild.
-        internal protected virtual int CalculateSize(bool force)
+        public virtual int CalculateSize(bool force)
         {
             if (IsDirty || force)
             {
@@ -720,7 +723,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Returns uncompressed size of node data.
         //It's up to the child nodes to return compressed sizes.
         //If this has been called, it means a rebuild must happen.
-        protected virtual int OnCalculateSize(bool force)
+        public virtual int OnCalculateSize(bool force)
         {
             return WorkingUncompressed.Length;
         }

@@ -21,7 +21,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("EFLS")]
         public int Unknown2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -33,7 +33,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         internal int RE3DOffset = 0;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0x10, re3dSize = 0; _brresCount = 0;
             foreach (EFLSEntryNode e in Children)
@@ -59,14 +59,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size.Align(0x10) + re3dSize;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             EFLSHeader* header = Header;
             for (int i = 0; i < header->_numEntries; i++)
                 new EFLSEntryNode() { _name = header->GetString(i) }.Initialize(this, &header->Entries[i], 0);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             int count = Children.Count;
             int re3dSize = 0;
@@ -138,7 +138,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("EFLS Entry")]
         public int Unknown { get { return _unk; } set { _unk = value; SignalPropertyChange(); } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _brresID1 = Header->_brresID1;
             _brresID2 = Header->_brresID2;
@@ -148,7 +148,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return _re3dOffset > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             RE3D* data = (RE3D*)((VoidPtr)((EFLSNode)Parent).Header + _re3dOffset);
             for (int i = 0; i < data->_numEntries; i++)
@@ -177,7 +177,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("RE3D Entry")]
         public string Effect { get { return _effect; } set { _effect = value; SignalPropertyChange(); } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _stringOffset = Header->_stringOffset;
             _unk1 = Header->_unk1;

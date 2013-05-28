@@ -8,13 +8,12 @@ using System.IO;
 using BrawlLib.IO;
 using BrawlLib.Wii.Animations;
 using System.Windows.Forms;
-using BrawlBox;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class PhysicsNode : ARCEntryNode
     {
-        public PhysicsHeader* Header { get { return (PhysicsHeader*)WorkingUncompressed.Address; } }
+        internal PhysicsHeader* Header { get { return (PhysicsHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
         [Category("Offsets")]
@@ -38,7 +37,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Offsets")]
         public uint Unknown11 { get { return Header->_unk11; } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -47,19 +46,19 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             new ClassNamesNode() { Header = Header->ClassNames }.Initialize(this, Header->ClassNamesData, 0);
             new DataNode() { Header = Header->Data }.Initialize(this, Header->DataData, 0);
             new DataNode() { Header = Header->Types }.Initialize(this, Header->TypesData, 0);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return base.OnCalculateSize(force);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
         }
@@ -94,7 +93,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Offsets")]
         public uint DataLength { get { return Header._dataLength; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -105,7 +104,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             byte* header = (byte*)Base;
             int size = 0, len = 0;
@@ -118,12 +117,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return base.OnCalculateSize(force);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
         }
@@ -159,7 +158,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Offsets")]
         public uint DataLength { get { return Header._dataLength; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -231,22 +230,22 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             for (int i = 0; i < _indices[1].Length / 3; i++)
             {
                 //if (_indices[2][i * 3] != _indices[1][i * 3 + 2])
                 //    Console.WriteLine();
-                new RawDataNode("Entry" + i).Initialize(this, Base + _indices[1][i * 3], 0);
+                new RawValueListNode() { _name = "Entry" + i }.Initialize(this, Base + _indices[1][i * 3], 4 * _indices[1][i * 3 + 1]);
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return base.OnCalculateSize(force);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
         }
@@ -263,7 +262,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Bin32 Unk1 { get { return _value; } set { _value = value; SignalPropertyChange(); } }
         public byte Unk2 { get { return _unk2; } set { _unk2 = value; SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = Header->_value;
             _value = new Bin32(Header->_unk1);
@@ -283,9 +282,71 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int Y { get { return y; } set { y = value; SignalPropertyChange(); } }
         public int Z { get { return z; } set { z = value; SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             return false;
+        }
+    }
+
+    public unsafe class RawValueListNode : ResourceNode
+    {
+        internal byte* Header { get { return (byte*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+
+        public List<AttributeInfo> _info;
+
+        private UnsafeBuffer attributeBuffer;
+
+        [Browsable(false)]
+        public UnsafeBuffer AttributeBuffer { get { if (attributeBuffer != null) return attributeBuffer; else return attributeBuffer = new UnsafeBuffer(WorkingUncompressed.Length); } }
+
+        public override bool OnInitialize()
+        {
+            base.OnInitialize();
+
+            if (WorkingUncompressed.Length == 0)
+                SetSizeInternal(4);
+
+            
+            attributeBuffer = new UnsafeBuffer(WorkingUncompressed.Length);
+            byte* pOut = (byte*)attributeBuffer.Address;
+            byte* pIn = (byte*)Header;
+
+            _info = new List<AttributeInfo>();
+            for (int i = 0; i < WorkingUncompressed.Length; i++)
+            {
+                if (i % 4 == 0)
+                {
+                    AttributeInfo info = new AttributeInfo();
+
+                    //Guess
+                    if (((((uint)*((buint*)pIn)) >> 24) & 0xFF) != 0 && *((bint*)pIn) != -1 && !float.IsNaN(((float)*((bfloat*)pIn))))
+                        info._type = 0;
+                    else
+                        info._type = 1;
+
+                    info._name = (info._type == 1 ? "*" : "" + (info._type > 3 ? "+" : "")) + "0x" + i.ToString("X");
+                    info._description = "No Description Available.";
+                    
+                    _info.Add(info);
+                }
+                *pOut++ = *pIn++;
+            }
+
+            return false;
+        }
+
+        public override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            byte* pIn = (byte*)attributeBuffer.Address;
+            byte* pOut = (byte*)address;
+            for (int i = 0; i < attributeBuffer.Length; i++)
+                *pOut++ = *pIn++;
+        }
+
+        public override int OnCalculateSize(bool force)
+        {
+            return attributeBuffer.Length;
         }
     }
 }

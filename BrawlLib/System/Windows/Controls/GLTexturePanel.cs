@@ -104,7 +104,7 @@ namespace System.Windows.Forms
             }
         }
 
-        internal protected override void OnResized()
+        public override void OnResized()
         {
             //Set up orthographic projection
 
@@ -115,7 +115,7 @@ namespace System.Windows.Forms
         }
 
         public static RGBAPixel _left = new RGBAPixel(192, 192, 192, 255), _right = new RGBAPixel(240, 240, 240, 255);
-        internal static unsafe GLTexture CreateBG(TKContext ctx)
+        public static unsafe GLTexture CreateBG(TKContext ctx)
         {
             GLTexture tex = new GLTexture(16, 16);
             tex._texId = GL.GenTexture();

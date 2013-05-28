@@ -22,6 +22,8 @@ namespace System.Windows.Forms
         private CheckBox checkBox1;
         MDL0BoneNode _parent;
         private Label label3;
+        private Label label4;
+        private Label baseBone;
         bool _mergeModels = false;
         
         public ObjectImporter() { InitializeComponent(); }
@@ -37,7 +39,7 @@ namespace System.Windows.Forms
             comboBox3.Items.Add("Replace");
             comboBox3.Items.Add("Merge children");
             comboBox1.SelectedIndex = comboBox2.SelectedIndex = comboBox3.SelectedIndex = 0;
-
+            _parent = (MDL0BoneNode)comboBox2.SelectedItem;
             return base.ShowDialog(null);
         }
 
@@ -68,29 +70,23 @@ namespace System.Windows.Forms
                 MDL0ObjectNode poly = res as MDL0ObjectNode;
                 foreach (Vertex3 v in poly._manager._vertices)
                     if (v._matrixNode == child)
-                    {
                         v.MatrixNode = bone;
-                        //bone.ReferenceCount++;
-                        //bone.References.Add(v);
-                    }
             }
             else if (res is MDL0Node)
             {
                 MDL0Node mdl = res as MDL0Node;
                 foreach (MDL0ObjectNode poly in mdl.FindChild("Objects", true).Children)
+                {
                     foreach (Vertex3 v in poly._manager._vertices)
                         if (v._matrixNode == child)
-                        {
                             v.MatrixNode = bone;
-                            //bone.ReferenceCount++;
-                            //bone.References.Add(v);
-                        }
+                }
             }
         }
 
         private void ImportObject(MDL0ObjectNode node)
         {
-            MDL0ObjectNode newNode = node.Clone();
+            MDL0ObjectNode newNode = node.SoftCopy();
             if (node._vertexNode != null)
             {
                 _internalModel.VertexGroup.AddChild(node._vertexNode);
@@ -114,7 +110,7 @@ namespace System.Windows.Forms
                 if (node._colorSet[i] != null)
                 {
                     _internalModel.ColorGroup.AddChild(node._colorSet[i]);
-                    //(newNode._colorSet[i] = (MDL0ColorNode)_internalModel.ColorGroup.Children[_internalModel._colorList.Count - 1])._polygons.Add(newNode);
+                    (newNode._colorSet[i] = (MDL0ColorNode)_internalModel.ColorGroup.Children[_internalModel._colorList.Count - 1])._polygons.Add(newNode);
                 }
 
             if (node.OpaMaterialNode != null)
@@ -152,18 +148,36 @@ namespace System.Windows.Forms
                 }
             }
 
-            if (node.Weighted)
-            {
-                foreach (Vertex3 vert in node._manager._vertices)
-                    if (vert._matrixNode != null && vert._matrixNode is Influence)
-                        vert._matrixNode = _internalModel._influences.FindOrCreate((Influence)vert._matrixNode, true);
-            }
-            else if (node.MatrixNode != null && node.MatrixNode is Influence)
-                node.MatrixNode = _internalModel._influences.FindOrCreate((Influence)node.MatrixNode, true);
+            newNode._manager = node._manager;
 
+            if (newNode.Weighted)
+            {
+                foreach (Vertex3 vert in newNode._manager._vertices)
+                    if (vert._matrixNode != null)
+                        if (vert._matrixNode is Influence)
+                        {
+                            for (int i = 0; i < vert.MatrixNode.Weights.Count; i++)
+                                vert.MatrixNode.Weights[i].Bone = _internalModel._boneGroup.FindChildByType(vert.MatrixNode.Weights[i].Bone.Name, true, ResourceType.MDL0Bone) as MDL0BoneNode;
+
+                            vert.MatrixNode = _internalModel._influences.FindOrCreate((Influence)vert._matrixNode, true);
+                        }
+                        else
+                            vert.MatrixNode = _internalModel.BoneGroup.FindChildByType(((MDL0BoneNode)vert.MatrixNode).Name, true, ResourceType.MDL0Bone) as IMatrixNode;
+            }
+            else if (newNode._matrixNode != null)
+            {
+                if (newNode._matrixNode is Influence)
+                {
+                    for (int i = 0; i < newNode.MatrixNode.Weights.Count; i++)
+                        newNode.MatrixNode.Weights[i].Bone = _internalModel._boneGroup.FindChildByType(newNode.MatrixNode.Weights[i].Bone.Name, true, ResourceType.MDL0Bone) as MDL0BoneNode;
+
+                    newNode.MatrixNode = _internalModel._influences.FindOrCreate((Influence)newNode._matrixNode, true);
+                }
+                else
+                    newNode.MatrixNode = _internalModel.BoneGroup.FindChildByType(((MDL0BoneNode)newNode.MatrixNode).Name, true, ResourceType.MDL0Bone) as IMatrixNode;
+            }
             newNode.RecalcIndices();
             newNode._bone = (MDL0BoneNode)_internalModel.BoneGroup.Children[0];
-            newNode._manager = node._manager;
             newNode.Name = "polygon" + (_internalModel._polyList.Count);
             newNode.SignalPropertyChange();
             _internalModel._polyGroup.AddChild(newNode);
@@ -182,7 +196,8 @@ namespace System.Windows.Forms
                     _parent.Remove();
                     break;
                 case 2:
-                    MergeChildren(_parent, (MDL0BoneNode)_baseInf, _mergeModels ? (ResourceNode)_externalModel : (ResourceNode)node);
+                    foreach (MDL0BoneNode b in (_baseInf as MDL0BoneNode).Children)
+                        MergeChildren(_parent, (MDL0BoneNode)b, _mergeModels ? (ResourceNode)_externalModel : (ResourceNode)node);
                     break;
             }
 
@@ -228,20 +243,9 @@ namespace System.Windows.Forms
                 comboBox2.Show();
             }
 
-            switch (comboBox3.SelectedIndex)
-            {
-                case 0:
-                    label2.Text = "Add base bone \"" + _baseInf + "\" to the children of: ";
-                    break;
-                case 1:
-                    label2.Text = "With base bone \"" + _baseInf + "\", replace: ";
-                    break;
-                case 2:
-                    label2.Text = "Merge base bone \"" + _baseInf + "\" with children of: ";
-                    break;
-            }
+            baseBone.Text = _baseInf.ToString();
 
-            comboBox2.Location = new Drawing.Point(label2.Size.Width + 20, 36);
+            //comboBox2.Location = new Drawing.Point(label2.Size.Width + 20, 36);
             //Width = comboBox2.Location.X + 140;
         }
 
@@ -269,18 +273,7 @@ namespace System.Windows.Forms
                 label1.Hide();
                 comboBox1.Hide();
                 _baseInf = (IMatrixNode)_externalModel._linker.BoneCache[0];
-                switch (comboBox3.SelectedIndex)
-                {
-                    case 0:
-                        label2.Text = "Add base bone \"" + _baseInf + "\" to the children of: ";
-                        break;
-                    case 1:
-                        label2.Text = "With base bone \"" + _baseInf + "\", replace: ";
-                        break;
-                    case 2:
-                        label2.Text = "Merge base bone \"" + _baseInf + "\" with children of: ";
-                        break;
-                }
+                baseBone.Text = _baseInf.ToString();
             }
             else
             {
@@ -306,13 +299,15 @@ namespace System.Windows.Forms
             this.comboBox3 = new System.Windows.Forms.ComboBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.baseBone = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(355, 61);
+            this.btnCancel.Location = new System.Drawing.Point(147, 131);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 2;
@@ -323,7 +318,7 @@ namespace System.Windows.Forms
             // btnOkay
             // 
             this.btnOkay.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOkay.Location = new System.Drawing.Point(274, 61);
+            this.btnOkay.Location = new System.Drawing.Point(66, 131);
             this.btnOkay.Name = "btnOkay";
             this.btnOkay.Size = new System.Drawing.Size(75, 23);
             this.btnOkay.TabIndex = 1;
@@ -334,34 +329,37 @@ namespace System.Windows.Forms
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(140, 13);
+            this.label1.Location = new System.Drawing.Point(55, 12);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(39, 13);
             this.label1.TabIndex = 3;
             this.label1.Text = "Import:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // comboBox1
             // 
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(181, 10);
+            this.comboBox1.Location = new System.Drawing.Point(100, 9);
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(127, 21);
+            this.comboBox1.Size = new System.Drawing.Size(121, 21);
             this.comboBox1.TabIndex = 4;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 39);
+            this.label2.Location = new System.Drawing.Point(8, 58);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(100, 13);
+            this.label2.Size = new System.Drawing.Size(86, 18);
             this.label2.TabIndex = 5;
-            this.label2.Text = "(no option selected)";
+            this.label2.Text = "Skeleton Root:";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // comboBox2
             // 
+            this.comboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(118, 36);
+            this.comboBox2.Location = new System.Drawing.Point(100, 55);
             this.comboBox2.Name = "comboBox2";
             this.comboBox2.Size = new System.Drawing.Size(121, 21);
             this.comboBox2.TabIndex = 6;
@@ -369,17 +367,17 @@ namespace System.Windows.Forms
             // 
             // comboBox3
             // 
+            this.comboBox3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox3.FormattingEnabled = true;
-            this.comboBox3.Location = new System.Drawing.Point(100, 63);
+            this.comboBox3.Location = new System.Drawing.Point(100, 82);
             this.comboBox3.Name = "comboBox3";
             this.comboBox3.Size = new System.Drawing.Size(121, 21);
             this.comboBox3.TabIndex = 7;
-            this.comboBox3.SelectedIndexChanged += new System.EventHandler(this.comboBox3_SelectedIndexChanged);
             // 
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(12, 12);
+            this.checkBox1.Location = new System.Drawing.Point(100, 109);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(116, 17);
             this.checkBox1.TabIndex = 8;
@@ -390,17 +388,40 @@ namespace System.Windows.Forms
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 66);
+            this.label3.Location = new System.Drawing.Point(15, 85);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(82, 13);
+            this.label3.Size = new System.Drawing.Size(79, 13);
             this.label3.TabIndex = 9;
-            this.label3.Text = "Base bone tree:";
+            this.label3.Text = "Base Skeleton:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(32, 35);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(62, 13);
+            this.label4.TabIndex = 10;
+            this.label4.Text = "Base Bone:";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // baseBone
+            // 
+            this.baseBone.AutoSize = true;
+            this.baseBone.Location = new System.Drawing.Point(100, 35);
+            this.baseBone.Name = "baseBone";
+            this.baseBone.Size = new System.Drawing.Size(37, 13);
+            this.baseBone.TabIndex = 11;
+            this.baseBone.Text = "(none)";
+            this.baseBone.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // ObjectImporter
             // 
             this.AcceptButton = this.btnOkay;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(442, 96);
+            this.ClientSize = new System.Drawing.Size(234, 166);
+            this.Controls.Add(this.baseBone);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.comboBox3);
@@ -421,21 +442,5 @@ namespace System.Windows.Forms
 
         }
         #endregion
-
-        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            switch (comboBox3.SelectedIndex)
-            {
-                case 0:
-                    label2.Text = "Add base bone \"" + _baseInf + "\" to the children of: ";
-                    break;
-                case 1:
-                    label2.Text = "With base bone \"" + _baseInf + "\", replace: ";
-                    break;
-                case 2:
-                    label2.Text = "Merge base bone \"" + _baseInf + "\" children of: ";
-                    break;
-            }
-        }
     }
 }

@@ -18,7 +18,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public bool _destruct;
         public int _index;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 

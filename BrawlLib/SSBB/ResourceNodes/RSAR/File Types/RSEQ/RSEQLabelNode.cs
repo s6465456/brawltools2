@@ -15,7 +15,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("RSEQ Label")] //Matches with RSAR Sound Part2 pack index
         public uint Id { get { return _id; } set { _id = value; SignalPropertyChange(); } } 
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 if (Header->_stringLength > 0)
