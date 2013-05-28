@@ -13,20 +13,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
         internal VIS0v3* Header3 { get { return (VIS0v3*)WorkingUncompressed.Address; } }
         internal VIS0v4* Header4 { get { return (VIS0v4*)WorkingUncompressed.Address; } }
-
         public override ResourceType ResourceType { get { return ResourceType.VIS0; } }
-
-        [Browsable(false)]
-        public override int tFrameCount { get { return FrameCount; } set { FrameCount = value; } }
-        [Browsable(false)]
-        public override bool tLoop { get { return Loop; } set { Loop = value; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(VIS0EntryNode) };
+            }
+        }
 
         internal int _frameCount = 1, _version = 3, _loop;
 
         [Category("Bone Visibility Data")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
         [Category("Bone Visibility Data")]
-        public int FrameCount 
+        public override int FrameCount 
         { 
             get { return _frameCount; } 
             set 
@@ -39,7 +40,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         
         [Category("Bone Visibility Data")]
-        public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
+        public override bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
 
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
@@ -59,7 +60,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return entry;
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -94,7 +95,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Header3->Group->_numEntries > 0;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = VIS0v3.Size + 0x18 + Children.Count * 0x10;
             foreach (ResourceNode e in Children)
@@ -104,7 +105,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             int count = Children.Count;
             ResourceGroup* group;
@@ -143,7 +144,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             ResourceGroup* group = Header3->Group;
             for (int i = 0; i < group->_numEntries; i++)
@@ -206,9 +207,9 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal VIS0Entry* Header { get { return (VIS0Entry*)WorkingUncompressed.Address; } }
 
-        internal byte[] _data = new byte[0];
-        internal int _entryCount;
-        internal VIS0Flags _flags;
+        public byte[] _data = new byte[0];
+        public int _entryCount;
+        public VIS0Flags _flags;
 
         [Browsable(false)]
         public int EntryCount
@@ -235,13 +236,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("VIS0 Entry")]
         public VIS0Flags Flags { get { return _flags; } set { _flags = value; SignalPropertyChange(); } }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             if (_entryCount == 0) return 8;
             return _entryCount.Align(32) / 8 + 8;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VIS0Entry* header = (VIS0Entry*)address;
             *header = new VIS0Entry(_flags);
@@ -250,7 +251,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Marshal.Copy(_data, 0, header->Data, length - 8);
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if ((_name == null) && (Header->_stringOffset != 0))
                 _name = Header->ResourceString;

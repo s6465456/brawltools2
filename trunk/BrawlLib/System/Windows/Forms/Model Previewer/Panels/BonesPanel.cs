@@ -8,11 +8,10 @@ using System.ComponentModel;
 using BrawlLib;
 using System.Collections.Generic;
 using BrawlLib.Wii.Models;
-using BrawlBox;
 
 namespace System.Windows.Forms
 {
-    public class ModelAnimPanel : UserControl
+    public class BonesPanel : UserControl
     {
         public delegate void ReferenceEventHandler(ResourceNode node);
 
@@ -24,7 +23,6 @@ namespace System.Windows.Forms
         private FolderBrowserDialog folderBrowserDialog1;
         private Panel pnlKeyframes;
         private ImageList imageList1;
-        private Splitter spltBones;
         public CheckedListBox lstBones;
         private ContextMenuStrip ctxBones;
         private ToolStripMenuItem boneIndex;
@@ -39,7 +37,6 @@ namespace System.Windows.Forms
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.pnlKeyframes = new System.Windows.Forms.Panel();
-            this.spltBones = new System.Windows.Forms.Splitter();
             this.pnlBones = new System.Windows.Forms.Panel();
             this.lstBones = new System.Windows.Forms.CheckedListBox();
             this.ctxBones = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -56,22 +53,12 @@ namespace System.Windows.Forms
             // 
             this.pnlKeyframes.AutoScroll = true;
             this.pnlKeyframes.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pnlKeyframes.Controls.Add(this.spltBones);
             this.pnlKeyframes.Controls.Add(this.pnlBones);
             this.pnlKeyframes.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlKeyframes.Location = new System.Drawing.Point(0, 0);
             this.pnlKeyframes.Name = "pnlKeyframes";
             this.pnlKeyframes.Size = new System.Drawing.Size(376, 398);
             this.pnlKeyframes.TabIndex = 26;
-            // 
-            // spltBones
-            // 
-            this.spltBones.Location = new System.Drawing.Point(0, 0);
-            this.spltBones.Name = "spltBones";
-            this.spltBones.Size = new System.Drawing.Size(3, 394);
-            this.spltBones.TabIndex = 9;
-            this.spltBones.TabStop = false;
-            this.spltBones.Visible = false;
             // 
             // pnlBones
             // 
@@ -107,19 +94,19 @@ namespace System.Windows.Forms
             this.boneIndex,
             this.renameBoneToolStripMenuItem});
             this.ctxBones.Name = "ctxBones";
-            this.ctxBones.Size = new System.Drawing.Size(153, 70);
+            this.ctxBones.Size = new System.Drawing.Size(133, 48);
             // 
             // boneIndex
             // 
             this.boneIndex.Enabled = false;
             this.boneIndex.Name = "boneIndex";
-            this.boneIndex.Size = new System.Drawing.Size(152, 22);
+            this.boneIndex.Size = new System.Drawing.Size(132, 22);
             this.boneIndex.Text = "Bone Index";
             // 
             // renameBoneToolStripMenuItem
             // 
             this.renameBoneToolStripMenuItem.Name = "renameBoneToolStripMenuItem";
-            this.renameBoneToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.renameBoneToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.renameBoneToolStripMenuItem.Text = "Rename";
             this.renameBoneToolStripMenuItem.Click += new System.EventHandler(this.renameBoneToolStripMenuItem_Click);
             // 
@@ -158,24 +145,16 @@ namespace System.Windows.Forms
 
         #endregion
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ModelEditControl MainWindow
+        public IMainWindow MainWindow
         {
             get { return _mainWindow; }
             set { _mainWindow = value; }
         }
 
-        private object _targetObject;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public object TargetObject
-        {
-            get { return _targetObject; }
-            set { _targetObject = value; }
-        }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
+        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow.TargetTexRef; } set { _mainWindow.TargetTexRef = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrame
@@ -197,13 +176,10 @@ namespace System.Windows.Forms
         public MDL0BoneNode SelectedBone 
         {
             get { return _mainWindow.SelectedBone; } 
-            set
-            {
-                _mainWindow.SelectedBone = value;
-            } 
+            set { _mainWindow.SelectedBone = value; } 
         }
 
-        public ModelAnimPanel() { InitializeComponent(); }
+        public BonesPanel() { InitializeComponent(); }
         //public bool CloseReferences() { return CloseExternal(); }
 
         private void lstBones_MouseDown(object sender, MouseEventArgs e)
@@ -239,12 +215,9 @@ namespace System.Windows.Forms
             if (SelectedBone != null)
                 SelectedBone._boneColor = SelectedBone._nodeColor = Color.Transparent;
 
-            if ((TargetObject = SelectedBone = lstBones.SelectedItem as MDL0BoneNode) != null)
-            {
+            SelectedBone = lstBones.SelectedItem as MDL0BoneNode;
 
-            }
-
-            _mainWindow.modelPanel.Invalidate();
+            _mainWindow.ModelPanel.Invalidate();
         }
 
         private void lstBones_KeyDown_1(object sender, KeyEventArgs e)
@@ -267,7 +240,7 @@ namespace System.Windows.Forms
 
             _updating = false;
 
-            _mainWindow.modelPanel.Invalidate();
+            _mainWindow.ModelPanel.Invalidate();
         }
 
         private void lstBones_ItemCheck_1(object sender, ItemCheckEventArgs e)
@@ -277,7 +250,7 @@ namespace System.Windows.Forms
             bone._render = e.NewValue == CheckState.Checked;
 
             if (!_updating)
-                _mainWindow.modelPanel.Invalidate();
+                _mainWindow.ModelPanel.Invalidate();
         }
 
         private void renameBoneToolStripMenuItem_Click(object sender, EventArgs e)

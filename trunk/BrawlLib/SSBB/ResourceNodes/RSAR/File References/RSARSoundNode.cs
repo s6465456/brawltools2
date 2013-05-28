@@ -268,7 +268,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Audio Stream")]
         public int NumSamples { get { return _dataNode == null ? 0 : _dataNode.NumSamples; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -330,7 +330,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return new IAudioStream[] { _stream };
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = INFOSoundEntry.Size + Sound3DParam.Size;
             switch (SoundType)
@@ -348,7 +348,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             INFOSoundEntry* header = (INFOSoundEntry*)address;
             VoidPtr addr = address + INFOSoundEntry.Size;

@@ -20,7 +20,6 @@ namespace BrawlBox
         private ModelEditControl modelEditControl1;
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelForm));
             this.modelEditControl1 = new System.Windows.Forms.ModelEditControl();
             this.SuspendLayout();
@@ -30,12 +29,14 @@ namespace BrawlBox
             this.modelEditControl1.AllowDrop = true;
             this.modelEditControl1.BackColor = System.Drawing.Color.Lavender;
             this.modelEditControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.modelEditControl1.ImgExtIndex = 0;
             this.modelEditControl1.Location = new System.Drawing.Point(0, 0);
             this.modelEditControl1.Name = "modelEditControl1";
             this.modelEditControl1.Size = new System.Drawing.Size(639, 528);
             this.modelEditControl1.TabIndex = 0;
+            this.modelEditControl1.TargetAnimType = System.Windows.Forms.AnimType.CHR;
             this.modelEditControl1.TargetModelChanged += new System.EventHandler(this.TargetModelChanged);
-            //
+            // 
             // ModelForm
             // 
             this.BackColor = System.Drawing.Color.PowderBlue;

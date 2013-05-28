@@ -63,7 +63,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //public string[] Entries { get { return _entries; } }
         //internal string[] _entries;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             //_entries = new string[NumEntries];
 
@@ -114,16 +114,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         public PLT0Node palette = null;
         internal unsafe void Prepare(MDL0MaterialRefNode mRef, int shaderProgramHandle)
         {
-            if (mRef.PaletteNode != null)
+            if (mRef.PaletteNode != null && palette == null)
                 palette = mRef.RootNode.FindChild("Palettes(NW4R)/" + mRef.Palette, true) as PLT0Node;
-            else palette = null;
 
             try
             {
                 if (Texture != null)
-                    Texture.Bind(mRef.Index, shaderProgramHandle, _context);
+                    Texture.Bind(mRef.TextureCoordId, shaderProgramHandle, _context);
                 else
-                    Load(mRef.Index, shaderProgramHandle, palette);
+                    Load(mRef.TextureCoordId, shaderProgramHandle, palette);
             }
             catch { }
 
@@ -303,43 +302,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 searched.Clear();
 
                 if (bmp != null)
-                {
-                    int w = bmp.Width, h = bmp.Height, size = w * h;
-
-                    Texture._width = w;
-                    Texture._height = h;
-                    //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-                    //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.NearestMipmapLinear);
-                    //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
-
-                    //if (tNode != null)
-                    //    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, tNode.LevelOfDetail);
-                    //else
-                    //    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, 0);
-
-                    BitmapData data = bmp.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                    try
-                    {
-                        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
-                        GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-                        //GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
-                        //using (UnsafeBuffer buffer = new UnsafeBuffer(size << 2))
-                        //{
-                        //    ARGBPixel* sPtr = (ARGBPixel*)data.Scan0;
-                        //    ABGRPixel* dPtr = (ABGRPixel*)buffer.Address;
-
-                        //    for (int i = 0; i < size; i++)
-                        //        *dPtr++ = (ABGRPixel)(*sPtr++);
-
-                        //    OpenTK.Graphics.Glu.Build2DMipmap(OpenTK.Graphics.TextureTarget.Texture2D, 4, w, h, OpenTK.Graphics.PixelFormat.Rgba, OpenTK.Graphics.PixelType.UnsignedByte, (IntPtr)buffer.Address);
-                        //}
-                    }
-                    finally
-                    {
-                        bmp.UnlockBits(data);
-                        bmp.Dispose();
-                    }
-                }
+                    Texture.Attach(bmp);
             }
         }
 

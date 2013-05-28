@@ -94,7 +94,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -103,7 +103,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             RWSDHeader* rwsd = Header;
             RWSD_DATAHeader* data = rwsd->Data;
@@ -149,7 +149,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _audioLen = 0;
             _headerLen = RWSDHeader.Size;
@@ -168,7 +168,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             return _headerLen + _audioLen;
         }
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address + 0x20;
 

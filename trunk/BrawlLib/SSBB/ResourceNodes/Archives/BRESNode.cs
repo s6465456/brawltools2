@@ -20,13 +20,21 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.BRES; } }
 
-        protected override void OnPopulate()
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(BRESGroupNode) };
+            }
+        }
+
+        public override void OnPopulate()
         {
             ResourceGroup* group = Group;
             for (int i = 0; i < group->_numEntries; i++)
                 new BRESGroupNode(new String((sbyte*)group + group->First[i]._stringOffset)).Initialize(this, (VoidPtr)group + group->First[i]._dataOffset, 0);
         }
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -248,7 +256,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         private int _numEntries, _strOffset, _rootSize;
         StringTable _stringTable = new StringTable();
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = BRESHeader.Size;
             _rootSize = 0x20 + (Children.Count * 0x10);
@@ -282,7 +290,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size.Align(0x80);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int size, bool force)
+        public override void OnRebuild(VoidPtr address, int size, bool force)
         {
             BRESHeader* header = (BRESHeader*)address;
             *header = new BRESHeader(size, _numEntries + 1);
@@ -335,6 +343,38 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal ResourceGroup* Group { get { return (ResourceGroup*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.BRESGroup; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case BRESGroupType.Textures:
+                        return new Type[] { typeof(TEX0Node) };
+                    case BRESGroupType.Palettes:
+                        return new Type[] { typeof(PLT0Node) };
+                    case BRESGroupType.Models:
+                        return new Type[] { typeof(MDL0Node) };
+                    case BRESGroupType.CHR0:
+                        return new Type[] { typeof(CHR0Node) };
+                    case BRESGroupType.CLR0:
+                        return new Type[] { typeof(CLR0Node) };
+                    case BRESGroupType.SRT0:
+                        return new Type[] { typeof(SRT0Node) };
+                    case BRESGroupType.SHP0:
+                        return new Type[] { typeof(SHP0Node) };
+                    case BRESGroupType.VIS0:
+                        return new Type[] { typeof(VIS0Node) };
+                    case BRESGroupType.SCN0:
+                        return new Type[] { typeof(SCN0Node) };
+                    case BRESGroupType.PAT0:
+                        return new Type[] { typeof(PAT0Node) };
+                    default:
+                        return new Type[] { };
+                }
+                
+            }
+        }
 
         [Browsable(false)]
         public BRESGroupType Type
@@ -380,7 +420,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 base.RemoveChild(child);
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             return Group->_numEntries > 0;
         }
@@ -411,7 +451,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Type = BRESGroupType.External;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             ResourceGroup* group = Group;
             for (int i = 0; i < group->_numEntries; i++)
@@ -435,11 +475,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         public BRESNode BRESNode { get { return ((_parent != null) && (Parent.Parent is BRESNode)) ? Parent.Parent as BRESNode : null; } }
 
         [Browsable(false)]
-        public virtual int tFrameCount { get { return 0; } set { } }
+        public virtual int FrameCount { get { return 0; } set { } }
         [Browsable(false)]
-        public virtual bool tLoop { get { return false; } set { } }
+        public virtual bool Loop { get { return false; } set { } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             SetSizeInternal(CommonHeader->_size);
             return false;

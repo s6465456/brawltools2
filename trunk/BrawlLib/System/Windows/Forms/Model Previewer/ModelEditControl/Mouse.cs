@@ -4,7 +4,6 @@ using System.ComponentModel;
 using BrawlLib.SSBB.ResourceNodes;
 using System.IO;
 using BrawlLib.Modeling;
-using System.Drawing;
 using BrawlLib.Wii.Animations;
 using System.Collections.Generic;
 using BrawlLib.SSBBTypes;
@@ -14,10 +13,11 @@ using System.Drawing.Imaging;
 using Gif.Components;
 using OpenTK.Graphics.OpenGL;
 using BrawlLib.Imaging;
+using System.Drawing;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
         #region Mouse Down
 
@@ -40,8 +40,8 @@ namespace System.Windows.Forms
                 //Reset snap flags
                 _snapX = _snapY = _snapZ = _snapCirc = false;
 
-                MDL0BoneNode bone = pnlBones.SelectedBone;
-                MDL0ObjectNode poly = pnlAssets.SelectedPolygon;
+                MDL0BoneNode bone = SelectedBone;
+                MDL0ObjectNode poly = leftPanel.SelectedPolygon;
 
                 //Re-target selected bone
                 if (bone != null)
@@ -55,7 +55,7 @@ namespace System.Windows.Forms
                     if (!(_snapX || _snapY || _snapZ || _snapCirc || _hiSphere))
                     {
                         //Orb selection missed. Assign bone and move to next step.
-                        pnlBones.SelectedBone = bone = null;
+                        SelectedBone = bone = null;
                         goto GetBone;
                     }
 
@@ -82,7 +82,7 @@ namespace System.Windows.Forms
                         }
                         modelPanel._forceNoSelection = true;
                         if (_rotating || _translating || _scaling)
-                            BoneChange(pnlBones.SelectedBone, true);
+                            BoneChange(SelectedBone);
                     }
                 }
 
@@ -90,7 +90,7 @@ namespace System.Windows.Forms
 
                 //Try selecting new bone
                 if (bone == null)
-                    pnlBones.SelectedBone = _hiBone;
+                    SelectedBone = _hiBone;
 
             bool ok = false;
 
@@ -100,14 +100,14 @@ namespace System.Windows.Forms
                     _snapX = _hiX;
                     _snapY = _hiY;
                     _snapZ = _hiZ;
+                    _snapCirc = _hiCirc;
 
-                    if (!(_snapX || _snapY || _snapZ))
+                    if (!(_snapX || _snapY || _snapZ || _snapCirc || _hiSphere))
                     {
                         if (NotCtrlAlt)
                         {
                             ResetVertexColors();
                             _selectedVertices.Clear();
-                            _hiVertex = null;
                         }
                         ok = true;
                         goto GetVertex;
@@ -122,7 +122,7 @@ namespace System.Windows.Forms
                         modelPanel._forceNoSelection = true;
                         _oldPosition = ((Vector3)VertexLoc);
                         _lastPointWorld = point;
-                        VertexChange(_selectedVertices, true);
+                        VertexChange(_selectedVertices);
                     }
                 }
                 else 
@@ -227,9 +227,9 @@ namespace System.Windows.Forms
 
                 if (_rotating || _translating || _scaling)
                     if (VertexLoc == null)
-                        BoneChange(pnlBones.SelectedBone, false);
+                        BoneChange(SelectedBone);
                     else
-                        VertexChange(_selectedVertices, false);
+                        VertexChange(_selectedVertices);
 
                 _snapX = _snapY = _snapZ = _snapCirc = false;
                 _rotating = _translating = _scaling = false;
@@ -258,13 +258,13 @@ namespace System.Windows.Forms
 
             bool moving = _scaling || _rotating || _translating;
 
-            MDL0BoneNode bone = pnlBones.SelectedBone;
+            MDL0BoneNode bone = SelectedBone;
             //Vertex3 vertex = TargetVertex;
 
             if (moving)
             {
                 Vector3 point;
-                if (bone != null && RenderBones)
+                if (bone != null)
                 {
                     if (GetOrbPoint(new Vector2(e.X, e.Y), out point))
                     {
@@ -357,18 +357,59 @@ namespace System.Windows.Forms
                 }
                 else if (VertexLoc != null && GetVertexOrbPoint(new Vector2(e.X, e.Y), ((Vector3)VertexLoc), out point) && point != _lastPointWorld)
                 {
-                    Vector3 trans = point - _lastPointWorld;
-                    foreach (Vertex3 vertex in _selectedVertices)
+                    //if (_editType == TransformType.Rotation)
+                    //{
+                    //    //Get matrix with new rotation applied
+                    //    Matrix m = Matrix.AxisAngleMatrix(_lastPointWorld, point);
+
+                    //    Vector3 angles = m.GetAngles();
+
+                    //    GL.Begin(BeginMode.Lines);
+                    //    GL.Vertex3(_lastPointWorld._x, _lastPointWorld._y, _lastPointWorld._z);
+                    //    GL.Vertex3(point._x, point._y, point._z);
+                    //    GL.End();
+
+                    //    //Truncate (allows winding)
+                    //    if (angles._x > 180.0f) angles._x -= 360.0f;
+                    //    if (angles._y > 180.0f) angles._y -= 360.0f;
+                    //    if (angles._z > 180.0f) angles._z -= 360.0f;
+                    //    if (angles._x < -180.0f) angles._x += 360.0f;
+                    //    if (angles._y < -180.0f) angles._y += 360.0f;
+                    //    if (angles._z < -180.0f) angles._z += 360.0f;
+
+                    //    //if (!_snapX) angles._x = 0;
+                    //    //if (!_snapY) angles._y = 0;
+                    //    //if (!_snapZ) angles._z = 0;
+
+                    //    //Apply difference to axes that have changed (pnlAnim should handle this so keyframes are created)
+                    //    Matrix x = Matrix.RotationMatrix(angles);
+                    //    Vector3 center = (Vector3)VertexLoc;
+                    //    foreach (Vertex3 vertex in _selectedVertices)
+                    //    {
+                    //        Vector3 pos = center + x * (vertex._weightedPosition - center);
+                    //        if (pos != vertex._weightedPosition)
+                    //        {
+                    //            vertex._weightedPosition = pos;
+                    //            vertex.Unweight();
+                    //            vertex._moved = true;
+                    //        }
+                    //    }
+                    //}
+                    //else if (_editType == TransformType.Translation)
                     {
-                        Vector3 pos = vertex._weightedPosition;
-                        if (_snapX) pos._x += trans._x;
-                        if (_snapY) pos._y += trans._y;
-                        if (_snapZ) pos._z += trans._z;
-                        if (pos != vertex._weightedPosition)
+                        Vector3 trans = point - _lastPointWorld;
+                        foreach (Vertex3 vertex in _selectedVertices)
                         {
-                            vertex._weightedPosition = pos;
-                            vertex.Unweight();
-                            vertex._moved = true;
+                            Vector3 pos = vertex._weightedPosition;
+                            if (_snapX) pos._x += trans._x;
+                            if (_snapY) pos._y += trans._y;
+                            if (_snapZ) pos._z += trans._z;
+                            if (pos != vertex._weightedPosition)
+                            {
+                                vertex._weightedPosition = pos;
+                                vertex.Unweight();
+                                vertex._moved = true;
+                            }
                         }
                     }
                     UpdateModel();
@@ -394,9 +435,9 @@ namespace System.Windows.Forms
 
             _hiX = _hiY = _hiZ = _hiCirc = _hiSphere = false;
             
-            MDL0BoneNode bone = pnlBones.SelectedBone;
+            MDL0BoneNode bone = SelectedBone;
             //Vertex3 vertex = TargetVertex;
-            MDL0ObjectNode poly = pnlAssets.SelectedPolygon;
+            MDL0ObjectNode poly = leftPanel.SelectedPolygon;
 
             if (bone != null)
             {
@@ -588,43 +629,77 @@ namespace System.Windows.Forms
                 //Standard radius scaling snippet. This is used for orb scaling depending on camera distance.
                 float radius = center.TrueDistance(modelPanel._camera.GetPoint()) / _orbRadius * 0.1f;
 
-                Vector3 point = modelPanel.UnProject(e.X, e.Y, depth);
-                Vector3 diff = (point - center) / radius;
+                //if (_editType == TransformType.Rotation)
+                //{
+                //    //Get point projected onto our orb.
+                //    Vector3 point = modelPanel.ProjectCameraSphere(new Vector2(e.X, e.Y), center, radius, false);
 
-                float halfDist = _axisHalfLDist;
-                if (diff._x > -_axisSelectRange && diff._x < (_axisLDist + 0.01f) &&
-                    diff._y > -_axisSelectRange && diff._y < (_axisLDist + 0.01f) &&
-                    diff._z > -_axisSelectRange && diff._z < (_axisLDist + 0.01f))
+                //    //Get the distance of the mouse point from the bone
+                //    float distance = point.TrueDistance(center);
+
+                //    if (Math.Abs(distance - radius) < (radius * _selectOrbScale)) //Point lies within orb radius
+                //    {
+                //        _hiSphere = true;
+
+                //        //Determine axis snapping
+                //        Vector3 angles = center.LookatAngles(point) * Maths._rad2degf;
+                //        angles._x = (float)Math.Abs(angles._x);
+                //        angles._y = (float)Math.Abs(angles._y);
+                //        angles._z = (float)Math.Abs(angles._z);
+
+                //        if (Math.Abs(angles._y - 90.0f) <= _axisSnapRange)
+                //            _hiZ = true;
+                //        else if (angles._x >= (180 - _axisSnapRange) || angles._x <= _axisSnapRange)
+                //            _hiY = true;
+                //        else if (angles._y >= (180 - _axisSnapRange) || angles._y <= _axisSnapRange)
+                //            _hiX = true;
+                //    }
+                //    else if (Math.Abs(distance - (radius * _circOrbScale)) < (radius * _selectOrbScale)) //Point lies on circ line
+                //        _hiCirc = true;
+
+                //    if (_hiX || _hiY || _hiZ || _hiCirc)
+                //        modelPanel.Cursor = Cursors.Hand;
+                //}
+                //else if (_editType == TransformType.Translation)
                 {
-                    //Point lies within axes
-                    if (diff._x < halfDist && diff._y < halfDist && diff._z < halfDist)
+                    Vector3 point = modelPanel.UnProject(e.X, e.Y, depth);
+                    Vector3 diff = (point - center) / radius;
+
+                    float halfDist = _axisHalfLDist;
+                    if (diff._x > -_axisSelectRange && diff._x < (_axisLDist + 0.01f) &&
+                        diff._y > -_axisSelectRange && diff._y < (_axisLDist + 0.01f) &&
+                        diff._z > -_axisSelectRange && diff._z < (_axisLDist + 0.01f))
                     {
-                        //Point lies inside the double drag areas
-                        if (diff._x > _axisSelectRange)
-                            _hiX = true;
-                        if (diff._y > _axisSelectRange)
-                            _hiY = true;
-                        if (diff._z > _axisSelectRange)
-                            _hiZ = true;
+                        //Point lies within axes
+                        if (diff._x < halfDist && diff._y < halfDist && diff._z < halfDist)
+                        {
+                            //Point lies inside the double drag areas
+                            if (diff._x > _axisSelectRange)
+                                _hiX = true;
+                            if (diff._y > _axisSelectRange)
+                                _hiY = true;
+                            if (diff._z > _axisSelectRange)
+                                _hiZ = true;
 
-                        modelPanel.Cursor = Cursors.Hand;
-                    }
-                    else
-                    {
-                        //Check if point lies on a specific axis
-                        float errorRange = _axisSelectRange;
-
-                        if (diff._x > halfDist && Math.Abs(diff._y) < errorRange && Math.Abs(diff._z) < errorRange)
-                            _hiX = true;
-                        if (diff._y > halfDist && Math.Abs(diff._x) < errorRange && Math.Abs(diff._z) < errorRange)
-                            _hiY = true;
-                        if (diff._z > halfDist && Math.Abs(diff._x) < errorRange && Math.Abs(diff._y) < errorRange)
-                            _hiZ = true;
-
-                        if (!_hiX && !_hiY && !_hiZ)
-                            goto GetVertex;
-                        else
                             modelPanel.Cursor = Cursors.Hand;
+                        }
+                        else
+                        {
+                            //Check if point lies on a specific axis
+                            float errorRange = _axisSelectRange;
+
+                            if (diff._x > halfDist && Math.Abs(diff._y) < errorRange && Math.Abs(diff._z) < errorRange)
+                                _hiX = true;
+                            if (diff._y > halfDist && Math.Abs(diff._x) < errorRange && Math.Abs(diff._z) < errorRange)
+                                _hiY = true;
+                            if (diff._z > halfDist && Math.Abs(diff._x) < errorRange && Math.Abs(diff._y) < errorRange)
+                                _hiZ = true;
+
+                            if (!_hiX && !_hiY && !_hiZ)
+                                goto GetVertex;
+                            else
+                                modelPanel.Cursor = Cursors.Hand;
+                        }
                     }
                 }
             }
@@ -693,9 +768,9 @@ namespace System.Windows.Forms
 
                 Vector3 vec3 = v.WeightedPosition;
                 Vector2 vec2 = (Vector2)modelPanel.Project(vec3);
-                Point start = modelPanel._selStart, end = modelPanel._selEnd;
-                Vector2 min = new Vector2(Math.Min(start.X, end.X), Math.Min(start.Y, end.Y));
-                Vector2 max = new Vector2(Math.Max(start.X, end.X), Math.Max(start.Y, end.Y));
+                System.Drawing.Point start = modelPanel._selStart, end = modelPanel._selEnd;
+                Vector2 min = new Vector2((float)Math.Min(start.X, end.X), (float)Math.Min(start.Y, end.Y));
+                Vector2 max = new Vector2((float)Math.Max(start.X, end.X), (float)Math.Max(start.Y, end.Y));
                 if ((vec2 <= max) && (vec2 >= min))
                     if (Alt)
                     {

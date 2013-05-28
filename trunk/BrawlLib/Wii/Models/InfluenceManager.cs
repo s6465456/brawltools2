@@ -193,6 +193,9 @@ namespace BrawlLib.Wii.Models
             if (object.ReferenceEquals(this, inf))
                 return true;
 
+            if (object.ReferenceEquals(inf, null))
+                return false;
+
             if (_weights.Count != inf._weights.Count)
                 return false;
 

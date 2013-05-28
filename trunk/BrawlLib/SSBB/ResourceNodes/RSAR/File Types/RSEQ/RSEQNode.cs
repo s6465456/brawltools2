@@ -18,7 +18,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         UnsafeBuffer _dataBuffer;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -30,7 +30,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             for (int i = 0; i < ((LABLHeader*)Header->Labl)->_numEntries; i++)
                 new RSEQLabelNode().Initialize(this, ((LABLHeader*)Header->Labl)->Get(i), 0);
@@ -43,7 +43,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         private LabelBuilder builder;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             builder = new LabelBuilder();
             foreach (RSEQLabelNode node in Children)
@@ -52,7 +52,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return _headerLen = 0x20 + _dataBuffer.Length + builder.GetSize();
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             RSEQHeader* header = (RSEQHeader*)address;
             header->_header.Endian = Endian.Big;

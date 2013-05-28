@@ -24,7 +24,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public List<RELLinkNode> _cmds;
         public List<RELLinkNode> Commands { get { return _cmds; } set { _cmds = value; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = "Module" + ModuleID;
 

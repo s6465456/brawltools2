@@ -271,7 +271,7 @@ namespace System.Windows.Forms
         private Panel panel2;
         private Button button5;
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
 
         public SHP0Editor()
         {
@@ -315,13 +315,13 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SHP0Node SelectedAnimation
         {
-            get { return _mainWindow._shp0; }
+            get { return _mainWindow.SelectedSHP0; }
             set { _mainWindow.SelectedSHP0 = value; }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public CHR0Node SelectedCHR0
         {
-            get { return _mainWindow._chr0; }
+            get { return _mainWindow.SelectedCHR0; }
             set { _mainWindow.SelectedCHR0 = value; }
         }
 
@@ -466,14 +466,14 @@ namespace System.Windows.Forms
         private void listBox1_SelectedValueChanged(object sender, EventArgs e)
         {
             VertexSet = listBox1.SelectedItem as MDL0VertexNode;
-            _mainWindow.pnlKeyframes.TargetSequence = VertexSetDest;
+            _mainWindow.KeyframePanel.TargetSequence = VertexSetDest;
         }
 
         private void listBox2_SelectedValueChanged(object sender, EventArgs e)
         {
             button2.Enabled = listBox2.SelectedItem != null;
             SelectedDestination = listBox2.SelectedItem as MDL0VertexNode;
-            _mainWindow.pnlKeyframes.TargetSequence = VertexSetDest;
+            _mainWindow.KeyframePanel.TargetSequence = VertexSetDest;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -489,7 +489,7 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
         {
-            get { return _mainWindow._enableTransform; }
+            get { return _mainWindow.EnableTransformEdit; }
             set { this.Enabled = (_mainWindow.EnableTransformEdit = value) && (SelectedAnimation != null); }
         }
 

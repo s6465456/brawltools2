@@ -15,7 +15,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal MRGHeader* Header { get { return (MRGHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.MRG; } }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             uint numFiles = 0;
             MRGFileHeader* entry = Header->First;
@@ -24,12 +24,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     new ARCEntryNode().Initialize(this, (VoidPtr)Header + entry->Data, entry->Length);
         }
 
-        internal override void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
+        public override void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
         {
             base.Initialize(parent, origSource, uncompSource);
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
             _name = Path.GetFileNameWithoutExtension(_origPath);
@@ -81,7 +81,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         private int offset = 0;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = offset = 0x20 + (Children.Count * 0x20);
             foreach (ResourceNode node in Children)
@@ -89,7 +89,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        internal protected override void OnRebuild(VoidPtr address, int size, bool force)
+        public override void OnRebuild(VoidPtr address, int size, bool force)
         {
             MRGHeader* header = (MRGHeader*)address;
             *header = new MRGHeader((uint)Children.Count);

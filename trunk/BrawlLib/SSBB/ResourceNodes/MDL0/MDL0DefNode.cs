@@ -32,7 +32,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("MDL0 Nodes")]
         public object[] Items { get { return _items.ToArray(); } set { _items = value.ToList<object>(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             VoidPtr addr = WorkingUncompressed.Address;
             object n = null;

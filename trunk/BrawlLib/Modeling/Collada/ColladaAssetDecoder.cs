@@ -11,9 +11,9 @@ namespace BrawlLib.Modeling
 {
     public unsafe partial class Collada
     {
-        static PrimitiveManager DecodePrimitivesWeighted(GeometryEntry geo, SkinEntry skin, SceneEntry scene, InfluenceManager infManager, ref string Error)
+        static PrimitiveManager DecodePrimitivesWeighted(NodeEntry n, GeometryEntry geo, SkinEntry skin, SceneEntry scene, InfluenceManager infManager, ref string Error)
         {
-            PrimitiveManager manager = DecodePrimitives(geo);
+            PrimitiveManager manager = DecodePrimitives(n._matrix, geo);
 
             MDL0BoneNode[] boneList;
             MDL0BoneNode bone = null;
@@ -138,12 +138,12 @@ namespace BrawlLib.Modeling
                 {
                     //Match with manager
                     inf = infManager.FindOrCreate(inf, true);
-                    v = new Vertex3(skin._bindMatrix * pVert[i], inf); //World position
+                    v = new Vertex3(n._matrix * skin._bindMatrix * pVert[i], inf); //World position
                 }
                 else
                 {
                     bone = inf._weights[0].Bone;
-                    v = new Vertex3(bone._inverseBindMatrix * skin._bindMatrix * pVert[i], bone); //Local position
+                    v = new Vertex3(n._matrix * bone._inverseBindMatrix * skin._bindMatrix * pVert[i], bone); //Local position
                 }
 
                 ////Create Vertex, set to world position.
@@ -184,9 +184,9 @@ namespace BrawlLib.Modeling
             //manager.MergeTempData();
             return manager;
         }
-        static PrimitiveManager DecodePrimitivesUnweighted(GeometryEntry geo)
+        static PrimitiveManager DecodePrimitivesUnweighted(NodeEntry n, GeometryEntry geo)
         {
-            PrimitiveManager manager = DecodePrimitives(geo);
+            PrimitiveManager manager = DecodePrimitives(n._matrix, geo);
 
             Vector3* pVert = null;
             ushort* pVInd = (ushort*)manager._indices.Address;
@@ -212,7 +212,7 @@ namespace BrawlLib.Modeling
             for (int i = 0; i < vCount; i++)
             {
                 //Create Vertex and look for match
-                Vertex3 v = new Vertex3(pVert[i]);
+                Vertex3 v = new Vertex3(n._matrix * pVert[i]);
 
                 int index = 0;
                 while (index < vertList.Count)
@@ -237,7 +237,7 @@ namespace BrawlLib.Modeling
             return manager;
         }
 
-        static PrimitiveManager DecodePrimitives(GeometryEntry geo)
+        static PrimitiveManager DecodePrimitives(Matrix nodeMatrix, GeometryEntry geo)
         {
             ushort* pTri = null, pLin = null;
             long* pInDataList = stackalloc long[12];
@@ -351,7 +351,7 @@ namespace BrawlLib.Modeling
                 //Decode face data using command list
                 foreach (PrimitiveFace f in prim._faces)
                     fixed (ushort* p = f._pointIndices)
-                        RunPrimitiveCmd(pInData, pOutData, pCmd, count, p, f._pointCount);
+                        RunPrimitiveCmd(nodeMatrix, pInData, pOutData, pCmd, count, p, f._pointCount);
 
                 //Process point indices
                 switch (prim._type)
@@ -426,7 +426,7 @@ namespace BrawlLib.Modeling
             return manager;
         }
 
-        private static void RunPrimitiveCmd(byte** pIn, byte** pOut, PrimitiveDecodeCommand* pCmd, int cmdCount, ushort* pIndex, int count)
+        private static void RunPrimitiveCmd(Matrix nodeMatrix, byte** pIn, byte** pOut, PrimitiveDecodeCommand* pCmd, int cmdCount, ushort* pIndex, int count)
         {
             int buffer;
             while (count-- > 0)
@@ -446,7 +446,7 @@ namespace BrawlLib.Modeling
                             break;
 
                         case SemanticType.NORMAL:
-                            *(Vector3*)pOut[buffer] = ((Vector3*)pIn[buffer])[*pIndex++];
+                            *(Vector3*)pOut[buffer] = nodeMatrix * ((Vector3*)pIn[buffer])[*pIndex++];
                             pOut[buffer] += 12;
                             break;
 

@@ -197,25 +197,25 @@ namespace BrawlLib.Wii.Models
                                     switch (aInd)
                                     {
                                         case 0:
-                                            vert = new VertexCodec(p._manager.RawVertices(false), false, model._importOptions._fltVerts);
+                                            vert = new VertexCodec(p._manager.GetVertices(false), false, model._importOptions._fltVerts);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x40;
                                             break;
                                         case 1:
-                                            vert = new VertexCodec(p._manager.RawNormals(false), false, model._importOptions._fltNrms);
+                                            vert = new VertexCodec(p._manager.GetNormals(false), false, model._importOptions._fltNrms);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x20;
                                             break;
                                         case 2:
-                                            ColorCodec col = new ColorCodec(p._manager.Colors(x - 2, false));
+                                            ColorCodec col = new ColorCodec(p._manager.GetColors(x - 2, false));
                                             aList.Add(col);
                                             if (!direct)
                                                 assetLen += col._dataLen.Align(0x20) + 0x20;
                                             break;
                                         default:
-                                            vert = new VertexCodec(p._manager.UVs(x - 4, false), model._importOptions._fltUVs);
+                                            vert = new VertexCodec(p._manager.GetUVs(x - 4, false), model._importOptions._fltUVs);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x40;

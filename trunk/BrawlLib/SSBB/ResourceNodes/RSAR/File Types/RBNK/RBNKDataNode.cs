@@ -92,7 +92,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Audio Stream")]
         public int NumSamples { get { return _soundNode == null ? 0 : _soundNode.NumSamples; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             hdr = *Header;
 
@@ -107,12 +107,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return RBNKInstParam.Size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             *(RBNKInstParam*)address = hdr;
         }
@@ -122,7 +122,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal RangeTable* Header { get { return (RangeTable*)WorkingUncompressed.Address; } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = String.Format("[{0}] Group", Index);
@@ -137,7 +137,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return _keys.Length > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             RuintCollection* c = Header->Collection;
             for (int i = 0; i < _keys.Length; i++)
@@ -183,7 +183,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public byte Max { get { return hdr._max; } set { hdr._max = value; SignalPropertyChange(); } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             hdr = *Header;
 
@@ -195,7 +195,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Max > Min;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             for (byte i = Min; i <= Max; i++)
             {
@@ -243,7 +243,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         bool _rebuildType = false; //true is range, false is index
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             byte* addr = (byte*)address;
             RuintCollection* collection;
@@ -279,7 +279,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = 0;
             _rebuildType = false;
@@ -320,19 +320,19 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class RBNKNullNode : RBNKDataEntryNode
     {
         public bool _invalid = false;
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             SetSizeInternal(0);
             _name = "[" + Index + "] " + (_invalid ? "Invalid" : "Null");
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return 0;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             
         }

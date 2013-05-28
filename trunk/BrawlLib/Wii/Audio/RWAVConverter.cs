@@ -205,7 +205,7 @@ namespace BrawlLib.Wii.Audio
                 }
 
                 if (progress != null && (sIndex % samplesPerBlock) == 0)
-                    progress.Update(progress.CurrentValue + (0x7000 * channels));
+                    progress.Update(progress.CurrentValue + (samplesPerBlock * 2 * channels));
             }
 
             //Reverse coefs

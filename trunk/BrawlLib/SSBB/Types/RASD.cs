@@ -81,6 +81,7 @@ namespace BrawlLib.SSBBTypes
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }
 
+    [Flags]
     public enum FrameFlag
     {
         TriggerEvent = 1, // trigger-type event

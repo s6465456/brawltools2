@@ -41,7 +41,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
         internal UserDataCollection _userEntries = new UserDataCollection();
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -72,13 +72,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(_originalPath);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int count = Palette.Entries.Length.Align(16);
             return 0x40 + (count * 2);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             PLT0v1* header = (PLT0v1*)address;
             *header = new PLT0v1(Palette.Entries.Length, _format);

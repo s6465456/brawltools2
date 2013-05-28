@@ -209,6 +209,7 @@ namespace BrawlLib.Wii.Models
                         }
                     }
                     //Write one header for each material, using same order.
+                    if (mats != null)
                     foreach (MDL0MaterialNode mat in mats.Children)
                     {
                         mHeader = mat.Header;
@@ -281,11 +282,14 @@ namespace BrawlLib.Wii.Models
                     {
                         MDL0GroupNode mats = Groups[(int)MDLResourceType.Materials];
 
-                        //Create a material group with the amount of entries
-                        *pGrp = new ResourceGroup(mats.Children.Count);
+                        if (mats != null)
+                        {
+                            //Create a material group with the amount of entries
+                            *pGrp = new ResourceGroup(mats.Children.Count);
 
-                        foreach (MDL0MaterialNode mat in mats.Children)
-                            (pEntry++)->_dataOffset = (int)mat._shader.Header - (int)pGrp;
+                            foreach (MDL0MaterialNode mat in mats.Children)
+                                (pEntry++)->_dataOffset = (int)mat._shader.Header - (int)pGrp;
+                        }
                     }
                     else
                     {

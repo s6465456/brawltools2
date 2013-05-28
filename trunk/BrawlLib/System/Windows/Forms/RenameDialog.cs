@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Windows.Forms;
 using BrawlLib.SSBB.ResourceNodes;
 
-namespace BrawlBox
+namespace System.Windows.Forms
 {
     public class RenameDialog : Form
     {

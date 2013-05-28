@@ -4,7 +4,6 @@ namespace System.Windows.Forms
 {
     public interface IProgressTracker
     {
-        //void SetRange(float min, float max, float current);
         void Update(float value);
         void Begin(float min, float max, float current);
         void Finish();

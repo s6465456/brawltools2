@@ -33,7 +33,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -47,7 +47,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             new RBNKDataGroupNode().Initialize(this, Header->Data, Header->_dataLength);
             if (Header->_waveOffset > 0 && VersionMinor < 2)
@@ -56,7 +56,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new RWARNode() { _name = "Audio" }.Initialize(this, _audioSource.Address, _audioSource.Length);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _audioLen = 0;
             _headerLen = RBNKHeader.Size;
@@ -75,7 +75,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             return _headerLen + _audioLen;
         }
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address + 0x20;
             

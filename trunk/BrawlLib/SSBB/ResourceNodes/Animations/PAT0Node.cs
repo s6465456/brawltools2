@@ -12,16 +12,22 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
         internal PAT0v3* Header3 { get { return (PAT0v3*)WorkingUncompressed.Address; } }
         internal PAT0v4* Header4 { get { return (PAT0v4*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.PAT0; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(PAT0EntryNode) };
+            }
+        }
 
         internal List<string> _textureFiles = new List<string>();
         internal List<string> _paletteFiles = new List<string>();
 
         internal int _loop, _version = 3;
-        internal ushort _frameCount = 1;
+        internal int _frameCount = 1;
 
         public bool texChanged = false, pltChanged = false;
-
-        public override ResourceType ResourceType { get { return ResourceType.PAT0; } }
 
         [Category("Texture Pattern Data")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
@@ -64,7 +70,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         [Category("Texture Pattern Data")]
-        public ushort FrameCount
+        public override int FrameCount
         {
             get { return _frameCount; }
             set
@@ -77,7 +83,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         [Category("Texture Pattern Data")]
-        public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
+        public override bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
 
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
@@ -87,17 +93,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
         public string _originalPath;
 
-        [Browsable(false)]
-        public override int tFrameCount
-        {
-            get { return FrameCount; }
-            set { FrameCount = (ushort)value; }
-        }
-
-        [Browsable(false)]
-        public override bool tLoop { get { return Loop; } set { Loop = value; } }
-
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -151,7 +147,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Header3->Group->_numEntries > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             ResourceGroup* group = Header3->Group;
             for (int i = 0; i < group->_numEntries; i++)
@@ -178,7 +174,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(_originalPath);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _textureFiles.Clear();
             _paletteFiles.Clear();
@@ -206,7 +202,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             //Set header values
             if (_version == 4)
@@ -216,7 +212,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_header._version = 4;
                 header->_dataOffset = PAT0v4.Size;
                 header->_userDataOffset = header->_origPathOffset = 0;
-                header->_numFrames = _frameCount;
+                header->_numFrames = (ushort)_frameCount;
                 header->_numEntries = (ushort)Children.Count;
                 header->_numTexPtr = (ushort)_textureFiles.Count;
                 header->_numPltPtr = (ushort)_paletteFiles.Count;
@@ -229,7 +225,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_header._version = 3;
                 header->_dataOffset = PAT0v3.Size;
                 header->_origPathOffset = 0;
-                header->_numFrames = _frameCount;
+                header->_numFrames = (ushort)_frameCount;
                 header->_numEntries = (ushort)Children.Count;
                 header->_numTexPtr = (ushort)_textureFiles.Count;
                 header->_numPltPtr = (ushort)_paletteFiles.Count;
@@ -351,10 +347,17 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal PAT0Pattern* Header { get { return (PAT0Pattern*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.PAT0Entry; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(PAT0TextureNode) };
+            }
+        }
 
         internal PAT0Flags[] texFlags = new PAT0Flags[8];
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if ((_name == null) && (Header->_stringOffset != 0))
                 _name = Header->ResourceString;
@@ -366,7 +369,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             int count = 0, index = 0;
             foreach (PAT0Flags p in texFlags)
@@ -392,7 +395,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _dataLens = new int[Children.Count];
             _dataAddrs = new VoidPtr[Children.Count];
@@ -417,7 +420,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public VoidPtr[] _dataAddrs;
         public int _entryLen;
         public int[] _dataLens;
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             PAT0Pattern* header = (PAT0Pattern*)address;
 
@@ -523,8 +526,14 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class PAT0TextureNode : ResourceNode
     {
         internal PAT0TextureTable* Header { get { return (PAT0TextureTable*)WorkingUncompressed.Address; } }
-
         public override ResourceType ResourceType { get { return ResourceType.PAT0Texture; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(PAT0TextureEntryNode) };
+            }
+        }
 
         public PAT0Flags texFlags;
         public int _textureIndex, textureCount;
@@ -688,7 +697,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _name = "Texture" + _textureIndex;
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             frameScale = Header->_frameScale;
             textureCount = Header->_textureCount;
@@ -696,7 +705,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return textureCount > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             if (!texFlags.HasFlag(PAT0Flags.FixedTexture))
             {
@@ -706,12 +715,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return Children.Count > 1 ? PAT0TextureTable.Size + PAT0Texture.Size * Children.Count : 0;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             if (Children.Count > 1)
             {
@@ -885,7 +894,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             set { base.Name = value; tex = value;/*checkTexture(value, true);*/ }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             key = Header->_key;
             texFileIndex = Header->_texFileIndex;
@@ -919,7 +928,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _name = "<null>";
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             PAT0Node node = (PAT0Node)Parent.Parent.Parent;
 
@@ -950,7 +959,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_pltFileIndex = pltFileIndex;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return PAT0Texture.Size;
         }

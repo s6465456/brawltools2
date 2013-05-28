@@ -47,7 +47,7 @@ namespace BrawlBox.NodeWrappers
 
         public void Duplicate()
         {
-            MDL0ObjectNode node = ((MDL0ObjectNode)_resource).Clone();
+            MDL0ObjectNode node = ((MDL0ObjectNode)_resource).HardCopy();
             node.Name += " - Copy";
             ((MDL0ObjectNode)_resource).Model._polyGroup.AddChild(node);
             //((MDL0ObjectNode)_resource).Model.Rebuild(true);

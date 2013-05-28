@@ -66,7 +66,7 @@ namespace System.Windows.Forms
         private Label label22;
         private Label label21;
         private Label label19;
-        private ModelEditControl form;
+        private IMainWindow _form;
 
         public ModelViewerSettingsDialog() 
         {
@@ -107,41 +107,41 @@ namespace System.Windows.Forms
         private NumericInputBox[] _boxes = new NumericInputBox[22];
         private float[] _origValues = new float[22];
         
-        public void Show(ModelEditControl owner)
+        public void Show(IMainWindow owner)
         {
-            form = owner;
+            _form = owner;
 
-            form._renderLightDisplay = true;
+            _form.RenderLightDisplay = true;
 
-            ax.Value = form.modelPanel.Ambient._x * 255.0f;
-            ay.Value = form.modelPanel.Ambient._y * 255.0f;
-            az.Value = form.modelPanel.Ambient._z * 255.0f;
+            ax.Value = _form.ModelPanel.Ambient._x * 255.0f;
+            ay.Value = _form.ModelPanel.Ambient._y * 255.0f;
+            az.Value = _form.ModelPanel.Ambient._z * 255.0f;
 
-            radius.Value = form.modelPanel.LightPosition._x;
-            azimuth.Value = form.modelPanel.LightPosition._y;
-            elevation.Value = form.modelPanel.LightPosition._z;
+            radius.Value = _form.ModelPanel.LightPosition._x;
+            azimuth.Value = _form.ModelPanel.LightPosition._y;
+            elevation.Value = _form.ModelPanel.LightPosition._z;
 
-            dx.Value = form.modelPanel.Diffuse._x * 255.0f;
-            dy.Value = form.modelPanel.Diffuse._y * 255.0f;
-            dz.Value = form.modelPanel.Diffuse._z * 255.0f;
+            dx.Value = _form.ModelPanel.Diffuse._x * 255.0f;
+            dy.Value = _form.ModelPanel.Diffuse._y * 255.0f;
+            dz.Value = _form.ModelPanel.Diffuse._z * 255.0f;
 
-            sx.Value = form.modelPanel.Specular._x * 255.0f;
-            sy.Value = form.modelPanel.Specular._y * 255.0f;
-            sz.Value = form.modelPanel.Specular._z * 255.0f;
+            sx.Value = _form.ModelPanel.Specular._x * 255.0f;
+            sy.Value = _form.ModelPanel.Specular._y * 255.0f;
+            sz.Value = _form.ModelPanel.Specular._z * 255.0f;
 
-            ex.Value = form.modelPanel.Emission._x * 255.0f;
-            ey.Value = form.modelPanel.Emission._y * 255.0f;
-            ez.Value = form.modelPanel.Emission._z * 255.0f;
+            ex.Value = _form.ModelPanel.Emission._x * 255.0f;
+            ey.Value = _form.ModelPanel.Emission._y * 255.0f;
+            ez.Value = _form.ModelPanel.Emission._z * 255.0f;
 
-            tScale.Value = form.modelPanel.TranslationScale;
-            rScale.Value = form.modelPanel.RotationScale;
-            zScale.Value = form.modelPanel.ZoomScale;
+            tScale.Value = _form.ModelPanel.TranslationScale;
+            rScale.Value = _form.ModelPanel.RotationScale;
+            zScale.Value = _form.ModelPanel.ZoomScale;
 
-            yFov.Value = form.modelPanel._fovY;
-            nearZ.Value = form.modelPanel._nearZ;
-            farZ.Value = form.modelPanel._farZ;
+            yFov.Value = _form.ModelPanel._fovY;
+            nearZ.Value = _form.ModelPanel._nearZ;
+            farZ.Value = _form.ModelPanel._farZ;
 
-            maxUndoCount.Value = form._allowedUndos;
+            maxUndoCount.Value = _form.AllowedUndos;
 
             for (int i = 0; i < 22; i++)
             {
@@ -157,7 +157,7 @@ namespace System.Windows.Forms
             UpdateSpe();
             UpdateEmi();
 
-            base.Show(owner);
+            base.Show(owner as IWin32Window);
         }
 
         private void BoxValueChanged(object sender, EventArgs e)
@@ -165,21 +165,21 @@ namespace System.Windows.Forms
             _boxes[5].Value = _boxes[5].Value.Clamp180Deg();
             _boxes[6].Value = _boxes[6].Value.Clamp180Deg();
 
-            form.modelPanel.Ambient = new Vector4(_boxes[0].Value / 255.0f, _boxes[1].Value / 255.0f, _boxes[2].Value / 255.0f, 1.0f);
-            form.modelPanel.LightPosition = new Vector4(_boxes[4].Value, _boxes[5].Value, _boxes[6].Value, 1.0f);
-            form.modelPanel.Diffuse = new Vector4(_boxes[7].Value / 255.0f, _boxes[8].Value / 255.0f, _boxes[9].Value / 255.0f, 1.0f);
-            form.modelPanel.Specular = new Vector4(_boxes[11].Value / 255.0f, _boxes[12].Value / 255.0f, _boxes[13].Value / 255.0f, 1.0f);
-            form.modelPanel.Emission = new Vector4(_boxes[3].Value / 255.0f, _boxes[10].Value / 255.0f, _boxes[14].Value / 255.0f, 1.0f);
+            _form.ModelPanel.Ambient = new Vector4(_boxes[0].Value / 255.0f, _boxes[1].Value / 255.0f, _boxes[2].Value / 255.0f, 1.0f);
+            _form.ModelPanel.LightPosition = new Vector4(_boxes[4].Value, _boxes[5].Value, _boxes[6].Value, 1.0f);
+            _form.ModelPanel.Diffuse = new Vector4(_boxes[7].Value / 255.0f, _boxes[8].Value / 255.0f, _boxes[9].Value / 255.0f, 1.0f);
+            _form.ModelPanel.Specular = new Vector4(_boxes[11].Value / 255.0f, _boxes[12].Value / 255.0f, _boxes[13].Value / 255.0f, 1.0f);
+            _form.ModelPanel.Emission = new Vector4(_boxes[3].Value / 255.0f, _boxes[10].Value / 255.0f, _boxes[14].Value / 255.0f, 1.0f);
 
-            form.modelPanel.TranslationScale = _boxes[15].Value;
-            form.modelPanel.RotationScale = _boxes[16].Value;
-            form.modelPanel.ZoomScale = _boxes[17].Value;
+            _form.ModelPanel.TranslationScale = _boxes[15].Value;
+            _form.ModelPanel.RotationScale = _boxes[16].Value;
+            _form.ModelPanel.ZoomScale = _boxes[17].Value;
 
-            form.modelPanel._fovY = _boxes[18].Value;
-            form.modelPanel._nearZ = _boxes[19].Value;
-            form.modelPanel._farZ = _boxes[20].Value;
+            _form.ModelPanel._fovY = _boxes[18].Value;
+            _form.ModelPanel._nearZ = _boxes[19].Value;
+            _form.ModelPanel._farZ = _boxes[20].Value;
 
-            form._allowedUndos = (uint)Math.Abs(_boxes[21].Value);
+            _form.AllowedUndos = (uint)Math.Abs(_boxes[21].Value);
 
             int i = (int)(sender as NumericInputBox).Tag;
 
@@ -192,9 +192,9 @@ namespace System.Windows.Forms
             else
                 UpdateSpe();
 
-            form.modelPanel._projectionChanged = true;
+            _form.ModelPanel._projectionChanged = true;
 
-            form.modelPanel.Invalidate();
+            _form.ModelPanel.Invalidate();
         }
 
         private unsafe void btnOkay_Click(object sender, EventArgs e)
@@ -207,21 +207,21 @@ namespace System.Windows.Forms
                 _boxes[6].Value = 0;
             }
 
-            form.modelPanel.Ambient = new Vector4(ax.Value / 255.0f, ay.Value / 255.0f, az.Value / 255.0f, 1.0f);
-            form.modelPanel.LightPosition = new Vector4(radius.Value, azimuth.Value, elevation.Value, 1.0f);
-            form.modelPanel.Diffuse = new Vector4(dx.Value / 255.0f, dy.Value / 255.0f, dz.Value / 255.0f, 1.0f);
-            form.modelPanel.Specular = new Vector4(sx.Value / 255.0f, sy.Value / 255.0f, sz.Value / 255.0f, 1.0f);
-            form.modelPanel.Emission = new Vector4(_boxes[3].Value / 255.0f, _boxes[10].Value / 255.0f, _boxes[14].Value / 255.0f, 1.0f);
+            _form.ModelPanel.Ambient = new Vector4(ax.Value / 255.0f, ay.Value / 255.0f, az.Value / 255.0f, 1.0f);
+            _form.ModelPanel.LightPosition = new Vector4(radius.Value, azimuth.Value, elevation.Value, 1.0f);
+            _form.ModelPanel.Diffuse = new Vector4(dx.Value / 255.0f, dy.Value / 255.0f, dz.Value / 255.0f, 1.0f);
+            _form.ModelPanel.Specular = new Vector4(sx.Value / 255.0f, sy.Value / 255.0f, sz.Value / 255.0f, 1.0f);
+            _form.ModelPanel.Emission = new Vector4(_boxes[3].Value / 255.0f, _boxes[10].Value / 255.0f, _boxes[14].Value / 255.0f, 1.0f);
 
-            form.modelPanel.TranslationScale = tScale.Value;
-            form.modelPanel.RotationScale = rScale.Value;
-            form.modelPanel.ZoomScale = zScale.Value;
+            _form.ModelPanel.TranslationScale = tScale.Value;
+            _form.ModelPanel.RotationScale = rScale.Value;
+            _form.ModelPanel.ZoomScale = zScale.Value;
 
-            form.modelPanel._fovY = yFov.Value;
-            form.modelPanel._nearZ = nearZ.Value;
-            form.modelPanel._farZ = farZ.Value;
+            _form.ModelPanel._fovY = yFov.Value;
+            _form.ModelPanel._nearZ = nearZ.Value;
+            _form.ModelPanel._farZ = farZ.Value;
 
-            form._allowedUndos = (uint)Math.Abs(maxUndoCount.Value);
+            _form.AllowedUndos = (uint)Math.Abs(maxUndoCount.Value);
 
             DialogResult = DialogResult.OK;
             Close();
@@ -229,21 +229,21 @@ namespace System.Windows.Forms
 
         private void btnCancel_Click(object sender, EventArgs e) 
         {
-            form.modelPanel.Ambient = new Vector4(_origValues[0] / 255.0f, _origValues[1] / 255.0f, _origValues[2] / 255.0f, 1.0f);
-            form.modelPanel.LightPosition = new Vector4(_origValues[4], _origValues[5], _origValues[6], 1.0f);
-            form.modelPanel.Diffuse = new Vector4(_origValues[7] / 255.0f, _origValues[8] / 255.0f, _origValues[9] / 255.0f, 1.0f);
-            form.modelPanel.Specular = new Vector4(_origValues[11] / 255.0f, _origValues[12] / 255.0f, _origValues[13] / 255.0f, 1.0f);
-            form.modelPanel.Emission = new Vector4(_origValues[3] / 255.0f, _origValues[10] / 255.0f, _origValues[14] / 255.0f, 1.0f);
+            _form.ModelPanel.Ambient = new Vector4(_origValues[0] / 255.0f, _origValues[1] / 255.0f, _origValues[2] / 255.0f, 1.0f);
+            _form.ModelPanel.LightPosition = new Vector4(_origValues[4], _origValues[5], _origValues[6], 1.0f);
+            _form.ModelPanel.Diffuse = new Vector4(_origValues[7] / 255.0f, _origValues[8] / 255.0f, _origValues[9] / 255.0f, 1.0f);
+            _form.ModelPanel.Specular = new Vector4(_origValues[11] / 255.0f, _origValues[12] / 255.0f, _origValues[13] / 255.0f, 1.0f);
+            _form.ModelPanel.Emission = new Vector4(_origValues[3] / 255.0f, _origValues[10] / 255.0f, _origValues[14] / 255.0f, 1.0f);
 
-            form.modelPanel.TranslationScale = _origValues[15];
-            form.modelPanel.RotationScale = _origValues[16];
-            form.modelPanel.ZoomScale = _origValues[17];
+            _form.ModelPanel.TranslationScale = _origValues[15];
+            _form.ModelPanel.RotationScale = _origValues[16];
+            _form.ModelPanel.ZoomScale = _origValues[17];
 
-            form.modelPanel._fovY = _origValues[18];
-            form.modelPanel._nearZ = _origValues[19];
-            form.modelPanel._farZ = _origValues[20];
+            _form.ModelPanel._fovY = _origValues[18];
+            _form.ModelPanel._nearZ = _origValues[19];
+            _form.ModelPanel._farZ = _origValues[20];
 
-            form._allowedUndos = (uint)Math.Abs(_origValues[21]);
+            _form.AllowedUndos = (uint)Math.Abs(_origValues[21]);
 
             DialogResult = DialogResult.Cancel; 
             Close(); 
@@ -253,10 +253,10 @@ namespace System.Windows.Forms
         {
             base.OnFormClosing(e);
 
-            form.modelPanel._projectionChanged = true;
-            form._renderLightDisplay = false;
+            _form.ModelPanel._projectionChanged = true;
+            _form.RenderLightDisplay = false;
 
-            form.modelPanel.Invalidate();
+            _form.ModelPanel.Invalidate();
         }
 
         #region Designer
@@ -1070,22 +1070,22 @@ namespace System.Windows.Forms
         private void UpdateAmb()
         {
             label19.BackColor = Color.FromArgb(255, (int)(ax.Value), (int)(ay.Value), (int)(az.Value));
-            form.modelPanel.Ambient = new Vector4(ax.Value / 255.0f, ay.Value / 255.0f, az.Value / 255.0f, 1.0f);
+            _form.ModelPanel.Ambient = new Vector4(ax.Value / 255.0f, ay.Value / 255.0f, az.Value / 255.0f, 1.0f);
         }
         private void UpdateDif()
         {
             label21.BackColor = Color.FromArgb(255, (int)(dx.Value), (int)(dy.Value), (int)(dz.Value));
-            form.modelPanel.Diffuse = new Vector4(dx.Value / 255.0f, dy.Value / 255.0f, dz.Value / 255.0f, 1.0f);
+            _form.ModelPanel.Diffuse = new Vector4(dx.Value / 255.0f, dy.Value / 255.0f, dz.Value / 255.0f, 1.0f);
         }
         private void UpdateSpe()
         {
             label22.BackColor = Color.FromArgb(255, (int)(sx.Value), (int)(sy.Value), (int)(sz.Value));
-            form.modelPanel.Specular = new Vector4(sx.Value / 255.0f, sy.Value / 255.0f, sz.Value / 255.0f, 1.0f);
+            _form.ModelPanel.Specular = new Vector4(sx.Value / 255.0f, sy.Value / 255.0f, sz.Value / 255.0f, 1.0f);
         }
         private void UpdateEmi()
         {
             label23.BackColor = Color.FromArgb(255, (int)(ex.Value), (int)(ey.Value), (int)(ez.Value));
-            form.modelPanel.Emission = new Vector4(ex.Value / 255.0f, ey.Value / 255.0f, ez.Value / 255.0f, 1.0f);
+            _form.ModelPanel.Emission = new Vector4(ex.Value / 255.0f, ey.Value / 255.0f, ez.Value / 255.0f, 1.0f);
         }
         public bool _updating = false;
         private void label19_Click(object sender, EventArgs e)

@@ -136,14 +136,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("DOLphin Static Module")]
         public string EntryPoint { get { return ((uint)hdr.entryPoint).ToString("X"); } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _name = Path.GetFileName(_origPath);
             hdr = *Header;
             return true;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             for (int i = 0; i < 7; i++)
                 if (Header->TextOffset(i) > 0)
@@ -162,7 +162,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public class DOLCodeNode : ModuleDataNode
     {
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             Init((uint)WorkingUncompressed.Length, true, WorkingUncompressed.Address);
             return false;

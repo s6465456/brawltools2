@@ -86,7 +86,7 @@ namespace BrawlLib.SSBBTypes
 
         public int Get(int value)
         {
-            return _format._encoding == 2 ? (value / 16 * 14) + ((value % 16) - 2) : (int)value; 
+            return _format._encoding == 2 ? (value / 16 * 14) + ((value % 16) - 2) : value; 
         }
         public int Set(int value)
         {

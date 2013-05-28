@@ -17,8 +17,6 @@ namespace System.Windows.Forms
 
     public unsafe class ModelPanel : GLPanel
     {
-        public ModelEditControl _mainWindow;
-
         public bool _grabbing = false;
         public bool _scrolling = false;
         private int _lastX, _lastY;
@@ -333,7 +331,7 @@ namespace System.Windows.Forms
                     else
                         Translate(-xDiff * _transFactor, -yDiff * _transFactor, 0.0f);
 
-            if (_selecting && _mainWindow == null)
+            if (_selecting && !_attached)
                 Invalidate();
 
             base.OnMouseMove(e);
@@ -431,25 +429,31 @@ namespace System.Windows.Forms
         }
         private void Zoom(float amt)
         {
+            amt *= _multiplier;
             if (_ortho)
             {
-                float scale = (amt >= 0 ? amt / 2.0f : 2.0f / -amt) * _multiplier;
+                float scale = (amt >= 0 ? amt / 2.0f : 2.0f / -amt);
                 Scale(scale, scale, 1.0f);
             }
             else
-                Translate(0.0f, 0.0f, amt * _multiplier);
+                Translate(0.0f, 0.0f, amt);
         }
         private void Scale(float x, float y, float z)
         {
             x *= _multiplier;
             y *= _multiplier;
             z *= _multiplier;
+
             _camera.Scale(x, y, z);
             _scrolling = false;
             Invalidate();
         }
         private void Translate(float x, float y, float z)
         {
+            x *= _multiplier;
+            y *= _multiplier;
+            z *= _multiplier;
+
             x *= _ortho ? 20.0f : 1.0f;
             y *= _ortho ? 20.0f : 1.0f;
             _camera.Translate(x, y, z);
@@ -458,11 +462,18 @@ namespace System.Windows.Forms
         }
         private void Rotate(float x, float y)
         {
+            x *= _multiplier;
+            y *= _multiplier;
+
             _camera.Pivot(_viewDistance, x, y);
             Invalidate();
         }
         private void Rotate(float x, float y, float z)
         {
+            x *= _multiplier;
+            y *= _multiplier;
+            z *= _multiplier;
+
             _camera.Rotate(x, y, z);
             Invalidate();
         }
@@ -659,12 +670,14 @@ namespace System.Windows.Forms
                 _selEnd = e.Location;
             }
         }
+
+        public bool _attached = false;
         private void ModelPanel_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
                 _selEnd = e.Location;
-                if (_mainWindow == null)
+                if (!_attached)
                 {
                     _selecting = false;
                     Invalidate();
@@ -702,7 +715,7 @@ namespace System.Windows.Forms
         public void Popout()
         {
             popoutForm = new Form();
-            _mainWindow.Controls.Remove(this);
+            //_mainWindow.Controls.Remove(this);
             popoutForm.Controls.Add(this);
             Dock = DockStyle.Fill;
             popoutForm.Show();
@@ -711,7 +724,7 @@ namespace System.Windows.Forms
         public void Popin()
         {
             popoutForm.Controls.Remove(this);
-            _mainWindow.Controls.Add(this);
+            //_mainWindow.Controls.Add(this);
             popoutForm.Close();
             Dock = DockStyle.Fill;
         }

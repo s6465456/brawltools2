@@ -14,16 +14,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
         internal SHP0v3* Header3 { get { return (SHP0v3*)WorkingUncompressed.Address; } }
         internal SHP0v4* Header4 { get { return (SHP0v4*)WorkingUncompressed.Address; } }
-
         public override ResourceType ResourceType { get { return ResourceType.SHP0; } }
-
-        public override int tFrameCount
+        public override Type[] AllowedChildTypes
         {
-            get { return FrameCount; }
-            set { FrameCount = value; }
+            get
+            {
+                return new Type[] { typeof(SHP0EntryNode) };
+            }
         }
-        [Browsable(false)]
-        public override bool tLoop { get { return Loop; } set { Loop = value; } }
 
         int _version = 3, _numFrames = 1, _loop;
 
@@ -51,7 +49,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         [Category("Vertex Morph Data")]
-        public int FrameCount
+        public override int FrameCount
         {
             get { return _numFrames + (startUpVersion == 4 ? 1 : 0); }
             set
@@ -71,7 +69,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         [Category("Vertex Morph Data")]
-        public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
+        public override bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
 
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
@@ -117,7 +115,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(_originalPath);
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -162,14 +160,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             ResourceGroup* group = Header4->Group;
             for (int i = 0; i < group->_numEntries; i++)
                 new SHP0EntryNode().Initialize(this, new DataSource(group->First[i].DataAddress, 0));
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             ResourceGroup* group;
             if (_version == 4)
@@ -214,7 +212,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _strings.Clear();
             int size = (Version == 4 ? SHP0v4.Size : SHP0v3.Size) + 0x18 + Children.Count * 0x10;
@@ -293,6 +291,13 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal SHP0Entry* Header { get { return (SHP0Entry*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.SHP0Entry; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(SHP0VertexSetNode) };
+            }
+        }
 
         List<short> _indices;
         public int _flags, indexCount, nameIndex, fixedFlags;
@@ -304,12 +309,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             UpdatePosition = 0x2,
             UpdateNormals = 0x4,
             UpdateColors = 0x8,
-        };
+        }
 
         [Category("Vertex Morph Entry")]
         public SHP0EntryFlags Flags { get { return (SHP0EntryFlags)_flags; } set { _flags = (int)value; SignalPropertyChange(); } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if ((_name == null) && (Header->_stringOffset != 0))
                 _name = Header->ResourceString;
@@ -326,7 +331,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Header->_flags > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             for (int i = 0; i < indexCount; i++)
                 if ((fixedFlags >> i & 1) == 0)
@@ -350,7 +355,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->ResourceStringAddress = stringTable[Name] + 4;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             _entryLen = (0x14 + Children.Count * 6).Align(4);
             _dataLen = 0;
@@ -361,7 +366,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return _entryLen + _dataLen;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             SHP0Entry* header = (SHP0Entry*)address;
             VoidPtr addr = _dataAddr;
@@ -455,7 +460,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public SHP0VertexSetNode(string name) { _name = name; }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_parent is SHP0EntryNode && _parent._parent is SHP0Node)
                 _numFrames = ((SHP0Node)_parent._parent).FrameCount;
@@ -463,12 +468,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return _dataLen = ((isFixed = Keyframes._keyCount <= 1) ? 0 : Keyframes._keyCount * 12 + 8);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             SHP0KeyframeEntries* header = (SHP0KeyframeEntries*)address;
             header->_numEntries = (short)Keyframes._keyCount;

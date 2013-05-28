@@ -17,7 +17,7 @@ using BrawlLib.Imaging;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
         #region Pre Render
         public static Color _floorHue = Color.FromArgb(255, 128, 128, 191);
@@ -69,17 +69,22 @@ namespace System.Windows.Forms
 
         Vector3 BoneLoc { get { return SelectedBone == null ? new Vector3() : SelectedBone._frameMatrix.GetPoint(); } }
 
+        Vector3? _vertexLoc = null;
         Vector3? VertexLoc 
         {
             get
             {
                 if (_selectedVertices == null || _selectedVertices.Count == 0) 
                     return null;
+
+                if (_vertexLoc != null && _rotating)
+                    return _vertexLoc;
+
                 Vector3 average = new Vector3();
                 foreach (Vertex3 v in _selectedVertices)
                     average += v.WeightedPosition;
                 average /= _selectedVertices.Count;
-                return average;
+                return _vertexLoc = average;
             }
         }
 
@@ -113,49 +118,49 @@ namespace System.Windows.Forms
             GL.Disable(EnableCap.Lighting);
             GL.Disable(EnableCap.DepthTest);
 
-            //Render hurtboxes
-            if (chkHurtboxes.Checked)
-                for (int i = 0; i < pnlMoveset.lstHurtboxes.Items.Count; i++)
-                    if (pnlMoveset.lstHurtboxes.GetItemChecked(i))
-                        ((MoveDefHurtBoxNode)pnlMoveset.lstHurtboxes.Items[i]).Render(pnlMoveset._selectedHurtboxIndex == i, _hurtBoxType);
+            ////Render hurtboxes
+            //if (chkHurtboxes.Checked)
+            //    for (int i = 0; i < pnlMoveset.lstHurtboxes.Items.Count; i++)
+            //        if (pnlMoveset.lstHurtboxes.GetItemChecked(i))
+            //            ((MoveDefHurtBoxNode)pnlMoveset.lstHurtboxes.Items[i]).Render(pnlMoveset._selectedHurtboxIndex == i, _hurtBoxType);
 
-            //Render hitboxes
-            if (chkHitboxes.Checked && pnlMoveset._mainMoveset != null)
-            {
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-                GLDisplayList c = context.GetRingList();
-                GLDisplayList s = context.GetSphereList();
+            ////Render hitboxes
+            //if (chkHitboxes.Checked && pnlMoveset._mainMoveset != null)
+            //{
+            //    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            //    GLDisplayList c = context.GetRingList();
+            //    GLDisplayList s = context.GetSphereList();
 
-                foreach (MoveDefActionNode a in pnlMoveset.selectedActionNodes)
-                {
-                    if (a.catchCollisions != null && a.catchCollisions.Count > 0)
-                        foreach (HitBox e in a.catchCollisions)
-                            e.RenderCatchCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+            //    foreach (MoveDefActionNode a in pnlMoveset.selectedActionNodes)
+            //    {
+            //        if (a.catchCollisions != null && a.catchCollisions.Count > 0)
+            //            foreach (HitBox e in a.catchCollisions)
+            //                e.RenderCatchCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
 
-                    if (a.offensiveCollisions != null && a.offensiveCollisions.Count > 0)
-                        foreach (HitBox e in a.offensiveCollisions)
-                            e.RenderOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+            //        if (a.offensiveCollisions != null && a.offensiveCollisions.Count > 0)
+            //            foreach (HitBox e in a.offensiveCollisions)
+            //                e.RenderOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
 
-                    if (a.specialOffensiveCollisions != null && a.specialOffensiveCollisions.Count > 0)
-                        foreach (HitBox e in a.specialOffensiveCollisions)
-                            e.RenderSpecialOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+            //        if (a.specialOffensiveCollisions != null && a.specialOffensiveCollisions.Count > 0)
+            //            foreach (HitBox e in a.specialOffensiveCollisions)
+            //                e.RenderSpecialOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
 
-                    if (a.subRoutine != null)
-                    {
-                        if (a.subRoutine.catchCollisions != null && a.subRoutine.catchCollisions.Count > 0)
-                            foreach (HitBox e in a.subRoutine.catchCollisions)
-                                e.RenderCatchCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+            //        if (a.subRoutine != null)
+            //        {
+            //            if (a.subRoutine.catchCollisions != null && a.subRoutine.catchCollisions.Count > 0)
+            //                foreach (HitBox e in a.subRoutine.catchCollisions)
+            //                    e.RenderCatchCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
 
-                        if (a.subRoutine.offensiveCollisions != null && a.subRoutine.offensiveCollisions.Count > 0)
-                            foreach (HitBox e in a.subRoutine.offensiveCollisions)
-                                e.RenderOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+            //            if (a.subRoutine.offensiveCollisions != null && a.subRoutine.offensiveCollisions.Count > 0)
+            //                foreach (HitBox e in a.subRoutine.offensiveCollisions)
+            //                    e.RenderOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
 
-                        if (a.subRoutine.specialOffensiveCollisions != null && a.subRoutine.specialOffensiveCollisions.Count > 0)
-                            foreach (HitBox e in a.subRoutine.specialOffensiveCollisions)
-                                e.RenderSpecialOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
-                    }
-                }
-            }
+            //            if (a.subRoutine.specialOffensiveCollisions != null && a.subRoutine.specialOffensiveCollisions.Count > 0)
+            //                foreach (HitBox e in a.subRoutine.specialOffensiveCollisions)
+            //                    e.RenderSpecialOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+            //        }
+            //    }
+            //}
 
             GL.Enable(EnableCap.DepthTest);
             
@@ -401,7 +406,9 @@ namespace System.Windows.Forms
                         GL.PopMatrix();
                     }
 
-                    if (VertexLoc != null && RenderVertices)
+                    if (VertexLoc != null && RenderVertices
+                        //&& _editType == TransformType.Translation
+                        )
                     {
                         Matrix m = Matrix.TransformMatrix(new Vector3(VertexOrbRadius), new Vector3(), ((Vector3)VertexLoc));
                         GL.PushMatrix();
@@ -590,7 +597,7 @@ namespace System.Windows.Forms
             if (SelectedBone != null) //Render drag and drop control
             {
                 if (_editType == TransformType.Rotation)
-                    RenderRotationControl(context);
+                    RenderRotationControl(context, BoneLoc, OrbRadius, SelectedBone._frameMatrix.GetAngles());
                 else if (_editType == TransformType.Translation)
                     RenderTranslationControl(context, BoneLoc, OrbRadius);
                 else if (_editType == TransformType.Scale)
@@ -598,7 +605,12 @@ namespace System.Windows.Forms
             }
 
             if (VertexLoc != null && RenderVertices)
-                RenderTranslationControl(context, ((Vector3)VertexLoc), VertexOrbRadius);
+            {
+                //if (_editType == TransformType.Rotation)
+                //    RenderRotationControl(context, ((Vector3)VertexLoc), VertexOrbRadius, new Vector3());
+                //else
+                    RenderTranslationControl(context, ((Vector3)VertexLoc), VertexOrbRadius);
+            }
         }
         public unsafe void RenderTranslationControl(TKContext context, Vector3 position, float radius)
         {
@@ -634,9 +646,9 @@ namespace System.Windows.Forms
             modelPanel.ScreenText["Y"] = modelPanel.Project(new Vector3(0, _axisLDist + 0.1f, 0) * m) - new Vector3(8.0f, 8.0f, 0);
             modelPanel.ScreenText["Z"] = modelPanel.Project(new Vector3(0, 0, _axisLDist + 0.1f) * m) - new Vector3(8.0f, 8.0f, 0);
         }
-        public unsafe void RenderRotationControl(TKContext context)
+        public unsafe void RenderRotationControl(TKContext context, Vector3 position, float radius, Vector3 rotate)
         {
-            Matrix m = CamFacingMatrix;
+            Matrix m = Matrix.TransformMatrix(new Vector3(radius), position.LookatAngles(CamLoc) * Maths._rad2degf, position);
 
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
@@ -668,7 +680,7 @@ namespace System.Windows.Forms
             GL.Enable(EnableCap.DepthTest);
 
             //Enter local space
-            m = Matrix.TransformMatrix(new Vector3(OrbRadius), SelectedBone._frameMatrix.GetAngles(), BoneLoc);
+            m = Matrix.TransformMatrix(new Vector3(radius), rotate, position);
 
             modelPanel.ScreenText["X"] = modelPanel.Project(new Vector3(1.1f, 0, 0) * m) - new Vector3(8.0f, 8.0f, 0);
             modelPanel.ScreenText["Y"] = modelPanel.Project(new Vector3(0, 1.1f, 0) * m) - new Vector3(8.0f, 8.0f, 0);
@@ -1016,7 +1028,7 @@ namespace System.Windows.Forms
         //Intersects the projected ray with the appropriate plane using the snap flags.
         private bool GetOrbPoint(Vector2 mousePoint, out Vector3 point)
         {
-            MDL0BoneNode bone = pnlBones.SelectedBone;
+            MDL0BoneNode bone = SelectedBone;
             if (bone == null)
             {
                 point = new Vector3();
@@ -1049,17 +1061,17 @@ namespace System.Windows.Forms
             else// if (_editType == TransformType.Translation)
             {
                 if (_snapX && _snapY)
-                    normal = new Vector3(0.0f, 0.0f, 1.0f).Normalize();
+                    normal = new Vector3(0.0f, 0.0f, 1.0f);
                 else if (_snapX && _snapZ)
-                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
+                    normal = new Vector3(0.0f, 1.0f, 0.0f);
                 else if (_snapY && _snapZ)
-                    normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
+                    normal = new Vector3(1.0f, 0.0f, 0.0f);
                 else if (_snapX)
-                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
+                    normal = new Vector3(0.0f, 1.0f, 0.0f);
                 else if (_snapY)
-                    normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
+                    normal = new Vector3(1.0f, 0.0f, 0.0f);
                 else if (_snapZ)
-                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
+                    normal = new Vector3(0.0f, 1.0f, 0.0f);
                 else if (_editType == TransformType.Scale && _snapX && _snapY && _snapZ)
                     normal = camera.Normalize(center);
                 return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
@@ -1096,21 +1108,54 @@ namespace System.Windows.Forms
         {
             Vector3 lineStart = modelPanel.UnProject(mousePoint._x, mousePoint._y, 0.0f);
             Vector3 lineEnd = modelPanel.UnProject(mousePoint._x, mousePoint._y, 1.0f);
+            Vector3 camera = modelPanel._camera.GetPoint();
             Vector3 normal = new Vector3();
+            float radius = center.TrueDistance(camera) / _orbRadius * 0.1f;
 
-            if (_snapX && _snapY)
-                normal = new Vector3(0.0f, 0.0f, 1.0f).Normalize();
-            else if (_snapX && _snapZ)
-                normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-            else if (_snapY && _snapZ)
-                normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
-            else if (_snapX)
-                normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-            else if (_snapY)
-                normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
-            else if (_snapZ)
-                normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-            return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
+            //if (_editType == TransformType.Rotation)
+            //{
+            //    if (_snapX)
+            //        normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize(center);
+            //    else if (_snapY)
+            //        normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize(center);
+            //    else if (_snapZ)
+            //        normal = new Vector3(0.0f, 0.0f, 1.0f).Normalize(center);
+            //    else if (_snapCirc)
+            //    {
+            //        radius *= _circOrbScale;
+            //        normal = camera.Normalize(center);
+            //    }
+            //    else if (Maths.LineSphereIntersect(lineStart, lineEnd, center, radius, out point))
+            //        return true;
+            //    else
+            //        normal = camera.Normalize(center);
+            //}
+            //else
+            {
+                if (_snapX && _snapY)
+                    normal = new Vector3(0.0f, 0.0f, 1.0f);
+                else if (_snapX && _snapZ)
+                    normal = new Vector3(0.0f, 1.0f, 0.0f);
+                else if (_snapY && _snapZ)
+                    normal = new Vector3(1.0f, 0.0f, 0.0f);
+                else if (_snapX)
+                    normal = new Vector3(0.0f, 1.0f, 0.0f);
+                else if (_snapY)
+                    normal = new Vector3(1.0f, 0.0f, 0.0f);
+                else if (_snapZ)
+                    normal = new Vector3(0.0f, 1.0f, 0.0f);
+
+                return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
+            }
+
+            if (Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point))
+            {
+                point = Maths.PointAtLineDistance(center, point, radius);
+                return true;
+            }
+
+            point = new Vector3();
+            return false;
         }
         private bool CompareVertexDistance(Vector3 point, ref Vertex3 match)
         {

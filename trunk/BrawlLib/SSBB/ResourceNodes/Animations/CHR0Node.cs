@@ -8,7 +8,6 @@ using System.IO;
 using BrawlLib.IO;
 using BrawlLib.Wii.Animations;
 using System.Windows.Forms;
-using BrawlBox;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -20,10 +19,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override ResourceType ResourceType { get { return ResourceType.CHR0; } }
 
-        [Browsable(false)]
-        public override int tFrameCount { get { return FrameCount; } set { FrameCount = value; } }
-        [Browsable(false)]
-        public override bool tLoop { get { return Loop; } set { Loop = value; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(CHR0EntryNode) };
+            }
+        }
 
         internal int _numFrames = 1;
         internal int _stringoffset, _dataoffset, _loop;
@@ -53,7 +55,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         [Category("Animation Data")]
-        public int FrameCount
+        public override int FrameCount
         {
             get { return _numFrames + (startUpVersion == 5 ? 1 : 0); }
             set
@@ -71,7 +73,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
         [Category("Animation Data")]
-        public bool Loop { get { return _loop != 0; } set { _loop = (ushort)(value ? 1 : 0); SignalPropertyChange(); } }
+        public override bool Loop { get { return _loop != 0; } set { _loop = (ushort)(value ? 1 : 0); SignalPropertyChange(); } }
 
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
@@ -105,7 +107,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         public int num;
         public bool IsPorted = false;
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -154,7 +156,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             ResourceGroup* group = Header4_3->Group;
             for (int i = 0; i < group->_numEntries; i++)
@@ -295,7 +297,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal void Port(MDL0Node _targetModel, MDL0Node _extModel)
+        public void Port(MDL0Node _targetModel, MDL0Node _extModel)
         {
             MDL0BoneNode extBone;
             MDL0BoneNode bone;
@@ -421,7 +423,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(_originalPath);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = (_version == 5 ? CHR0v5.Size : CHR0v4_3.Size) + 0x18 + (Children.Count * 0x10);
             foreach (CHR0EntryNode n in Children)
@@ -446,7 +448,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             throw new NotSupportedException("The file extension specified is not of a supported animation type.");
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             ResourceGroup* group;
             if (_version == 5)
@@ -561,14 +563,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal int _dataLen;
         internal int _entryLen;
         internal VoidPtr _dataAddr;
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             //Keyframes.Clean();
             _dataLen = AnimationConverter.CalculateCHR0Size(Keyframes, out _entryLen);
             return _dataLen + _entryLen;
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _keyframes = null;
 
@@ -601,7 +603,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             AnimationConverter.EncodeCHR0Keyframes(_keyframes, address, _dataAddr);
         }

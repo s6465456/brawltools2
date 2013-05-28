@@ -134,7 +134,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             set { SetLight(7, value); }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -170,12 +170,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     table.Add(GetLightName(i));
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return SCN0LightSet.Size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
 

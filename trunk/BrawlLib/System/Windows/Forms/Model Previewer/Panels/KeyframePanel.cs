@@ -14,7 +14,7 @@ namespace System.Windows.Forms
 {
     public partial class KeyframePanel : UserControl
     {
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
 
         public KeyframePanel() { InitializeComponent(); }
 
@@ -38,9 +38,9 @@ namespace System.Windows.Forms
         public void SetEditType(int type)
         {
             lstTypes.Items.Clear();
-
+            
             //Visible = panelEnabled = type != -1;
-            grpKeys.Visible = type == 0; //Keyframes
+            listKeyframes.Visible = type == 0; //Keyframes
             ctrlPanel.Visible = type != 0 && type != 2;
             visclrPanel.Visible = visPanel.Visible = type == 1; //Vis
             clrPanel.Visible = type == 2; //Colors
@@ -53,7 +53,7 @@ namespace System.Windows.Forms
             lstTypes.Items.Clear();
 
             //Visible = panelEnabled = enabled;
-            grpKeys.Visible = keys;
+            listKeyframes.Visible = keys;
             visPanel.Visible = visclrPanel.Visible = vis;
             clrPanel.Visible = clr;
 
@@ -72,7 +72,7 @@ namespace System.Windows.Forms
             lstTypes.Items.Clear();
 
             //Visible = panelEnabled = enabled;
-            grpKeys.Visible = keys;
+            listKeyframes.Visible = keys;
             visPanel.Visible = visclrPanel.Visible = vis;
             clrPanel.Visible = clr || spec;
 
@@ -178,7 +178,7 @@ namespace System.Windows.Forms
             RefreshPage();
         }
 
-        public int FrameCount { get { if (_mainWindow != null) return (int)_mainWindow.pnlPlayback.numFrameIndex.Value; return -1; } set { if (_mainWindow != null) _mainWindow.pnlPlayback.numFrameIndex.Value = value; } }
+        public int FrameCount { get { if (_mainWindow != null) return (int)_mainWindow.CurrentFrame; return -1; } set { if (_mainWindow != null) _mainWindow.CurrentFrame = value; } }
 
         public void numFrame_ValueChanged()
         {
@@ -227,7 +227,7 @@ namespace System.Windows.Forms
                     i = ((AnimationFrame)listKeyframes.SelectedItem).Index + 1;
                 else if (x is FloatKeyframe)
                     i = ((FloatKeyframe)listKeyframes.SelectedItem).Index + 1;
-                _mainWindow.pnlPlayback.numFrameIndex.Value = i;
+                _mainWindow.CurrentFrame = i;
             }
         }
         public void UpdateEntry()
@@ -267,6 +267,23 @@ namespace System.Windows.Forms
         private void lstTypes_SelectedIndexChanged(object sender, EventArgs e)
         {
             //Display panels 
+        }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public MDL0Node TargetModel
+        {
+            get { return _mainWindow.TargetModel; }
+            set { _mainWindow.TargetModel = value; }
+        }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public CHR0Node SelectedCHR0 { get { return _mainWindow.SelectedCHR0; } set { _mainWindow.SelectedCHR0 = value; } }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public MDL0BoneNode SelectedBone
+        {
+            get { return _mainWindow.SelectedBone; }
+            set { _mainWindow.SelectedBone = value; }
         }
     }
 }

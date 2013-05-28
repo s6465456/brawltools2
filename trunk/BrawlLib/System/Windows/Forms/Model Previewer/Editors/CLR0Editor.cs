@@ -90,7 +90,7 @@ namespace System.Windows.Forms
 
         #endregion
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
 
         private Label label1;
         private ListBox listBox1;
@@ -98,7 +98,7 @@ namespace System.Windows.Forms
         public ComboBox lstTarget;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
+        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow.TargetTexRef; } set { _mainWindow.TargetTexRef = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrame
@@ -123,8 +123,8 @@ namespace System.Windows.Forms
         {
             listBox1.Items.Clear();
             listBox1.BeginUpdate();
-            if (_mainWindow._clr0 != null)
-                foreach (CLR0MaterialNode n in _mainWindow._clr0.Children)
+            if (_mainWindow.SelectedCLR0 != null)
+                foreach (CLR0MaterialNode n in _mainWindow.SelectedCLR0.Children)
                     listBox1.Items.Add(n);
             listBox1.EndUpdate();
             if (listBox1.Items.Count > 0)
@@ -151,14 +151,14 @@ namespace System.Windows.Forms
         {
             if (_mat == null)
             {
-                _mainWindow.pnlKeyframes.chkEnabled.Checked = false;
-                _mainWindow.pnlKeyframes.chkConstant.Checked = false;
+                _mainWindow.KeyframePanel.chkEnabled.Checked = false;
+                _mainWindow.KeyframePanel.chkConstant.Checked = false;
                 return;
             }
             _entry = _mat.FindChild(lstTarget.SelectedItem as string, false) as CLR0MaterialEntryNode;
-            _mainWindow.pnlKeyframes.chkEnabled.Checked = _entry != null;
-            _mainWindow.pnlKeyframes.chkConstant.Checked = _entry != null ? _entry.Constant : false;
-            _mainWindow.pnlKeyframes.TargetSequence = _entry;
+            _mainWindow.KeyframePanel.chkEnabled.Checked = _entry != null;
+            _mainWindow.KeyframePanel.chkConstant.Checked = _entry != null ? _entry.Constant : false;
+            _mainWindow.KeyframePanel.TargetSequence = _entry;
         }
     }
 }

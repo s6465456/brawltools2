@@ -193,7 +193,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     }
 
                                     //Add influence to model object, while adding it to the cache.
-                                    if (!d) linker.NodeCache[index] = model._influences.FindOrCreate(inf, true);
+                                    if (!d) ((Influence)(linker.NodeCache[index] = model._influences.FindOrCreate(inf, true)))._index = index;
 
                                     //Move data pointer to next entry
                                     pData = (byte*)nEntry;

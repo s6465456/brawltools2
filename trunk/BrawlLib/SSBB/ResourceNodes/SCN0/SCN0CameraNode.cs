@@ -119,7 +119,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             SCN0CameraFlags.OrthoHeightConstant,
         };
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -135,7 +135,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (Name != "<null>")
                 for (int i = 0; i < 15; i++)
+                {
+                    if (((int)_flags1 & (int)Ordered[i]) == 0)
+                        SCN0Node.strings[(int)((&values[i] - Parent.Parent.WorkingUncompressed.Address + values[i]))] = "Camera" + Index + " Keys " + Ordered[i].ToString();
+
                     DecodeFrames(GetKeys(i), &values[i], (int)_flags1, (int)Ordered[i]);
+                }
 
             _posX._linear = true;
             _posY._linear = true;
@@ -159,18 +164,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(s._name);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
-            lightLen = 0;
-            keyLen = 0;
+            _lightLen = 0;
+            _keyLen = 0;
+            _visLen = 0;
             if (_name != "<null>")
                 for (int i = 0; i < 15; i++)
                     if (GetKeys(i)._keyCount > 1)
-                        keyLen += 4 + GetKeys(i)._keyCount * 12;
+                        _keyLen += 8 + GetKeys(i)._keyCount * 12;
             return SCN0Camera.Size + _userEntries.GetSize();
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
 
@@ -202,7 +208,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public int FrameCount { get { return ((SCN0Node)Parent.Parent).FrameCount; } }
 
-        internal CameraAnimationFrame GetAnimFrame(int index)
+        public CameraAnimationFrame GetAnimFrame(int index)
         {
             CameraAnimationFrame frame;
             float* dPtr = (float*)&frame;
@@ -215,7 +221,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return GetKeys((int)keyFrameMode - 0x10).GetKeyframe(index);
         }
 
-        internal float GetFrameValue(CameraKeyframeMode keyFrameMode, int index)
+        public float GetFrameValue(CameraKeyframeMode keyFrameMode, int index)
         {
             return GetKeys((int)keyFrameMode - 0x10).GetFrameValue(index);
         }

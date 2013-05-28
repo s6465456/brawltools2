@@ -33,22 +33,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         private unsafe RELType ParseDeclaration(Relocation rel)
         {
             RELType type = null;
-            string name = null;
-
             if (_types.TryGetValue(rel, out type))
                 return type;
 
             if (rel.Command == null || rel.Command._targetSection != ClassSection)
                 return null;
 
-            name = new string((sbyte*)(rel._data.BaseAddress + rel.FormalValue));
+            string name = new string((sbyte*)(rel._data.BaseAddress + rel.FormalValue));
 
             if (String.IsNullOrEmpty(name))
                 return null;
 
             type = new RELType(name);
 
-            // Get inheritances if any.
+            //Get inheritances, if any.
             if (rel.Next.Command != null)
                 for (Relocation r = rel.Next.Command.TargetRelocation;
                      r != null && r.Command != null;
@@ -80,12 +78,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_types.TryGetValue(rel.Command.TargetRelocation, out declaration) || declaration.Inherited)
                 return null;
 
-            RELObjectNode obj = new RELObjectNode(declaration);
-            obj.Parent = ClassSection;
-            new RELGroupNode() { _name = "Inheritance" }.Parent = obj;
-            foreach (InheritanceItemNode n in declaration.Inheritance)
-                n.Parent = obj.Children[0];
-            new RELGroupNode() { _name = "Functions" }.Parent = obj;
+            RELObjectNode obj = ClassSection.FindChild(declaration.FullName, false) as RELObjectNode;
+
+            if (obj == null)
+            {
+                obj = new RELObjectNode(declaration);
+                obj.Parent = ClassSection;
+                new RELGroupNode() { _name = "Inheritance" }.Parent = obj;
+                foreach (InheritanceItemNode n in declaration.Inheritance)
+                    n.Parent = obj.Children[0];
+                new RELGroupNode() { _name = "Functions" }.Parent = obj;
+            }
 
             Relocation baseRel = rel;
 

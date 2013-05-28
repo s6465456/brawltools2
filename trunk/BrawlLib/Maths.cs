@@ -19,6 +19,11 @@ namespace System
         //public const float _halfPif = (float)(_pif / 2.0);
         //public const float _pif = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930382f;
 
+        public static Vector3 PivotPoint(Vector3 center, Vector3 point, Vector3 angles)
+        {
+            return center + Matrix.RotationMatrix(angles) * (point - center);
+        }
+
         public static bool LineSphereIntersect(Vector3 start, Vector3 end, Vector3 center, float radius, out Vector3 result)
         {
             Vector3 diff = end - start;
@@ -137,7 +142,7 @@ namespace System
         public static float Power(float value, int amount)
         {
             int i = 0;
-            float result = value;
+            float result = 1;
             for (i = 0; i < amount; i++) result *= value;
             return value;
         }

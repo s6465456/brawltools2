@@ -15,23 +15,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal CLR0v4* Header4 { get { return (CLR0v4*)WorkingUncompressed.Address; } }
 
         public override ResourceType ResourceType { get { return ResourceType.CLR0; } }
-
-        internal int _numFrames = 1, _origPathOffset, _loop, _version = 3;
-
-        [Browsable(false)]
-        public override int tFrameCount
+        public override Type[] AllowedChildTypes
         {
-            get { return (int)FrameCount; }
-            set { FrameCount = (ushort)value; }
+            get
+            {
+                return new Type[] { typeof(CLR0MaterialNode) };
+            }
         }
 
-        [Browsable(false)]
-        public override bool tLoop { get { return Loop; } set { Loop = value; } }
+        internal int _numFrames = 1, _origPathOffset, _loop, _version = 3;
 
         [Category("Color Animation Data")]
         public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
         [Category("Color Animation Data")]
-        public int FrameCount
+        public override int FrameCount
         {
             get { return _numFrames; }
             set
@@ -45,7 +42,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Category("Color Animation Data")]
-        public bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
+        public override bool Loop { get { return _loop != 0; } set { _loop = value ? 1 : 0; SignalPropertyChange(); } }
 
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
@@ -55,7 +52,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string OriginalPath { get { return _originalPath; } set { _originalPath = value; SignalPropertyChange(); } }
         public string _originalPath;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -132,7 +129,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = (_version == 4 ? CLR0v4.Size : CLR0v3.Size) + 0x18 + Children.Count * 0x10;
             foreach (CLR0MaterialNode n in Children)
@@ -147,7 +144,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             int count = Children.Count;
 
@@ -211,7 +208,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             ResourceGroup* group = Header3->Group;
             for (int i = 0; i < group->_numEntries; i++)
@@ -272,12 +269,19 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal CLR0Material* Header { get { return (CLR0Material*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.CLR0Material; } }
+        public override Type[] AllowedChildTypes
+        {
+            get
+            {
+                return new Type[] { typeof(CLR0MaterialEntryNode) };
+            }
+        }
 
         internal CLR0EntryFlags _flags;
 
         public List<int> _entries;
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if ((_name == null) && (Header->_stringOffset != 0))
                 _name = Header->ResourceString;
@@ -292,7 +296,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return _entries.Count > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             for (int i = 0; i < _entries.Count; i++)
                 new CLR0MaterialEntryNode() { _target = (EntryTarget)_entries[i], _constant = ((((uint)_flags >> _entries[i] * 2) & 2) == 2) }.Initialize(this, (VoidPtr)Header + 8 + i * 8, 8);
@@ -394,7 +398,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             _colorMask = (ARGBPixel)Header->_colorMask;
 

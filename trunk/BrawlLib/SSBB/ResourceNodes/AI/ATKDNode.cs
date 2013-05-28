@@ -18,7 +18,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("ATKD Property")]
         public int Entries { get { return Header->_numEntries; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
             if (_name == null)
@@ -27,7 +27,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return Header->_numEntries > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             ATKDEntry* entry = Header->entries;
             for (int i = 0; i < Header->_numEntries; i++)
@@ -37,7 +37,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int header = 0x10;
             int entries = 0;
@@ -46,7 +46,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return (header + entries);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             ATKD* atkd = (ATKD*)address;
             atkd->_numEntries = Header->_numEntries;
@@ -84,7 +84,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("ATKD Entry"), Description("Maximum offensive collision range in direction of Y")]
         public float YMaxRange { get { return yMaxRange; } set { yMaxRange = value; SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = ((SubActionID)(short)Header->_SubActID).ToString();
@@ -99,7 +99,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             ATKDEntry* atkdEntry = (ATKDEntry*)address;
             atkdEntry->_SubActID = SubActID;

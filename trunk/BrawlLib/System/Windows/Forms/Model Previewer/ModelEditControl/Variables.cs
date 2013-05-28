@@ -17,7 +17,7 @@ using BrawlLib.Imaging;
 
 namespace System.Windows.Forms
 {
-    public partial class ModelEditControl : UserControl
+    public partial class ModelEditControl : UserControl, IMainWindow
     {
         private const float _orbRadius = 1.0f;
         private const float _circRadius = 1.2f;
@@ -34,7 +34,48 @@ namespace System.Windows.Forms
 
         public int _animFrame = 0, _maxFrame;
         public bool _updating, _loop;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int MaxFrame { get { return _maxFrame; } set { _maxFrame = value; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool Updating { get { return _updating; } set { _updating = value; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool Loop { get { return _loop; } set { _loop = value; } }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public CHR0Editor CHR0Editor { get { return chr0Editor; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public SRT0Editor SRT0Editor { get { return srt0Editor; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public SHP0Editor SHP0Editor { get { return shp0Editor; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public VIS0Editor VIS0Editor { get { return vis0Editor; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public PAT0Editor PAT0Editor { get { return pat0Editor; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public SCN0Editor SCN0Editor { get { return scn0Editor; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public CLR0Editor CLR0Editor { get { return clr0Editor; } }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ResourceNode ExternalAnimationsNode { get { return _externalAnimationsNode; } set { _externalAnimationsNode = value; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool SyncVIS0 { get { return syncObjectsListToVIS0ToolStripMenuItem.Checked; } set { syncObjectsListToVIS0ToolStripMenuItem.Checked = value; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool Playing { get { return _playing; } set { _playing = value; } }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Panel AnimCtrlPnl { get { return animCtrlPnl; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Panel AnimEditors { get { return animEditors; } }
         
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public KeyframePanel KeyframePanel { get { return rightPanel.pnlKeyframes; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public BonesPanel BonesPanel { get { return rightPanel.pnlBones; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ModelPanel ModelPanel { get { return modelPanel; } }
+
         public CHR0Node _chr0;
         public SRT0Node _srt0;
         public SHP0Node _shp0;
@@ -108,7 +149,7 @@ namespace System.Windows.Forms
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SRT0Node SelectedSRT0 
-        { 
+        {
             get { return _srt0; } 
             set 
             { 
@@ -250,13 +291,19 @@ namespace System.Windows.Forms
                             _resetCam = false;
                         }
 
-                pnlBones.lstBones.SelectedItem = _selectedBone;
+                rightPanel.pnlBones.lstBones.SelectedItem = _selectedBone;
                 weightEditor.BoneChanged();
                 //UpdatePropDisplay();
                 chr0Editor.UpdatePropDisplay();
 
-                if (_chr0 != null && _selectedBone != null && pnlAssets.fileType.SelectedIndex == 0)
-                    pnlKeyframes.TargetSequence = _chr0.FindChild(_selectedBone.Name, false);
+                if (TargetModel != null)
+                    TargetModel._selectedBone = _selectedBone;
+
+                if (TargetAnimType == AnimType.CHR)
+                    if (_chr0 != null && _selectedBone != null)
+                        rightPanel.pnlKeyframes.TargetSequence = _chr0.FindChild(_selectedBone.Name, false);
+                    else
+                        rightPanel.pnlKeyframes.TargetSequence = null;
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -269,9 +316,9 @@ namespace System.Windows.Forms
             {
                 _targetVisEntry = value; 
                 UpdatePropDisplay();
-                pnlKeyframes.TargetSequence = _targetVisEntry as ResourceNode;
-                pnlKeyframes.chkConstant.Checked = _targetVisEntry._flags.HasFlag(VIS0Flags.Constant);
-                pnlKeyframes.chkEnabled.Checked = _targetVisEntry._flags.HasFlag(VIS0Flags.Enabled);
+                rightPanel.pnlKeyframes.TargetSequence = _targetVisEntry as ResourceNode;
+                rightPanel.pnlKeyframes.chkConstant.Checked = _targetVisEntry._flags.HasFlag(VIS0Flags.Constant);
+                rightPanel.pnlKeyframes.chkEnabled.Checked = _targetVisEntry._flags.HasFlag(VIS0Flags.Enabled);
             } 
         }
         
@@ -430,5 +477,10 @@ namespace System.Windows.Forms
                 modelPanel.Invalidate();
             }
         }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool RenderLightDisplay { get { return _renderLightDisplay; } set { _renderLightDisplay = value; modelPanel.Invalidate(); } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public uint AllowedUndos { get { return _allowedUndos; } set { _allowedUndos = value; } }
     }
 }

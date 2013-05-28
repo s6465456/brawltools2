@@ -23,6 +23,14 @@ namespace System.Windows.Forms
             Caption = caption; 
             CanCancel = CanCancel; 
         }
+        private Control controlOwner;
+        public ProgressWindow(Control owner, string title, string caption, bool canCancel) : this()
+        {
+            controlOwner = owner;
+            Text = title;
+            Caption = caption;
+            CanCancel = CanCancel;
+        }
 
         private void btnCancel_Click(object sender, EventArgs e) { Cancel(); }
 
@@ -32,6 +40,8 @@ namespace System.Windows.Forms
             progressBar1.MaxValue = max;
             progressBar1.CurrentValue = current;
 
+            //if (controlOwner != null)
+            //    controlOwner.Enabled = false;
             if (Owner != null)
                 Owner.Enabled = false;
 
@@ -52,6 +62,8 @@ namespace System.Windows.Forms
         {
             if (Owner != null)
                 Owner.Enabled = true;
+            //if (controlOwner != null)
+            //    controlOwner.Enabled = true;
 
             Close();
         }

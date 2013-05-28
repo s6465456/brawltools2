@@ -13,7 +13,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Data"), Browsable(true)]
         public override string InfoHeaderOffset { get { if (RSARNode != null && Data != null) return ((uint)(Data - (VoidPtr)RSARNode.Header)).ToString("X"); else return "0"; } }
         
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             RSARNode parent = RSARNode;
             _extPath = Data->GetPath(&RSARNode.Header->INFOBlock->_collection);

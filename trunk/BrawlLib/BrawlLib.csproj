@@ -27,6 +27,8 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +43,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <RegisterForComInterop>false</RegisterForComInterop>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -51,6 +54,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -60,6 +64,7 @@
     <DebugType>none</DebugType>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -69,6 +74,7 @@
     <DebugType>none</DebugType>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -83,6 +89,7 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -95,12 +102,14 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Itanium'">
     <OutputPath>bin\Itanium\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>Itanium</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|Itanium'">
     <OutputPath>bin\Itanium\Release\</OutputPath>
@@ -108,9 +117,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>Itanium</PlatformTarget>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -120,7 +132,9 @@
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -160,6 +174,7 @@
     <None Include="Modeling\Model\Primitive.cs" />
     <Compile Include="Modeling\PrimitiveManager.cs" />
     <None Include="Modeling\TextureManager.cs" />
+    <Compile Include="Modeling\Triangle Converter\TriangleConverter.cs" />
     <Compile Include="Modeling\Vertex.cs" />
     <Compile Include="Modeling\Wavefront.cs" />
     <None Include="OpenGL\GLPrimitive.cs" />
@@ -213,8 +228,6 @@
     <Compile Include="SSBB\ResourceNodes\Modules\RELSectionNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELMiscNodes.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELType.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Items\AnimParamNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Common Nodes\MoveDefPatternPowerMulNode.cs" />
     <None Include="SSBB\Types\RLYT.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWAR\RWARNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RSAR\File Types\RWAR\RWAVNode.cs" />
@@ -225,38 +238,16 @@
     <Compile Include="SSBB\Types\Audio\RSEQ.cs" />
     <Compile Include="SSBB\Types\Audio\RSTM.cs" />
     <Compile Include="SSBB\Types\Audio\RWSD.cs" />
+    <Compile Include="SSBB\Types\FighterDefEnums.cs" />
+    <Compile Include="SSBB\Types\FighterDefinition.cs" />
     <Compile Include="SSBB\Types\TPL.cs" />
     <Compile Include="SSBB\UserData.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\DOLNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Archives\U8Node.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Actions\ActionEventNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Actions\EventParameterNodes.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefCharSpecific.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\MoveDefStaticArticleGroupNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataActionInterrupts.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataUnk7Node.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataUnk24Node.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataActionPre.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataUnk22Node.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataBoneRef2Node.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\SectionParamsNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataActionOverrideNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataMdlVisNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataBoneFloatsNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataActionFlags.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataAttributeNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\MoveDefDataNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Common Nodes\MoveDefDataCommonNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataArticleNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\MovesetConverter.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefGeneralNodes.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefStringTables.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataReferenceNode.cs" />
     <Compile Include="System\ArrayExtension.cs" />
     <Compile Include="System\ListExtension.cs" />
     <Compile Include="System\TypeConverters.cs" />
     <Compile Include="System\Helpers.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefLookupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RASDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0TEVStage.cs" />
     <Compile Include="SSBB\ResourceNodes\PhysicsNode.cs" />
@@ -271,9 +262,6 @@
     <Compile Include="SSBB\ResourceNodes\SCN0\SCN0GroupNode.cs" />
     <Compile Include="SSBB\ResourceNodes\STPMNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Graphics\REFTNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Actions\MoveDefActionNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\Data Nodes\DataMiscNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Moveset\MoveDefNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Archives\MRGNode.cs" />
     <Compile Include="SSBB\ResourceNodes\RawDataNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELNode.cs" />
@@ -319,7 +307,6 @@
     <Compile Include="SSBB\Types\Physics.cs" />
     <Compile Include="SSBB\Types\STPM.cs" />
     <Compile Include="SSBB\Types\REFT.cs" />
-    <Compile Include="SSBB\Types\FighterDefEnums.cs" />
     <Compile Include="SSBB\Types\MRG.cs" />
     <Compile Include="SSBB\Types\THP.cs" />
     <Compile Include="SSBB\Types\CollisionDef.cs" />
@@ -460,6 +447,12 @@
     <Compile Include="System\Windows\Controls\SCN0LightEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\Panels\RightPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Model Previewer\Panels\RightPanel.Designer.cs">
+      <DependentUpon>RightPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="System\Windows\Forms\ModuleSectionEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -491,27 +484,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\EditAllDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\AttributeGrid.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\ArticleAttributeGrid.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\EventModifier.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\OffsetEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\EventList.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\EventList.designer.cs">
-      <DependentUpon>EventList.cs</DependentUpon>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\EventModifierWindow.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\Windows\Controls\ShpAnimEditControl.cs">
@@ -553,20 +525,11 @@
     <Compile Include="System\Windows\Controls\TexAnimEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\EventDescription.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Moveset\ScriptEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="System\Windows\Forms\ObjectImporter.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\ModelViewerSettings.cs">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\MovesetPanel.cs">
-      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\ModelSwitcher.cs">
       <SubType>Form</SubType>
@@ -663,7 +626,6 @@
     <Compile Include="SSBB\Types\Animations\CHR0.cs" />
     <Compile Include="SSBB\Types\Animations\CLR0.cs" />
     <Compile Include="SSBB\Types\Common.cs" />
-    <Compile Include="SSBB\Types\FighterDefinition.cs" />
     <Compile Include="SSBB\Types\MDL0.cs" />
     <Compile Include="SSBB\Types\Animations\PAT0.cs" />
     <Compile Include="SSBB\Types\PLT0.cs" />
@@ -672,7 +634,7 @@
     <Compile Include="SSBB\Types\Animations\SRT0.cs" />
     <Compile Include="SSBB\Types\TEX0.cs" />
     <Compile Include="SSBB\Types\Animations\VIS0.cs" />
-    <Compile Include="System\Windows\BigEndianTypes.cs" />
+    <Compile Include="System\BigEndianTypes.cs" />
     <Compile Include="System\Int16Extension.cs" />
     <Compile Include="System\Int32Extension.cs" />
     <Compile Include="System\Int64Extension.cs" />
@@ -771,6 +733,9 @@
     <EmbeddedResource Include="System\Windows\Controls\SCN0LightEditControl.resx">
       <DependentUpon>SCN0LightEditControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\RightPanel.resx">
+      <DependentUpon>RightPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ModuleSectionEditor.resx">
       <DependentUpon>ModuleSectionEditor.cs</DependentUpon>
     </EmbeddedResource>
@@ -801,24 +766,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\EditAllDialog.resx">
       <DependentUpon>EditAllDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Moveset\AttributeGrid.resx">
-      <DependentUpon>AttributeGrid.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Moveset\ArticleAttributeGrid.resx">
-      <DependentUpon>ArticleAttributeGrid.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Moveset\EventModifier.resx">
-      <DependentUpon>EventModifier.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Moveset\OffsetEditor.resx">
-      <DependentUpon>OffsetEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Moveset\EventList.resx">
-      <DependentUpon>EventList.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Moveset\EventModifierWindow.resx">
-      <DependentUpon>EventModifierWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\ShpAnimEditControl.resx">
       <DependentUpon>ShpAnimEditControl.cs</DependentUpon>
@@ -853,20 +800,11 @@
     <EmbeddedResource Include="System\Windows\Controls\TexAnimEditControl.resx">
       <DependentUpon>TexAnimEditControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Moveset\EventDescription.resx">
-      <DependentUpon>EventDescription.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Moveset\ScriptEditor.resx">
-      <DependentUpon>ScriptEditor.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ObjectImporter.resx">
       <DependentUpon>ObjectImporter.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelViewerSettings.resx">
       <DependentUpon>ModelViewerSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\MovesetPanel.resx">
-      <DependentUpon>MovesetPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelSwitcher.resx">
       <DependentUpon>ModelSwitcher.cs</DependentUpon>
@@ -930,9 +868,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Modeling\Triangle Converter\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="OpenTK.dll" />
   </ItemGroup>

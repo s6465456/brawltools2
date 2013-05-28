@@ -17,7 +17,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Player Info")]
         public byte PlayableSoundCount { get { return _playableSoundCount; } set { _playableSoundCount = value; SignalPropertyChange(); } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
@@ -26,12 +26,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return INFOPlayerInfoEntry.Size;
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             INFOPlayerInfoEntry* header = (INFOPlayerInfoEntry*)address;
 

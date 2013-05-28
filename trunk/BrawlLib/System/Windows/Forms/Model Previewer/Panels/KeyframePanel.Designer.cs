@@ -29,7 +29,6 @@ namespace System.Windows.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            this.grpKeys = new System.Windows.Forms.GroupBox();
             this.listKeyframes = new System.Windows.Forms.ListBox();
             this.visEditor = new System.Windows.Forms.VisEditor();
             this.visPanel = new System.Windows.Forms.Panel();
@@ -40,23 +39,13 @@ namespace System.Windows.Forms
             this.ctrlPanel = new System.Windows.Forms.Panel();
             this.visclrPanel = new System.Windows.Forms.Panel();
             this.lstTypes = new System.Windows.Forms.ComboBox();
-            this.grpKeys.SuspendLayout();
+            this.pnlKeyframes = new System.Windows.Forms.Panel();
             this.visPanel.SuspendLayout();
             this.clrPanel.SuspendLayout();
             this.ctrlPanel.SuspendLayout();
             this.visclrPanel.SuspendLayout();
+            this.pnlKeyframes.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // grpKeys
-            // 
-            this.grpKeys.Controls.Add(this.listKeyframes);
-            this.grpKeys.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grpKeys.Location = new System.Drawing.Point(0, 23);
-            this.grpKeys.Name = "grpKeys";
-            this.grpKeys.Size = new System.Drawing.Size(279, 361);
-            this.grpKeys.TabIndex = 22;
-            this.grpKeys.TabStop = false;
-            this.grpKeys.Text = "Keyframes";
             // 
             // listKeyframes
             // 
@@ -65,9 +54,9 @@ namespace System.Windows.Forms
             this.listKeyframes.FormattingEnabled = true;
             this.listKeyframes.IntegralHeight = false;
             this.listKeyframes.ItemHeight = 14;
-            this.listKeyframes.Location = new System.Drawing.Point(3, 16);
+            this.listKeyframes.Location = new System.Drawing.Point(0, 0);
             this.listKeyframes.Name = "listKeyframes";
-            this.listKeyframes.Size = new System.Drawing.Size(273, 342);
+            this.listKeyframes.Size = new System.Drawing.Size(275, 357);
             this.listKeyframes.TabIndex = 18;
             this.listKeyframes.SelectedIndexChanged += new System.EventHandler(this.listKeyframes_SelectedIndexChanged);
             // 
@@ -76,16 +65,16 @@ namespace System.Windows.Forms
             this.visEditor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.visEditor.Location = new System.Drawing.Point(0, 0);
             this.visEditor.Name = "visEditor";
-            this.visEditor.Size = new System.Drawing.Size(279, 361);
+            this.visEditor.Size = new System.Drawing.Size(275, 357);
             this.visEditor.TabIndex = 19;
             // 
             // visPanel
             // 
             this.visPanel.Controls.Add(this.visEditor);
             this.visPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.visPanel.Location = new System.Drawing.Point(0, 23);
+            this.visPanel.Location = new System.Drawing.Point(0, 0);
             this.visPanel.Name = "visPanel";
-            this.visPanel.Size = new System.Drawing.Size(279, 361);
+            this.visPanel.Size = new System.Drawing.Size(275, 357);
             this.visPanel.TabIndex = 23;
             this.visPanel.Visible = false;
             // 
@@ -116,9 +105,9 @@ namespace System.Windows.Forms
             // 
             this.clrPanel.Controls.Add(this.clrControl);
             this.clrPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.clrPanel.Location = new System.Drawing.Point(0, 23);
+            this.clrPanel.Location = new System.Drawing.Point(0, 0);
             this.clrPanel.Name = "clrPanel";
-            this.clrPanel.Size = new System.Drawing.Size(279, 361);
+            this.clrPanel.Size = new System.Drawing.Size(275, 357);
             this.clrPanel.TabIndex = 24;
             this.clrPanel.Visible = false;
             // 
@@ -127,7 +116,7 @@ namespace System.Windows.Forms
             this.clrControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.clrControl.Location = new System.Drawing.Point(0, 0);
             this.clrControl.Name = "clrControl";
-            this.clrControl.Size = new System.Drawing.Size(279, 361);
+            this.clrControl.Size = new System.Drawing.Size(275, 357);
             this.clrControl.TabIndex = 21;
             // 
             // ctrlPanel
@@ -165,22 +154,33 @@ namespace System.Windows.Forms
             this.lstTypes.TabIndex = 0;
             this.lstTypes.SelectedIndexChanged += new System.EventHandler(this.lstTypes_SelectedIndexChanged);
             // 
-            // UserControl1
+            // pnlKeyframes
+            // 
+            this.pnlKeyframes.AutoScroll = true;
+            this.pnlKeyframes.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.pnlKeyframes.Controls.Add(this.listKeyframes);
+            this.pnlKeyframes.Controls.Add(this.visPanel);
+            this.pnlKeyframes.Controls.Add(this.clrPanel);
+            this.pnlKeyframes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlKeyframes.Location = new System.Drawing.Point(0, 23);
+            this.pnlKeyframes.Name = "pnlKeyframes";
+            this.pnlKeyframes.Size = new System.Drawing.Size(279, 361);
+            this.pnlKeyframes.TabIndex = 27;
+            // 
+            // KeyframePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.grpKeys);
-            this.Controls.Add(this.visPanel);
-            this.Controls.Add(this.clrPanel);
+            this.Controls.Add(this.pnlKeyframes);
             this.Controls.Add(this.ctrlPanel);
-            this.Name = "UserControl1";
+            this.Name = "KeyframePanel";
             this.Size = new System.Drawing.Size(279, 384);
-            this.grpKeys.ResumeLayout(false);
             this.visPanel.ResumeLayout(false);
             this.clrPanel.ResumeLayout(false);
             this.ctrlPanel.ResumeLayout(false);
             this.visclrPanel.ResumeLayout(false);
             this.visclrPanel.PerformLayout();
+            this.pnlKeyframes.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -189,7 +189,6 @@ namespace System.Windows.Forms
 
         public ListBox listKeyframes;
         public VisEditor visEditor;
-        public GroupBox grpKeys;
         private Panel visPanel;
         public CheckBox chkEnabled;
         public CheckBox chkConstant;
@@ -198,5 +197,6 @@ namespace System.Windows.Forms
         private Panel ctrlPanel;
         private Panel visclrPanel;
         private ComboBox lstTypes;
+        private Panel pnlKeyframes;
     }
 }

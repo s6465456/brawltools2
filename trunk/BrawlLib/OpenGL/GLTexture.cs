@@ -32,6 +32,7 @@ namespace BrawlLib.OpenGL
                 //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.NearestMipmapLinear);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureBaseLevel, 0);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMaxLevel, _textures.Length - 1);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
 
                 for (int i = 0; i < _textures.Length; i++)
                 {
@@ -93,6 +94,16 @@ namespace BrawlLib.OpenGL
             _remake = true;
             Initialize();
         }
+
+        internal unsafe void Attach(Bitmap bmp)
+        {
+            ClearImages();
+
+            _textures = new Bitmap[] { bmp };
+
+            _remake = true;
+            Initialize();
+        }
         
         internal int _width, _height;
         public int Width { get { return _width; } }
@@ -117,13 +128,14 @@ namespace BrawlLib.OpenGL
         public void Bind() { Bind(-1, -1, null); }
         public void Bind(int index, int program, TKContext ctx)
         {
-            GL.BindTexture(TextureTarget.Texture2D, Initialize());
-
             if (program != -1 && index >= 0 && index <= 7 && ctx != null && ctx._canUseShaders)
             {
+                GL.ClientActiveTexture(TextureUnit.Texture0 + index);
                 int i = GL.GetUniformLocation(program, "Texture" + index);
                 if (i > -1) GL.Uniform1(i, index);
             }
+
+            GL.BindTexture(TextureTarget.Texture2D, Initialize());
         }
 
         public unsafe void Delete()

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using BrawlLib.SSBB.ResourceNodes;
-using BrawlBox;
 using BrawlLib.Wii.Animations;
 using System.Drawing;
 using BrawlLib.Wii.Graphics;
@@ -1632,7 +1631,7 @@ namespace System.Windows.Forms
         private CheckBox chkAmbClr;
         private Button button1;
 
-        public ModelEditControl _mainWindow;
+        public IMainWindow _mainWindow;
         private Panel panel1;
         private Button button3;
         private Button button4;
@@ -1696,15 +1695,15 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SCN0Node SelectedAnimation
         {
-            get { return _mainWindow._scn0; }
-            set { _mainWindow._scn0 = value; }
+            get { return _mainWindow.SelectedSCN0; }
+            set { _mainWindow.SelectedSCN0 = value; }
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0BoneNode TargetBone { get { return _mainWindow.SelectedBone; } set { _mainWindow.SelectedBone = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow._targetTexRef; } set { _mainWindow.TargetTexRef = value; } }
+        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow.TargetTexRef; } set { _mainWindow.TargetTexRef = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrame
@@ -1876,7 +1875,7 @@ namespace System.Windows.Forms
 
                     UpdateSelectedLightSets();
 
-                    _mainWindow.pnlKeyframes.SetEditType(-1);
+                    _mainWindow.KeyframePanel.SetEditType(-1);
 
                     break;
                 case 1:
@@ -1884,7 +1883,7 @@ namespace System.Windows.Forms
                     chkAmbClr.Checked = _ambLight.ColorEnabled;
                     chkAmbAlpha.Checked = _ambLight.AlphaEnabled;
 
-                    _mainWindow.pnlKeyframes.SetEditType(2);
+                    _mainWindow.KeyframePanel.SetEditType(2);
 
                     break;
                 case 2:
@@ -1896,13 +1895,13 @@ namespace System.Windows.Forms
                     lstDistFunc.SelectedIndex = (int)_light.DistanceFunction;
                     lstSpotFunc.SelectedIndex = (int)_light.SpotFunction;
 
-                    _mainWindow.pnlKeyframes.SetEditTypes2(true, true, true, true, true);
+                    _mainWindow.KeyframePanel.SetEditTypes2(true, true, true, true, true);
                     break;
                 case 3:
                     _fog = nodeList.SelectedItem as SCN0FogNode;
                     comboBox3.SelectedIndex = Array.IndexOf(fogEnum, _fog.Type);
 
-                    _mainWindow.pnlKeyframes.SetEditTypes(true, true, false, true);
+                    _mainWindow.KeyframePanel.SetEditTypes(true, true, false, true);
 
                     break;
                 case 4:
@@ -1910,11 +1909,11 @@ namespace System.Windows.Forms
                     lstCamType.SelectedIndex = (int)_camera.Type;
                     lstCamProj.SelectedIndex = (int)_camera.ProjectionType;
 
-                    _mainWindow.pnlKeyframes.SetEditType(0);
+                    _mainWindow.KeyframePanel.SetEditType(0);
 
                     break;
             }
-            _mainWindow.pnlKeyframes.TargetSequence = nodeList.SelectedItem as ResourceNode;
+            _mainWindow.KeyframePanel.TargetSequence = nodeList.SelectedItem as ResourceNode;
         }
 
         public void GetDimensions()
@@ -1922,29 +1921,29 @@ namespace System.Windows.Forms
             switch (tabIndex)
             {
                 case 0:
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 70;
-                    _mainWindow.panel3.Width = 626;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 70;
+                    _mainWindow.AnimCtrlPnl.Width = 626;
                     break;
                 case 1:
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 72;
-                    _mainWindow.panel3.Width = 566;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 72;
+                    _mainWindow.AnimCtrlPnl.Width = 566;
                     break;
                 case 2:
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 128;
-                    _mainWindow.panel3.Width = 634;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 128;
+                    _mainWindow.AnimCtrlPnl.Width = 634;
                     break;
                 case 3:
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 70;
-                    _mainWindow.panel3.Width = 566;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 70;
+                    _mainWindow.AnimCtrlPnl.Width = 566;
                     break;
                 case 4:
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 120;
-                    _mainWindow.panel3.Width = 660;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 120;
+                    _mainWindow.AnimCtrlPnl.Width = 660;
                     break;
             }
         }
@@ -1954,7 +1953,7 @@ namespace System.Windows.Forms
         {
             tabIndex = e.TabPageIndex;
             nodeList.Items.Clear();
-            _mainWindow.pnlKeyframes.listKeyframes.Items.Clear();
+            _mainWindow.KeyframePanel.listKeyframes.Items.Clear();
             switch (e.TabPageIndex)
             {
                 case 0:
@@ -1962,45 +1961,45 @@ namespace System.Windows.Forms
                     if (SelectedAnimation != null)
                         foreach (SCN0LightSetNode s in SelectedAnimation.GetFolder<SCN0LightSetNode>().Children)
                             nodeList.Items.Add(s);
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 70;
-                    _mainWindow.panel3.Width = 626;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 70;
+                    _mainWindow.AnimCtrlPnl.Width = 626;
                     break;
                 case 1:
                     nodeType.Text = "AmbLight:";
                     if (SelectedAnimation != null)
                         foreach (SCN0AmbientLightNode s in SelectedAnimation.GetFolder<SCN0AmbientLightNode>().Children)
                             nodeList.Items.Add(s);
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 72;
-                    _mainWindow.panel3.Width = 566;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 72;
+                    _mainWindow.AnimCtrlPnl.Width = 566;
                     break;
                 case 2:
                     nodeType.Text = "Light:";
                     if (SelectedAnimation != null)
                         foreach (SCN0LightNode s in SelectedAnimation.GetFolder<SCN0LightNode>().Children)
                             nodeList.Items.Add(s);
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 128;
-                    _mainWindow.panel3.Width = 634;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 128;
+                    _mainWindow.AnimCtrlPnl.Width = 634;
                     break;
                 case 3:
                     nodeType.Text = "Fog:";
                     if (SelectedAnimation != null)
                         foreach (SCN0FogNode s in SelectedAnimation.GetFolder<SCN0FogNode>().Children)
                             nodeList.Items.Add(s);
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 70;
-                    _mainWindow.panel3.Width = 566;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 70;
+                    _mainWindow.AnimCtrlPnl.Width = 566;
                     break;
                 case 4:
                     nodeType.Text = "Camera:";
                     if (SelectedAnimation != null)
                         foreach (SCN0CameraNode s in SelectedAnimation.GetFolder<SCN0CameraNode>().Children)
                             nodeList.Items.Add(s);
-                    _mainWindow.animEditors.Height =
-                    _mainWindow.panel3.Height = 120;
-                    _mainWindow.panel3.Width = 660;
+                    _mainWindow.AnimEditors.Height =
+                    _mainWindow.AnimCtrlPnl.Height = 120;
+                    _mainWindow.AnimCtrlPnl.Width = 660;
                     break;
             }
             if (nodeList.Items.Count > 0)
@@ -2065,14 +2064,14 @@ namespace System.Windows.Forms
         private void button1_Click_1(object sender, EventArgs e)
         {
             //Get the position of the current camera
-            Vector3 pos = _mainWindow.modelPanel._camera.GetPoint();
+            Vector3 pos = _mainWindow.ModelPanel._camera.GetPoint();
             numPosX.Value = pos._x;
             BoxChanged(numPosX, null);
             numPosY.Value = pos._y;
             BoxChanged(numPosY, null);
             numPosZ.Value = pos._z;
             BoxChanged(numPosZ, null);
-            Vector3 rot = _mainWindow.modelPanel._camera._rotation;
+            Vector3 rot = _mainWindow.ModelPanel._camera._rotation;
             if (_camera.Type == SCN0CameraType.Rotate)
             {
                 //Easy
@@ -2085,7 +2084,7 @@ namespace System.Windows.Forms
             }
             else
             {
-                Vector3 cam = _mainWindow.modelPanel._camera.GetPoint();
+                Vector3 cam = _mainWindow.ModelPanel._camera.GetPoint();
 
                 Vector3 aim = new Vector3(
                     _camera.GetFrameValue(CameraKeyframeMode.AimX, _mainWindow.CurrentFrame - 1),
@@ -2094,7 +2093,7 @@ namespace System.Windows.Forms
 
                 float dist = cam.DistanceTo(aim);
 
-                Vector3 point = _mainWindow.modelPanel.UnProject(_mainWindow.modelPanel.Width / 2, _mainWindow.modelPanel.Height / 2, 100);
+                Vector3 point = _mainWindow.ModelPanel.UnProject(_mainWindow.ModelPanel.Width / 2, _mainWindow.ModelPanel.Height / 2, 100);
 
                 numAimX.Value = point._x;
                 BoxChanged(numAimX, null);

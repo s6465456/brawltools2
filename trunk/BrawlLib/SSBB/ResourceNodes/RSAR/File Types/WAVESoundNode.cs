@@ -26,7 +26,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class WAVESoundNode : RSARFileAudioNode
     {
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             if (_name == null)
                 _name = String.Format("Audio[{0}]", Index);

@@ -38,7 +38,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             set { _entries = value; }
         }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             hdr = *Header;
             base.OnInitialize();
@@ -55,12 +55,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             return base.OnCalculateSize(force);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
         }

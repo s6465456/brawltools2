@@ -13,14 +13,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal RWAR* Header { get { return (RWAR*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
-        protected override bool OnInitialize()
+        public override bool OnInitialize()
         {
             base.OnInitialize();
 
             return Header->Table->_entryCount > 0;
         }
 
-        protected override void OnPopulate()
+        public override void OnPopulate()
         {
             RWARTableBlock* table = Header->Table;
             RWARDataBlock* d = Header->Data;
@@ -29,7 +29,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new RWAVNode().Initialize(this, d->GetEntry(table->Entries[i].waveFileRef), 0);
         }
 
-        protected override int OnCalculateSize(bool force)
+        public override int OnCalculateSize(bool force)
         {
             int size = RWAR.Size + (12 + Children.Count * 12).Align(0x20) + RWARDataBlock.Size;
             foreach (RWAVNode n in Children)
@@ -37,7 +37,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size.Align(0x20);
         }
 
-        protected internal override void OnRebuild(VoidPtr address, int length, bool force)
+        public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             RWAR* header = (RWAR*)address;
             header->_header._version = 0x100;
