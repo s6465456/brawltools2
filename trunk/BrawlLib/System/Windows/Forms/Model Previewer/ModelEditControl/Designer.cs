@@ -28,7 +28,6 @@ namespace System.Windows.Forms
         private Button btnRightToggle;
         private System.ComponentModel.IContainer components;
         private Button btnPlaybackToggle;
-        public Timer animTimer;
         private Splitter spltLeft;
         private Button btnOptionToggle;
         private MenuStrip menuStrip1;
@@ -162,7 +161,7 @@ namespace System.Windows.Forms
         public ToolStripMenuItem enablePointAndLineSmoothingToolStripMenuItem;
         public ToolStripMenuItem enableTextOverlaysToolStripMenuItem;
         private RightPanel rightPanel;
-        public AnimModelPanel leftPanel;
+        public LeftPanel leftPanel;
 
         private void InitializeComponent()
         {
@@ -171,7 +170,6 @@ namespace System.Windows.Forms
             this.btnLeftToggle = new System.Windows.Forms.Button();
             this.btnRightToggle = new System.Windows.Forms.Button();
             this.btnPlaybackToggle = new System.Windows.Forms.Button();
-            this.animTimer = new System.Windows.Forms.Timer(this.components);
             this.spltLeft = new System.Windows.Forms.Splitter();
             this.btnOptionToggle = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -304,7 +302,7 @@ namespace System.Windows.Forms
             this.weightEditor = new System.Windows.Forms.WeightEditor();
             this.vertexEditor = new System.Windows.Forms.VertexEditor();
             this.splitter2 = new System.Windows.Forms.Splitter();
-            this.leftPanel = new System.Windows.Forms.AnimModelPanel();
+            this.leftPanel = new System.Windows.Forms.LeftPanel();
             this.rightPanel = new System.Windows.Forms.RightPanel();
             this.menuStrip1.SuspendLayout();
             this.controlPanel.SuspendLayout();
@@ -355,11 +353,6 @@ namespace System.Windows.Forms
             this.btnPlaybackToggle.TabStop = false;
             this.btnPlaybackToggle.UseVisualStyleBackColor = false;
             this.btnPlaybackToggle.Click += new System.EventHandler(this.btnPlaybackToggle_Click);
-            // 
-            // animTimer
-            // 
-            this.animTimer.Interval = 1;
-            this.animTimer.Tick += new System.EventHandler(this.animTimer_Tick);
             // 
             // spltLeft
             // 
@@ -1705,6 +1698,9 @@ namespace System.Windows.Forms
             TargetAnimType = AnimType.CHR;
             m_DelegateOpenFile = new DelegateOpenFile(OpenFile);
             ScreenCapBgLocText.Text = Application.StartupPath;
+
+            _timer = new CoolTimer();
+            _timer.RenderFrame += _timer_RenderFrame;
         }
 
         #endregion
@@ -1788,9 +1784,10 @@ namespace System.Windows.Forms
         void BoneChange(MDL0BoneNode bone);
         void GetFiles(AnimType focusType);
         void AnimChanged(AnimType type);
-        
-        ResourceNode GetSelectedBRRESFile(AnimType type);
 
+        BRESEntryNode GetSelectedBRRESFile(AnimType type);
+        
+        ModelPlaybackPanel PlaybackPanel { get; }
         KeyframePanel KeyframePanel { get; }
         BonesPanel BonesPanel { get; }
         ModelPanel ModelPanel { get; }

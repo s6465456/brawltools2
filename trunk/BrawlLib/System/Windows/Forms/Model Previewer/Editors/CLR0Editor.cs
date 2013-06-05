@@ -160,5 +160,11 @@ namespace System.Windows.Forms
             _mainWindow.KeyframePanel.chkConstant.Checked = _entry != null ? _entry.Constant : false;
             _mainWindow.KeyframePanel.TargetSequence = _entry;
         }
+
+        public void UpdatePropDisplay()
+        {
+            if (!Enabled)
+                return;
+        }
     }
 }

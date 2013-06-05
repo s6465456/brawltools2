@@ -45,7 +45,7 @@ namespace System.Windows.Forms
         }
         public bool GetSCN0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType) as BRESEntryNode;
+            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
             if (focusFile == null)
             {
                 _scn0 = null;
@@ -59,7 +59,7 @@ namespace System.Windows.Forms
         }
         public bool GetCLR0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType) as BRESEntryNode;
+            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
             if (focusFile == null)
             {
                 _clr0 = null;
@@ -73,7 +73,7 @@ namespace System.Windows.Forms
         }
         public bool GetVIS0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType) as BRESEntryNode;
+            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
             if (focusFile == null)
             {
                 _vis0 = null;
@@ -87,7 +87,7 @@ namespace System.Windows.Forms
         }
         public bool GetPAT0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType) as BRESEntryNode;
+            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
             if (focusFile == null)
             {
                 _pat0 = null;
@@ -101,7 +101,7 @@ namespace System.Windows.Forms
         }
         public bool GetSRT0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType) as BRESEntryNode;
+            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
             if (focusFile == null)
             {
                 _srt0 = null;
@@ -115,7 +115,7 @@ namespace System.Windows.Forms
         }
         public bool GetSHP0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType) as BRESEntryNode;
+            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
             if (focusFile == null)
             {
                 _shp0 = null;
@@ -129,7 +129,7 @@ namespace System.Windows.Forms
         }
         public bool GetCHR0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType) as BRESEntryNode;
+            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
             if (focusFile == null)
             {
                 _chr0 = null;
@@ -146,7 +146,7 @@ namespace System.Windows.Forms
         {
             BRESNode group = null;
             BRESEntryNode n = null;
-            if ((n = GetSelectedBRRESFile(TargetAnimType) as BRESEntryNode) != null &&
+            if ((n = TargetAnimation as BRESEntryNode) != null &&
                 (group = n.Parent.Parent as BRESNode) != null)
             {
                 _vis0 = group.CreateResource<VIS0Node>(SelectedCHR0.Name);
@@ -166,7 +166,7 @@ namespace System.Windows.Forms
         public void UpdateVis0(object sender, EventArgs e)
         {
             BRESEntryNode n;
-            if ((n = GetSelectedBRRESFile(TargetAnimType) as BRESEntryNode) == null || _animFrame == 0)
+            if ((n = TargetAnimation as BRESEntryNode) == null || _animFrame == 0)
                 return;
 
             Start:
@@ -251,7 +251,7 @@ namespace System.Windows.Forms
             leftPanel._vis0Updating = true;
             if (_vis0 != null)
             {
-                //if (GetSelectedBRRESFile(TargetAnimType) != null && _vis0.FrameCount != ((BRESEntryNode)GetSelectedBRRESFile(TargetAnimType)).tFrameCount)
+                //if (TargetAnimation != null && _vis0.FrameCount != TargetAnimation.tFrameCount)
                 //    UpdateVis0(null, null);
 
                 foreach (string n in leftPanel.VIS0Indices.Keys)

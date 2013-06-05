@@ -503,7 +503,7 @@ namespace BrawlLib.Modeling
             int elements = 0, stride = 0;
             int set;
             bool first;
-            ushort* pData = (ushort*)prim._indices.Address;
+            uint* pData = (uint*)prim._indices.Address;
             ushort* pVert = (ushort*)poly._manager._indices.Address;
 
             switch (prim._type)
@@ -579,7 +579,7 @@ namespace BrawlLib.Modeling
                 first = true;
                 for (int x = 0; x < stride; x++)
                 {
-                    int index = *pData++;
+                    int index = (int)*pData++;
                     for (int y = 0; y < elements; y++)
                     {
                         if (first)

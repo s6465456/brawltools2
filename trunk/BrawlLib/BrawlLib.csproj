@@ -27,7 +27,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -212,6 +212,7 @@
     <Compile Include="SSBB\ResourceNodes\AI\ATKDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\AI\CENode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\THPNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurVecNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurPosNode.cs" />
     <Compile Include="SSBB\ResourceNodes\NW4RNode.cs" />
@@ -245,6 +246,7 @@
     <Compile Include="SSBB\ResourceNodes\Modules\DOLNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Archives\U8Node.cs" />
     <Compile Include="System\ArrayExtension.cs" />
+    <Compile Include="System\CoolTimer.cs" />
     <Compile Include="System\ListExtension.cs" />
     <Compile Include="System\TypeConverters.cs" />
     <Compile Include="System\Helpers.cs" />
@@ -330,6 +332,15 @@
     <Compile Include="System\IO\GeckoStream.cs" />
     <Compile Include="System\PowerPCAssembly\Assembly Manager.cs" />
     <Compile Include="System\PowerPCAssembly\PowerPcAssembly.cs" />
+    <Compile Include="System\Windows\Controls\PreviewPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\PreviewPanel.designer.cs">
+      <DependentUpon>PreviewPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Controls\VideoPlaybackPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="System\Windows\Controls\PPCOpCodeEditor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -516,7 +527,7 @@
     <Compile Include="System\Windows\Forms\Model Previewer\Editors\SRT0Editor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\AnimModelPanel.cs">
+    <Compile Include="System\Windows\Forms\Model Previewer\Panels\LeftPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\Model Previewer\Panels\BonesPanel.cs">
@@ -694,6 +705,12 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\PreviewPanel.resx">
+      <DependentUpon>PreviewPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\VideoPlaybackPanel.resx">
+      <DependentUpon>VideoPlaybackPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\PPCOpCodeEditor.resx">
       <DependentUpon>PPCOpCodeEditor.cs</DependentUpon>
     </EmbeddedResource>
@@ -791,8 +808,8 @@
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\SRT0Editor.resx">
       <DependentUpon>SRT0Editor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\AnimModelPanel.resx">
-      <DependentUpon>AnimModelPanel.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\LeftPanel.resx">
+      <DependentUpon>LeftPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\BonesPanel.resx">
       <DependentUpon>BonesPanel.cs</DependentUpon>

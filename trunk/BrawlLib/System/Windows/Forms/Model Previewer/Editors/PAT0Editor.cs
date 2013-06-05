@@ -164,6 +164,9 @@ namespace System.Windows.Forms
         }
         public void UpdatePropDisplay()
         {
+            if (!Enabled)
+                return;
+
             ResetTexture();
             ResetPalette();
         }
@@ -269,13 +272,6 @@ namespace System.Windows.Forms
             ResetTexture();
             ResetPalette();
             _mainWindow.ModelPanel.Invalidate();
-        }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool EnableTransformEdit
-        {
-            get { return _mainWindow.EnableTransformEdit; }
-            set { grpEdit.Enabled = (_mainWindow.EnableTransformEdit = value) && (TargetTexRef != null); }
         }
 
         public void UpdateBoxes()

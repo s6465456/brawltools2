@@ -71,6 +71,8 @@ namespace Ikarus.UI
         public Panel AnimEditors { get { return animEditors; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ModelPlaybackPanel PlaybackPanel { get { return pnlPlayback; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public BonesPanel BonesPanel { get { return rightPanel.pnlBones; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public KeyframePanel KeyframePanel { get { return rightPanel.pnlKeyframes; } }
@@ -102,7 +104,7 @@ namespace Ikarus.UI
         public bool _renderFloor, _renderBones = true, _renderBox, _dontRenderOffscreen = true, _renderVertices, _renderNormals, _renderHurtboxes, _renderHitboxes;
         public CheckState _renderPolygons = CheckState.Checked;
 
-        public ResourceNode GetSelectedBRRESFile(AnimType type)
+        public BRESEntryNode GetSelectedBRRESFile(AnimType type)
         {
             switch (type)
             {
@@ -116,7 +118,7 @@ namespace Ikarus.UI
                 default: return null;
             }
         }
-        public void SetSelectedBRRESFile(AnimType type, ResourceNode value)
+        public void SetSelectedBRRESFile(AnimType type, BRESEntryNode value)
         {
             switch (type)
             {
@@ -318,11 +320,12 @@ namespace Ikarus.UI
                     return;
 
                 _enableTransform = value;
-                chr0Editor.EnableTransformEdit = 
-                srt0Editor.EnableTransformEdit =
-                shp0Editor.EnableTransformEdit =
-                vis0Editor.EnableTransformEdit =
-                pat0Editor.EnableTransformEdit = value; 
+                chr0Editor.Enabled =
+                srt0Editor.Enabled =
+                shp0Editor.Enabled =
+                vis0Editor.Enabled =
+                pat0Editor.Enabled = 
+                clr0Editor.Enabled = value; 
             }
         }
 

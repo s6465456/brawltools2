@@ -212,8 +212,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 ExportAsMRG(outPath);
             else if (outPath.EndsWith(".pcs", StringComparison.OrdinalIgnoreCase))
                 ExportPCS(outPath);
-            else if (outPath.EndsWith(".pac", StringComparison.OrdinalIgnoreCase))
-                ExportPAC(outPath);
+            //else if (outPath.EndsWith(".pac", StringComparison.OrdinalIgnoreCase))
+            //    ExportPAC(outPath);
             else
                 base.Export(outPath);
         }

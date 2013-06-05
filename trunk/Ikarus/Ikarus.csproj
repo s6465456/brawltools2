@@ -164,9 +164,6 @@
     <Compile Include="UI\ScriptPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\PlaybackPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="UI\RightPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -221,9 +218,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\ScriptPanel.resx">
       <DependentUpon>ScriptPanel.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="UI\PlaybackPanel.resx">
-      <DependentUpon>PlaybackPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\RightPanel.resx">
       <DependentUpon>RightPanel.cs</DependentUpon>

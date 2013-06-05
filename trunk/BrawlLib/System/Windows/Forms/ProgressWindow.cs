@@ -29,7 +29,7 @@ namespace System.Windows.Forms
             controlOwner = owner;
             Text = title;
             Caption = caption;
-            CanCancel = CanCancel;
+            CanCancel = canCancel;
         }
 
         private void btnCancel_Click(object sender, EventArgs e) { Cancel(); }
