@@ -12,7 +12,7 @@ they be held accountable for the manner in which it is used.
 |************ Change Log ************|
  ====================================
 
-- v0.15c- (5//2013)
+- v0.15c- (5/27/2013)
 	. Updated to .NET 4.5
 	. Added bones panel to the keyframes panel in the model previewer
 	. Removed buttons to toggle playback and bones panels

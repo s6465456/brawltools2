@@ -384,17 +384,20 @@ namespace System.Windows.Forms
                 //            pnlMoveset.SetFrame(pnlMoveset._animFrame + difference);
                 //}
                 //else 
-                if (GetSelectedBRRESFile(TargetAnimType) != null)
+                if (TargetAnimation != null)
                     SetFrame(_animFrame += difference);
                 rightPanel.pnlKeyframes.numFrame_ValueChanged();
             }
         }
-        public void numFPS_ValueChanged(object sender, EventArgs e) { /*pnlMoveset.animTimer.Interval = */animTimer.Interval = pnlPlayback.numFPS.Value == 60 ? 1 : 1000 / (int)pnlPlayback.numFPS.Value; }
+        public void numFPS_ValueChanged(object sender, EventArgs e)
+        {
+            _timer.TargetRenderFrequency = (double)pnlPlayback.numFPS.Value;
+        }
         public void chkLoop_CheckedChanged(object sender, EventArgs e) 
         {
             _loop = pnlPlayback.chkLoop.Checked;
             if (syncLoopToAnimationToolStripMenuItem.Checked && !_updating)
-                ((BRESEntryNode)GetSelectedBRRESFile(TargetAnimType)).Loop = _loop;
+                ((BRESEntryNode)TargetAnimation).Loop = _loop;
         }
 
         //private void FileChanged(object sender, EventArgs e)
@@ -450,27 +453,26 @@ namespace System.Windows.Forms
 
         public void numTotalFrames_ValueChanged(object sender, EventArgs e)
         {
-            if ((GetSelectedBRRESFile(TargetAnimType) == null) || (_updating))
+            if ((TargetAnimation == null) || (_updating))
                 return;
 
             _maxFrame = (int)pnlPlayback.numTotalFrames.Value;
 
-            ResourceNode n;
+            BRESEntryNode n;
             if (alwaysSyncFrameCountsToolStripMenuItem.Checked)
                 for (int i = 0; i < 5; i++)
                     if ((n = GetSelectedBRRESFile((AnimType)i)) != null) 
-                        //if (i == 5) ((BRESEntryNode)n).tFrameCount = _maxFrame - 1; else 
-                        ((BRESEntryNode)n).FrameCount = _maxFrame;
+                        n.FrameCount = _maxFrame;
                     else { }
             else
             {
-                if ((n = GetSelectedBRRESFile(TargetAnimType)) != null)
-                    ((BRESEntryNode)n).FrameCount = _maxFrame;
+                if ((n = TargetAnimation) != null)
+                    n.FrameCount = _maxFrame;
                 if (displayFrameCountDifferencesToolStripMenuItem.Checked)
                     if (MessageBox.Show("Do you want to update the frame counts of the other animation types?", "Update Frame Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     for (int i = 0; i < 5; i++)
                         if (i != (int)TargetAnimType && (n = GetSelectedBRRESFile((AnimType)i)) != null)
-                            ((BRESEntryNode)n).FrameCount = _maxFrame;
+                            n.FrameCount = _maxFrame;
             }
 
             pnlPlayback.numFrameIndex.Maximum = _maxFrame;
@@ -485,11 +487,6 @@ namespace System.Windows.Forms
             rightPanel.Visible = spltRight.Visible = showRight.Checked;
             btnRightToggle.Text = showRight.Checked == false ? "<" : ">";
         }
-        //private void showMoveset_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    pnlMoveset.Visible = spltAnims.Visible = showMoveset.Checked;
-        //    DetermineRight();
-        //}
         public void DetermineRight()
         {
             if (rightPanel.Visible)

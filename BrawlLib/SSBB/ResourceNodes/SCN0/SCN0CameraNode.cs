@@ -76,30 +76,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Camera")]
         public ProjectionType ProjectionType { get { return _projType; } set { _projType = value; SignalPropertyChange(); } }
 
-        public Vector3 GetRotate(int frame)
-        {
-            if (Type == SCN0CameraType.Rotate)
-                return new Vector3(
-                    _rotX.GetFrameValue(frame),
-                    _rotY.GetFrameValue(frame),
-                    _rotZ.GetFrameValue(frame));
-            else //Aim - calculate rotation facing the position
-            {
-                Vector3 aimPos = new Vector3(
-                    _aimX.GetFrameValue(frame),
-                    _aimY.GetFrameValue(frame),
-                    _aimZ.GetFrameValue(frame));
-                Vector3 pos = new Vector3(
-                    _posX.GetFrameValue(frame),
-                    _posY.GetFrameValue(frame),
-                    _posZ.GetFrameValue(frame));
-                Matrix m = Matrix.ReverseLookat(aimPos, pos, _twist.GetFrameValue(frame));
-                Vector3 a = m.GetAngles();
-                return new Vector3(-a._x, -a._y, -a._z);
-                //return aimPos.LookatAngles(pos) * Maths._rad2degf;
-            }
-        }
-
         public SCN0CameraFlags[] Ordered = new SCN0CameraFlags[] 
         {
             SCN0CameraFlags.PosXConstant,
@@ -390,6 +366,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                     case 13: FovY = value; break;
                     case 14: Height = value; break;
                 }
+            }
+        }
+
+        public Vector3 GetRotate(int frame, SCN0CameraType type)
+        {
+            if (type == SCN0CameraType.Rotate)
+                return Rot;
+            else //Aim - calculate rotation facing the position
+            {
+                Matrix m = Matrix.ReverseLookat(Aim, Pos, Twist);
+                Vector3 a = m.GetAngles();
+                return new Vector3(-a._x, -a._y, -a._z);
+                //return aimPos.LookatAngles(pos) * Maths._rad2degf;
             }
         }
 

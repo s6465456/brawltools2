@@ -446,14 +446,14 @@ namespace BrawlLib.Modeling
         internal void ExtractPrimitives(MDL0Object* header, ref ElementDescriptor desc, byte** pOut, byte** pAssets)
         {
             int count;
-            ushort index = 0, temp;
+            uint index = 0, temp;
             byte* pData = (byte*)header->PrimitiveData;
             byte* pTemp = (byte*)pData;
             ushort* indices = (ushort*)_indices.Address;
 
             //Get element count for each primitive type
             int d3 = 0, d2 = 0, d1 = 0;
-            ushort* p3, p2, p1;
+            uint* p3, p2, p1;
 
             bool newGroup = true;
             PrimitiveGroup group = new PrimitiveGroup();
@@ -571,17 +571,17 @@ namespace BrawlLib.Modeling
 
         Next: //Create primitives
             if (d3 > 0)
-            { _triangles = new NewPrimitive(d3, BeginMode.Triangles); p3 = (ushort*)_triangles._indices.Address; }
+            { _triangles = new NewPrimitive(d3, BeginMode.Triangles); p3 = (uint*)_triangles._indices.Address; }
             else
             { _triangles = null; p3 = null; }
 
             if (d2 > 0)
-            { _lines = new NewPrimitive(d2, BeginMode.Lines); p2 = (ushort*)_lines._indices.Address; }
+            { _lines = new NewPrimitive(d2, BeginMode.Lines); p2 = (uint*)_lines._indices.Address; }
             else
             { _lines = null; p2 = null; }
 
             if (d1 > 0)
-            { _points = new NewPrimitive(d1, BeginMode.Points); p1 = (ushort*)_points._indices.Address; }
+            { _points = new NewPrimitive(d1, BeginMode.Points); p1 = (uint*)_points._indices.Address; }
             else
             { _points = null; p1 = null; }
 
@@ -601,11 +601,11 @@ namespace BrawlLib.Modeling
                     for (int i = 0; i < count; i += 4)
                     {
                         *p3++ = index;
-                        *p3++ = (ushort)(index + 2);
-                        *p3++ = (ushort)(index + 1);
+                        *p3++ = (uint)(index + 2);
+                        *p3++ = (uint)(index + 1);
                         *p3++ = index;
-                        *p3++ = (ushort)(index + 3);
-                        *p3++ = (ushort)(index + 2);
+                        *p3++ = (uint)(index + 3);
+                        *p3++ = (uint)(index + 2);
                         index += 4;
                     }
                     break;
@@ -613,8 +613,8 @@ namespace BrawlLib.Modeling
                     count = *(bushort*)pData;
                     for (int i = 0; i < count; i += 3)
                     {
-                        *p3++ = (ushort)(index + 2);
-                        *p3++ = (ushort)(index + 1);
+                        *p3++ = (uint)(index + 2);
+                        *p3++ = (uint)(index + 1);
                         *p3++ = index;
                         index += 3;
                     }
@@ -625,7 +625,7 @@ namespace BrawlLib.Modeling
                     for (int i = 2; i < count; i++)
                     {
                         *p3++ = temp;
-                        *p3++ = (ushort)(index + 1);
+                        *p3++ = (uint)(index + 1);
                         *p3++ = index++;
                     }
                     index++;
@@ -636,8 +636,8 @@ namespace BrawlLib.Modeling
                     for (int i = 2; i < count; i++)
                     {
                         *p3++ = index;
-                        *p3++ = (ushort)(index - 1 - (i & 1));
-                        *p3++ = (ushort)((index++) - 2 + (i & 1));
+                        *p3++ = (uint)(index - 1 - (i & 1));
+                        *p3++ = (uint)((index++) - 2 + (i & 1));
                     }
                     break;
                 case GXListCommand.DrawLines:
@@ -1550,12 +1550,14 @@ namespace BrawlLib.Modeling
         public static Color DefaultNormColor = Color.FromArgb(0, 0, 128);
         internal Color _normColor = Color.Transparent;
 
+        public static float NormalLength = 0.5f;
+
         public const float _nodeRadius = 0.05f;
         const float _nodeAdj = 0.01f;
 
         public bool _render = true;
         public bool _renderNormals = true;
-        public float _normalLength = 1.0f;
+        
         internal unsafe void RenderVerts(TKContext ctx, IMatrixNode _singleBind, MDL0BoneNode selectedBone, Vector3 cam, bool pass2)
         {
             if (!_render)
@@ -1593,21 +1595,24 @@ namespace BrawlLib.Modeling
             if (!_render || _faceData[1] == null)
                 return;
 
+            ushort* indices = (ushort*)_indices.Address;
+            Vector3* normals = (Vector3*)_faceData[1].Address;
+
+            if (_normColor != Color.Transparent)
+                GL.Color4(_normColor);
+            else
+                GL.Color4(DefaultNormColor);
+
             for (int i = 0; i < _pointCount; i++)
             {
-                if (_normColor != Color.Transparent)
-                    GL.Color4(_normColor);
-                else
-                    GL.Color4(DefaultNormColor);
-
                 GL.PushMatrix();
 
                 GL.Color4(Color.Blue);
 
-                Vertex3 n = _vertices[((ushort*)_indices.Address)[i]];
-                Vector3 w = ((Vector3*)_faceData[1].Address)[i] * n.GetMatrix().GetRotationMatrix();
+                Vertex3 n = _vertices[indices[i]];
+                Vector3 w = normals[i] * n.GetMatrix().GetRotationMatrix();
                 
-                Matrix m = Matrix.TransformMatrix(new Vector3(_normalLength), new Vector3(), n.WeightedPosition);
+                Matrix m = Matrix.TransformMatrix(new Vector3(NormalLength), new Vector3(), n.WeightedPosition);
                 GL.MultMatrix((float*)&m);
 
                 GL.Begin(BeginMode.Lines);
@@ -1634,7 +1639,7 @@ namespace BrawlLib.Modeling
         {
             _elementCount = elements;
             _type = type;
-            _indices = new UnsafeBuffer(_elementCount * 2);
+            _indices = new UnsafeBuffer(_elementCount * 4);
         }
 
         ~NewPrimitive() { Dispose(); }
@@ -1649,7 +1654,7 @@ namespace BrawlLib.Modeling
 
         internal unsafe void Render()
         {
-            GL.DrawElements(_type, _elementCount, DrawElementsType.UnsignedShort, (IntPtr)_indices.Address);
+            GL.DrawElements(_type, _elementCount, DrawElementsType.UnsignedInt, (IntPtr)_indices.Address);
         }
     }
 

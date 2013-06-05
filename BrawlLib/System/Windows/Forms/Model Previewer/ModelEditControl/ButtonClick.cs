@@ -111,32 +111,12 @@ namespace System.Windows.Forms
         }
         private void btnExportToImgWithTransparency_Click(object sender, EventArgs e)
         {
-            //Make sure the background alpha value is 0.
-            //GL.ClearColor(Color.Transparent);
-            //Image i = null;
-            //if (BackgroundImage != null)
-            //{
-            //    i = BackgroundImage;
-            //    BackgroundImage = null;
-            //}
-            //Invalidate();
             SaveBitmap(modelPanel.GrabScreenshot(true));
-            //GL.ClearColor(BackColor);
-            //if (i != null)
-            //    BackgroundImage = i;
         }
         private void btnExportToImgNoTransparency_Click(object sender, EventArgs e)
         {
             SaveBitmap(modelPanel.GrabScreenshot(false));
         }
-
-        //private void showMoveset_Click_1(object sender, EventArgs e)
-        //{
-        //    if (pnlMoveset._mainMoveset != null)
-        //        showMoveset.Checked = !showMoveset.Checked;
-        //    else
-        //        showMoveset.Checked = false;
-        //}
 
         bool _capture = false;
         List<Image> images = new List<Image>();
@@ -147,14 +127,39 @@ namespace System.Windows.Forms
             _loop = false;
             _capture = true;
             Enabled = false;
+            modelPanel.Enabled = false;
             btnPlay_Click(null, null);
-            Enabled = true;
         }
 
-        ProgressWindow p;
         private void RenderToGIF(Image[] images)
         {
-            string outputFilePath = Application.StartupPath + "\\test.gif";
+            string outPath = "";
+        Start:
+            if (!String.IsNullOrEmpty(ScreenCapBgLocText.Text))
+            {
+                try
+                {
+                    outPath = ScreenCapBgLocText.Text;
+                    DirectoryInfo dir = new DirectoryInfo(outPath);
+                    FileInfo[] files = dir.GetFiles();
+                    int i = 0;
+                    string name = "BrawlboxAnimation";
+                Top:
+                    foreach (FileInfo f in files)
+                        if (f.Name == name + i + ".gif")
+                        {
+                            i++;
+                            goto Top;
+                        }
+                    outPath += "\\" + name + i + ".gif";
+                }
+                catch { }
+            }
+            else
+            {
+                ScreenCapBgLocText.Text = Application.StartupPath;
+                goto Start;
+            }
 
             //FileStream stream = new FileStream(outputFilePath, FileMode.Create);
             //GifBitmapEncoder encoder = new GifBitmapEncoder();
@@ -163,7 +168,7 @@ namespace System.Windows.Forms
             //encoder.Save(stream);
 
             AnimatedGifEncoder e = new AnimatedGifEncoder();
-            e.Start(outputFilePath);
+            e.Start(outPath);
             e.SetDelay(1000 / (int)pnlPlayback.numFPS.Value);
             e.SetRepeat(0);
             e.SetQuality(1);
@@ -181,11 +186,14 @@ namespace System.Windows.Forms
                 //{
                     for (int i = 0, count = images.Length; i < count; i++)
                     {
+                        if (progress.Cancelled)
+                            goto End;
+
                         e.AddFrame(images[i]);
                         progress.Update(progress.CurrentValue + 1);
                     }
                 //});
-
+                End:
                 //b.RunWorkerCompleted += new RunWorkerCompletedEventHandler(
                 //delegate(object o, RunWorkerCompletedEventArgs args)
                 //{
@@ -195,6 +203,11 @@ namespace System.Windows.Forms
 
                 //b.RunWorkerAsync();
             }
+            
+            modelPanel.Enabled = true;
+            Enabled = true;
+
+            MessageBox.Show("GIF successfully saved to " + outPath.Replace("\\", "/"));
         }
 
         private void btnSaveCam_Click(object sender, EventArgs e)
@@ -481,7 +494,8 @@ namespace System.Windows.Forms
             //        pnlMoveset.RunScript();
             //else
             {
-                if (animTimer.Enabled)
+                //if (animTimer.Enabled)
+                if (_timer.IsRunning)
                     StopAnim();
                 else
                     PlayAnim();

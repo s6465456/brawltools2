@@ -13,7 +13,6 @@ namespace System
         134217728f, 268435456f, 536870912f, 1073741824f, 2147483648f, 4294967296f
         };
 
-
         public static float Unquantize(byte* data, bool pair, int scale)
         {
             float value;
@@ -23,6 +22,11 @@ namespace System
             value = data[0] * scaleVal;
 
             return value;
+        }
+
+        public static Double Clamp(this Double value, Double min, Double max)
+        {
+            return value <= min ? min : value >= max ? max : value;
         }
     }
 }

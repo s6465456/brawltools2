@@ -279,10 +279,8 @@ namespace System.Windows.Forms
         }
         public void UpdatePropDisplay()
         {
-            //grpTransAll.Enabled = chkLinear.Enabled = EnableTransformEdit && (SelectedAnimation != null);
-            //btnInsert.Enabled = btnDelete.Enabled = btnClear.Enabled = CurrentFrame != 0;
-            //grpTransform.Enabled = EnableTransformEdit && (TargetBone != null);
-            //chkLoop.Checked = SelectedAnimation != null && SelectedAnimation.Loop == TrueFalse.True;
+            if (!Enabled)
+                return;
 
             ResetBox();
         }
@@ -484,13 +482,6 @@ namespace System.Windows.Forms
         private void button2_Click(object sender, EventArgs e)
         {
 
-        }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool EnableTransformEdit
-        {
-            get { return _mainWindow.EnableTransformEdit; }
-            set { this.Enabled = (_mainWindow.EnableTransformEdit = value) && (SelectedAnimation != null); }
         }
 
         private void button4_Click(object sender, EventArgs e)

@@ -569,8 +569,7 @@ namespace BrawlLib.Modeling
             Vector2* UVs = (Vector2*)p._manager._faceData[4].Address;
 
             manager._triangles = new NewPrimitive(FaceVertexes.Length, BeginMode.Triangles);
-            manager._triangles._indices = new UnsafeBuffer(FaceVertexes.Length * 2);
-            ushort* pTri = (ushort*)manager._triangles._indices.Address;
+            uint* pTri = (uint*)manager._triangles._indices.Address;
 
             Influence inf;
             BoneWeight weight1, weight2 = new BoneWeight(null);

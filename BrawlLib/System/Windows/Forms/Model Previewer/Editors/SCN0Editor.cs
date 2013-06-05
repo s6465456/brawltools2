@@ -1729,6 +1729,9 @@ namespace System.Windows.Forms
 
         public void UpdatePropDisplay()
         {
+            if (!Enabled)
+                return;
+
             //int temp = tabIndex;
             //for (tabIndex = 0; tabIndex < 3; tabIndex++)
                 for (int i = 0; i < (tabIndex == 2 ? 10 : tabIndex == 3 ? 2 : tabIndex == 4 ? 15 : 0); i++)

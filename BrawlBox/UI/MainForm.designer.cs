@@ -54,21 +54,17 @@ namespace BrawlBox
             this.donateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
+            this.videoPlaybackPanel1 = new System.Windows.Forms.VideoPlaybackPanel();
             this.modelPanel1 = new System.Windows.Forms.ModelPanel();
-            this.previewPanel2 = new BrawlBox.PreviewPanel();
+            this.previewPanel2 = new System.Windows.Forms.PreviewPanel();
             this.ppcDisassembler1 = new System.Windows.Forms.PPCDisassembler();
             this.scN0FogEditControl1 = new System.Windows.Forms.SCN0FogEditControl();
             this.scN0LightEditControl1 = new System.Windows.Forms.SCN0LightEditControl();
             this.scN0CameraEditControl1 = new System.Windows.Forms.SCN0CameraEditControl();
             this.animEditControl = new System.Windows.Forms.AnimEditControl();
-            //this.offsetEditor1 = new System.Windows.Forms.OffsetEditor();
             this.shpAnimEditControl = new System.Windows.Forms.ShpAnimEditControl();
             this.texAnimEditControl = new System.Windows.Forms.TexAnimEditControl();
-            //this.eventDescription1 = new System.Windows.Forms.EventDescription();
-            //this.attributeControl = new System.Windows.Forms.AttributeGrid();
-            //this.articleAttributeGrid = new System.Windows.Forms.ArticleAttributeGrid();
             this.audioPlaybackPanel1 = new System.Windows.Forms.AudioPlaybackPanel();
-            //this.movesetEditor1 = new System.Windows.Forms.ScriptEditor();
             this.visEditor = new System.Windows.Forms.VisEditor();
             this.clrControl = new System.Windows.Forms.CLRControl();
             this.soundPackControl1 = new System.Windows.Forms.SoundPackControl();
@@ -104,6 +100,7 @@ namespace BrawlBox
             // 
             // resourceTree
             // 
+            this.resourceTree.AllowDrop = true;
             this.resourceTree.Dock = System.Windows.Forms.DockStyle.Fill;
             this.resourceTree.HideSelection = false;
             this.resourceTree.ImageIndex = 0;
@@ -286,6 +283,7 @@ namespace BrawlBox
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.videoPlaybackPanel1);
             this.splitContainer2.Panel2.Controls.Add(this.modelPanel1);
             this.splitContainer2.Panel2.Controls.Add(this.previewPanel2);
             this.splitContainer2.Panel2.Controls.Add(this.ppcDisassembler1);
@@ -293,14 +291,9 @@ namespace BrawlBox
             this.splitContainer2.Panel2.Controls.Add(this.scN0LightEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0CameraEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.animEditControl);
-            //this.splitContainer2.Panel2.Controls.Add(this.offsetEditor1);
             this.splitContainer2.Panel2.Controls.Add(this.shpAnimEditControl);
             this.splitContainer2.Panel2.Controls.Add(this.texAnimEditControl);
-            //this.splitContainer2.Panel2.Controls.Add(this.eventDescription1);
-            //this.splitContainer2.Panel2.Controls.Add(this.attributeControl);
-            //this.splitContainer2.Panel2.Controls.Add(this.articleAttributeGrid);
             this.splitContainer2.Panel2.Controls.Add(this.audioPlaybackPanel1);
-            //this.splitContainer2.Panel2.Controls.Add(this.movesetEditor1);
             this.splitContainer2.Panel2.Controls.Add(this.visEditor);
             this.splitContainer2.Panel2.Controls.Add(this.clrControl);
             this.splitContainer2.Panel2.Controls.Add(this.soundPackControl1);
@@ -320,6 +313,14 @@ namespace BrawlBox
             this.propertyGrid1.TabIndex = 2;
             this.propertyGrid1.SelectedGridItemChanged += new System.Windows.Forms.SelectedGridItemChangedEventHandler(this.propertyGrid1_SelectedGridItemChanged);
             // 
+            // videoPlaybackPanel1
+            // 
+            this.videoPlaybackPanel1.Location = new System.Drawing.Point(85, -16);
+            this.videoPlaybackPanel1.Name = "videoPlaybackPanel1";
+            this.videoPlaybackPanel1.Size = new System.Drawing.Size(536, 111);
+            this.videoPlaybackPanel1.TabIndex = 17;
+            this.videoPlaybackPanel1.Visible = false;
+            // 
             // modelPanel1
             // 
             this.modelPanel1.InitialYFactor = 100;
@@ -330,6 +331,7 @@ namespace BrawlBox
             this.modelPanel1.Size = new System.Drawing.Size(381, 169);
             this.modelPanel1.TabIndex = 15;
             this.modelPanel1.TranslationScale = 0.05F;
+            this.modelPanel1.Visible = false;
             this.modelPanel1.ZoomScale = 2.5F;
             // 
             // previewPanel2
@@ -386,14 +388,6 @@ namespace BrawlBox
             this.animEditControl.TabIndex = 1;
             this.animEditControl.Visible = false;
             // 
-            // offsetEditor1
-            // 
-            //this.offsetEditor1.Location = new System.Drawing.Point(0, 0);
-            //this.offsetEditor1.Name = "offsetEditor1";
-            //this.offsetEditor1.Size = new System.Drawing.Size(296, 105);
-            //this.offsetEditor1.TabIndex = 8;
-            //this.offsetEditor1.Visible = false;
-            // 
             // shpAnimEditControl
             // 
             this.shpAnimEditControl.Location = new System.Drawing.Point(0, 0);
@@ -410,32 +404,6 @@ namespace BrawlBox
             this.texAnimEditControl.TabIndex = 7;
             this.texAnimEditControl.Visible = false;
             // 
-            // eventDescription1
-            // 
-            //this.eventDescription1.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.eventDescription1.Location = new System.Drawing.Point(0, 0);
-            //this.eventDescription1.Name = "eventDescription1";
-            //this.eventDescription1.Size = new System.Drawing.Size(399, 202);
-            //this.eventDescription1.TabIndex = 1;
-            //this.eventDescription1.Visible = false;
-            //// 
-            //// attributeControl
-            //// 
-            //this.attributeControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.attributeControl.Location = new System.Drawing.Point(0, 0);
-            //this.attributeControl.Name = "attributeControl";
-            //this.attributeControl.Size = new System.Drawing.Size(399, 202);
-            //this.attributeControl.TabIndex = 0;
-            //this.attributeControl.Visible = false;
-            //// 
-            //// articleAttributeGrid
-            //// 
-            //this.articleAttributeGrid.Location = new System.Drawing.Point(0, 0);
-            //this.articleAttributeGrid.Name = "articleAttributeGrid";
-            //this.articleAttributeGrid.Size = new System.Drawing.Size(479, 305);
-            //this.articleAttributeGrid.TabIndex = 9;
-            //this.articleAttributeGrid.Visible = false;
-            // 
             // audioPlaybackPanel1
             // 
             this.audioPlaybackPanel1.Location = new System.Drawing.Point(149, 92);
@@ -444,16 +412,6 @@ namespace BrawlBox
             this.audioPlaybackPanel1.TabIndex = 4;
             this.audioPlaybackPanel1.TargetStreams = null;
             this.audioPlaybackPanel1.Visible = false;
-            // 
-            // movesetEditor1
-            // 
-            //this.movesetEditor1.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.movesetEditor1.Location = new System.Drawing.Point(0, 0);
-            //this.movesetEditor1.Name = "movesetEditor1";
-            //this.movesetEditor1.Padding = new System.Windows.Forms.Padding(1);
-            //this.movesetEditor1.Size = new System.Drawing.Size(399, 202);
-            //this.movesetEditor1.TabIndex = 0;
-            //this.movesetEditor1.Visible = false;
             // 
             // visEditor
             // 
@@ -559,6 +517,7 @@ namespace BrawlBox
         private PreviewPanel previewPanel2;
         private ToolStripMenuItem donateToolStripMenuItem;
         public ToolStripMenuItem editToolStripMenuItem;
+        private VideoPlaybackPanel videoPlaybackPanel1;
     }
 }
 

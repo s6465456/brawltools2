@@ -192,8 +192,13 @@ namespace BrawlLib.Modeling
                 //Extract scenes
                 foreach (SceneEntry scene in shell._scenes)
                 {
-                    scene._nodes.Sort(NodeEntry.Compare); //Parse joints first
-                    foreach (NodeEntry node in scene._nodes)
+                    //Parse joints first
+                    //scene._nodes.Sort(NodeEntry.Compare); 
+                    NodeEntry[] joints = scene._nodes.Where(x => x._type == NodeType.JOINT).ToArray();
+                    NodeEntry[] nodes = scene._nodes.Where(x => x._type != NodeType.JOINT).ToArray();
+                    foreach (NodeEntry node in joints)
+                        EnumNode(node, model._boneGroup, scene, model, shell);
+                    foreach (NodeEntry node in nodes)
                         EnumNode(node, model._boneGroup, scene, model, shell);
                 }
 
@@ -340,7 +345,6 @@ namespace BrawlLib.Modeling
         static int tempNo = 0;
         private void EnumNode(NodeEntry node, ResourceNode parent, SceneEntry scene, MDL0Node model, DecoderShell shell)
         {
-            PrimitiveManager manager = null;
             MDL0BoneNode bone = null;
             Influence inf = null;
 
@@ -368,10 +372,13 @@ namespace BrawlLib.Modeling
                 inf = new Influence(bone);
                 model._influences._influences.Add(inf);
             }
+            else
+                foreach (NodeEntry e in node._children)
+                    EnumNode(e, parent, scene, model, shell);
 
             foreach (InstanceEntry inst in node._instances)
             {
-                if (inst._isController)
+                if (inst._type == InstanceType.Controller)
                 {
                     foreach (SkinEntry skin in shell._skins)
                         if (skin._id == inst._url)
@@ -383,56 +390,65 @@ namespace BrawlLib.Modeling
                                     There was a problem decoding weighted primitives for the object " + (node._name != null ? node._name : node._id) + 
                                     ".\nOne or more vertices may not be weighted correctly.";
                                     Say("Decoding weighted primitives for " + (g._name != null ? g._name : g._id) + "...");
-                                    manager = DecodePrimitivesWeighted(node, g, skin, scene, model._influences, ref Error);
+                                    CreateObject(inst, node, parent, DecodePrimitivesWeighted(node, g, skin, scene, model._influences, ref Error), model, shell);
                                     break;
                                 }
                             break;
                         }
                 }
-                else
+                else if (inst._type == InstanceType.Geometry)
                 {
                     foreach (GeometryEntry g in shell._geometry)
                         if (g._id == inst._url)
                         {
                             Error = "There was a problem decoding unweighted primitives for the object " + (node._name != null ? node._name : node._id) + ".";
                             Say("Decoding unweighted primitives for " + (g._name != null ? g._name : g._id) + "...");
-                            manager = DecodePrimitivesUnweighted(node, g);
+                            CreateObject(inst, node, parent, DecodePrimitivesUnweighted(node, g), model, shell);
                             break;
                         }
                 }
-
-                if (manager != null)
+                else
                 {
-                    Error = "There was a problem creating a new object for " + (node._name != null ? node._name : node._id);
-                    int i = 0;
-                    foreach (Vertex3 v in manager._vertices)
-                        v._index = i++;
-
-                    MDL0ObjectNode poly = new MDL0ObjectNode() { _manager = manager };
-                    poly._manager._polygon = poly;
-                    poly._name = node._name != null ? node._name : node._id;
-
-                    //Attach single-bind
-                    if (parent != null && parent is MDL0BoneNode)
-                        poly.MatrixNode = (MDL0BoneNode)parent;
-                    
-                    //Attach material
-                    if (inst._material != null)
-                        foreach (MaterialEntry mat in shell._materials)
-                            if (mat._id == inst._material._target)
-                            {
-                                (poly._opaMaterial = (mat._node as MDL0MaterialNode))._polygons.Add(poly);
-                                break;
-                            }
-
-                    model._numFaces += poly._numFaces = manager._faceCount = manager._pointCount / 3;
-                    model._numFacepoints += poly._numFacepoints = manager._pointCount;
-
-                    poly._parent = model._polyGroup;
-                    poly._index = tempNo++;
-
-                    model._polyList.Add(poly);
+                    foreach (NodeEntry e in shell._nodes)
+                        if (e._id == inst._url)
+                            EnumNode(e, parent, scene, model, shell);
                 }
+            }
+        }
+
+        private void CreateObject(InstanceEntry inst, NodeEntry node, ResourceNode parent, PrimitiveManager manager, MDL0Node model, DecoderShell shell)
+        {
+            if (manager != null)
+            {
+                Error = "There was a problem creating a new object for " + (node._name != null ? node._name : node._id);
+                int i = 0;
+                foreach (Vertex3 v in manager._vertices)
+                    v._index = i++;
+
+                MDL0ObjectNode poly = new MDL0ObjectNode() { _manager = manager };
+                poly._manager._polygon = poly;
+                poly._name = node._name != null ? node._name : node._id;
+
+                //Attach single-bind
+                if (parent != null && parent is MDL0BoneNode)
+                    poly.MatrixNode = (MDL0BoneNode)parent;
+
+                //Attach material
+                if (inst._material != null)
+                    foreach (MaterialEntry mat in shell._materials)
+                        if (mat._id == inst._material._target)
+                        {
+                            (poly._opaMaterial = (mat._node as MDL0MaterialNode))._polygons.Add(poly);
+                            break;
+                        }
+
+                model._numFaces += poly._numFaces = manager._faceCount = manager._pointCount / 3;
+                model._numFacepoints += poly._numFacepoints = manager._pointCount;
+
+                poly._parent = model._polyGroup;
+                poly._index = tempNo++;
+
+                model._polyList.Add(poly);
             }
         }
 
@@ -556,8 +572,7 @@ namespace BrawlLib.Modeling
         {
             internal NodeType _type = NodeType.NONE;
             internal FrameState _transform;
-            internal Matrix _matrix;
-            //internal NodeEntry _parent;
+            internal Matrix _matrix = Matrix.Identity;
             internal List<NodeEntry> _children = new List<NodeEntry>();
             internal List<InstanceEntry> _instances = new List<InstanceEntry>();
 
@@ -571,9 +586,15 @@ namespace BrawlLib.Modeling
                 return 0;
             }
         }
+        private enum InstanceType
+        {
+            Controller,
+            Geometry,
+            Node
+        }
         private class InstanceEntry : ColladaEntry
         {
-            internal bool _isController;
+            internal InstanceType _type;
             internal string _url;
             internal InstanceMaterial _material;
             internal List<string> skeletons = new List<string>();
@@ -668,6 +689,7 @@ namespace BrawlLib.Modeling
             internal List<EffectEntry> _effects = new List<EffectEntry>();
             internal List<GeometryEntry> _geometry = new List<GeometryEntry>();
             internal List<SkinEntry> _skins = new List<SkinEntry>();
+            internal List<NodeEntry> _nodes = new List<NodeEntry>();
             internal List<SceneEntry> _scenes = new List<SceneEntry>();
             internal XmlReader _reader;
 
@@ -745,6 +767,8 @@ namespace BrawlLib.Modeling
                         ParseLibControllers();
                     else if (_reader.Name.Equals("library_visual_scenes", true))
                         ParseLibScenes();
+                    else if (_reader.Name.Equals("library_nodes", true))
+                        ParseLibNodes();
 
                     _reader.EndElement();
                 }
@@ -1308,6 +1332,17 @@ namespace BrawlLib.Modeling
                 return skin;
             }
 
+            private void ParseLibNodes()
+            {
+                while (_reader.BeginElement())
+                {
+                    if (_reader.Name.Equals("node", true))
+                        _nodes.Add(ParseNode());
+
+                    _reader.EndElement();
+                }
+            }
+
             private void ParseLibScenes()
             {
                 while (_reader.BeginElement())
@@ -1375,9 +1410,11 @@ namespace BrawlLib.Modeling
                     else if (_reader.Name.Equals("node", true))
                         node._children.Add(ParseNode());
                     else if (_reader.Name.Equals("instance_controller", true))
-                        node._instances.Add(ParseInstance(true));
+                        node._instances.Add(ParseInstance(InstanceType.Controller));
                     else if (_reader.Name.Equals("instance_geometry", true))
-                        node._instances.Add(ParseInstance(false));
+                        node._instances.Add(ParseInstance(InstanceType.Geometry));
+                    else if (_reader.Name.Equals("instance_node", true))
+                        node._instances.Add(ParseInstance(InstanceType.Node));
 
                     _reader.EndElement();
                 }
@@ -1385,10 +1422,10 @@ namespace BrawlLib.Modeling
                 return node;
             }
 
-            private InstanceEntry ParseInstance(bool controller)
+            private InstanceEntry ParseInstance(InstanceType type)
             {
                 InstanceEntry c = new InstanceEntry();
-                c._isController = controller;
+                c._type = type;
 
                 while (_reader.ReadAttribute())
                     if (_reader.Name.Equals("url", true))

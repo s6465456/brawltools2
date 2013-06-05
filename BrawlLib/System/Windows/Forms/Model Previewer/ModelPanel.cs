@@ -167,6 +167,9 @@ namespace System.Windows.Forms
             _camera.Rotate(_defaultRotate._x, _defaultRotate._y);
         }
 
+        public new bool Enabled { get { return _enabled; } set { _enabled = value; base.Enabled = value; } }
+        private bool _enabled = true;
+
         public void ResetCamera()
         {
             _camera.Reset();
@@ -269,6 +272,9 @@ namespace System.Windows.Forms
         private float _multiplier = 1.0f;
         protected override void OnMouseWheel(MouseEventArgs e)
         {
+            if (!Enabled)
+                return;
+
             _scrolling = true;
             float z = (float)e.Delta / 120;
             if (Control.ModifierKeys == Keys.Shift)
@@ -287,6 +293,9 @@ namespace System.Windows.Forms
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
+            if (!Enabled)
+                return;
+
             if (e.Button == MouseButtons.Right)
                 _grabbing = true;
 
@@ -304,6 +313,9 @@ namespace System.Windows.Forms
         }
         protected override void OnMouseMove(MouseEventArgs e)
         {
+            if (!Enabled)
+                return;
+
             int xDiff = e.X - _lastX;
             int yDiff = _lastY - e.Y;
             _lastX = e.X;
@@ -355,6 +367,9 @@ namespace System.Windows.Forms
 
         protected override bool ProcessKeyMessage(ref Message m)
         {
+            if (!Enabled)
+                return false;
+
             if (m.Msg == 0x100)
             {
                 Keys mod = Control.ModifierKeys;

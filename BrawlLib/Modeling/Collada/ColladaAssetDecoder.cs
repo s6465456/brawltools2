@@ -233,13 +233,12 @@ namespace BrawlLib.Modeling
 
             remap.Dispose();
 
-            //manager.MergeTempData();
             return manager;
         }
 
         static PrimitiveManager DecodePrimitives(Matrix nodeMatrix, GeometryEntry geo)
         {
-            ushort* pTri = null, pLin = null;
+            uint* pTri = null, pLin = null;
             long* pInDataList = stackalloc long[12];
             long* pOutDataList = stackalloc long[12];
             int* pData = stackalloc int[16];
@@ -299,12 +298,12 @@ namespace BrawlLib.Modeling
             if (faces > 0)
             {
                 manager._triangles = new NewPrimitive(faces * 3, BeginMode.Triangles);
-                pTri = (ushort*)manager._triangles._indices.Address;
+                pTri = (uint*)manager._triangles._indices.Address;
             }
             if (lines > 0)
             {
                 manager._lines = new NewPrimitive(lines * 2, BeginMode.Lines);
-                pLin = (ushort*)manager._lines._indices.Address;
+                pLin = (uint*)manager._lines._indices.Address;
             }
 
             manager._indices = new UnsafeBuffer(points * 2);
@@ -372,7 +371,7 @@ namespace BrawlLib.Modeling
                             while (count-- > 0)
                             {
                                 *pTri++ = temp;
-                                *pTri++ = (ushort)(fIndex - 1);
+                                *pTri++ = (uint)(fIndex - 1);
                                 *pTri++ = fIndex++;
                             }
                         }
@@ -386,15 +385,15 @@ namespace BrawlLib.Modeling
                             {
                                 if ((i & 1) == 0)
                                 {
-                                    *pTri++ = (ushort)(fIndex - 2);
-                                    *pTri++ = (ushort)(fIndex - 1);
+                                    *pTri++ = (uint)(fIndex - 2);
+                                    *pTri++ = (uint)(fIndex - 1);
                                     *pTri++ = fIndex++;
                                 }
                                 else
                                 {
-                                    *pTri++ = (ushort)(fIndex - 2);
+                                    *pTri++ = (uint)(fIndex - 2);
                                     *pTri++ = fIndex;
-                                    *pTri++ = (ushort)(fIndex++ - 1);
+                                    *pTri++ = (uint)(fIndex++ - 1);
                                 }
                             }
                         }
@@ -407,7 +406,7 @@ namespace BrawlLib.Modeling
                             lIndex++;
                             while (count-- > 0)
                             {
-                                *pLin++ = (ushort)(lIndex - 1);
+                                *pLin++ = (uint)(lIndex - 1);
                                 *pLin++ = lIndex++;
                             }
                         }
@@ -429,6 +428,7 @@ namespace BrawlLib.Modeling
         private static void RunPrimitiveCmd(Matrix nodeMatrix, byte** pIn, byte** pOut, PrimitiveDecodeCommand* pCmd, int cmdCount, ushort* pIndex, int count)
         {
             int buffer;
+            Matrix m = nodeMatrix.GetRotationMatrix();
             while (count-- > 0)
                 for (int i = 0; i < cmdCount; i++)
                 {
@@ -446,7 +446,7 @@ namespace BrawlLib.Modeling
                             break;
 
                         case SemanticType.NORMAL:
-                            *(Vector3*)pOut[buffer] = nodeMatrix * ((Vector3*)pIn[buffer])[*pIndex++];
+                            *(Vector3*)pOut[buffer] = m * ((Vector3*)pIn[buffer])[*pIndex++];
                             pOut[buffer] += 12;
                             break;
 

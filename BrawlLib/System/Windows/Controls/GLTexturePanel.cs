@@ -48,7 +48,7 @@ namespace System.Windows.Forms
             _bgTex.Bind();
 
             //Draw BG
-            float s = (float)Width / _bgTex.Width, t = (float)Height / _bgTex.Height;
+            float s = (float)Width / (float)_bgTex.Width, t = (float)Height / (float)_bgTex.Height;
 
             GL.Begin(BeginMode.Quads);
 

@@ -68,7 +68,9 @@ namespace System.Windows.Forms
         public Panel AnimCtrlPnl { get { return animCtrlPnl; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Panel AnimEditors { get { return animEditors; } }
-        
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ModelPlaybackPanel PlaybackPanel { get { return pnlPlayback; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public KeyframePanel KeyframePanel { get { return rightPanel.pnlKeyframes; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -102,7 +104,13 @@ namespace System.Windows.Forms
         public bool _renderFloor, _renderBones = true, _renderBox, _dontRenderOffscreen = true, _renderVertices, _renderNormals, _renderHurtboxes, _renderHitboxes;
         public CheckState _renderPolygons = CheckState.Checked;
 
-        public ResourceNode GetSelectedBRRESFile(AnimType type)
+        public BRESEntryNode TargetAnimation 
+        {
+            get { return GetSelectedBRRESFile(TargetAnimType); } 
+            set { SetSelectedBRRESFile(TargetAnimType, value); } 
+        }
+
+        public BRESEntryNode GetSelectedBRRESFile(AnimType type)
         {
             switch (type)
             {
@@ -116,7 +124,7 @@ namespace System.Windows.Forms
                 default: return null;
             }
         }
-        public void SetSelectedBRRESFile(AnimType type, ResourceNode value)
+        public void SetSelectedBRRESFile(AnimType type, BRESEntryNode value)
         {
             switch (type)
             {
@@ -334,11 +342,16 @@ namespace System.Windows.Forms
                     return;
 
                 _enableTransform = value;
-                chr0Editor.EnableTransformEdit = 
-                srt0Editor.EnableTransformEdit =
-                shp0Editor.EnableTransformEdit =
-                vis0Editor.EnableTransformEdit =
-                pat0Editor.EnableTransformEdit = value; 
+                chr0Editor.Enabled =
+                srt0Editor.Enabled =
+                shp0Editor.Enabled =
+                vis0Editor.Enabled =
+                pat0Editor.Enabled =
+                scn0Editor.Enabled =
+                clr0Editor.Enabled = value;
+
+                if (value)
+                    UpdatePropDisplay();
             }
         }
 

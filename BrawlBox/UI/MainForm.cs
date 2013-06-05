@@ -53,6 +53,7 @@ namespace BrawlBox
             modelPanel1.Dock =
             previewPanel2.Dock =
             //movesetEditor1.Dock = 
+            videoPlaybackPanel1.Dock =
             DockStyle.Fill;
             m_DelegateOpenFile = new DelegateOpenFile(Program.Open);
             _instance = this;
@@ -128,7 +129,7 @@ namespace BrawlBox
             scN0LightEditControl1.TargetSequence = null;
             scN0FogEditControl1.TargetSequence = null;
             ppcDisassembler1.TargetNode = null;
-            previewPanel2.RenderingTarget = null;
+            //previewPanel2.RenderingTarget = null;
             modelPanel1.ClearTargets();
             //modelPanel1.ResetCamera();
 
@@ -142,7 +143,12 @@ namespace BrawlBox
             {
                 propertyGrid1.SelectedObject = node;
 
-                if (node is IImageSource)
+                if (node is THPNode)
+                {
+                    videoPlaybackPanel1.TargetSource = node as THPNode;
+                    newControl = videoPlaybackPanel1;
+                }
+                else if (node is IImageSource)
                 {
                     previewPanel2.RenderingTarget = ((IImageSource)node);
                     newControl = previewPanel2;
@@ -355,7 +361,8 @@ namespace BrawlBox
         "Static Module (*.dol)|*.dol|" +
         "Relocatable Module (*.rel)|*.rel|" +
         "MRG Resource Group (*.mrg)|*.mrg|" +
-        "MRG Compressed Resource Group (*.mrgc)|*.mrgc";
+        "MRG Compressed Resource Group (*.mrgc)|*.mrgc|" +
+        "THP Video/Audio (*.thp)|*.thp";
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {

@@ -340,7 +340,6 @@ http://forums.kc-mm.com/index.php?topic=17547.0
 - v0.50 - (06/23/2009)
 	. Original release
 
-
  ====================================
 |*********** Requirements ***********|
  ====================================
@@ -349,25 +348,6 @@ http://forums.kc-mm.com/index.php?topic=17547.0
 	http://www.microsoft.com/en-us/download/details.aspx?id=17718
 	
 * A video card that supports OpenGL 1.1 or higher.
-
-
- ====================================
-|************ How to Use ************|
- ====================================
-
-* Model editor tutorial:
-	http://code.google.com/p/brawltools/wiki/ModelEditorTutorial
-
- ====================================
-|*********** Known Issues ***********|
- ====================================
-
-* Not all nodes can be replaced properly! However, most can be extracted for hex editing.
-
-* Audio integration is still incomplete.
-
-* Need to implement better image quantization.
-
 
  ====================================
 |********* Acknowledgements *********|

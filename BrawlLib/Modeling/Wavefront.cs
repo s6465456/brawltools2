@@ -272,7 +272,7 @@ namespace BrawlLib.Modeling
         //}
         private unsafe static void WriteTriList(StreamWriter writer, PrimitiveManager p)
         {
-            ushort* pData = (ushort*)p._triangles._indices.Address;
+            uint* pData = (uint*)p._triangles._indices.Address;
             ushort* pVert = (ushort*)p._indices.Address;
 
             bool hasUVs = p._faceData[4] != null;
@@ -292,7 +292,7 @@ namespace BrawlLib.Modeling
                 //Loop through triangle points
                 for (int pt = 0; pt < 3; pt++)
                 {
-                    int index = *pData++;
+                    uint index = *pData++;
 
                     //Loop through vertices, uvs, normals
                     for (int asset = 0; asset < 3; asset++)

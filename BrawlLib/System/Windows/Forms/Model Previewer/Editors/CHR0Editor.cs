@@ -606,13 +606,6 @@ namespace System.Windows.Forms
             get { return _mainWindow.SelectedCHR0; }
             set { _mainWindow.SelectedCHR0 = value; }
         }
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool EnableTransformEdit
-        {
-            get { return _mainWindow.EnableTransformEdit; }
-            set { grpTransform.Enabled = grpTransAll.Enabled = (_mainWindow.EnableTransformEdit = value) && (TargetBone != null); }
-        }
-
         public CHR0Editor()
         {
             InitializeComponent(); 
@@ -628,9 +621,12 @@ namespace System.Windows.Forms
         }
         public void UpdatePropDisplay()
         {
-            grpTransAll.Enabled = EnableTransformEdit && (SelectedAnimation != null);
+            if (!Enabled)
+                return;
+
+            grpTransAll.Enabled = SelectedAnimation != null;
             btnInsert.Enabled = btnDelete.Enabled = btnClearAll.Enabled = CurrentFrame != 0;
-            grpTransform.Enabled = EnableTransformEdit && (TargetBone != null);
+            grpTransform.Enabled = TargetBone != null;
             
             for (int i = 0; i < 9; i++)
                 ResetBox(i);
@@ -641,24 +637,29 @@ namespace System.Windows.Forms
             MDL0BoneNode bone = TargetBone;
             CHR0EntryNode entry;
             if (TargetBone != null)
-            if ((SelectedAnimation != null) && (CurrentFrame > 0) && ((entry = SelectedAnimation.FindChild(bone.Name, false) as CHR0EntryNode) != null))
-            {
-                KeyframeEntry e = entry.Keyframes.GetKeyframe((KeyFrameMode)index + 0x10, CurrentFrame - 1);
-                if (e == null)
+                if ((SelectedAnimation != null) && (CurrentFrame > 0) && ((entry = SelectedAnimation.FindChild(bone.Name, false) as CHR0EntryNode) != null))
                 {
-                    box.Value = entry.Keyframes[KeyFrameMode.ScaleX + index, CurrentFrame - 1];
-                    box.BackColor = Color.White;
+                    KeyframeEntry e = entry.Keyframes.GetKeyframe((KeyFrameMode)index + 0x10, CurrentFrame - 1);
+                    if (e == null)
+                    {
+                        box.Value = entry.Keyframes[KeyFrameMode.ScaleX + index, CurrentFrame - 1];
+                        box.BackColor = Color.White;
+                    }
+                    else
+                    {
+                        box.Value = e._value;
+                        box.BackColor = Color.Yellow;
+                    }
                 }
                 else
                 {
-                    box.Value = e._value;
-                    box.BackColor = Color.Yellow;
+                    FrameState state = bone._bindState;
+                    box.Value = ((float*)&state)[index];
+                    box.BackColor = Color.White;
                 }
-            }
             else
             {
-                FrameState state = bone._bindState;
-                box.Value = ((float*)&state)[index];
+                box.Value = index < 3 ? 1 : 0;
                 box.BackColor = Color.White;
             }
         }
@@ -1345,7 +1346,8 @@ namespace System.Windows.Forms
                 return;
 
             SelectedAnimation.InsertKeyframe(CurrentFrame - 1);
-            //_mainWindow.CHR0StateChanged(this, null);
+            _mainWindow.UpdateModel();
+            _mainWindow.PlaybackPanel.numTotalFrames.Value = SelectedAnimation.FrameCount;
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -1354,7 +1356,8 @@ namespace System.Windows.Forms
                 return;
 
             SelectedAnimation.DeleteKeyframe(CurrentFrame - 1);
-            //_mainWindow.CHR0StateChanged(this, null);
+            _mainWindow.UpdateModel();
+            _mainWindow.PlaybackPanel.numTotalFrames.Value = SelectedAnimation.FrameCount;
         }
 
         //private void chkLinear_CheckedChanged(object sender, EventArgs e)

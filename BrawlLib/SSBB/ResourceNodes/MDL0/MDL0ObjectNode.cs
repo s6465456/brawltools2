@@ -26,7 +26,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Attributes
 
-        public List<Vertex3> Vertices { get { return _manager != null ? _manager._vertices : null; } }
+        //public List<Vertex3> Vertices { get { return _manager != null ? _manager._vertices : null; } }
 
         public List<IMatrixNode> Nodes = new List<IMatrixNode>();
 
@@ -862,7 +862,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     Triangle Tri;
                     if (_manager._triangles != null)
                     {
-                        ushort* indices = (ushort*)_manager._triangles._indices.Address;
+                        uint* indices = (uint*)_manager._triangles._indices.Address;
                         for (int t = 0; t < _manager._triangles._elementCount; t += 3)
                         {
                             Tri = new Triangle();
@@ -955,6 +955,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             MDL0Object* header = (MDL0Object*)address;
+
+            if (_uvSet[7] != null)
+                _defSize = 224;
+            else if (_uvSet[5] != null)
+                _defSize = 192;
+            else if (_uvSet[2] != null)
+                _defSize = 160;
+            else
+                _defSize = 128;
 
             if (Model._rebuildAllObj || Model._isImport || _rebuild)
             {
@@ -1071,6 +1080,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     *(bshort*)((byte*)header + 0x60) = _elementIndices[12];
                     *(bshort*)((byte*)header + 0x62) = _elementIndices[13];
                 }
+                header->_defintions._size = _defSize;
             }
 
             _rebuild = false;
@@ -2295,46 +2305,53 @@ namespace BrawlLib.SSBB.ResourceNodes
                         GL.BindVertexArray(i);
 
             if (UsableMaterialNode != null)
-                if (UsableMaterialNode.Children.Count == 0) _manager.RenderTexture(null);
-                else foreach (MDL0MaterialRefNode mr in UsableMaterialNode.Children)
+            {
+                if (UsableMaterialNode.Children.Count == 0)
                 {
-                    if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
-                        continue;
-
-                    if (!ctx._canUseShaders)
-                    {
-                        GL.MatrixMode(MatrixMode.Texture);
-
-                        GL.PushMatrix();
-
-                        //Add bind transform
-                        GL.Scale(mr.Scale._x, mr.Scale._y, 0);
-                        GL.Rotate(mr.Rotation, 1, 0, 0);
-                        GL.Translate(-mr.Translation._x, mr.Translation._y, 0);
-
-                        //Now add frame transform
-                        GL.Scale(mr._frameState._scale._x, mr._frameState._scale._y, 1);
-                        GL.Rotate(mr._frameState._rotate._x, 1, 0, 0);
-                        GL.Translate(-mr._frameState._translate._x, mr._frameState._translate._y - ((mr._frameState._scale._y - 1) / 2), 0);
-
-                        GL.MatrixMode(MatrixMode.Modelview);
-                    }
-
-                    mr.Bind(ctx, _shaderProgramHandle);
-                    
-                    if (!ctx._canUseShaders && _manager != null)
-                        _manager.RenderTexture(mr);
-
-                    if (!ctx._canUseShaders)
-                    {
-                        GL.MatrixMode(MatrixMode.Texture);
-                        GL.PopMatrix();
-                        GL.MatrixMode(MatrixMode.Modelview);
-                    }
-
-                    //mr._texture.Rendered = true;
+                    if (_manager != null)
+                        _manager.RenderTexture(null);
                 }
-            else if (!ctx._canUseShaders)
+                else
+                    foreach (MDL0MaterialRefNode mr in UsableMaterialNode.Children)
+                    {
+                        if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
+                            continue;
+
+                        if (!ctx._canUseShaders)
+                        {
+                            GL.MatrixMode(MatrixMode.Texture);
+
+                            GL.PushMatrix();
+
+                            //Add bind transform
+                            GL.Scale(mr.Scale._x, mr.Scale._y, 0);
+                            GL.Rotate(mr.Rotation, 1, 0, 0);
+                            GL.Translate(-mr.Translation._x, mr.Translation._y, 0);
+
+                            //Now add frame transform
+                            GL.Scale(mr._frameState._scale._x, mr._frameState._scale._y, 1);
+                            GL.Rotate(mr._frameState._rotate._x, 1, 0, 0);
+                            GL.Translate(-mr._frameState._translate._x, mr._frameState._translate._y - ((mr._frameState._scale._y - 1) / 2), 0);
+
+                            GL.MatrixMode(MatrixMode.Modelview);
+                        }
+
+                        mr.Bind(ctx, _shaderProgramHandle);
+
+                        if (!ctx._canUseShaders && _manager != null)
+                            _manager.RenderTexture(mr);
+
+                        if (!ctx._canUseShaders)
+                        {
+                            GL.MatrixMode(MatrixMode.Texture);
+                            GL.PopMatrix();
+                            GL.MatrixMode(MatrixMode.Modelview);
+                        }
+
+                        //mr._texture.Rendered = true;
+                    }
+            }
+            else if (!ctx._canUseShaders && _manager != null)
                 _manager.RenderTexture(null);
 
             if (ctx._canUseShaders)

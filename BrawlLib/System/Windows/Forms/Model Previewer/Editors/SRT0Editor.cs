@@ -540,12 +540,6 @@ namespace System.Windows.Forms
             get { return _mainWindow.SelectedSRT0; }
             set { _mainWindow.SelectedSRT0 = value; }
         }
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool EnableTransformEdit
-        {
-            get { return _mainWindow.EnableTransformEdit; }
-            set { grpTransform.Enabled = grpTransAll.Enabled = (_mainWindow.EnableTransformEdit = value) && (TargetTexRef != null); }
-        }
 
         public SRT0TextureNode TexEntry
         {
@@ -573,9 +567,12 @@ namespace System.Windows.Forms
         }
         public void UpdatePropDisplay()
         {
-            grpTransAll.Enabled = EnableTransformEdit && (SelectedAnimation != null);
+            if (!Enabled)
+                return;
+
+            grpTransAll.Enabled = SelectedAnimation != null;
             btnInsert.Enabled = btnDelete.Enabled = btnClear.Enabled = CurrentFrame != 0;
-            grpTransform.Enabled = EnableTransformEdit && (TargetTexRef != null);
+            grpTransform.Enabled = TargetTexRef != null;
             for (int i = 0; i < 9; i++)
                 ResetBox(i);
         }

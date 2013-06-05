@@ -218,41 +218,25 @@ namespace System.Windows.Forms
             if (animEditors.Height == 0 || animEditors.Visible == false)
                 return;
 
-            if (TargetAnimType == AnimType.CHR)
+            switch (TargetAnimType)
             {
-                chr0Editor.UpdatePropDisplay();
-                chr0Editor.btnInsert.Enabled =
-                chr0Editor.btnDelete.Enabled =
-                chr0Editor.btnClearAll.Enabled = SelectedCHR0 == null ? false : true;
+                case AnimType.CHR: chr0Editor.UpdatePropDisplay(); break;
+                case AnimType.SRT: srt0Editor.UpdatePropDisplay(); break;
+                case AnimType.VIS: 
+                    if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))
+                    {
+                        rightPanel.pnlKeyframes.visEditor._updating = true;
+                        rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
+                        rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame;
+                        rightPanel.pnlKeyframes.visEditor._updating = false;
+                    } 
+                    break;
+
+                case AnimType.SHP: shp0Editor.UpdatePropDisplay(); break;
+                case AnimType.PAT: pat0Editor.UpdatePropDisplay(); break;
+                case AnimType.SCN: scn0Editor.UpdatePropDisplay(); break;
+                case AnimType.CLR: clr0Editor.UpdatePropDisplay(); break;
             }
-
-            if (TargetAnimType == AnimType.SRT)
-            {
-                srt0Editor.UpdatePropDisplay();
-                srt0Editor.btnInsert.Enabled =
-                srt0Editor.btnDelete.Enabled =
-                srt0Editor.btnClear.Enabled = SelectedSRT0 == null ? false : true;
-            }
-
-            if (TargetAnimType == AnimType.VIS)
-            {
-                if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))
-                {
-                    rightPanel.pnlKeyframes.visEditor._updating = true;
-                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
-                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame;
-                    rightPanel.pnlKeyframes.visEditor._updating = false;
-                }
-            }
-
-            if (TargetAnimType == AnimType.SHP)
-                shp0Editor.UpdatePropDisplay();
-
-            if (TargetAnimType == AnimType.PAT)
-                pat0Editor.UpdatePropDisplay();
-
-            if (TargetAnimType == AnimType.SCN)
-                scn0Editor.UpdatePropDisplay();
         }
 
         public bool _editingAll { get { return (!(models.SelectedItem is MDL0Node) && models.SelectedItem != null && models.SelectedItem.ToString() == "All"); } }
@@ -395,6 +379,7 @@ namespace System.Windows.Forms
                 pnlPlayback.btnLast.Enabled = false;
                 pnlPlayback.btnFirst.Enabled = false;
                 pnlPlayback.Enabled = false;
+                EnableTransformEdit = false;
                 SetFrame(0);
             }
             else
@@ -423,6 +408,9 @@ namespace System.Windows.Forms
                     pnlPlayback.numFrameIndex.Maximum = _maxFrame;
                     SetFrame(1);
                 }
+
+                if (!_playing)
+                    EnableTransformEdit = true;
             }
         }
 
@@ -443,7 +431,7 @@ namespace System.Windows.Forms
             {
                 SCN0CameraNode c = scn0Editor._camera;
                 CameraAnimationFrame f = c.GetAnimFrame(index - 1);
-                Vector3 r = c.GetRotate(index);
+                Vector3 r = f.GetRotate(index, c.Type);
                 Vector3 t = f.Pos;
                 modelPanel._camera.Reset();
                 modelPanel._camera.Translate(t._x, t._y, t._z);
@@ -466,9 +454,16 @@ namespace System.Windows.Forms
         }
         private bool wasOff = false;
         public bool runningAction = false;
+
+        CoolTimer _timer;
+        void _timer_RenderFrame(object sender, FrameEventArgs e)
+        {
+            animTimer_Tick(null, null);
+        }
+
         public void PlayAnim()
         {
-            if (GetSelectedBRRESFile(TargetAnimType) == null || _maxFrame == 1)
+            if (TargetAnimation == null || _maxFrame == 1)
                 return;
 
             _playing = true;
@@ -489,8 +484,8 @@ namespace System.Windows.Forms
 
             if (_animFrame < _maxFrame)
             {
-                animTimer.Start();
                 pnlPlayback.btnPlay.Text = "Stop";
+                _timer.Run(0, (double)pnlPlayback.numFPS.Value);
             }
             else
             {
@@ -501,7 +496,8 @@ namespace System.Windows.Forms
         }
         public void StopAnim()
         {
-            animTimer.Stop();
+            //animTimer.Stop();
+            _timer.Stop();
 
             _playing = false;
 
@@ -515,7 +511,6 @@ namespace System.Windows.Forms
 
             pnlPlayback.btnPlay.Text = "Play";
             EnableTransformEdit = true;
-            UpdatePropDisplay();
 
             if (_capture)
             {
@@ -526,7 +521,7 @@ namespace System.Windows.Forms
         }
         private void animTimer_Tick(object sender, EventArgs e)
         {
-            if (GetSelectedBRRESFile(TargetAnimType) == null)
+            if (TargetAnimation == null)
                 return;
 
             if (_animFrame >= _maxFrame)
@@ -539,6 +534,11 @@ namespace System.Windows.Forms
 
             if (_capture)
                 images.Add(modelPanel.GrabScreenshot(false));
+        }
+
+        public void FrameCountChanged()
+        {
+
         }
     }
 }

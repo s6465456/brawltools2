@@ -98,12 +98,5 @@ namespace System.Windows.Forms
         {
             _mainWindow.ReadVIS0();
         }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool EnableTransformEdit
-        {
-            get { return _mainWindow.EnableTransformEdit; }
-            set { /*_mainWindow.pnlKeyframes.Enabled = (_mainWindow.EnableTransformEdit = value) && (SelectedAnimation != null);*/ }
-        }
     }
 }
