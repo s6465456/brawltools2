@@ -120,7 +120,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL" />
+    <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\BrawlBox\bin\Debug\OpenTK.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -212,6 +215,8 @@
     <Compile Include="SSBB\ResourceNodes\AI\ATKDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\AI\CENode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\MDL0\GLSL\MDL0ObjectNodeGLSL.cs" />
+    <Compile Include="SSBB\ResourceNodes\MDL0\GLSL\MDL0MaterialNodeGLSL.cs" />
     <Compile Include="SSBB\ResourceNodes\THPNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurVecNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurPosNode.cs" />
@@ -332,6 +337,63 @@
     <Compile Include="System\IO\GeckoStream.cs" />
     <Compile Include="System\PowerPCAssembly\Assembly Manager.cs" />
     <Compile Include="System\PowerPCAssembly\PowerPcAssembly.cs" />
+    <Compile Include="System\Windows\Controls\ModelViewer\IMainWindow.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\EditAllDialog\SRT0.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\CHR0Editor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\CLR0Editor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\PAT0Editor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\SCN0Editor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\SHP0Editor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\SRT0Editor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\VertexEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\VIS0Editor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Editors\WeightEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\ModelViewerSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Panels\BonesPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Panels\KeyframePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Panels\KeyframePanel.Designer.cs">
+      <DependentUpon>KeyframePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Panels\PlaybackPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Panels\RightPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\ModelViewer\Panels\RightPanel.Designer.cs">
+      <DependentUpon>RightPanel.cs</DependentUpon>
+    </Compile>
     <Compile Include="System\Windows\Controls\PreviewPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -398,56 +460,11 @@
     <Compile Include="System\Windows\Controls\EditAllDialog\CHR0.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="System\Windows\Controls\VisEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="System\Windows\Forms\EditRSARFileDialog.cs">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\CLR0Editor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\VertexEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\WeightEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\ButtonClick.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\BRRESNodes.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Rendering.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Mouse.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Animation.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Undo.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\CheckedChanged.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\FileHandling.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Variables.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelEditControl\Designer.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelViewerHelp.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\KeyframePanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\KeyframePanel.Designer.cs">
-      <DependentUpon>KeyframePanel.cs</DependentUpon>
     </Compile>
     <Compile Include="System\Windows\Controls\SCN0FogEditControl.cs">
       <SubType>UserControl</SubType>
@@ -457,12 +474,6 @@
     </Compile>
     <Compile Include="System\Windows\Controls\SCN0LightEditControl.cs">
       <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\RightPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\RightPanel.Designer.cs">
-      <DependentUpon>RightPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="System\Windows\Forms\ModuleSectionEditor.cs">
       <SubType>Form</SubType>
@@ -488,12 +499,6 @@
     <Compile Include="System\Windows\Controls\CLRControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Controls\CollisionEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\CollisionForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="System\Windows\Forms\EditAllDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -509,40 +514,10 @@
     <Compile Include="System\Windows\Forms\TangentEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\CHR0Editor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\SCN0Editor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\PAT0Editor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\VIS0Editor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\SHP0Editor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Editors\SRT0Editor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\LeftPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\BonesPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="System\Windows\Controls\TexAnimEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\ObjectImporter.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelViewerSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelSwitcher.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\Windows\Forms\EditAllKeyframesDialog.cs">
@@ -568,12 +543,6 @@
     </Compile>
     <Compile Include="System\Windows\Forms\GradientDialog.cs">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\ModelPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\Model Previewer\Panels\PlaybackPanel.cs">
-      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="System\Windows\Controls\MSBinEditor.cs">
       <SubType>UserControl</SubType>
@@ -601,9 +570,6 @@
     </Compile>
     <Compile Include="System\StringConverters.cs" />
     <Compile Include="System\PString.cs" />
-    <Compile Include="System\Windows\Controls\VisEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="Wii\Animations\CHR0TextImporter.cs" />
     <Compile Include="Wii\Audio\RWAVConverter.cs" />
     <Compile Include="Wii\Audio\RSARSoundConverter.cs" />
@@ -705,6 +671,51 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\EditAllDialog\SRT0.resx">
+      <DependentUpon>SRT0.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\CHR0Editor.resx">
+      <DependentUpon>CHR0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\CLR0Editor.resx">
+      <DependentUpon>CLR0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\PAT0Editor.resx">
+      <DependentUpon>PAT0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\SCN0Editor.resx">
+      <DependentUpon>SCN0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\SHP0Editor.resx">
+      <DependentUpon>SHP0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\SRT0Editor.resx">
+      <DependentUpon>SRT0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\VertexEditor.resx">
+      <DependentUpon>VertexEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\VIS0Editor.resx">
+      <DependentUpon>VIS0Editor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Editors\WeightEditor.resx">
+      <DependentUpon>WeightEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\ModelViewerSettings.resx">
+      <DependentUpon>ModelViewerSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Panels\BonesPanel.resx">
+      <DependentUpon>BonesPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Panels\KeyframePanel.resx">
+      <DependentUpon>KeyframePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Panels\PlaybackPanel.resx">
+      <DependentUpon>PlaybackPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\ModelViewer\Panels\RightPanel.resx">
+      <DependentUpon>RightPanel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\PreviewPanel.resx">
       <DependentUpon>PreviewPanel.cs</DependentUpon>
     </EmbeddedResource>
@@ -720,26 +731,11 @@
     <EmbeddedResource Include="System\Windows\Controls\EditAllDialog\CHR0.resx">
       <DependentUpon>CHR0.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\VisEditor.resx">
+      <DependentUpon>VisEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\EditRSARFileDialog.resx">
       <DependentUpon>EditRSARFileDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\CLR0Editor.resx">
-      <DependentUpon>CLR0Editor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\VertexEditor.resx">
-      <DependentUpon>VertexEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\WeightEditor.resx">
-      <DependentUpon>WeightEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelEditControl\Designer.resx">
-      <DependentUpon>Designer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelViewerHelp.resx">
-      <DependentUpon>ModelViewerHelp.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\KeyframePanel.resx">
-      <DependentUpon>KeyframePanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\SCN0FogEditControl.resx">
       <DependentUpon>SCN0FogEditControl.cs</DependentUpon>
@@ -749,9 +745,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\SCN0LightEditControl.resx">
       <DependentUpon>SCN0LightEditControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\RightPanel.resx">
-      <DependentUpon>RightPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ModuleSectionEditor.resx">
       <DependentUpon>ModuleSectionEditor.cs</DependentUpon>
@@ -775,12 +768,6 @@
       <DependentUpon>CLRControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Controls\CollisionEditor.resx">
-      <DependentUpon>CollisionEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\CollisionForm.resx">
-      <DependentUpon>CollisionForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\EditAllDialog.resx">
       <DependentUpon>EditAllDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -790,41 +777,11 @@
     <EmbeddedResource Include="System\Windows\Forms\TangentEditor.resx">
       <DependentUpon>TangentEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\CHR0Editor.resx">
-      <DependentUpon>CHR0Editor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\SCN0Editor.resx">
-      <DependentUpon>SCN0Editor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\PAT0Editor.resx">
-      <DependentUpon>PAT0Editor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\VIS0Editor.resx">
-      <DependentUpon>VIS0Editor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\SHP0Editor.resx">
-      <DependentUpon>SHP0Editor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Editors\SRT0Editor.resx">
-      <DependentUpon>SRT0Editor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\LeftPanel.resx">
-      <DependentUpon>LeftPanel.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\BonesPanel.resx">
-      <DependentUpon>BonesPanel.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\TexAnimEditControl.resx">
       <DependentUpon>TexAnimEditControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ObjectImporter.resx">
       <DependentUpon>ObjectImporter.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelViewerSettings.resx">
-      <DependentUpon>ModelViewerSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\ModelSwitcher.resx">
-      <DependentUpon>ModelSwitcher.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\EditAllKeyframesDialog.resx">
       <DependentUpon>EditAllKeyframesDialog.cs</DependentUpon>
@@ -837,9 +794,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\GradientDialog.resx">
       <DependentUpon>GradientDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\Model Previewer\Panels\PlaybackPanel.resx">
-      <DependentUpon>PlaybackPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\MSBinEditor.resx">
       <DependentUpon>MSBinEditor.cs</DependentUpon>
@@ -858,9 +812,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\TextureConverterDialog.resx">
       <DependentUpon>TextureConverterDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Controls\VisEditor.resx">
-      <DependentUpon>VisEditor.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

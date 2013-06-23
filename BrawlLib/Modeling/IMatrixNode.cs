@@ -14,10 +14,7 @@ namespace BrawlLib.Modeling
         int NodeIndex { get; }
         Matrix Matrix { get; }
         Matrix InverseMatrix { get; }
-        Matrix BindMatrix { get; }
-        Matrix InverseBindMatrix { get; }
         bool IsPrimaryNode { get; }
         List<BoneWeight> Weights { get; }
-        int PermanentID { get; }
     }
 }

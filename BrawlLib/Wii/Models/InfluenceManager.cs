@@ -69,10 +69,7 @@ namespace BrawlLib.Wii.Models
         }
 
         //Sorts influences
-        public void Sort()
-        {
-            _influences.Sort(Influence.Compare);
-        }
+        public void Sort() { _influences.Sort(Influence.Compare); }
     }
 
     public class Influence : IMatrixNode
@@ -82,12 +79,9 @@ namespace BrawlLib.Wii.Models
         internal List<IMatrixNodeUser> _references = new List<IMatrixNodeUser>();
         internal int _refCount;
         internal int _index;
-        internal int _permanentID;
         internal Matrix _matrix;
-        internal Matrix _invBindMatrix;
-        internal Matrix _bindMatrix;
-        internal Matrix? _invMatrix = null;
-        internal List<BoneWeight> _weights;
+        internal Matrix _invMatrix;
+        public List<BoneWeight> _weights;
 
         public List<BoneWeight> Weights { get { return _weights; } }
         public List<IMatrixNodeUser> Users { get { return _references; } set { _references = value; } }
@@ -97,15 +91,17 @@ namespace BrawlLib.Wii.Models
         public void Normalize() 
         {
             float denom = 0.0f, num = 1.0f;
+
             foreach (BoneWeight b in Weights)
                 if (b.Locked)
                     num -= b.Weight;
                 else
                     denom += b.Weight;
+
             if (denom != 0.0f && num != 0.0f)
-            foreach (BoneWeight b in Weights)
-                if (!b.Locked)
-                    b.Weight = (float)Math.Round(b.Weight / denom * num, 7);
+                foreach (BoneWeight b in Weights)
+                    if (!b.Locked)
+                        b.Weight = (float)Math.Round(b.Weight / denom * num, 7);
         }
 
         public Influence Clone()
@@ -119,13 +115,9 @@ namespace BrawlLib.Wii.Models
 
         public int ReferenceCount { get { return _refCount; } set { _refCount = value; } }
         public int NodeIndex { get { return _index; } }
-        public int PermanentID { get { return _permanentID; } }
 
         public Matrix Matrix { get { return _matrix; } }
-        public Matrix InverseBindMatrix { get { return _invBindMatrix; } }
-
-        public Matrix InverseMatrix { get { return (Matrix)(_invMatrix == null ? _invMatrix = Matrix.Invert(_matrix) : _invMatrix); } }
-        public Matrix BindMatrix { get { return _bindMatrix; } }
+        public Matrix InverseMatrix { get { return _invMatrix; } }
         
         public bool IsPrimaryNode { get { return false; } }
 
@@ -141,12 +133,10 @@ namespace BrawlLib.Wii.Models
             if (IsWeighted)
             {
                 _matrix = new Matrix();
-                _invBindMatrix = new Matrix();
-                _invMatrix = null;
-                _bindMatrix = new Matrix();
                 foreach (BoneWeight w in _weights)
                     if (w.Bone != null)
                         _matrix += (w.Bone.Matrix * w.Bone.InverseBindMatrix) * w.Weight;
+                _invMatrix = Matrix.Invert(_matrix);
             }
             else if (_weights.Count == 1)
             {
@@ -157,10 +147,7 @@ namespace BrawlLib.Wii.Models
                 }
             }
             else
-            {
-                _matrix = _bindMatrix = _invBindMatrix = Matrix.Identity;
-                _invMatrix = Matrix.Identity;
-            }
+                _matrix = _invMatrix = Matrix.Identity;
         }
         public static int Compare(Influence i1, Influence i2)
         {
@@ -219,7 +206,7 @@ namespace BrawlLib.Wii.Models
         public MDL0BoneNode Bone;
         public float Weight;
 
-        internal bool Locked { get { return Bone._locked; } set { Bone._locked = value; } }
+        public bool Locked { get { return Bone._locked; } set { Bone._locked = value; } }
 
         public BoneWeight() : this(null, 1.0f) { }
         public BoneWeight(MDL0BoneNode bone) : this(bone, 1.0f) { }

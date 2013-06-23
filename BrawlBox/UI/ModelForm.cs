@@ -156,15 +156,10 @@ namespace BrawlBox
             modelEditControl1._allowedUndos = settings._undoCount;
             modelEditControl1.modelPanel._emission = settings._emis;
             modelEditControl1.ImgExtIndex = settings.ImageCapFmt;
-            modelEditControl1.RenderBones = settings.Bones;
 
-            if (settings.Wireframe)
-                modelEditControl1.RenderPolygons = CheckState.Indeterminate;
-            else if (settings.Polys)
-                modelEditControl1.RenderPolygons = CheckState.Checked;
-            else
-                modelEditControl1.RenderPolygons = CheckState.Unchecked;
-            
+            modelEditControl1.RenderBones = settings.Bones;
+            modelEditControl1.RenderWireframe = settings.Wireframe;
+            modelEditControl1.RenderPolygons = settings.Polys;
             modelEditControl1.RenderVertices = settings.Vertices;
             modelEditControl1.RenderBox = settings.BoundingBox;
             modelEditControl1.RenderNormals = settings.Normals;

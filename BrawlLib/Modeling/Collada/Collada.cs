@@ -9,6 +9,8 @@ using BrawlLib.Imaging;
 using BrawlLib.Wii.Models;
 using System.Windows.Forms;
 using OpenTK.Graphics.OpenGL;
+using System.Reflection;
+using System.Globalization;
 
 namespace BrawlLib.Modeling
 {
@@ -23,13 +25,16 @@ namespace BrawlLib.Modeling
             using (FileStream stream = new FileStream(outFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None, 0x1000, FileOptions.SequentialScan))
             using (XmlWriter writer = XmlWriter.Create(stream, _writerSettings))
             {
+                writer.Flush();
+                stream.Position = 0;
+
                 writer.WriteStartDocument();
                 writer.WriteStartElement("COLLADA", "http://www.collada.org/2008/03/COLLADASchema");
                 writer.WriteAttributeString("version", "1.4.1");
 
                 writer.WriteStartElement("asset");
                 writer.WriteStartElement("contributor");
-                writer.WriteElementString("authoring_tool", "Brawlbox");
+                writer.WriteElementString("authoring_tool", Application.ProductName);
                 writer.WriteEndElement();
                 writer.WriteStartElement("unit");
                 writer.WriteAttributeString("meter", "0.01");
@@ -70,15 +75,15 @@ namespace BrawlLib.Modeling
                 //Define bones and geometry instances
                 WriteNodes(model, writer);
 
-                writer.WriteEndElement();
-                writer.WriteEndElement();
+                writer.WriteEndElement(); //visual scene
+                writer.WriteEndElement(); //library visual scenes
 
                 writer.WriteStartElement("scene");
                 writer.WriteStartElement("instance_visual_scene");
                 writer.WriteAttributeString("url", "#RootNode");
-                writer.WriteEndElement();
+                writer.WriteEndElement(); //instance visual scene
 
-                writer.WriteEndElement();
+                writer.WriteEndElement(); //scene
                 writer.Close();
             }
         }
@@ -158,7 +163,6 @@ namespace BrawlLib.Modeling
                         writer.WriteAttributeString("texcoord", "TEXCOORD" + (mr.TextureCoordId < 0 ? 0 : mr.TextureCoordId));
                         writer.WriteEndElement(); //texture
                     }
-                    break; //Only one texture reference allowed, it seems.
                 }
 
                 writer.WriteEndElement(); //diffuse
@@ -266,7 +270,7 @@ namespace BrawlLib.Modeling
                     writer.WriteString(" ");
 
                 Vector3 p = v.WeightedPosition;
-                writer.WriteString(String.Format("{0} {1} {2}", p._x, p._y, p._z));
+                writer.WriteString(String.Format("{0} {1} {2}", p._x.ToString(CultureInfo.InvariantCulture.NumberFormat), p._y.ToString(CultureInfo.InvariantCulture.NumberFormat), p._z.ToString(CultureInfo.InvariantCulture.NumberFormat)));
             }
 
             writer.WriteEndElement(); //float_array
@@ -337,7 +341,7 @@ namespace BrawlLib.Modeling
 
                 v = _normals[i];
 
-                writer.WriteString(String.Format("{0} {1} {2}", v._x, v._y, v._z));
+                writer.WriteString(String.Format("{0} {1} {2}", v._x.ToString(CultureInfo.InvariantCulture.NumberFormat), v._y.ToString(CultureInfo.InvariantCulture.NumberFormat), v._z.ToString(CultureInfo.InvariantCulture.NumberFormat)));
             }
 
             writer.WriteEndElement(); //float_array
@@ -468,7 +472,7 @@ namespace BrawlLib.Modeling
                 //Reverse T component to a top-down form
                 //writer.WriteString(String.Format("{0} {1}", pData->_x, 1.0 - pData->_y));
                 //pData++;
-                writer.WriteString(String.Format("{0} {1}", _uvs[set][i]._x, 1.0f - _uvs[set][i]._y));
+                writer.WriteString(String.Format("{0} {1}", _uvs[set][i]._x.ToString(CultureInfo.InvariantCulture.NumberFormat), (1.0f - _uvs[set][i]._y).ToString(CultureInfo.InvariantCulture.NumberFormat)));
             }
 
             writer.WriteEndElement(); //int_array
@@ -590,13 +594,13 @@ namespace BrawlLib.Modeling
                         if (elementType[y] < 4)
                             if (elementType[y] < 2)
                                 if (elementType[y] == 0)
-                                    writer.WriteString(pVert[index].ToString());
+                                    writer.WriteString(pVert[index].ToString(CultureInfo.InvariantCulture.NumberFormat));
                                 else
-                                    writer.WriteString(_normRemap[index].ToString());
+                                    writer.WriteString(_normRemap[index].ToString(CultureInfo.InvariantCulture.NumberFormat));
                             else
-                                writer.WriteString(_colorRemap[elementType[y] - 2][index].ToString());
+                                writer.WriteString(_colorRemap[elementType[y] - 2][index].ToString(CultureInfo.InvariantCulture.NumberFormat));
                         else
-                            writer.WriteString(_uvRemap[elementType[y] - 4][index].ToString());
+                            writer.WriteString(_uvRemap[elementType[y] - 4][index].ToString(CultureInfo.InvariantCulture.NumberFormat));
                     }
                 }
                 writer.WriteEndElement(); //p
@@ -655,7 +659,7 @@ namespace BrawlLib.Modeling
                             first = false;
                         else
                             writer.WriteString(" ");
-                        writer.WriteValue(fPtr[(x << 2) + y]);
+                        writer.WriteValue(fPtr[(x << 2) + y].ToString(CultureInfo.InvariantCulture.NumberFormat));
                     }
 
                 writer.WriteEndElement();
@@ -752,7 +756,7 @@ namespace BrawlLib.Modeling
                                 first = false;
                             else
                                 writer.WriteString(" ");
-                            writer.WriteValue(fPtr[(x << 2) + y]);
+                            writer.WriteValue(fPtr[(x << 2) + y].ToString(CultureInfo.InvariantCulture.NumberFormat));
                         }
                 }
                 writer.WriteEndElement(); //float_array
@@ -839,7 +843,7 @@ namespace BrawlLib.Modeling
                             first = false;
                         else
                             writer.WriteString(" ");
-                        writer.WriteString(poly._matrixNode.Weights.Count.ToString());
+                        writer.WriteString(poly._matrixNode.Weights.Count.ToString(CultureInfo.InvariantCulture.NumberFormat));
                     }
                 else
                     foreach (Vertex3 v in verts)
@@ -848,7 +852,7 @@ namespace BrawlLib.Modeling
                             first = false;
                         else
                             writer.WriteString(" ");
-                        writer.WriteString(v._matrixNode.Weights.Count.ToString());
+                        writer.WriteString(v._matrixNode.Weights.Count.ToString(CultureInfo.InvariantCulture.NumberFormat));
                     }
                 
                 writer.WriteEndElement(); //vcount
@@ -865,9 +869,9 @@ namespace BrawlLib.Modeling
                             else
                                 writer.WriteString(" ");
                             //writer.WriteString(w.Bone._nodeIndex.ToString());
-                            writer.WriteString(Array.IndexOf(bones, w.Bone).ToString());
+                            writer.WriteString(Array.IndexOf(bones, w.Bone).ToString(CultureInfo.InvariantCulture.NumberFormat));
                             writer.WriteString(" ");
-                            writer.WriteString(Array.IndexOf(weightSet, w.Weight).ToString());
+                            writer.WriteString(Array.IndexOf(weightSet, w.Weight).ToString(CultureInfo.InvariantCulture.NumberFormat));
                         }
                 else
                     foreach (Vertex3 v in verts)
@@ -878,9 +882,9 @@ namespace BrawlLib.Modeling
                             else
                                 writer.WriteString(" ");
                             //writer.WriteString(w.Bone._nodeIndex.ToString());
-                            writer.WriteString(Array.IndexOf(bones, w.Bone).ToString());
+                            writer.WriteString(Array.IndexOf(bones, w.Bone).ToString(CultureInfo.InvariantCulture.NumberFormat));
                             writer.WriteString(" ");
-                            writer.WriteString(Array.IndexOf(weightSet, w.Weight).ToString());
+                            writer.WriteString(Array.IndexOf(weightSet, w.Weight).ToString(CultureInfo.InvariantCulture.NumberFormat));
                         }
                     
                 writer.WriteEndElement(); //v
@@ -926,7 +930,7 @@ namespace BrawlLib.Modeling
                 {
                     if ((x != 0) || (y != 0))
                         writer.WriteValue(" ");
-                    writer.WriteValue(p[(x << 2) + y].ToString());
+                    writer.WriteValue(p[(x << 2) + y].ToString(CultureInfo.InvariantCulture.NumberFormat));
                 }
 
             writer.WriteEndElement(); //matrix
@@ -969,8 +973,6 @@ namespace BrawlLib.Modeling
                     writer.WriteAttributeString("input_semantic", "TEXCOORD");
                     writer.WriteAttributeString("input_set", (mr.TextureCoordId < 0 ? 0 : mr.TextureCoordId).ToString()); //Replace with true set id
                     writer.WriteEndElement(); //bind_vertex_input
-
-                    break; //Only one texture reference allowed, it seems.
                 }
 
                 writer.WriteEndElement(); //instance_material

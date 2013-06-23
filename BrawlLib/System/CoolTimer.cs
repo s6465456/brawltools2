@@ -1,93 +1,36 @@
-﻿using OpenTK;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using HWND = System.IntPtr;
-using HINSTANCE = System.IntPtr;
-using HMENU = System.IntPtr;
-using HICON = System.IntPtr;
-using HBRUSH = System.IntPtr;
-using HCURSOR = System.IntPtr;
-
-using LRESULT = System.IntPtr;
-using LPVOID = System.IntPtr;
-using LPCTSTR = System.String;
-
-using WPARAM = System.IntPtr;
-using LPARAM = System.IntPtr;
-using HANDLE = System.IntPtr;
-using HRAWINPUT = System.IntPtr;
-
-using BYTE = System.Byte;
-using SHORT = System.Int16;
-using USHORT = System.UInt16;
-using LONG = System.Int32;
-using ULONG = System.UInt32;
-using WORD = System.Int16;
-using DWORD = System.Int32;
-using BOOL = System.Boolean;
-using INT = System.Int32;
-using UINT = System.UInt32;
-using LONG_PTR = System.IntPtr;
-using ATOM = System.Int32;
-
-using COLORREF = System.Int32;
-using WNDPROC = System.IntPtr;
-using HRESULT = System.IntPtr;
-using HMONITOR = System.IntPtr;
-
-using DWORD_PTR = System.IntPtr;
-using UINT_PTR = System.UIntPtr;
 using System.Windows.Interop;
 using System.Windows.Forms;
 using System.Threading;
 
 namespace System
 {
-    class CoolTimer
+    /// <summary>
+    /// A timer created from OpenTK's gamewindow.
+    /// </summary>
+    public class CoolTimer
     {
-        double _updatePeriod, _renderPeriod;
-        double _targetUpdatePeriod, _targetRenderPeriod;
-        double _updateTime, _renderTime;
-        VSyncMode vsync;
+        double
+            _updatePeriod, 
+            _renderPeriod,
+            _targetUpdatePeriod, 
+            _targetRenderPeriod,
+            _updateTime, 
+            _renderTime,
+            _nextRender = 0.0, 
+            _nextUpdate = 0.0;
 
         Stopwatch _updateWatch = new Stopwatch(), _renderWatch = new Stopwatch();
-        double _nextRender = 0.0, _nextUpdate = 0.0;
 
         public event EventHandler<FrameEventArgs> RenderFrame;
         public event EventHandler<FrameEventArgs> UpdateFrame;
-        public event EventHandler UpdateWindow;
 
-        /// <summary>
-        /// Gets a double representing the actual frequency of RenderFrame events, in hertz (i.e. fps or frames per second).
-        /// </summary>
-        public double RenderFrequency
-        {
-            get
-            {
-                //EnsureUndisposed();
-                if (_renderPeriod == 0.0)
-                    return 1.0;
-                return 1.0 / _renderPeriod;
-            }
-        }
-
-        /// <summary>
-        /// Gets a double representing the period of RenderFrame events, in seconds.
-        /// </summary>
-        public double RenderPeriod { get { return _renderPeriod; } }
-
-        /// <summary>
-        /// Gets a double representing the time spent in the RenderFrame function, in seconds.
-        /// </summary>
-        public double RenderTime
-        {
-            get { return _renderTime; }
-            protected set { _renderTime = value; }
-        }
+        #region Render
 
         /// <summary>
         /// Gets or sets a double representing the target render frequency, in hertz.
@@ -136,6 +79,36 @@ namespace System
         }
 
         /// <summary>
+        /// Gets a double representing the actual frequency of RenderFrame events, in hertz (i.e. fps or frames per second).
+        /// </summary>
+        public double RenderFrequency
+        {
+            get
+            {
+                if (_renderPeriod == 0.0) return 1.0;
+                return 1.0 / _renderPeriod;
+            }
+        }
+
+        /// <summary>
+        /// Gets a double representing the period of RenderFrame events, in seconds.
+        /// </summary>
+        public double RenderPeriod { get { return _renderPeriod; } }
+
+        /// <summary>
+        /// Gets a double representing the time spent in the RenderFrame function, in seconds.
+        /// </summary>
+        public double RenderTime
+        {
+            get { return _renderTime; }
+            protected set { _renderTime = value; }
+        }
+
+        #endregion
+
+        #region Update
+
+        /// <summary>
         /// Gets or sets a double representing the target update frequency, in hertz.
         /// </summary>
         /// <remarks>
@@ -169,23 +142,15 @@ namespace System
         /// </remarks>
         public double TargetUpdatePeriod
         {
-            get
-            {
-                //EnsureUndisposed();
-                return _targetUpdatePeriod;
-            }
+            get { return _targetUpdatePeriod; }
             set
             {
-                //EnsureUndisposed();
-                if (value <= 0.005)
-                {
+                double v = value.Clamp(0.0, 1.0);
+
+                if (v <= 0.005)
                     _targetUpdatePeriod = 0.0;
-                }
-                else if (value <= 1.0)
-                {
-                    _targetUpdatePeriod = value;
-                }
-                else Debug.Print("Target update period clamped to 1.0 seconds."); // TODO: Where is it actually performed?
+                else
+                    _targetUpdatePeriod = v;
             }
         }
 
@@ -196,9 +161,7 @@ namespace System
         {
             get
             {
-                //EnsureUndisposed();
-                if (_updatePeriod == 0.0)
-                    return 1.0;
+                if (_updatePeriod == 0.0) return 1.0;
                 return 1.0 / _updatePeriod;
             }
         }
@@ -213,6 +176,8 @@ namespace System
         /// </summary>
         public double UpdateTime { get { return _updateTime; } }
 
+        #endregion
+
         /// <summary>
         /// Runs the timer until Stop() is called.
         /// Do note that the function that calls this will be suspended until the timer is stopped.
@@ -223,7 +188,6 @@ namespace System
         public void Run(double updatesPerSec, double framesPerSec)
         {
             _running = true;
-            _paused = false;
             try
             {
                 TargetUpdateFrequency = updatesPerSec;
@@ -232,20 +196,14 @@ namespace System
                 _updateWatch.Reset();
                 _renderWatch.Reset();
 
-                if (TargetUpdateFrequency != 0)
-                    _updateWatch.Start();
-                if (TargetRenderFrequency != 0)
-                    _renderWatch.Start();
+                if (TargetUpdateFrequency != 0) _updateWatch.Start();
+                if (TargetRenderFrequency != 0) _renderWatch.Start();
 
                 while (true)
                 {
                     ProcessEvents();
-
-                    if (!_running)
-                        return;
-
-                    if (!_paused)
-                        UpdateAndRenderFrame();
+                    if (!_running) return;
+                    UpdateAndRenderFrame();
                 }
             }
             catch { _running = false; return; }
@@ -282,7 +240,7 @@ namespace System
                 // Don't schedule a new update more than 1 second in the future.
                 // Sometimes the hardware cannot keep up with updates
                 // (e.g. when the update rate is too high, or the UpdateFrame processing
-                // is too costly). This cap ensures  we can catch up in a reasonable time
+                // is too costly). This cap ensures we can catch up in a reasonable time
                 // once the load becomes lighter.
                 _nextUpdate += TargetUpdatePeriod;
                 _nextUpdate = Math.Max(_nextUpdate, -1.0);
@@ -344,10 +302,6 @@ namespace System
             if (UpdateFrame != null) 
                 UpdateFrame(this, e);
         }
-
-        bool _paused = false;
-        public void Pause() { _paused = true; }
-        public void Unpause() { _paused = false; }
 
         bool _running = false;
         public bool IsRunning { get { return _running; } }

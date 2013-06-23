@@ -208,13 +208,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     if (nullCount > 0)
                     {
-                        ((MDL0Node)Parent)._errors.Add("There were " + nullCount + " null weights in NodeMix.");
+                        model._errors.Add("There were " + nullCount + " null weights in NodeMix.");
                         SignalPropertyChange();
                     }
-
-                    int z = 0;
-                    foreach (IMatrixNode m in linker.NodeCache)
-                    { if (!m.IsPrimaryNode) { ((Influence)m)._permanentID = z; break; } z++; }
                     break;
 
                 case MDLResourceType.Materials:
@@ -280,7 +276,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 dIndex = *(bushort*)(pData + 2);
                                 if (dIndex >= _children.Count || dIndex < 0)
                                 {
-                                    ((MDL0Node)Parent)._errors.Add("Object index was greater than the actual object count.");
+                                    model._errors.Add("Object index was greater than the actual object count.");
                                     SignalPropertyChange();
                                     dIndex = 0;
                                 }

@@ -3,6 +3,7 @@ using System.Audio;
 using BrawlLib.SSBBTypes;
 using System.IO;
 using System.Windows.Forms;
+using BrawlLib.SSBB.ResourceNodes;
 
 namespace BrawlLib.Wii.Audio
 {

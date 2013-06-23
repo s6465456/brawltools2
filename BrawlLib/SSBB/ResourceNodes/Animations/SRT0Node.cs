@@ -10,7 +10,7 @@ using BrawlLib.IO;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class SRT0Node : BRESEntryNode
+    public unsafe class SRT0Node : AnimationNode
     {
         internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
         internal SRT0v4* Header4 { get { return (SRT0v4*)WorkingUncompressed.Address; } }
@@ -240,7 +240,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal static ResourceNode TryParse(DataSource source) { return ((BRESCommonHeader*)source.Address)->_tag == SRT0v4.Tag ? new SRT0Node() : null; }
 
-        internal unsafe SRT0TextureNode FindOrCreateEntry(string name, int index, bool ind)
+        public unsafe SRT0TextureNode FindOrCreateEntry(string name, int index, bool ind)
         {
             foreach (SRT0EntryNode t in Children)
                 if (t.Name == name)

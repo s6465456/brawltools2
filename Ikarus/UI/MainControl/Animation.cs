@@ -318,7 +318,7 @@ namespace Ikarus.UI
             {
                 int oldMax = _maxFrame;
 
-                _maxFrame = ((BRESEntryNode)GetSelectedBRRESFile(type)).FrameCount;
+                _maxFrame = GetSelectedBRRESFile(type).FrameCount;
 
                 _updating = true;
                 pnlPlayback.btnPlay.Enabled =
@@ -327,7 +327,7 @@ namespace Ikarus.UI
                 pnlPlayback.Enabled = true;
                 pnlPlayback.numTotalFrames.Value = _maxFrame;
                 if (syncLoopToAnimationToolStripMenuItem.Checked)
-                    pnlPlayback.chkLoop.Checked = ((BRESEntryNode)GetSelectedBRRESFile(type)).Loop;
+                    pnlPlayback.chkLoop.Checked = GetSelectedBRRESFile(type).Loop;
                 _updating = false;
 
                 if (_maxFrame < oldMax)

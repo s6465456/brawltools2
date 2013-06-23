@@ -104,7 +104,7 @@ namespace Ikarus.UI
         public bool _renderFloor, _renderBones = true, _renderBox, _dontRenderOffscreen = true, _renderVertices, _renderNormals, _renderHurtboxes, _renderHitboxes;
         public CheckState _renderPolygons = CheckState.Checked;
 
-        public BRESEntryNode GetSelectedBRRESFile(AnimType type)
+        public AnimationNode GetSelectedBRRESFile(AnimType type)
         {
             switch (type)
             {
@@ -118,7 +118,7 @@ namespace Ikarus.UI
                 default: return null;
             }
         }
-        public void SetSelectedBRRESFile(AnimType type, BRESEntryNode value)
+        public void SetSelectedBRRESFile(AnimType type, AnimationNode value)
         {
             switch (type)
             {
@@ -367,17 +367,17 @@ namespace Ikarus.UI
             get { return _renderPolygons; }
             set
             {
-                if (_editingAll)
-                    foreach (MDL0Node m in _targetModels)
-                    {
-                        m._renderPolygons = value;// == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
-                        //m._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
-                    }
-                else if (TargetModel != null)
-                {
-                    TargetModel._renderPolygons = value;// == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
-                    //TargetModel._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
-                }
+                //if (_editingAll)
+                //    foreach (MDL0Node m in _targetModels)
+                //    {
+                //        m._renderPolygons = value;// == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
+                //        //m._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
+                //    }
+                //else if (TargetModel != null)
+                //{
+                //    TargetModel._renderPolygons = value;// == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
+                //    //TargetModel._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
+                //}
 
                 _renderPolygons = value;
                 _updating = true;

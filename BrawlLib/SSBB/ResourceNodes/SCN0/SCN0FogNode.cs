@@ -163,7 +163,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     DecodeFrames(_startKeys, Data->startKeyframes);
 
-                    SCN0Node.strings[(int)(Data->startKeyframes - Parent.Parent.WorkingUncompressed.Address)] = "Fog" +Index+" Keys Start";
+                    //SCN0Node.strings[(int)(Data->startKeyframes - Parent.Parent.WorkingUncompressed.Address)] = "Fog" +Index+" Keys Start";
                 }
                 
                 if (flags.HasFlag(SCN0FogFlags.FixedEnd))
@@ -172,7 +172,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     DecodeFrames(_endKeys, Data->endKeyframes);
 
-                    SCN0Node.strings[(int)(Data->endKeyframes - Parent.Parent.WorkingUncompressed.Address)] = "Fog" + Index + " Keys End";
+                    //SCN0Node.strings[(int)(Data->endKeyframes - Parent.Parent.WorkingUncompressed.Address)] = "Fog" + Index + " Keys End";
                 }
                 
                 if (flags.HasFlag(SCN0FogFlags.FixedColor))
@@ -189,7 +189,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     for (int i = 0; i <= FrameCount; i++)
                         _colors.Add((ARGBPixel)(*addr++));
 
-                    SCN0Node.strings[(int)(Data->colorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Fog" + Index + " Pixels Color";
+                    //SCN0Node.strings[(int)(Data->colorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Fog" + Index + " Pixels Color";
                 }
             }
 

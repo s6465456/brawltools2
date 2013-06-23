@@ -21,37 +21,42 @@ namespace BrawlLib.Wii.Graphics
             MDL0ShaderNode shader = mat.ShaderNode;
 
             foreach (MDL0MaterialRefNode r in mat.Children)
-                w("uniform sampler2D Texture{0};\n", r.TextureCoordId);
+                w("uniform sampler2D Texture{0};\n", r.Index);
 
-            w("uniform vec4 C1Amb;\n");
-            w("uniform vec4 C2Amb;\n");
-            w("uniform vec4 C1Mat;\n");
-            w("uniform vec4 C2Mat;\n");
+            for (int i = 0; i < obj._uvSet.Length; i++)
+                if (obj._uvSet[i] != null)
+                    w("varying vec2 UVSet{0};\n", i);
+            
+            //w("uniform vec4 C1Amb;\n");
+            //w("uniform vec4 C2Amb;\n");
+            //w("uniform vec4 C1Mat;\n");
+            //w("uniform vec4 C2Mat;\n");
 
-            w("void main(void)\n{\n");
-
-            w("vec4 creg0;\n");
-            w("vec4 creg1;\n");
-            w("vec4 creg2;\n");
-            w("vec4 prev;\n");
+            Start();
 
             //foreach (MDL0MaterialRefNode r in mat.Children)
-            //    w("uniform sampler2D Texture{0};\n", r.Index);
+            //    if (r.TextureCoordId >= 0)
+            //        w("vec4 tex{0}col = texture2D(Texture{0}, UV{1}.st);\n", r.Index, r.TextureCoordId);
 
-            //foreach (TEVStage stage in shader.Children)
-            //    if (stage.Index < mat.ActiveShaderStages)
-            //        w(stage.Write(mat));
-            //    else break;
+            w("vec4 creg0 = vec4(0.0, 0.0, 0.0, 0.0);\n");
+            w("vec4 creg1 = vec4(0.0, 0.0, 0.0, 0.0);\n");
+            w("vec4 creg2 = vec4(0.0, 0.0, 0.0, 0.0);\n");
+            w("vec4 prev = vec4(0.0, 0.0, 0.0, 0.0);\n");
+
+            foreach (TEVStage stage in shader.Children)
+                if (stage.Index < mat.ActiveShaderStages)
+                    w(stage.Write(mat, obj));
+                else break;
 
             //if (shader._stages > 0)
             //{
-            //    w("prev.rgb = {0};\n", tevCOutputTable[(int)((TEVStage)shader.Children[shader._stages - 1]).ColorRegister]);
-            //    w("prev.a = {0};\n", tevAOutputTable[(int)((TEVStage)shader.Children[shader._stages - 1]).AlphaRegister]);
+            //    w("prev.rgb = {0};\n", tevCOutputTable[(int)((TEVStage)shader.Children[shader.Children.Count - 1]).ColorRegister]);
+            //    w("prev.a = {0};\n", tevAOutputTable[(int)((TEVStage)shader.Children[shader.Children.Count - 1]).AlphaRegister]);
             //}
 
-            w("gl_FragColor = texture2D(Texture0, gl_TexCoord[0].st);");
-
-            w("\n}");
+            w("gl_FragColor = tex0col;");
+            
+            Finish();
 
             return tempShader;
         }
@@ -63,34 +68,78 @@ namespace BrawlLib.Wii.Graphics
             MDL0MaterialNode mat = obj.UsableMaterialNode;
             MDL0ShaderNode shader = mat.ShaderNode;
 
-            if (obj._manager._faceData[0] != null)
-                w("layout (location = 0) in vec3 Position;\n");
-            if (obj._manager._faceData[1] != null)
-                w("layout (location = 0) in vec3 Normal;\n");
+            bool[] data = new bool[12];
+            for (int i = 0; i < 12; i++)
+                data[i] = obj._manager._faceData[i] != null;
+
+            if (data[0])
+                w("in vec3 Position;\n");
+            if (data[1])
+                w("in vec3 Normal;\n");
             for (int i = 0; i < 2; i++)
-                if (obj._manager._faceData[i + 2] != null)
-                    w("layout (location = {1}) in vec4 Color{0};\n", i, i + 2);
+                if (data[i + 2])
+                    w("in vec4 Color{0};\n", i);
             for (int i = 0; i < 8; i++)
-                if (obj._manager._faceData[i + 4] != null)
-                    w("layout (location = {1}) in vec2 UV{0};\n", i, i + 4);
+                if (data[i + 4])
+                    w("in vec2 UV{0};\n", i);
 
-            w("void main(void)\n{\n");
+            w("uniform mat4x4 modelview;\n");
+            w("uniform mat4x4 projection;\n");
 
-            w("gl_TexCoord[0] = gl_MultiTexCoord0;");
+            for (int i = 0; i < obj._uvSet.Length; i++)
+                if (obj._uvSet[i] != null)
+                    w("varying vec2 UVSet{0};\n", i);
 
-            w("gl_Position = gl_ModelViewProjectionMatrix * Position;");
-            w("gl_Normal = Normal;");
+            Start();
 
-            w("\n}");
+            //w("gl_TexCoord[0].st = UV0.st;\n");
+            w("gl_Position = Position;");
+            //w("gl_Normal = Normal;\n");
+            //if (data[2])
+            //    w("gl_FrontColor = Color0;");
+
+            Finish();
 
             return tempShader;
         }
 
-        public void SetUniforms(MDL0ObjectNode obj)
+        public static void Reset()
+        {
+            tempShader = "";
+            tabs = 0;
+        }
+
+        public static void Start() { w("void main(void)\n{\n"); }
+        public static void Finish() { w("\n}"); }
+
+        private static int tabs = 0;
+        private static string Tabs { get { string t = ""; for (int i = 0; i < tabs; i++) t += "\t"; return t; } }
+        private static void w(string str, params object[] args)
+        {
+            if (args.Length == 0)
+                tabs -= Helpers.FindCount(str, 0, '}');
+
+            bool s = false;
+            int r = str.LastIndexOf("\n");
+            if (r == str.Length - 1)
+            {
+                str = str.Substring(0, str.Length - 1);
+                s = true;
+            }
+            str = str.Replace("\n", "\n" + Tabs);
+            if (s) str += "\n";
+
+            tempShader += Tabs + (args != null && args.Length > 0 ? String.Format(str, args) : str);
+
+            if (args.Length == 0)
+                tabs += Helpers.FindCount(str, 0, '{');
+        }
+
+        public static void SetUniforms(MDL0ObjectNode obj)
         {
             MDL0MaterialNode mat = obj.UsableMaterialNode;
 
-            int pHandle = obj._shaderProgramHandle;
+            int pHandle = obj._programHandle;
             int u = -1;
 
             u = GL.GetUniformLocation(pHandle, "C1Amb");
@@ -135,34 +184,6 @@ namespace BrawlLib.Wii.Graphics
         public static readonly string[] tevIndBiasAdd = { "-128.0f", "1.0f", "1.0f", "1.0f" }; // indexed by fmt
         public static readonly string[] tevIndWrapStart = { "0.0f", "256.0f", "128.0f", "64.0f", "32.0f", "16.0f", "0.001f" };
         public static readonly string[] tevIndFmtScale = { "255.0f", "31.0f", "15.0f", "7.0f" };
-        public static void Reset()
-        {
-            tempShader = "";
-            tabs = 0;
-        }
-
-        private static int tabs = 0;
-        private static string Tabs { get { string t = ""; for (int i = 0; i < tabs; i++) t += "\t"; return t; } }
-        private static void w(string str, params object[] args)
-        {
-            if (args.Length == 0) 
-                tabs -= Helpers.FindCount(str, 0, '}');
-
-            bool s = false;
-            int r = str.LastIndexOf("\n");
-            if (r == str.Length - 1)
-            {
-                str = str.Substring(0, str.Length - 1);
-                s = true;
-            }
-            str = str.Replace("\n", "\n" + Tabs);
-            if (s) str += "\n";
-
-            tempShader += Tabs + (args != null && args.Length > 0 ? String.Format(str, args) : str);
-            
-            if (args.Length == 0)
-                tabs += Helpers.FindCount(str, 0, '{');
-        }
 
         /*
             * gl_LightSource[] is a built-in array for all lights.

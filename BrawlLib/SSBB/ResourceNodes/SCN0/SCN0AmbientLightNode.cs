@@ -167,7 +167,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 for (int i = 0; i < _numEntries; i++)
                     _colors.Add((ARGBPixel)(*addr++));
 
-                SCN0Node.strings[(int)(Data->lightEntries - Parent.Parent.WorkingUncompressed.Address)] = "Ambient" + Index + " Pixels Light";
+                //SCN0Node.strings[(int)(Data->lightEntries - Parent.Parent.WorkingUncompressed.Address)] = "Ambient" + Index + " Pixels Light";
             }
 
             return false;

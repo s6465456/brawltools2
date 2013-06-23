@@ -147,6 +147,7 @@ namespace BrawlLib.SSBBTypes
         public bshort _lps; //Predictor/scale for the loop point frame. If the sample does not loop, this value is zero.
         public bshort _lyn1; //History data for the loop point. If the sample does not loop, this value is zero.
         public bshort _lyn2; //History data for the loop point. If the sample does not loop, this value is zero.
+        public short _pad;
 
         public short[] Coefs
         {

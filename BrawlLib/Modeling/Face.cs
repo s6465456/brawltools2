@@ -11,9 +11,9 @@ namespace BrawlLib.Modeling
     public class Facepoint
     {
         public Vertex3 _vertex;
-        public IMatrixNode _node = null;
 
-        public int _nodeId { get { return _vertex != null && _vertex.MatrixNode != null ? _vertex.MatrixNode.NodeIndex : _node != null ? _node.NodeIndex : -1; } }
+        private IMatrixNode Node { get { return _vertex != null ? _vertex.MatrixNode : null; } }
+        public int NodeID { get { if (Node != null) return Node.NodeIndex; throw new Exception(); } }
 
         public int _vertexIndex = -1;
         public int _normalIndex = -1;
@@ -31,7 +31,7 @@ namespace BrawlLib.Modeling
 
         public override string ToString()
         {
-            return String.Format("M({12}), V({0}), N({1}), C({2}, {3}), U({4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})", _vertexIndex, _normalIndex, _colorIndices[0], _colorIndices[1], _UVIndices[0], _UVIndices[1], _UVIndices[2], _UVIndices[3], _UVIndices[4], _UVIndices[5], _UVIndices[6], _UVIndices[7], _nodeId);
+            return String.Format("M({12}), V({0}), N({1}), C({2}, {3}), U({4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})", _vertexIndex, _normalIndex, _colorIndices[0], _colorIndices[1], _UVIndices[0], _UVIndices[1], _UVIndices[2], _UVIndices[3], _UVIndices[4], _UVIndices[5], _UVIndices[6], _UVIndices[7], Node.NodeIndex);
         }
     }
 
@@ -54,7 +54,19 @@ namespace BrawlLib.Modeling
     public class PrimitiveGroup
     {
         //This is the main group of primitives, all using a group of node ids.
-        public List<int> _nodeIds = new List<int>();
+        public List<ushort> _nodes = new List<ushort>();
+
+        public void RegroupNodes()
+        {
+            _nodes.Clear();
+            for (int i = 0; i < _headers.Count; i++)
+            {
+                //Re-assign node ids, just in case the nodes were moved
+                foreach (Facepoint point in _points[i])
+                    if (!_nodes.Contains((ushort)point.NodeID))
+                        _nodes.Add((ushort)point.NodeID);
+            }
+        }
 
         //For imports
         public List<Trifan> _trifans = new List<Trifan>();
@@ -65,21 +77,34 @@ namespace BrawlLib.Modeling
         public List<PrimitiveHeader> _headers = new List<PrimitiveHeader>();
         public List<List<Facepoint>> _points = new List<List<Facepoint>>();
 
+        //Offset from the start of the primitives to this group.
+        public uint _offset; 
+        
+        //Cache for rebuilding in case nodes are moved
+        public List<NodeOffset> _nodeOffsets = new List<NodeOffset>();
+
+        public unsafe void SetNodeIds(VoidPtr primAddr)
+        {
+            byte* grpAddr = (byte*)(primAddr + _offset);
+            for (int i = 0; i < _nodeOffsets.Count; i++)
+                *(bushort*)(grpAddr + _nodeOffsets[i]._offset) = (ushort)_nodeOffsets[i]._node.NodeIndex;
+        }
+
         public void AddTriangle(Triangle t)
         {
             _triangles.Add(t);
-            if (!_nodeIds.Contains(t._x._nodeId)) _nodeIds.Add(t._x._nodeId);
-            if (!_nodeIds.Contains(t._y._nodeId)) _nodeIds.Add(t._y._nodeId);
-            if (!_nodeIds.Contains(t._z._nodeId)) _nodeIds.Add(t._z._nodeId);
+            if (!_nodes.Contains((ushort)t._x.NodeID)) _nodes.Add((ushort)t._x.NodeID);
+            if (!_nodes.Contains((ushort)t._y.NodeID)) _nodes.Add((ushort)t._y.NodeID);
+            if (!_nodes.Contains((ushort)t._z.NodeID)) _nodes.Add((ushort)t._z.NodeID);
         }
 
         public bool CanAdd(Triangle t)
         {
             int count = 0;
-            if (!_nodeIds.Contains(t._x._nodeId)) count++;
-            if (!_nodeIds.Contains(t._y._nodeId)) count++;
-            if (!_nodeIds.Contains(t._z._nodeId)) count++;
-            if (count + _nodeIds.Count <= 10)
+            if (!_nodes.Contains((ushort)t._x.NodeID)) count++;
+            if (!_nodes.Contains((ushort)t._y.NodeID)) count++;
+            if (!_nodes.Contains((ushort)t._z.NodeID)) count++;
+            if (count + _nodes.Count <= 10)
             {
                 AddTriangle(t);
                 return true;
@@ -87,7 +112,19 @@ namespace BrawlLib.Modeling
             return false;
         }
 
-        public override string ToString() { return String.Format("Nodes: {0} - Primitives: {1}", _nodeIds.Count, _headers.Count); }
+        public override string ToString() { return String.Format("Nodes: {0} - Primitives: {1}", _nodes.Count, _headers.Count); }
+    }
+
+    public class NodeOffset
+    {
+        internal uint _offset;
+        internal IMatrixNode _node;
+
+        public NodeOffset(uint offset, IMatrixNode node)
+        {
+            _offset = offset;
+            _node = node;
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

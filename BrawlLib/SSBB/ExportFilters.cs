@@ -18,7 +18,7 @@ namespace BrawlLib
             "All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             //"All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             "Collada Scene (*.dae)|*.dae|" +
-            //"Miku Miku Dance Model (*.pmd)|*.pmd|" +
+            "Miku Miku Dance Model (*.pmd)|*.pmd|" +
             "MDL0 Raw Model (*.mdl0)|*.mdl0";
 
         public static string CHR0 =

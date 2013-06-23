@@ -19,6 +19,16 @@ namespace System
         //public const float _halfPif = (float)(_pif / 2.0);
         //public const float _pif = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930382f;
 
+        public static float CosLawGetSide(float angle, float a, float b)
+        {
+            return (float)Math.Sqrt(a * a + b * b - 2 * a * b * Math.Cos(angle * _deg2radf));
+        }
+
+        public static float CosLawGetAngle(float a, float b, float c)
+        {
+            return (float)Math.Acos((a *a + b * b - c * c) / (2 * a * b));
+        }
+
         public static Vector3 PivotPoint(Vector3 center, Vector3 point, Vector3 angles)
         {
             return center + Matrix.RotationMatrix(angles) * (point - center);

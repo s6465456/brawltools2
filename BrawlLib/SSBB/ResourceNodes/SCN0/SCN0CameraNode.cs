@@ -112,8 +112,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (Name != "<null>")
                 for (int i = 0; i < 15; i++)
                 {
-                    if (((int)_flags1 & (int)Ordered[i]) == 0)
-                        SCN0Node.strings[(int)((&values[i] - Parent.Parent.WorkingUncompressed.Address + values[i]))] = "Camera" + Index + " Keys " + Ordered[i].ToString();
+                    //if (((int)_flags1 & (int)Ordered[i]) == 0)
+                    //    SCN0Node.strings[(int)((&values[i] - Parent.Parent.WorkingUncompressed.Address + values[i]))] = "Camera" + Index + " Keys " + Ordered[i].ToString();
 
                     DecodeFrames(GetKeys(i), &values[i], (int)_flags1, (int)Ordered[i]);
                 }

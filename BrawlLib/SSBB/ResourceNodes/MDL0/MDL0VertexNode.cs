@@ -14,8 +14,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal MDL0VertexData* Header { get { return (MDL0VertexData*)WorkingUncompressed.Address; } }
         //protected override int DataLength { get { return Header->_dataLen; } }
 
-        public MDL0ObjectNode[] Objects { get { return _polygons.ToArray(); } }
-        internal List<MDL0ObjectNode> _polygons = new List<MDL0ObjectNode>();
+        public MDL0ObjectNode[] Objects { get { return _objects.ToArray(); } }
+        public List<MDL0ObjectNode> _objects = new List<MDL0ObjectNode>();
 
         MDL0VertexData hdr = new MDL0VertexData();
 

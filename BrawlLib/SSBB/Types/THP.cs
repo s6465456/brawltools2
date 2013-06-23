@@ -43,6 +43,13 @@ namespace BrawlLib.SSBBTypes
         public buint _xSize;      // width  of video
         public buint _ySize;      // height of video
         public buint _videoType;
+
+        public enum VideoType
+        {
+            NonInterlaced = 0,
+            OddInterlaced = 1,
+            EvenInterlaced = 2
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -50,12 +57,6 @@ namespace BrawlLib.SSBBTypes
     {
         public buint _numComponents;        // a number of Components in a frame
         public fixed byte _frameComp[16];   // kind of Components
-
-        public enum CompType
-        {
-            Video = 0,
-            Audio = 1
-        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -63,15 +64,20 @@ namespace BrawlLib.SSBBTypes
     {
         public buint _frameSizeNext;
         public buint _frameSizePrevious;
-        //public fixed uint _comp[16];
-        public buint _videoSize;
-        public buint _audioSize;
-        
-        internal VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-        public VoidPtr PictureAddr { get { return Address + 0x10; } }
-        public VoidPtr AudioAddr { get { return PictureAddr + _videoSize; } }
-    }
+        public buint _firstComp; //up to 16
 
+        public buint* CompAddr { get { return (buint*)_firstComp.Address; } }
+        public VoidPtr GetComp(int numComp, int index) 
+        {
+            uint offset = 8 + 4 * (uint)numComp.Clamp(0, 15);
+            for (int i = 0; i < index; i++)
+                offset += CompAddr[i];
+            return Address + offset;
+        }
+
+        internal VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    }
+    
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct THPFile
     {
@@ -79,7 +85,71 @@ namespace BrawlLib.SSBBTypes
         public THPFrameCompInfo _frameCompInfo;
         public THPVideoInfo _videoInfo;
         public THPAudioInfo _audioInfo;
-        public THPFrameHeader _firstFrame;
+    }
+
+    public unsafe struct ThpAudioFrameHeader
+    {
+        //50 bytes
+
+        public buint _blockSize; //For both channels
+        public buint _numSamples;
+
+        public fixed short _chan1Coefs[16];
+        public fixed short _chan2Coefs[16];
+        
+        public bshort _c1yn1;
+        public bshort _c1yn2;
+        public bshort _c2yn1;
+        public bshort _c2yn2;
+
+        internal VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        internal VoidPtr Audio { get { return Address + 0x50; } }
+        public byte* GetAudioChannel(int channel) { return (byte*)Audio + (uint)(channel * _blockSize); }
+
+        public short[] Coefs1
+        {
+            get
+            {
+                short[] arr = new short[16];
+                fixed (short* ptr = _chan1Coefs)
+                {
+                    bshort* sPtr = (bshort*)ptr;
+                    for (int i = 0; i < 16; i++)
+                        arr[i] = sPtr[i];
+                }
+                return arr;
+            }
+        }
+        public short[] Coefs2
+        {
+            get
+            {
+                short[] arr = new short[16];
+                fixed (short* ptr = _chan2Coefs)
+                {
+                    bshort* sPtr = (bshort*)ptr;
+                    for (int i = 0; i < 16; i++)
+                        arr[i] = sPtr[i];
+                }
+                return arr;
+            }
+        }
+
+        /*
+Directly after the ThpAudioFrameHeader ThpAudioFrameHeader.channelSize bytes follow for the first channel, and if the video is stereo (ThpAudioInfo.numChannels = 2), that many bytes follow for the second channel.
+
+The audio data is made up of small packets of 8 byte, each packet contains 14 samples. Some kind of adpcm coding is used. A sample is calculated like this:
+
+newSample = previousSample*factor1 + sampleBeforePreviousSample*factor2 + (sampleData * 2^exponent);
+
+For each packet, the first byte stores factor1, factor2 and exponent:
+u8 index = (firstByte >> 4) & 0x7; //highest bit of byte is ignored
+u8 exponent = firstByte & 0xf;
+float factor1 = ThpAudioFrameHeader.table[2*index]/pow(2.f, 11);
+float factor2 = ThpAudioFrameHeader.table[2*index + 1]/pow(2.f, 11);
+
+The following 7 bytes store 14 sampleData (each 4 bit, interpreted as a signed two's complement number).
+         */
     }
 
     /*

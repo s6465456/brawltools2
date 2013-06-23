@@ -113,29 +113,29 @@ namespace BrawlLib.Wii.Graphics
             return String.Format("PosMtx: {0} | TexMtx: {1}| PosFmt: {2} | NormFmt: {3} | ColorFmt: {5}| UVFmt: {4}[Lo: {6}, Hi: {7} ]", HasPosMatrix ? "True" : "False", hasTex ? texmtx : "False ", PosFormat.ToString(), NormalFormat.ToString(), hasUVs ? uvs : "None ", hasColors ? colors : "None ", (int)_lo, (int)_hi);
         }
 
-        #region ElementFlags
-        public bool HasVertexData { get { return (_lo & 0x400) != 0; } }
-        public int VertexEntryLength { get { return (HasVertexData) ? (((_lo & 0x200) != 0) ? 2 : 1) : 0; } }
-        public bool HasNormalData { get { return (_lo & 0x1000) != 0; } }
-        public int NormalEntryLength { get { return (HasNormalData) ? (((_lo & 0x800) != 0) ? 2 : 1) : 0; } }
+        //#region ElementFlags
+        //public bool HasVertexData { get { return (_lo & 0x400) != 0; } }
+        //public int VertexEntryLength { get { return (HasVertexData) ? (((_lo & 0x200) != 0) ? 2 : 1) : 0; } }
+        //public bool HasNormalData { get { return (_lo & 0x1000) != 0; } }
+        //public int NormalEntryLength { get { return (HasNormalData) ? (((_lo & 0x800) != 0) ? 2 : 1) : 0; } }
 
-        public bool HasColorData { get { return (_lo & 0x4000) != 0; } }
-        public int ColorEntryLength { get { return (HasColorData) ? (((_lo & 0x2000) != 0) ? 2 : 1) : 0; } }
+        //public bool HasColorData { get { return (_lo & 0x4000) != 0; } }
+        //public int ColorEntryLength { get { return (HasColorData) ? (((_lo & 0x2000) != 0) ? 2 : 1) : 0; } }
 
-        public bool HasColor(int index) { return (_lo & (0x4000 << (index * 2))) != 0; }
-        public int ColorLength(int index) { return HasColor(index) ? (((_lo & (0x2000 << (index * 2))) != 0) ? 2 : 1) : 0; }
-        public int ColorTotalLength { get { int len = 0; for (int i = 0; i < 2; )len += ColorLength(i++); return len; } }
+        //public bool HasColor(int index) { return (_lo & (0x4000 << (index * 2))) != 0; }
+        //public int ColorLength(int index) { return HasColor(index) ? (((_lo & (0x2000 << (index * 2))) != 0) ? 2 : 1) : 0; }
+        //public int ColorTotalLength { get { int len = 0; for (int i = 0; i < 2; )len += ColorLength(i++); return len; } }
 
-        public bool HasUV(int index) { return (_hi & (2 << (index * 2))) != 0; }
-        public int UVLength(int index) { return HasUV(index) ? (((_hi & (1 << (index * 2))) != 0) ? 2 : 1) : 0; }
-        public int UVTotalLength { get { int len = 0; for (int i = 0; i < 8; )len += UVLength(i++); return len; } }
+        //public bool HasUV(int index) { return (_hi & (2 << (index * 2))) != 0; }
+        //public int UVLength(int index) { return HasUV(index) ? (((_hi & (1 << (index * 2))) != 0) ? 2 : 1) : 0; }
+        //public int UVTotalLength { get { int len = 0; for (int i = 0; i < 8; )len += UVLength(i++); return len; } }
 
-        public bool HasExtra(int index) { return (_lo & (1 << index)) != 0; }
-        public int ExtraLength { get { int len = 0; for (int i = 0; i < 8; ) if (HasExtra(i++))len++; return len; } }
+        //public bool HasExtra(int index) { return (_lo & (1 << index)) != 0; }
+        //public int ExtraLength { get { int len = 0; for (int i = 0; i < 8; ) if (HasExtra(i++))len++; return len; } }
 
-        public bool HasWeights { get { return (_lo & 0xFF) != 0; } }
-        public int WeightLength { get { return ExtraLength; } }
-        #endregion
+        //public bool HasWeights { get { return (_lo & 0xFF) != 0; } }
+        //public int WeightLength { get { return ExtraLength; } }
+        //#endregion
     }
 
     //UVAT Group 0

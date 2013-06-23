@@ -146,8 +146,6 @@ namespace BrawlBox.NodeWrappers
             bone._inverseFrameMatrix = 
             Matrix.Identity;
 
-            bone._permanentID = model._linker.BoneCache.Length;
-
             _resource.AddChild(bone, true);
             bone.Moved = true;
 

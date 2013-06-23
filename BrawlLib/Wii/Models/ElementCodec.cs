@@ -255,6 +255,7 @@ namespace BrawlLib.Wii.Models
     {
         public int Stride;
         public bool Weighted;
+        public bool[] HasData;
 
         public fixed byte Commands[31];
         public fixed int Defs[12];
@@ -265,8 +266,6 @@ namespace BrawlLib.Wii.Models
         public List<List<Facepoint>> _points;
 
         private fixed ushort Nodes[16];
-
-        public List<NodeIdOffset> _nodeIds;
 
         public ElementDescriptor(MDL0Object* polygon)
         {
@@ -281,8 +280,7 @@ namespace BrawlLib.Wii.Models
             RemapTable = new UnsafeBuffer(polygon->_numVertices * 4);
             RemapSize = 0;
             Stride = 0;
-
-            _nodeIds = new List<NodeIdOffset>();
+            HasData = new bool[12];
 
             _points = new List<List<Facepoint>>();
 
@@ -328,6 +326,8 @@ namespace BrawlLib.Wii.Models
                 format = ((fmtLo >> 9) & 3) - 1;
                 if (format >= 0)
                 {
+                    HasData[0] = true;
+
                     //Set the definitions input
                     pDef->Format = (byte)format;
                     //Set the type to Positions
@@ -356,6 +356,8 @@ namespace BrawlLib.Wii.Models
                 format = ((fmtLo >> 11) & 3) - 1;
                 if (format >= 0)
                 {
+                    HasData[1] = true;
+
                     //Set the definitions input
                     pDef->Format = (byte)format;
                     //Set the type to Normals
@@ -384,6 +386,8 @@ namespace BrawlLib.Wii.Models
                     format = ((fmtLo >> (i * 2 + 13)) & 3) - 1;
                     if (format >= 0) 
                     {
+                        HasData[i + 2] = true;
+
                         //Set the definitions input
                         pDef->Format = (byte)format;
                         //Set the type to Colors
@@ -410,6 +414,8 @@ namespace BrawlLib.Wii.Models
                     format = ((fmtHi >> (i * 2)) & 3) - 1;
                     if (format >= 0)
                     {
+                        HasData[i + 4] = true;
+
                         //Set the definitions input
                         pDef->Format = (byte)format;
                         //Set the type to UVs
@@ -442,8 +448,6 @@ namespace BrawlLib.Wii.Models
             //Get node ID
             ushort node = *(bushort*)pIn;
 
-            _nodeIds.Add(new NodeIdOffset(node, (uint)pIn - (uint)start));
-
             //Get cache index.
             //Wii memory assigns data using offsets of 4-byte values.
             //In this case, each matrix takes up 12 floats (4 bytes each)
@@ -453,16 +457,6 @@ namespace BrawlLib.Wii.Models
             //Assign node ID to cache, using index
             fixed (ushort* n = Nodes)
                 n[index] = node;
-
-            //Increment pointer
-            pIn += 4;
-        }
-
-        public void AddAddr(ref byte* pIn, byte* start)
-        {
-            ushort node = *(bushort*)pIn;
-
-            _nodeIds.Add(new NodeIdOffset(node, (uint)pIn - (uint)start));
 
             //Increment pointer
             pIn += 4;
@@ -506,7 +500,6 @@ namespace BrawlLib.Wii.Models
                         //Process weight using cache
                         case DecodeOp.PosWeight:
                             weight = pNode[*pIn++ / 3];
-                            f._node = nodeTable[weight];
                             goto Continue;
 
                         case DecodeOp.TexMtx0:
@@ -643,7 +636,11 @@ namespace BrawlLib.Wii.Models
                 //Add vertex to list using raw value.
                 int* pMap = (int*)RemapTable.Address;
                 for (int i = 0; i < RemapSize; i++)
-                    list.Add(new Vertex3(pVert[*pMap++]) { _facepoints = _points[i] });
+                {
+                    Vertex3 v = new Vertex3(pVert[*pMap++]) { _facepoints = _points[i] };
+                    foreach (Facepoint f in v._facepoints) f._vertex = v;
+                    list.Add(v);
+                }
             }
             else if (nodeTable != null)
             {
@@ -652,6 +649,7 @@ namespace BrawlLib.Wii.Models
                 {
                     //Create new vertex, assigning the value + influence from the remap table
                     Vertex3 v = new Vertex3(pVert[*pMap++], nodeTable[*pMap++]) { _facepoints = _points[i] };
+                    foreach (Facepoint f in v._facepoints) f._vertex = v;
                     //Add vertex to list
                     list.Add(v);
                 }

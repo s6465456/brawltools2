@@ -42,7 +42,7 @@ namespace BrawlLib.Modeling
                 {
                     Read(reader, CoordinateType.LeftHanded); //Will flip model backwards if right handed
                     PMD2MDL0(model);
-                    model.Rebuild(true);
+                    //model.Rebuild(true);
                 }
                 fs.Close();
             }
@@ -508,22 +508,19 @@ namespace BrawlLib.Modeling
 
                 bone._entryIndex = index++;
 
-                if (b.ParentBoneIndex != ushort.MaxValue)
-                {
-                    prev = Bones[b.ParentBoneIndex];
-                    foreach (MDL0BoneNode v in model._boneGroup._children)
-                        AssignParent(v, b, bone, model, prev);
-                }
-                else
+                //if (b.ParentBoneIndex != ushort.MaxValue)
+                //{
+                //    prev = Bones[b.ParentBoneIndex];
+                //    foreach (MDL0BoneNode v in model._boneGroup._children)
+                //        AssignParent(v, b, bone, model, prev);
+                //}
+                //else
                 {
                     bone.Parent = model._boneGroup;
-                    //bone._bindState = new FrameState(new Vector3(1), new Vector3(0), new Vector3(b.BoneHeadPos[0], b.BoneHeadPos[1], b.BoneHeadPos[2]));
-                    //bone._bindMatrix = bone._inverseBindMatrix = Matrix.Identity;
+                    bone._bindState.Translate = new Vector3(b.BoneHeadPos[0], b.BoneHeadPos[1], b.BoneHeadPos[2]);
                 }
-                bone.RecalcBindState();
-                //bone.GetBindState();
+                
                 BoneCache.Add(bone);
-                model._influences.FindOrCreate(new Influence(bone), false);
             }
 
             model._version = 9;
@@ -553,71 +550,86 @@ namespace BrawlLib.Modeling
                 model._matList.Add(mn);
             }
 
-            //To do: Seperate meshes by the texture/color they use and create facedata for diffuse colors.
-            PrimitiveManager manager = new PrimitiveManager();
-            MDL0ObjectNode p = new MDL0ObjectNode() { _manager = manager, _opaMaterial = (MDL0MaterialNode)model._matList[0] };
-            p._manager._vertices = new List<Vertex3>();
-            p.Name = "Mesh";
-            p._parent = model._polyGroup;
-
-            p._manager._indices = new UnsafeBuffer(FaceVertexes.Length * 2);
-            p._manager._faceData[1] = new UnsafeBuffer(FaceVertexes.Length * 12);
-            p._manager._faceData[4] = new UnsafeBuffer(FaceVertexes.Length * 8);
-
-            ushort* Indices = (ushort*)p._manager._indices.Address;
-            Vector3* Normals = (Vector3*)p._manager._faceData[1].Address;
-            Vector2* UVs = (Vector2*)p._manager._faceData[4].Address;
-
-            manager._triangles = new NewPrimitive(FaceVertexes.Length, BeginMode.Triangles);
-            uint* pTri = (uint*)manager._triangles._indices.Address;
-
-            Influence inf;
-            BoneWeight weight1, weight2 = new BoneWeight(null);
-            foreach (ModelVertex m in Vertexes)
+            int x = 0;
+            int offset = 0;
+            foreach (ModelMaterial m in Materials)
             {
-                weight1 = new BoneWeight();
-                weight1.Weight = (float)m.BoneWeight / 100f; //Convert from percentage to decimal
-                weight1.Bone = BoneCache[m.BoneNum[0]];
-                if (m.BoneNum[1] != m.BoneNum[0])
-                {
-                    weight2 = new BoneWeight();
-                    weight2.Weight = (float)m.BoneWeight / 100f; //Convert from percentage to decimal
-                    weight2.Bone = BoneCache[m.BoneNum[1]];
-                }
-                if (weight2.Bone != null)
-                    inf = new Influence(new List<BoneWeight> { weight1, weight2 });
-                else
-                    inf = new Influence(new List<BoneWeight> { weight1 });
-                
-                Vector3 t = new Vector3();
-                Vertex3 v;
-                t._x = m.Pos[0];
-                t._y = m.Pos[1];
-                t._z = m.Pos[2];
-                if (inf._weights.Count > 1)
-                {
-                    inf = model._influences.FindOrCreate(inf, false);
-                    v = new Vertex3(Matrix.Identity * t, inf);
-                }
-                else
-                {
-                    MDL0BoneNode bone = inf._weights[0].Bone;
-                    v = new Vertex3(bone._inverseBindMatrix * Matrix.Identity * t, bone);
-                }
+                PrimitiveManager manager = new PrimitiveManager() { _pointCount = (int)m.FaceVertCount };
+                MDL0ObjectNode p = new MDL0ObjectNode() { _manager = manager, _opaMaterial = (MDL0MaterialNode)model._matList[x] };
+                p._manager._vertices = new List<Vertex3>();
+                p.Name = "polygon" + x++;
+                p._parent = model._polyGroup;
 
-                //p._manager._vertices.Add(new Vertex3(new Vector3(m.Pos[0], m.Pos[1], m.Pos[2]), inf, new Vector3(m.NormalVector[0], m.NormalVector[1], m.NormalVector[2]), null, new Vector2[] { new Vector2(m.UV[0], m.UV[1]) }));
-            }
+                p._manager._indices = new UnsafeBuffer((int)m.FaceVertCount * 2);
+                p._manager._faceData[1] = new UnsafeBuffer((int)m.FaceVertCount * 12);
+                p._manager._faceData[4] = new UnsafeBuffer((int)m.FaceVertCount * 8);
 
-            index = 0;
-            p._manager._pointCount = FaceVertexes.Length;
-            foreach (ushort i in FaceVertexes)
-            {
-                *Indices++ = i;
-                *pTri++ = (ushort)index++;
-                //*Normals++ = p._manager._vertices[i]._normal;
-                //*UVs++ = p._manager._vertices[i]._uvs[0];
+                ushort* Indices = (ushort*)p._manager._indices.Address;
+                Vector3* Normals = (Vector3*)p._manager._faceData[1].Address;
+                Vector2* UVs = (Vector2*)p._manager._faceData[4].Address;
+
+                manager._triangles = new NewPrimitive((int)m.FaceVertCount, BeginMode.Triangles);
+                uint* pTri = (uint*)manager._triangles._indices.Address;
+
+                index = 0;
+                //int index2 = 0;
+                List<int> usedVertices = new List<int>();
+                List<int> vertexIndices = new List<int>();
+                for (int s = offset, l = 0; l < (int)m.FaceVertCount; l++, s++)
+                {
+                    ushort i = FaceVertexes[s];
+                    ModelVertex mv = Vertexes[i];
+                    ushort j = 0;
+                    if (!usedVertices.Contains(i))
+                    {
+                        Influence inf;
+                        BoneWeight weight1, weight2 = new BoneWeight(null);
+                        weight1 = new BoneWeight();
+                        weight1.Weight = (float)mv.BoneWeight / 100f; //Convert from percentage to decimal
+                        weight1.Bone = BoneCache[mv.BoneNum[0]];
+                        if (mv.BoneNum[1] != mv.BoneNum[0])
+                        {
+                            weight2 = new BoneWeight();
+                            weight2.Weight = 1.0f - (mv.BoneWeight / 100f); //Convert from percentage to decimal
+                            weight2.Bone = BoneCache[mv.BoneNum[1]];
+                        }
+                        if (weight2.Bone != null && weight2.Weight != 0)
+                            inf = new Influence(new List<BoneWeight> { weight1, weight2 });
+                        else
+                            inf = new Influence(new List<BoneWeight> { weight1 });
+
+                        Vector3 t = new Vector3();
+                        Vertex3 v;
+                        t._x = mv.Pos[0];
+                        t._y = mv.Pos[1];
+                        t._z = mv.Pos[2];
+                        if (inf._weights.Count > 1)
+                        {
+                            inf = model._influences.FindOrCreate(inf, false);
+                            v = new Vertex3(t, inf);
+                        }
+                        else
+                        {
+                            MDL0BoneNode bone = inf._weights[0].Bone;
+                            v = new Vertex3(bone._inverseBindMatrix * t, bone);
+                        }
+
+                        p._manager._vertices.Add(v);
+                        vertexIndices.Add(usedVertices.Count);
+                        usedVertices.Add(i);
+                        j = (ushort)(usedVertices.Count - 1);
+                    }
+                    else
+                        j = (ushort)vertexIndices[usedVertices.IndexOf(i)];
+
+                    *Indices++ = j;
+                    *pTri++ = (uint)l;
+                    *Normals++ = new Vector3(mv.NormalVector[0], mv.NormalVector[1], mv.NormalVector[2]);
+                    *UVs++ = new Vector2(mv.UV[0], mv.UV[1]);
+                }
+                model._polyList.Add(p);
+                offset += (int)m.FaceVertCount;
             }
-            model._polyList.Add(p);
 
             model.CleanGroups();
         }
@@ -626,14 +638,12 @@ namespace BrawlLib.Modeling
             if (v._entryIndex == b.ParentBoneIndex)
             {
                 bone._parent = v;
-                Vector3 p1 = new Vector3(prev.BoneHeadPos[0], prev.BoneHeadPos[1], prev.BoneHeadPos[2]);
+                //Vector3 p1 = new Vector3(prev.BoneHeadPos[0], prev.BoneHeadPos[1], prev.BoneHeadPos[2]);
                 Vector3 p2 = new Vector3(b.BoneHeadPos[0], b.BoneHeadPos[1], b.BoneHeadPos[2]);
-                Vector3 angles = new Vector3();
-                angles = Matrix.AxisAngleMatrix(p1, p2).GetAngles();
-                float distance = p1.DistanceTo(p2);
 
-                bone._bindState = new FrameState(new Vector3(1), angles, p2 - p1);
-                
+                bone._bindState.Translate = p2 - v._bindState._translate;
+                bone.RecalcBindState();
+
                 v._children.Add(bone);
             }
             else //Parent not found, continue searching children.

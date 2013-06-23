@@ -143,8 +143,8 @@ namespace Ikarus.UI
                 }
                 else
                 {
-                    if (modelPanel._ctx._canUseShaders && !chkShaders.Checked) { GL.UseProgram(0); GL.ClientActiveTexture(TextureUnit.Texture0); }
-                    modelPanel._ctx._canUseShaders = chkShaders.Checked;
+                    if (modelPanel._ctx._shadersEnabled && !chkShaders.Checked) { GL.UseProgram(0); GL.ActiveTexture(TextureUnit.Texture0); }
+                    modelPanel._ctx._shadersEnabled = chkShaders.Checked;
                 }
             }
             modelPanel.Invalidate();
@@ -388,7 +388,7 @@ namespace Ikarus.UI
         {
             _loop = pnlPlayback.chkLoop.Checked;
             if (syncLoopToAnimationToolStripMenuItem.Checked && !_updating)
-                ((BRESEntryNode)GetSelectedBRRESFile(TargetAnimType)).Loop = _loop;
+                GetSelectedBRRESFile(TargetAnimType).Loop = _loop;
         }
 
         private void FileChanged(object sender, EventArgs e)
@@ -449,22 +449,22 @@ namespace Ikarus.UI
 
             _maxFrame = (int)pnlPlayback.numTotalFrames.Value;
 
-            ResourceNode n;
+            AnimationNode n;
             if (alwaysSyncFrameCountsToolStripMenuItem.Checked)
                 for (int i = 0; i < 5; i++)
                     if ((n = GetSelectedBRRESFile((AnimType)i)) != null) 
                         //if (i == 5) ((BRESEntryNode)n).tFrameCount = _maxFrame - 1; else 
-                        ((BRESEntryNode)n).FrameCount = _maxFrame;
+                        n.FrameCount = _maxFrame;
                     else { }
             else
             {
                 if ((n = GetSelectedBRRESFile(TargetAnimType)) != null)
-                    ((BRESEntryNode)n).FrameCount = _maxFrame;
+                    n.FrameCount = _maxFrame;
                 if (displayFrameCountDifferencesToolStripMenuItem.Checked)
                     if (MessageBox.Show("Do you want to update the frame counts of the other animation types?", "Update Frame Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     for (int i = 0; i < 5; i++)
                         if (i != (int)TargetAnimType && (n = GetSelectedBRRESFile((AnimType)i)) != null)
-                            ((BRESEntryNode)n).FrameCount = _maxFrame;
+                            n.FrameCount = _maxFrame;
             }
 
             pnlPlayback.numFrameIndex.Maximum = _maxFrame;

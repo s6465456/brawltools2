@@ -19,15 +19,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class MDL0BoneNode : MDL0EntryNode, IMatrixNode
     {
+        internal MDL0Bone* Header { get { return (MDL0Bone*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.MDL0Bone; } }
+        public override bool AllowDuplicateNames { get { return true; } }
+
         public MDL0BoneNode Clone() { return MemberwiseClone() as MDL0BoneNode; }
 
-        public int _permanentID;
-        [Browsable(false)]
-        public int PermanentID { get { return _permanentID; } }
-
-        internal MDL0Bone* Header { get { return (MDL0Bone*)WorkingUncompressed.Address; } }
-
-        internal bool _locked; //For the weight editor
+        public bool _locked; //For the weight editor
 
         public bool _moved = false;
         [Browsable(false)]
@@ -42,8 +40,50 @@ namespace BrawlLib.SSBB.ResourceNodes
             } 
         }
 
-        public override ResourceType ResourceType { get { return ResourceType.MDL0Bone; } }
-        public override bool AllowDuplicateNames { get { return true; } }
+        #region IK Settings
+
+        bool _lockXRot, _lockYRot, _lockZRot;
+        //float _maxX, _maxY, _maxZ;
+        //float _minX, _minY, _minZ;
+        bool _ikStart, _ikBone, _ikEnd;
+
+        void DefaultIKs()
+        {
+            switch (_name)
+            {
+                case "RLegJ":
+                case "LLegJ":
+                    _ikStart = true;
+                    break;
+
+                case "LKneeJ":
+                case "RKneeJ":
+                    _ikBone = true;
+                    break;
+
+                case "LFootJ":
+                case "RFootJ":
+                    _ikEnd = true;
+                    break;
+
+                case "LShoulderJ":
+                case "RShoulderJ":
+                    _ikStart = true;
+                    break;
+
+                case "LArmJ":
+                case "RArmJ":
+                    _ikBone = true;
+                    break;
+
+                case "LHandN":
+                case "RHandN":
+                    _ikEnd = true;
+                    break;
+            }
+        }
+        
+        #endregion
 
         public BoneFlags _flags1 = (BoneFlags)0x100;
         public BillboardFlags _flags2;
@@ -385,8 +425,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_flags2 != 0 && _flags1.HasFlag(BoneFlags.HasGeometry))
                 Model._billboardBones.Add(this); //Update mesh in T-Pose
 
-            _permanentID = header->_index;
-
             _bindState = _frameState = new FrameState(header->_scale, (Vector3)header->_rotation, header->_translation);
             //(_bindState._quaternion = new Vector4()).FromEuler(header->_rotation);
             _bindMatrix = _frameMatrix = header->_transform;
@@ -542,39 +580,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _userEntries.PostProcess(dataAddress + 0xD0, stringTable);
         }
-
-        //internal void GetBindState()
-        //{
-        //    if (_parent is MDL0BoneNode)
-        //    {
-        //        _bindState._transform = _bindMatrix / ((MDL0BoneNode)_parent)._bindMatrix;
-        //        _bindState._iTransform = _inverseBindMatrix / ((MDL0BoneNode)_parent)._inverseBindMatrix;
-        //    }
-        //    else
-        //    {
-        //        _bindState._transform = _bindMatrix;
-        //        _bindState._iTransform = _inverseBindMatrix;
-        //    }
-
-        //    foreach (MDL0BoneNode bone in Children)
-        //        bone.GetBindState();
-        //}
-
-        //public Vector3 WorldPosition { get { return _frameMatrix * new Vector3(); } }
-        //public FrameState LocalState
-        //{
-        //    get 
-        //    {
-        //        return Parent is MDL0BoneNode ? (((MDL0BoneNode)Parent)._inverseFrameMatrix * _frameMatrix).Derive() : _frameState;
-        //    }
-        //}
-        //public FrameState WorldState
-        //{
-        //    get
-        //    {
-        //        return Parent is MDL0BoneNode ? (((MDL0BoneNode)Parent)._frameMatrix * _inverseFrameMatrix).Derive() : _frameState;
-        //    }
-        //}
 
         //Change has been made to bind state, need to recalculate matrices
         public void RecalcBindState()
