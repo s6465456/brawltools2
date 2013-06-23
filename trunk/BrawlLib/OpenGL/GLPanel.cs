@@ -345,7 +345,7 @@ namespace BrawlLib.OpenGL
             Invalidate();
         }
 
-        internal protected virtual void OnInit(TKContext ctx) { }
+        internal virtual void OnInit(TKContext ctx) { }
 
         public float _fovY = 45.0f, _nearZ = 1.0f, _farZ = 20000.0f, _aspect;
 

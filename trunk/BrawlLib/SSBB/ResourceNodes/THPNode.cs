@@ -9,10 +9,12 @@ using BrawlLib.Imaging;
 using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Audio;
+using BrawlLib.Wii.Audio;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class THPNode : ResourceNode, IImageSource, IDisposable
+    public unsafe class THPNode : ResourceNode, IImageSource
     {
         internal THPFile* Header { get { return (THPFile*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -44,8 +46,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         public uint NumFrames { get { return hdr._numFrames; } }
 
         public THPFrame[] _frames;
-
         public List<byte> _componentTypes;
+
+        internal THPStream _audio;
 
         public override bool OnInitialize()
         {
@@ -74,6 +77,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                 size = _frames[i].Header->_frameSizeNext;
             }
 
+            if (_componentTypes.Count > 1)
+                _audio = new THPStream(this);
+            else
+                _audio = null;
+
             return false;
         }
 
@@ -90,15 +98,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal static ResourceNode TryParse(DataSource source) { return ((THPHeader*)source.Address)->_tag == THPHeader.Tag ? new THPNode() : null; }
 
         [Browsable(false)]
-        public int ImageCount
-        {
-            get { return _frames.Length; }
-        }
-
-        public Bitmap GetImage(int index)
-        {
-            return _frames[index.Clamp(0, ImageCount - 1)].GetImage();
-        }
+        public int ImageCount { get { return _frames.Length; } }
+        public Bitmap GetImage(int index) { return _frames[index.Clamp(0, ImageCount - 1)].GetImage(); }
     }
 
     public enum JpegMarkers : ushort
@@ -198,8 +199,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Dispose of image when done displaying. This way we won't run out of memory.
             //Doesn't seem to slow down frame rate or anything.
 
-            byte[] buffer = new byte[Header->_videoSize];
-            Marshal.Copy(_source.Address + 8 + _node._componentTypes.Count * 4, buffer, 0, buffer.Length);
+            byte[] buffer = new byte[Header->CompAddr[0]];
+            Marshal.Copy(Header->GetComp(_node._componentTypes.Count, 0), buffer, 0, buffer.Length);
 
             bool begun = false;
             List<byte> temp = buffer.ToList();
@@ -263,11 +264,231 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         DataSource _source;
         public THPFrameHeader* Header { get { return (THPFrameHeader*)_source.Address; } }
+        public ThpAudioFrameHeader* Audio { get { return (ThpAudioFrameHeader*)Header->GetComp(2, 1); } }
 
         public THPFrame(VoidPtr addr, uint size, THPNode node)
         {
             _source = new DataSource(addr, (int)size);
             _node = node;
         }
+    }
+
+    internal unsafe class THPAudioBlock
+    {
+        public uint _srcLen;
+        public uint _numSamples;
+
+        public THPAudioBlock(uint blockSize, uint numSamples)
+        {
+            _srcLen = blockSize;
+            _numSamples = numSamples;
+        }
+    }
+
+    internal unsafe class THPStream : IAudioStream
+    {
+        private int _sampleRate;
+        private int _numSamples;
+        private int _numChannels;
+        private int _numBlocks;
+
+        private int _samplePos = 0;
+        public int _blockId = 0;
+
+        private ADPCMState[,] _blockStates;
+        internal ADPCMState[] _currentStates;
+        private THPAudioBlock[] _audioBlocks;
+
+        public THPStream(THPNode node)
+        {
+            byte* sPtr;
+            short yn1 = 0, yn2 = 0;
+
+            _numChannels = (int)node.Channels;
+            _sampleRate = (int)node.Frequency;
+            _numSamples = (int)node.NumSamples;
+            _numBlocks = (int)node.NumFrames;
+
+            _blockStates = new ADPCMState[_numChannels, _numBlocks];
+            _currentStates = new ADPCMState[_numChannels];
+            _audioBlocks = new THPAudioBlock[_numBlocks];
+
+            //Fill block states in a linear fashion
+            for (int frame = 0; frame < node.NumFrames; frame++)
+            {
+                THPFrame f = node._frames[frame];
+                ThpAudioFrameHeader* header = f.Audio;
+                for (int channel = 0; channel < _numChannels; channel++)
+                {
+                    sPtr = header->GetAudioChannel(channel);
+
+                    short[] coefs;
+                    if (channel == 0)
+                    {
+                        yn1 = header->_c1yn1;
+                        yn2 = header->_c1yn2;
+                        coefs = header->Coefs1;
+                    }
+                    else
+                    {
+                        yn1 = header->_c2yn1;
+                        yn2 = header->_c2yn2;
+                        coefs = header->Coefs2;
+                    }
+                    
+                    //Get block state
+                    _blockStates[channel, frame] = new ADPCMState(sPtr, *sPtr, yn1, yn2, coefs); //Use ps from data stream
+                }
+                _audioBlocks[frame] = new THPAudioBlock(header->_blockSize, header->_numSamples);
+            }
+        }
+
+        private void RefreshStates()
+        {
+            //Clamp sample position to start of block
+            _blockId = 0;
+            int temp = 0;
+            for (int i = 0; i < _numBlocks; i++)
+            {
+                if (_samplePos < _audioBlocks[_blockId]._numSamples + temp)
+                    break;
+
+                temp += (int)_audioBlocks[_blockId]._numSamples;
+                _blockId++;
+            }
+            //_samplePos = temp;
+            
+            for (int i = 0; i < _numChannels; i++)
+            {
+                (_currentStates[i] = _blockStates[i, _blockId]).InitBlock();
+                for (int x = temp; x < _samplePos; x++)
+                    _currentStates[i].ReadSample();
+            }
+        }
+
+        public RIFFHeader GetPCMHeader()
+        {
+            return new RIFFHeader(1, _numChannels, 16, _sampleRate, _numSamples);
+        }
+
+        public void WriteStream(Stream outStream)
+        {
+            int oldPos = _samplePos;
+            short sample;
+
+            for (_samplePos = 0; _samplePos < _numSamples; _samplePos++)
+            {
+                if (AtStartOfABlock(_samplePos))
+                    RefreshStates();
+
+                foreach (ADPCMState state in _currentStates)
+                {
+                    sample = state.ReadSample();
+                    outStream.WriteByte((byte)(sample & 0xFF));
+                    outStream.WriteByte((byte)(sample >> 8 & 0xFF));
+                }
+            }
+
+            SamplePosition = oldPos;
+        }
+
+        public int GetSampleAtFrame(int frame)
+        {
+            int x = 0;
+            for (int i = 0; i < frame; i++)
+                x += (int)_audioBlocks[i]._numSamples;
+            return x;
+        }
+
+        public void GetBlock()
+        {
+            int temp = 0;
+            for (int i = 0; i < _numBlocks; i++)
+            {
+                if (_samplePos >= temp && _samplePos < _audioBlocks[i]._numSamples)
+                {
+                    _blockId = i;
+                    break;
+                }
+
+                temp += (int)_audioBlocks[i]._numSamples;
+            }
+        }
+
+        public bool AtStartOfABlock(int sample)
+        {
+            int block = 0;
+            int temp = 0;
+            for (int i = 0; i < _numBlocks; i++)
+            {
+                if (sample == temp)
+                    return true;
+
+                if (temp > sample)
+                    return false;
+
+                temp += (int)_audioBlocks[block++]._numSamples;
+            }
+            return false;
+        }
+
+        #region IAudioStream Members
+
+        public WaveFormatTag Format { get { return WaveFormatTag.WAVE_FORMAT_PCM; } }
+        public int BitsPerSample { get { return 16; } }
+        public int Samples { get { return _numSamples; } }
+        public int Channels { get { return _numChannels; } }
+        public int Frequency { get { return _sampleRate; } }
+        public bool IsLooping { get { return false; } set { } }
+        public int LoopStartSample { get { return 0; } set { } }
+        public int LoopEndSample { get { return _numSamples; } set { } }
+
+        public int SamplePosition
+        {
+            get { return _samplePos; }
+            set
+            {
+                value = Math.Min(Math.Max(value, 0), _numSamples);
+                if (_samplePos == value)
+                    return;
+
+                _samplePos = value;
+
+                //Refresh states up to sample pos. If first in block, will be updated on next read.
+                if (!AtStartOfABlock(_samplePos))
+                    RefreshStates();
+            }
+        }
+
+        public int ReadSamples(VoidPtr destAddr, int numSamples)
+        {
+            short* dPtr = (short*)destAddr;
+            int samples = Math.Min(numSamples, _numSamples - _samplePos);
+
+            for (int i = 0; i < samples; i++, _samplePos++)
+            {
+                if (AtStartOfABlock(_samplePos))
+                    RefreshStates();
+
+                for (int x = 0; x < _numChannels; x++)
+                    *dPtr++ = _currentStates[x].ReadSample();
+            }
+
+            GetBlock();
+
+            return samples;
+        }
+
+        public void Wrap()
+        {
+            if (SamplePosition == 0)
+                return;
+
+            SamplePosition = 0;
+        }
+
+        public void Dispose() { }
+
+        #endregion
     }
 }

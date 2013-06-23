@@ -175,7 +175,10 @@ namespace Ikarus.UI
                 btnSaveCam.Text = "Save Camera";
             }
         }
-        private void helpToolStripMenuItem_Click(object sender, EventArgs e) { new ModelViewerHelp().Show(this); }
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e) 
+        { 
+            //new ModelViewerHelp().Show(this); 
+        }
         Form popoutForm;
         private void detachViewerToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -231,7 +234,7 @@ namespace Ikarus.UI
                 settings._zScale = modelPanel.ZoomScale;
                 settings._orbColor = (ARGBPixel)MDL0BoneNode.DefaultNodeColor;
                 settings._lineColor = (ARGBPixel)MDL0BoneNode.DefaultBoneColor;
-                settings._floorColor = (ARGBPixel)_floorHue;
+                settings._floorColor = (ARGBPixel)MainWindowStaticVars._floorHue;
                 settings.SetOptions(
                     syncAnimationsTogetherToolStripMenuItem.Checked,
                     true,

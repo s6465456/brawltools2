@@ -53,7 +53,7 @@ namespace BrawlLib.OpenGL
         }
 
         public bool bSupportsGLSLBinding, bSupportsGLSLUBO, bSupportsGLSLATTRBind, bSupportsGLSLCache;
-        public bool _canUseShaders = true, _needsUpdate = false;
+        public bool _shadersEnabled = true, _needsUpdate = false;
         public int _version = 0;
 
         private Control _window;
@@ -69,9 +69,9 @@ namespace BrawlLib.OpenGL
             string version = GL.GetString(StringName.Version);
             _version = int.Parse(version[0].ToString());
             //if (_version < 2)
-                _canUseShaders = false;
+                _shadersEnabled = false;
 
-            if (_canUseShaders)
+            if (_shadersEnabled)
             {
                 //Now check extensions
                 string extensions = GL.GetString(StringName.Extensions);
@@ -97,12 +97,13 @@ namespace BrawlLib.OpenGL
         }
 
         public void CheckErrors()
-        {
+        { 
             ErrorCode code = GL.GetError();
             if (code == ErrorCode.NoError)
                 return;
 
-            throw new Exception(code.ToString());
+            //throw new Exception(code.ToString());
+            Reset();
         }
 
         public void Capture() 
@@ -144,7 +145,6 @@ namespace BrawlLib.OpenGL
             Dispose();
             _winInfo = Utilities.CreateWindowsWindowInfo(_window.Handle);
             _context = new GraphicsContext(GraphicsMode.Default, WindowInfo, 1, 0, GraphicsContextFlags.Default);
-            //_context.MakeCurrent(WindowInfo);
             Capture();
             Update();
             (_context as IGraphicsContextInternal).LoadAll();
@@ -153,9 +153,9 @@ namespace BrawlLib.OpenGL
             string version = GL.GetString(StringName.Version);
             _version = int.Parse(version[0].ToString());
             //if (_version < 2)
-            _canUseShaders = false;
+            _shadersEnabled = false;
 
-            if (_canUseShaders)
+            if (_shadersEnabled)
             {
                 //Now check extensions
                 string extensions = GL.GetString(StringName.Extensions);
@@ -171,9 +171,9 @@ namespace BrawlLib.OpenGL
             CurrentContexts.Add(this);
             _needsUpdate = true;
         }
-        public void Release() 
+        public void Release()
         {
-            if (CurrentlyEnabled == this && !CurrentlyEnabled._context.IsDisposed)
+            if (CurrentlyEnabled == this && !CurrentlyEnabled._context.IsDisposed && _context.IsCurrent)
                 _context.MakeCurrent(null);
         }
         public void Update()

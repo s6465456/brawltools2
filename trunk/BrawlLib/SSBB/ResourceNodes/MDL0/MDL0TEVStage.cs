@@ -293,7 +293,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public bool IndirectActive { get { return (rawCMD & 0x17FE00) != 0; } }
 
-        internal string Write(MDL0MaterialNode mat)
+        internal string Write(MDL0MaterialNode mat, MDL0ObjectNode obj)
         {
             MDL0ShaderNode shader = ((MDL0ShaderNode)Parent);
 
@@ -555,7 +555,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return stage;
         }
 
-        public void SignalPropertyChange()
+        public new void SignalPropertyChange()
         {
             ((MDL0ShaderNode)Parent)._renderUpdate = true;
             base.SignalPropertyChange();

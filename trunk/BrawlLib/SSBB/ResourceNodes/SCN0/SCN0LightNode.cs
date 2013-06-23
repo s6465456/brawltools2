@@ -598,7 +598,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _data = new byte[numBytes];
                 Marshal.Copy((IntPtr)Data->visBitEntries, _data, 0, numBytes);
 
-                SCN0Node.strings[(int)(Data->visBitEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Vis";
+                //SCN0Node.strings[(int)(Data->visBitEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Vis";
 
                 //byte* addr = Data->visBitEntries;
                 //int index = -1;
@@ -621,7 +621,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 for (int x = 0; x <= FrameCount; x++)
                     _lightColor.Add(*addr++);
 
-                SCN0Node.strings[(int)(Data->lightColorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Pixels Light";
+                //SCN0Node.strings[(int)(Data->lightColorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Pixels Light";
             }
             //_constants[1] = flags.HasFlag(FixedFlags.SpecColorConstant);
             if (SpecularEnabled)
@@ -635,7 +635,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 for (int x = 0; x <= FrameCount; x++)
                     _specColor.Add(*addr++);
 
-                SCN0Node.strings[(int)(Data->specColorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Pixels Spec";
+                //SCN0Node.strings[(int)(Data->specColorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Pixels Spec";
             }
 
             bint* values = (bint*)&Data->_startPoint;
@@ -644,8 +644,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0; i < 14; i++)
                 if (!(i == 3 || i == 7 || i == 10 || i == 12))
                 {
-                    if (((int)_flags1 & (int)Ordered[index]) == 0)
-                        SCN0Node.strings[(int)((&values[i] - Parent.Parent.WorkingUncompressed.Address + values[i]))] = "Light" + Index + " Keys " + Ordered[index].ToString();
+                    //if (((int)_flags1 & (int)Ordered[index]) == 0)
+                    //    SCN0Node.strings[(int)((&values[i] - Parent.Parent.WorkingUncompressed.Address + values[i]))] = "Light" + Index + " Keys " + Ordered[index].ToString();
 
                     DecodeFrames(GetKeys(index), &values[i], (int)_flags1, (int)Ordered[index++]);
                 }

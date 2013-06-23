@@ -255,7 +255,9 @@ namespace System.Audio
             _blockAlign = (ushort)(bitsPerSample / 8 * channels);
             _avgBytesSec = (uint)(sampleRate * _blockAlign);
             _bitsPerSample = (ushort)bitsPerSample;
-            _extraParamSize = _randomFiller1 = 0;
+            _extraParamSize = 
+                _randomFiller1 = 
+                0;
             _randomFiller2 = 0;
         }
     }

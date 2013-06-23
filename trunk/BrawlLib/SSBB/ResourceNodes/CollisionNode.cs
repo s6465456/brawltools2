@@ -12,7 +12,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal CollisionHeader* Header { get { return (CollisionHeader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.CollisionDef; } }
 
-        internal List<CollisionObject> _objects = new List<CollisionObject>();
+        public List<CollisionObject> _objects = new List<CollisionObject>();
 
         internal int _unk1;
 
@@ -122,7 +122,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 *pObj++ = new ColObject(cPlane, iPlane - cPlane, cPoint, iPoint - cPoint, obj._boxMin, obj._boxMax, obj._modelName, obj._boneName,
                     obj._unk1, obj._unk2, obj._unk3, obj._flags, obj._unk5, obj._unk6, obj._boneIndex);
-
             }
         }
 
@@ -135,7 +134,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             GL.Disable(EnableCap.Lighting);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-            //context.glDisable((uint)GLEnableCap.DepthTest);
+            GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Front);
 
             foreach (CollisionObject obj in _objects)
                 obj.Render(ctx);
@@ -170,15 +170,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class CollisionObject
     {
-        internal List<CollisionPlane> _planes = new List<CollisionPlane>();
-        internal bool _render = true;
+        public List<CollisionPlane> _planes = new List<CollisionPlane>();
+        public bool _render = true;
 
-        internal string _modelName = "", _boneName = "";
+        public string _modelName = "", _boneName = "";
         //internal CollisionNode _parent;
 
-        internal Vector2 _boxMin, _boxMax;
-        internal int _unk1, _unk2, _unk3, _unk5, _unk6, _boneIndex;
-        internal Bin16 _flags;
+        public Vector2 _boxMin, _boxMax;
+        public int _unk1, _unk2, _unk3, _unk5, _unk6, _boneIndex;
+        public Bin16 _flags;
 
         public enum Flags
         {
@@ -191,7 +191,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //internal Matrix _transform, _inverseTransform;
 
-        internal List<CollisionLink> _points = new List<CollisionLink>();
+        public List<CollisionLink> _points = new List<CollisionLink>();
 
         public CollisionObject()
         {
@@ -288,12 +288,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         private const float BoxRadius = 0.15f;
         private const float LineWidth = 11.0f;
 
-        internal CollisionObject _parent;
-        internal int _encodeIndex;
-        internal bool _highlight;
+        public CollisionObject _parent;
+        public int _encodeIndex;
+        public bool _highlight;
 
-        internal Vector2 _value;
-        internal List<CollisionPlane> _members = new List<CollisionPlane>();
+        public Vector2 _value;
+        public List<CollisionPlane> _members = new List<CollisionPlane>();
 
         public CollisionLink() { }
         public CollisionLink(CollisionObject parent, Vector2 value)
@@ -303,7 +303,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _parent._points.Add(this);
         }
 
-        internal CollisionLink Clone() { return new CollisionLink(_parent, _value); }
+        public CollisionLink Clone() { return new CollisionLink(_parent, _value); }
 
         //internal CollisionLink Splinter()
         //{
@@ -322,7 +322,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //    return link;
         //}
 
-        internal CollisionLink[] Split()
+        public CollisionLink[] Split()
         {
             int count = _members.Count - 1;
             CollisionLink[] links = new CollisionLink[count];
@@ -335,7 +335,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return links;
         }
 
-        internal bool Merge(CollisionLink link)
+        public bool Merge(CollisionLink link)
         {
             if (_parent != link._parent)
                 return false;
@@ -394,7 +394,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _members[0].Delete();
         }
         //Deletes link but re-links existing planes
-        internal void Pop()
+        public void Pop()
         {
             CollisionLink link1, link2;
             CollisionPlane plane1, plane2;
@@ -416,14 +416,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal void RemoveMember(CollisionPlane plane)
+        public void RemoveMember(CollisionPlane plane)
         {
             _members.Remove(plane);
             if (_members.Count == 0)
                 _parent._points.Remove(this);
         }
 
-        internal void Render(TKContext ctx)
+        public void Render(TKContext ctx)
         {
             if (_highlight)
                 GL.Color4(1.0f, 1.0f, 0.0f, 1.0f);
@@ -438,18 +438,18 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class CollisionPlane
     {
-        internal int _encodeIndex;
+        public int _encodeIndex;
 
-        internal CollisionLink _linkLeft, _linkRight;
+        public CollisionLink _linkLeft, _linkRight;
 
-        internal CollisionPlaneMaterial _material;
-        internal CollisionPlaneFlags _flags;
-        internal CollisionPlaneType _type;
-        internal CollisionPlaneFlags2 _flags2;
+        public CollisionPlaneMaterial _material;
+        public CollisionPlaneFlags _flags;
+        public CollisionPlaneType _type;
+        public CollisionPlaneFlags2 _flags2;
 
-        internal bool _render = true;
+        public bool _render = true;
 
-        internal CollisionObject _parent;
+        public CollisionObject _parent;
 
         public CollisionPlaneType Type
         {

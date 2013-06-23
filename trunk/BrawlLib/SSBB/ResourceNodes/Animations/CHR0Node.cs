@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class CHR0Node : BRESEntryNode
+    public unsafe class CHR0Node : AnimationNode
     {
         internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
         internal CHR0v4_3* Header4_3 { get { return (CHR0v4_3*)WorkingUncompressed.Address; } }
@@ -535,7 +535,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal CHR0Entry* Header { get { return (CHR0Entry*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.CHR0Entry; } }
 
-        internal int _numFrames;
+        public int _numFrames;
         [Browsable(false)]
         public int FrameCount { get { return _numFrames; } }
 

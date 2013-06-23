@@ -186,6 +186,7 @@ namespace System.Windows.Forms
             this.TranslateDoNotChange.TabStop = true;
             this.TranslateDoNotChange.Text = "Do not change";
             this.TranslateDoNotChange.UseVisualStyleBackColor = true;
+            this.TranslateDoNotChange.CheckedChanged += new System.EventHandler(this.TranslateClear_CheckedChanged);
             // 
             // TranslateDivide
             // 
@@ -196,6 +197,7 @@ namespace System.Windows.Forms
             this.TranslateDivide.TabIndex = 47;
             this.TranslateDivide.Text = "Divide";
             this.TranslateDivide.UseVisualStyleBackColor = true;
+            this.TranslateDivide.CheckedChanged += new System.EventHandler(this.TranslateClear_CheckedChanged);
             // 
             // TranslateMultiply
             // 
@@ -206,6 +208,7 @@ namespace System.Windows.Forms
             this.TranslateMultiply.TabIndex = 46;
             this.TranslateMultiply.Text = "Multiply";
             this.TranslateMultiply.UseVisualStyleBackColor = true;
+            this.TranslateMultiply.CheckedChanged += new System.EventHandler(this.TranslateClear_CheckedChanged);
             // 
             // TranslateSubtract
             // 
@@ -216,6 +219,7 @@ namespace System.Windows.Forms
             this.TranslateSubtract.TabIndex = 45;
             this.TranslateSubtract.Text = "Subtract";
             this.TranslateSubtract.UseVisualStyleBackColor = true;
+            this.TranslateSubtract.CheckedChanged += new System.EventHandler(this.TranslateClear_CheckedChanged);
             // 
             // TranslateAdd
             // 
@@ -226,6 +230,7 @@ namespace System.Windows.Forms
             this.TranslateAdd.TabIndex = 44;
             this.TranslateAdd.Text = "Add";
             this.TranslateAdd.UseVisualStyleBackColor = true;
+            this.TranslateAdd.CheckedChanged += new System.EventHandler(this.TranslateClear_CheckedChanged);
             // 
             // TranslateClear
             // 
@@ -236,6 +241,7 @@ namespace System.Windows.Forms
             this.TranslateClear.TabIndex = 43;
             this.TranslateClear.Text = "Clear";
             this.TranslateClear.UseVisualStyleBackColor = true;
+            this.TranslateClear.CheckedChanged += new System.EventHandler(this.TranslateClear_CheckedChanged);
             // 
             // TranslateReplace
             // 
@@ -246,6 +252,7 @@ namespace System.Windows.Forms
             this.TranslateReplace.TabIndex = 42;
             this.TranslateReplace.Text = "Replace";
             this.TranslateReplace.UseVisualStyleBackColor = true;
+            this.TranslateReplace.CheckedChanged += new System.EventHandler(this.TranslateClear_CheckedChanged);
             // 
             // label5
             // 
@@ -336,6 +343,7 @@ namespace System.Windows.Forms
             this.RotateDoNotChange.TabStop = true;
             this.RotateDoNotChange.Text = "Do not change";
             this.RotateDoNotChange.UseVisualStyleBackColor = true;
+            this.RotateDoNotChange.CheckedChanged += new System.EventHandler(this.RotateClear_CheckedChanged);
             // 
             // RotateDivide
             // 
@@ -346,6 +354,7 @@ namespace System.Windows.Forms
             this.RotateDivide.TabIndex = 47;
             this.RotateDivide.Text = "Divide";
             this.RotateDivide.UseVisualStyleBackColor = true;
+            this.RotateDivide.CheckedChanged += new System.EventHandler(this.RotateClear_CheckedChanged);
             // 
             // RotateMultiply
             // 
@@ -356,6 +365,7 @@ namespace System.Windows.Forms
             this.RotateMultiply.TabIndex = 46;
             this.RotateMultiply.Text = "Multiply";
             this.RotateMultiply.UseVisualStyleBackColor = true;
+            this.RotateMultiply.CheckedChanged += new System.EventHandler(this.RotateClear_CheckedChanged);
             // 
             // RotateSubtract
             // 
@@ -366,6 +376,7 @@ namespace System.Windows.Forms
             this.RotateSubtract.TabIndex = 45;
             this.RotateSubtract.Text = "Subtract";
             this.RotateSubtract.UseVisualStyleBackColor = true;
+            this.RotateSubtract.CheckedChanged += new System.EventHandler(this.RotateClear_CheckedChanged);
             // 
             // RotateAdd
             // 
@@ -376,6 +387,7 @@ namespace System.Windows.Forms
             this.RotateAdd.TabIndex = 44;
             this.RotateAdd.Text = "Add";
             this.RotateAdd.UseVisualStyleBackColor = true;
+            this.RotateAdd.CheckedChanged += new System.EventHandler(this.RotateClear_CheckedChanged);
             // 
             // RotateClear
             // 
@@ -386,6 +398,7 @@ namespace System.Windows.Forms
             this.RotateClear.TabIndex = 43;
             this.RotateClear.Text = "Clear";
             this.RotateClear.UseVisualStyleBackColor = true;
+            this.RotateClear.CheckedChanged += new System.EventHandler(this.RotateClear_CheckedChanged);
             // 
             // RotateReplace
             // 
@@ -396,6 +409,7 @@ namespace System.Windows.Forms
             this.RotateReplace.TabIndex = 42;
             this.RotateReplace.Text = "Replace";
             this.RotateReplace.UseVisualStyleBackColor = true;
+            this.RotateReplace.CheckedChanged += new System.EventHandler(this.RotateClear_CheckedChanged);
             // 
             // label2
             // 
@@ -497,7 +511,7 @@ namespace System.Windows.Forms
             this.ScaleDivide.TabIndex = 35;
             this.ScaleDivide.Text = "Divide";
             this.ScaleDivide.UseVisualStyleBackColor = true;
-            this.ScaleDivide.Click += new System.EventHandler(this.ScaleClear_CheckedChanged);
+            this.ScaleDivide.CheckedChanged += new System.EventHandler(this.ScaleClear_CheckedChanged);
             // 
             // ScaleMultiply
             // 
@@ -508,7 +522,7 @@ namespace System.Windows.Forms
             this.ScaleMultiply.TabIndex = 34;
             this.ScaleMultiply.Text = "Multiply";
             this.ScaleMultiply.UseVisualStyleBackColor = true;
-            this.ScaleMultiply.Click += new System.EventHandler(this.ScaleClear_CheckedChanged);
+            this.ScaleMultiply.CheckedChanged += new System.EventHandler(this.ScaleClear_CheckedChanged);
             // 
             // ScaleSubtract
             // 

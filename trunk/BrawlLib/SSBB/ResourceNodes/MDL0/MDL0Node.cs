@@ -42,8 +42,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
         internal UserDataCollection _userEntries = new UserDataCollection();
-        
-        internal InfluenceManager _influences = new InfluenceManager();
+
+        public InfluenceManager _influences = new InfluenceManager();
         public List<string> _errors = new List<string>();
         //public TextureManager _textures = new TextureManager();
 
@@ -186,6 +186,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_polyList != null)
                 foreach (MDL0ObjectNode o in _polyList)
                 {
+                    if (o._manager._vertices != null)
                     foreach (Vertex3 vertex in o._manager._vertices)
                     {
                         Vector3 v = vertex.WeightedPosition;
@@ -936,7 +937,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Rendering
         
         public bool _isTargetModel = false;
-        public CheckState _renderPolygons = CheckState.Checked;
+        public bool _renderPolygons = true;
+        public bool _renderWireframe = true;
         public bool _renderBones = true;
         public bool _renderVertices = false;
         public bool _renderNormals = false;
@@ -999,15 +1001,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _mainWindow = mainWindow;
 
-            if (_renderPolygons != CheckState.Unchecked)
+            if (_renderPolygons || _renderWireframe)
             {
                 GL.Enable(EnableCap.Lighting);
                 GL.Enable(EnableCap.DepthTest);
-
-                if (_renderPolygons == CheckState.Indeterminate)
-                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-                else
-                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
                 //Draw objects in the prioritized order of materials
                 if (_matList != null)
@@ -1033,7 +1030,24 @@ namespace BrawlLib.SSBB.ResourceNodes
                                         max._y < 0 || min._y > mainWindow.Size.Height)
                                         continue;
                                 }
-                                p.Render(ctx);
+                                
+                                if (_renderPolygons)
+                                {
+                                    if (_renderWireframe)
+                                    {
+                                        GL.Enable(EnableCap.PolygonOffsetFill);
+                                        GL.PolygonOffset(1.0f, 1.0f);
+                                    }
+                                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+                                    p.Render(ctx, false);
+                                    GL.Disable(EnableCap.PolygonOffsetFill);
+                                }
+                                if (_renderWireframe)
+                                {
+                                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+                                    GL.LineWidth(0.5f);
+                                    p.Render(ctx, true);
+                                }
                             }
 
                 if (_renderBox)
@@ -1058,7 +1072,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             //Turn off the last bound shader program.
-            if (ctx._canUseShaders) { GL.UseProgram(0); GL.ClientActiveTexture(TextureUnit.Texture0); }
+            if (ctx._shadersEnabled) { GL.UseProgram(0); GL.ClientActiveTexture(TextureUnit.Texture0); }
             
             if (_renderBones)
             {

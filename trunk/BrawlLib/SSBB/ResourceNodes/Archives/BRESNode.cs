@@ -464,6 +464,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
+    public class AnimationNode : BRESEntryNode
+    {
+        [Browsable(true)]
+        public virtual int FrameCount { get { return 0; } set { } }
+        [Browsable(true)]
+        public virtual bool Loop { get { return false; } set { } }
+    }
+
     public unsafe class BRESEntryNode : ResourceNode
     {
         internal BRESCommonHeader* CommonHeader { get { return (BRESCommonHeader*)WorkingSource.Address; } }
@@ -474,10 +482,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public BRESNode BRESNode { get { return ((_parent != null) && (Parent.Parent is BRESNode)) ? Parent.Parent as BRESNode : null; } }
 
-        [Browsable(false)]
-        public virtual int FrameCount { get { return 0; } set { } }
-        [Browsable(false)]
-        public virtual bool Loop { get { return false; } set { } }
         
         public override bool OnInitialize()
         {

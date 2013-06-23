@@ -120,9 +120,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             try
             {
                 if (Texture != null)
-                    Texture.Bind(mRef.TextureCoordId, shaderProgramHandle, _context);
+                    Texture.Bind(mRef.Index, shaderProgramHandle, _context);
                 else
-                    Load(mRef.TextureCoordId, shaderProgramHandle, palette);
+                    Load(mRef.Index, shaderProgramHandle, palette);
             }
             catch { }
 

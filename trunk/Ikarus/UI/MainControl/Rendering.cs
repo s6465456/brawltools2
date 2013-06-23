@@ -21,7 +21,6 @@ namespace Ikarus.UI
     public partial class MainControl : UserControl, IMainWindow
     {
         #region Pre Render
-        public static Color _floorHue = Color.FromArgb(255, 128, 128, 191);
         private unsafe void modelPanel1_PreRender(object sender, TKContext ctx)
         {
             if (RenderFloor)
@@ -45,7 +44,7 @@ namespace Ikarus.UI
                 _bgTex.Bind();
 
                 //GL.Color4(0.5f, 0.5f, 0.75f, 1.0f);
-                GL.Color4(_floorHue);
+                GL.Color4(MainWindowStaticVars._floorHue);
 
                 GL.Begin(BeginMode.Quads);
 

@@ -27,7 +27,7 @@ namespace System.Windows.Forms
             }
         }
 
-        protected unsafe internal override void OnInit(TKContext ctx)
+        unsafe internal override void OnInit(TKContext ctx)
         {
             //Share lists with original context
             //if (_currentTexture != null)

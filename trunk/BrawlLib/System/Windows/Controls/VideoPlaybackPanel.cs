@@ -130,8 +130,8 @@ namespace System.Windows.Forms
             set { TargetChanged(value); }
         }
 
-        //private AudioProvider _provider;
-        //private AudioBuffer _buffer;
+        private AudioProvider _provider;
+        private AudioBuffer _buffer;
 
         public VideoPlaybackPanel() 
         {
@@ -154,13 +154,25 @@ namespace System.Windows.Forms
             Seek(_frame - 1);
         }
 
+        int temp = 0;
         public void RenderUpdate(object sender, FrameEventArgs e)
         {
-            if ((_isPlaying)/* && (_buffer != null)*/)
+            if ((_isPlaying))
             {
-                //_buffer.Fill();
+                //int temp2;
+                if (_buffer != null)
+                {
+                    _buffer.Fill();
+                    //temp2 = (int)Math.Round(_targetSource._audio.SamplePosition / _targetSource.Frequency * _targetSource.FrameRate, 0).Clamp(0, (int)_targetSource.NumFrames - 1);
+                    //if (temp2 != temp)
+                    //    _frame = temp = temp2;
+                    //else
+                        _frame++;
+                }
+                else
+                    _frame++;
 
-                trackBar1.Value = ++_frame;
+                trackBar1.Value = _frame;
                 
                 if (_frame >= _targetSource.NumFrames)
                     if (!_loop)
@@ -173,11 +185,11 @@ namespace System.Windows.Forms
         protected override void Dispose(bool disposing)
         {
             Close();
-            //if (_provider != null)
-            //{
-            //    _provider.Dispose();
-            //    _provider = null;
-            //}
+            if (_provider != null)
+            {
+                _provider.Dispose();
+                _provider = null;
+            }
             base.Dispose(disposing);
         }
 
@@ -204,14 +216,20 @@ namespace System.Windows.Forms
 
             previewPanel1.RenderingTarget = _targetSource;
 
+            IAudioStream s = _targetSource._audio;
+
             //Create provider
-            //if (_provider == null)
-            //{
-            //    _provider = AudioProvider.Create(null);
-            //    _provider.Attach(this);
-            //}
+            if (_provider == null && s != null)
+            {
+                _provider = AudioProvider.Create(null);
+                _provider.Attach(this);
+            }
 
             chkLoop.Checked = false;
+
+            //Create buffer for stream
+            if (s != null)
+                _buffer = _provider.CreateBuffer(s);
 
             if (_targetSource.FrameRate > 0)
                 _frameTime = new DateTime((long)((float)_targetSource.NumFrames * 10000000.0f / _targetSource.FrameRate));
@@ -248,14 +266,9 @@ namespace System.Windows.Forms
             }
 
             _frame = trackBar1.Value = frame.Clamp(0, (int)_targetSource.NumFrames - 1);
-
-            //Only seek the buffer when playing.
-            //if (_isPlaying)
-            //{
-            //    Stop();
-            //    //_buffer.Seek(sample);
-            //    Play();
-            //}
+            float sample = frame / _targetSource.FrameRate * _targetSource.Frequency;
+            int s = (int)Math.Round(sample, 0);
+            _buffer.Seek(s);
 
             if (temp)
                 Play();
@@ -266,7 +279,7 @@ namespace System.Windows.Forms
             if (_targetSource == null)
                 return;
 
-            if ((_isPlaying)/* || (_buffer == null)*/)
+            if ((_isPlaying))
                 return;
 
             _isPlaying = true;
@@ -276,7 +289,13 @@ namespace System.Windows.Forms
                 trackBar1.Value = 0;
 
             //Seek buffer to current sample
-            //_buffer.Seek(trackBar1.Value);
+
+            if (_buffer != null)
+            {
+                float sample = trackBar1.Value / _targetSource.FrameRate * _targetSource.Frequency;
+                int s = (int)Math.Round(sample, 0);
+                _buffer.Seek(s);
+            }
 
             //Fill initial buffer
             RenderUpdate(null, null);
@@ -285,7 +304,8 @@ namespace System.Windows.Forms
             previewPanel1.btnLeft.Visible = previewPanel1.btnRight.Visible = false;
 
             //Begin playback
-            //_buffer.Play();
+            if (_buffer != null)
+                _buffer.Play();
 
             _timer.Run(0, _targetSource.FrameRate);
         }
@@ -300,8 +320,8 @@ namespace System.Windows.Forms
             _timer.Stop();
 
             //Stop device
-            //if (_buffer != null)
-            //    _buffer.Stop();
+            if (_buffer != null)
+                _buffer.Stop();
 
             btnPlay.Text = "Play";
             previewPanel1.btnLeft.Visible = previewPanel1.btnRight.Visible = true;
@@ -319,8 +339,8 @@ namespace System.Windows.Forms
         private void chkLoop_CheckedChanged(object sender, EventArgs e)
         {
             _loop = chkLoop.Checked;
-            //if (_buffer != null)
-            //    _buffer.Loop = _loop;
+            if (_buffer != null)
+                _buffer.Loop = _loop;
         }
 
         private void btnRewind_Click(object sender, EventArgs e) { Seek(0); }

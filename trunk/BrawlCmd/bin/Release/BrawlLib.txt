@@ -1,5 +1,5 @@
 ﻿
-BrawlLib Resource Library - Version 0.15b
+BrawlLib Resource Library - Version 0.15d
 Copyright © 2009 - 2013 Bryan Moulton & BlackJax96
 
 This program is provided as-is without any warranty, implied or otherwise.
@@ -13,7 +13,6 @@ they be held accountable for the manner in which it is used.
  ====================================
 
 - v0.15c- (5/27/2013)
-	. Updated to .NET 4.5
 	. Added bones panel to the keyframes panel in the model previewer
 	. Removed buttons to toggle playback and bones panels
 	. Removed moveset editor (Moveset editing moved to Ikarus)

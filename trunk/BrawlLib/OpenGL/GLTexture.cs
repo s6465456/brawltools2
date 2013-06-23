@@ -71,7 +71,7 @@ namespace BrawlLib.OpenGL
             }
         }
 
-        internal unsafe void Attach(TEX0Node tex)
+        public unsafe void Attach(TEX0Node tex)
         {
             ClearImages();
 
@@ -89,7 +89,7 @@ namespace BrawlLib.OpenGL
             Initialize();
         }
 
-        internal unsafe void Attach(TEX0Node tex, PLT0Node plt)
+        public unsafe void Attach(TEX0Node tex, PLT0Node plt)
         {
             ClearImages();
 
@@ -107,7 +107,7 @@ namespace BrawlLib.OpenGL
             Initialize();
         }
 
-        internal unsafe void Attach(Bitmap bmp)
+        public unsafe void Attach(Bitmap bmp)
         {
             ClearImages();
 
@@ -146,14 +146,15 @@ namespace BrawlLib.OpenGL
         public void Bind() { Bind(-1, -1, null); }
         public void Bind(int index, int program, TKContext ctx)
         {
-            if (program != -1 && index >= 0 && index <= 7 && ctx != null && ctx._canUseShaders)
+            if (program != -1 && ctx != null && ctx._shadersEnabled)
             {
-                GL.ClientActiveTexture(TextureUnit.Texture0 + index);
-                int i = GL.GetUniformLocation(program, "Texture" + index);
-                if (i > -1) GL.Uniform1(i, index);
+                index = index.Clamp(0, 7);
+                GL.ActiveTexture(TextureUnit.Texture0 + index);
+                GL.BindTexture(TextureTarget.Texture2D, Initialize());
+                GL.Uniform1(GL.GetUniformLocation(program, "Texture" + index), index);
             }
-
-            GL.BindTexture(TextureTarget.Texture2D, Initialize());
+            else
+                GL.BindTexture(TextureTarget.Texture2D, Initialize());
         }
 
         public unsafe void Delete()

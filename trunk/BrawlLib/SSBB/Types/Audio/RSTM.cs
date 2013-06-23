@@ -101,8 +101,8 @@ namespace BrawlLib.SSBBTypes
                 dataOffset += ADPCMInfo.Size;
 
                 //Set padding
-                *(short*)(offset + dataOffset) = 0;
-                dataOffset += 2;
+                //*(short*)(offset + dataOffset) = 0;
+                //dataOffset += 2;
             }
 
             //Fill remaining

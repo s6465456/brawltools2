@@ -90,7 +90,7 @@ namespace System.Windows.Forms
             if (node._vertexNode != null)
             {
                 _internalModel.VertexGroup.AddChild(node._vertexNode);
-                (newNode._vertexNode = (MDL0VertexNode)_internalModel.VertexGroup.Children[_internalModel._vertList.Count - 1])._polygons.Add(newNode);
+                (newNode._vertexNode = (MDL0VertexNode)_internalModel.VertexGroup.Children[_internalModel._vertList.Count - 1])._objects.Add(newNode);
             }
             if (node.NormalNode != null)
             {
@@ -181,7 +181,6 @@ namespace System.Windows.Forms
             newNode.Name = "polygon" + (_internalModel._polyList.Count);
             newNode.SignalPropertyChange();
             _internalModel._polyGroup.AddChild(newNode);
-            newNode.Rebuild(true);
         }
 
         private unsafe void btnOkay_Click(object sender, EventArgs e)

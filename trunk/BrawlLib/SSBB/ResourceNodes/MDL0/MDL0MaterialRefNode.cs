@@ -80,14 +80,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal int _embossSource;
         internal int _embossLight;
 
-        public bool _hasTexMtx = false;
         public bool HasTextureMatrix 
         {
             get
             {
-                //if (_hasTexMtx == false)
-                //    return false;
-
                 bool allsinglebinds = true;
                 if (((MDL0MaterialNode)Parent).Objects != null)
                 {
@@ -95,7 +91,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         if (n.Weighted)
                         {
                             allsinglebinds = false;
-                            if (n._arrayFlags.GetHasTexMatrix(Index) == false)
+                            if (!n.HasTextureMatrix[Index])
                                 return false;
                         }
                 }
@@ -108,12 +104,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             set 
             {
-                bool changed = false;
                 foreach (MDL0ObjectNode n in ((MDL0MaterialNode)Parent).Objects)
                     if (n.Weighted)
                     {
-                        n._vertexFormat.SetHasTexMatrix(Index, value);
-                        n._arrayFlags.SetHasTexMatrix(Index, value);
+                        n.HasTextureMatrix[Index] = value;
                         n._rebuild = true;
                         Model.SignalPropertyChange();
 
@@ -126,10 +120,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         for (int i = 4; i < 12; i++)
                             if (n._uvSet[i - 4] != null && n._uvSet[i - 4].Format != WiiVertexComponentType.Float)
                                 n._uvSet[i - 4]._forceRebuild = n._uvSet[i - 4]._forceFloat = value;
-
-                        changed = true;
                     }
-                if (changed) _hasTexMtx = value;
             }
         }
         
@@ -495,7 +486,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         prev = next;
                         continue;
                     }
-                    if (prev.key <= index - 1 && next.key > index - 1)
+                    if (prev._key <= index - 1 && next._key > index - 1)
                         break;
                     prev = next;
                 }

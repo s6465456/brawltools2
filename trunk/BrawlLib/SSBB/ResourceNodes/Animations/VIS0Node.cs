@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class VIS0Node : BRESEntryNode
+    public unsafe class VIS0Node : AnimationNode
     {
         internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
         internal VIS0v3* Header3 { get { return (VIS0v3*)WorkingUncompressed.Address; } }

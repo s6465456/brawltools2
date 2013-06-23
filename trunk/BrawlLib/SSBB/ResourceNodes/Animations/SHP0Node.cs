@@ -9,7 +9,7 @@ using BrawlLib.Wii.Animations;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class SHP0Node : BRESEntryNode
+    public unsafe class SHP0Node : AnimationNode
     {
         internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
         internal SHP0v3* Header3 { get { return (SHP0v3*)WorkingUncompressed.Address; } }
@@ -397,7 +397,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_fixedFlags = (int)fixedflags;
         }
 
-        internal unsafe SHP0VertexSetNode FindOrCreateEntry(string name)
+        public unsafe SHP0VertexSetNode FindOrCreateEntry(string name)
         {
             foreach (SHP0VertexSetNode t in Children)
                 if (t.Name == name)

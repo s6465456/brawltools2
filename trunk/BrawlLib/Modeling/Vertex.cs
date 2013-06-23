@@ -221,8 +221,6 @@ namespace BrawlLib.Modeling
         {
             Position = position;
             MatrixNode = influence;
-            if (influence == null)
-                Console.WriteLine();
         }
 
         //Pre-multiply vertex using influence.

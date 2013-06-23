@@ -52,7 +52,7 @@ namespace BrawlLib.Modeling
 
             CalcTransforms();
         }
-        internal void CalcTransforms()
+        public void CalcTransforms()
         {
             _transform = Matrix.TransformMatrix(_scale, _rotate, _translate);
             _iTransform = Matrix.ReverseTransformMatrix(_scale, _rotate, _translate);

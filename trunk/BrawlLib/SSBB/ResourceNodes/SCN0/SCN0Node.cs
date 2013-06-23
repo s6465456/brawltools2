@@ -8,17 +8,15 @@ using BrawlLib.Imaging;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class SCN0Node : BRESEntryNode
+    public unsafe class SCN0Node : AnimationNode
     {
         internal BRESCommonHeader* Header { get { return (BRESCommonHeader*)WorkingUncompressed.Address; } }
         internal SCN0v4* Header4 { get { return (SCN0v4*)WorkingUncompressed.Address; } }
         internal SCN0v5* Header5 { get { return (SCN0v5*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.SCN0; } }
         
-        //public static List<string> strings = new List<string>();
-        //public static List<int> offsets = new List<int>();
-        public static SortedDictionary<int, string> strings = new SortedDictionary<int, string>();
-    
+        //public static SortedDictionary<int, string> strings = new SortedDictionary<int, string>();
+
         public int _version = 4, _origPathOffset, _frameCount = 1, _specLights, _loop, _lightset, _amblights, _lights, _fog, _camera;
 
         [Category("Scene Data")]
@@ -57,7 +55,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override bool OnInitialize()
         {
             base.OnInitialize();
-            strings.Clear();
+            //strings.Clear();
             _version = Header->_version;
             if (_version == 5)
             {
@@ -152,8 +150,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     t.AttachNodes();
             }
 
-            for (int i = 0; i < strings.Count; i++)
-                Console.WriteLine(strings.Keys.ElementAt(i) + " " + strings.Values.ElementAt(i));
+            //for (int i = 0; i < strings.Count; i++)
+            //    Console.WriteLine(strings.Keys.ElementAt(i) + " " + strings.Values.ElementAt(i));
         }
 
         public SCN0GroupNode GetOrCreateFolder<T>() where T : SCN0EntryNode

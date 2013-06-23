@@ -55,7 +55,7 @@ namespace BrawlLib.Wii.Animations
 
     public unsafe class KeyframeCollection
     {
-        internal KeyframeEntry[] _keyRoots = new KeyframeEntry[9]{
+        public KeyframeEntry[] _keyRoots = new KeyframeEntry[9]{
         //Scale
         new KeyframeEntry(-1, 1.0f),
         new KeyframeEntry(-1, 1.0f),
@@ -69,7 +69,7 @@ namespace BrawlLib.Wii.Animations
         new KeyframeEntry(-1, 0.0f),
         new KeyframeEntry(-1, 0.0f)};
 
-        internal int[] _keyCounts = new int[9];
+        public int[] _keyCounts = new int[9];
 
         internal AnimationCode _evalCode;
         internal SRT0Code _texEvalCode;

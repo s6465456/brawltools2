@@ -43,16 +43,12 @@ namespace BrawlBox
             audioPlaybackPanel1.Dock =
             clrControl.Dock =
             visEditor.Dock =
-            //offsetEditor1.Dock =
-            //attributeControl.Dock =
-            //articleAttributeGrid.Dock =
             scN0CameraEditControl1.Dock =
             scN0LightEditControl1.Dock =
             scN0FogEditControl1.Dock =
             ppcDisassembler1.Dock =
             modelPanel1.Dock =
             previewPanel2.Dock =
-            //movesetEditor1.Dock = 
             videoPlaybackPanel1.Dock =
             DockStyle.Fill;
             m_DelegateOpenFile = new DelegateOpenFile(Program.Open);
@@ -114,7 +110,6 @@ namespace BrawlBox
         public void resourceTree_SelectionChanged(object sender, EventArgs e)
         {
             audioPlaybackPanel1.TargetSource = null;
-            //articleAttributeGrid.TargetNode = null;
             animEditControl.TargetSequence = null;
             texAnimEditControl.TargetSequence = null;
             shpAnimEditControl.TargetSequence = null;
@@ -122,22 +117,17 @@ namespace BrawlBox
             soundPackControl1.TargetNode = null;
             clrControl.ColorSource = null;
             visEditor.TargetNode = null;
-            //movesetEditor1.TargetNode = null;
-            //attributeControl.TargetNode = null;
-            //offsetEditor1.TargetNode = null;
             scN0CameraEditControl1.TargetSequence = null;
             scN0LightEditControl1.TargetSequence = null;
             scN0FogEditControl1.TargetSequence = null;
             ppcDisassembler1.TargetNode = null;
-            //previewPanel2.RenderingTarget = null;
-            modelPanel1.ClearTargets();
-            //modelPanel1.ResetCamera();
-
+            modelPanel1.ClearAll();
+            
             Control newControl = null;
             Control newControl2 = null;
 
             BaseWrapper w;
-            ResourceNode node;
+            ResourceNode node = null;
             bool disable2nd = false;
             if ((resourceTree.SelectedNode is BaseWrapper) && ((node = (w = resourceTree.SelectedNode as BaseWrapper).ResourceNode) != null))
             {
@@ -147,11 +137,6 @@ namespace BrawlBox
                 {
                     videoPlaybackPanel1.TargetSource = node as THPNode;
                     newControl = videoPlaybackPanel1;
-                }
-                else if (node is IImageSource)
-                {
-                    previewPanel2.RenderingTarget = ((IImageSource)node);
-                    newControl = previewPanel2;
                 }
                 else if (node is MSBinNode)
                 {
@@ -178,54 +163,11 @@ namespace BrawlBox
                     soundPackControl1.TargetNode = node as RSARNode;
                     newControl = soundPackControl1;
                 }
-                else if (node is IAudioSource)
-                {
-                    audioPlaybackPanel1.TargetSource = node as IAudioSource;
-                    IAudioStream[] sources = audioPlaybackPanel1.TargetSource.CreateStreams();
-                    if (sources != null && sources.Length > 0 && sources[0] != null)
-                        newControl = audioPlaybackPanel1;
-                }
                 else if (node is VIS0EntryNode)
                 {
                     visEditor.TargetNode = node as VIS0EntryNode;
                     newControl = visEditor;
                 }
-                //else if (node is MoveDefActionNode)
-                //{
-                //    movesetEditor1.TargetNode = node as MoveDefActionNode;
-                //    newControl = movesetEditor1;
-                //}
-                //else if (node is MoveDefEventOffsetNode)
-                //{
-                //    offsetEditor1.TargetNode = node as MoveDefEventOffsetNode;
-                //    newControl = offsetEditor1;
-                //}
-                //else if (node is MoveDefEventNode)
-                //{
-                //    //if (node.Parent is MoveDefLookupEntry1Node)
-                //    //    eventDescription1.SetTarget((node as MoveDefLookupEntry1Node).EventInfo, -1);
-                //    //else
-                //        eventDescription1.SetTarget((node as MoveDefEventNode).EventInfo, -1);
-                //    newControl = eventDescription1;
-                //}
-                //else if (node is MoveDefEventParameterNode)
-                //{
-                //    //if (node.Parent is MoveDefLookupEntry1Node)
-                //    //    eventDescription1.SetTarget((node.Parent as MoveDefLookupEntry1Node).EventInfo, node.Index == -1 ? -2 : node.Index);
-                //    //else
-                //        eventDescription1.SetTarget((node.Parent as MoveDefEventNode).EventInfo, node.Index == -1 ? -2 : node.Index);
-                //    newControl = eventDescription1;
-                //}
-                //else if (node is MoveDefAttributeNode)
-                //{
-                //    attributeControl.TargetNode = node as MoveDefAttributeNode;
-                //    newControl = attributeControl;
-                //}
-                //else if (node is MoveDefSectionParamNode)
-                //{
-                //    articleAttributeGrid.TargetNode = node as MoveDefSectionParamNode;
-                //    newControl = articleAttributeGrid;
-                //}
                 else if (node is SCN0CameraNode)
                 {
                     scN0CameraEditControl1.TargetSequence = node as SCN0CameraNode;
@@ -248,26 +190,20 @@ namespace BrawlBox
                     ppcDisassembler1.TargetNode = node as ModuleDataNode;
                     newControl = ppcDisassembler1;
                 }
-                else if (node is IRenderedObject)
+                else if (node is IAudioSource)
                 {
-                    if (node is MDL0Node)
-                    {
-                        MDL0Node m = node as MDL0Node;
-                        m._renderBones = false;
-                        m._renderPolygons = CheckState.Checked;
-                        m._renderVertices = false;
-                        m._renderBox = false;
-                    }
-
-                    modelPanel1.ClearAll();
-                    modelPanel1.AddTarget((IRenderedObject)node);
-
-                    Vector3 min, max;
-                    ((IRenderedObject)node).GetBox(out min, out max);
-                    modelPanel1.SetCamWithBox(min, max);
-
-                    newControl = modelPanel1;
+                    audioPlaybackPanel1.TargetSource = node as IAudioSource;
+                    IAudioStream[] sources = audioPlaybackPanel1.TargetSource.CreateStreams();
+                    if (sources != null && sources.Length > 0 && sources[0] != null)
+                        newControl = audioPlaybackPanel1;
                 }
+                else if (node is IImageSource)
+                {
+                    previewPanel2.RenderingTarget = ((IImageSource)node);
+                    newControl = previewPanel2;
+                }
+                else if (node is IRenderedObject)
+                    newControl = modelPanel1;
 
                 if (node is IColorSource && !disable2nd)
                 {
@@ -321,6 +257,28 @@ namespace BrawlBox
                     _currentControl.Width = splitContainer2.Panel2.Width - _secondaryControl.Width;
                 _currentControl.Dock = DockStyle.Fill;
             }
+
+            //Model panel has to be loaded first to display model correctly
+            if (_currentControl is ModelPanel)
+            {
+                if (node is MDL0Node)
+                {
+                    MDL0Node m = node as MDL0Node;
+                    m._renderBones = false;
+                    m._renderPolygons = true;
+                    m._renderWireframe = false;
+                    m._renderVertices = false;
+                    m._renderBox = false;
+                    m.ApplyCHR(null, 0);
+                    m.ApplySRT(null, 0);
+                }
+
+                modelPanel1.AddTarget((IRenderedObject)node);
+
+                Vector3 min, max;
+                ((IRenderedObject)node).GetBox(out min, out max);
+                modelPanel1.SetCamWithBox(min, max);
+            }
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -332,7 +290,7 @@ namespace BrawlBox
         }
 
         private static string _inFilter =
-        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.tpl;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.scn0;*.brstm;*.brsar;*.msbin;*.brwsd;*.brseq;*.brbnk;*.efls;*.breff;*.breft;*.arc;*.dol;*.rel;*.szs;*.mrg;*.mrgc|" +
+        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.tpl;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.scn0;*.brstm;*.brsar;*.msbin;*.brwsd;*.brseq;*.brbnk;*.efls;*.breff;*.breft;*.arc;*.dol;*.rel;*.szs;*.mrg;*.mrgc;*.thp|" +
         "PAC File Archive (*.pac)|*.pac|" +
         "PCS Compressed File Archive (*.pcs)|*.pcs|" +
         "Resource Package (*.brres;*.brtex;*.brmdl)|*.brres;*.brtex;*.brmdl|" +
@@ -362,7 +320,7 @@ namespace BrawlBox
         "Relocatable Module (*.rel)|*.rel|" +
         "MRG Resource Group (*.mrg)|*.mrg|" +
         "MRG Compressed Resource Group (*.mrgc)|*.mrgc|" +
-        "THP Video/Audio (*.thp)|*.thp";
+        "THP Audio/Video (*.thp)|*.thp";
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
