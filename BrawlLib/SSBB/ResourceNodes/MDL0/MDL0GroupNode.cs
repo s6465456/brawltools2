@@ -101,10 +101,18 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     //Parse bones from raw data (flat list).
                     //Bones re-assign parents in their Initialize block, so parents are true.
+                    //Parents must be assigned now as bones will be moved in memory when assigned as children.
                     ExtractGroup(linker.Bones, typeof(MDL0BoneNode));
 
                     //Cache flat list
                     linker.BoneCache = _children.ToArray();
+
+                    //Reset children so we can rebuild
+                    _children.Clear();
+
+                    //Assign children using each bones' parent offset in case NodeTree is corrupted
+                    foreach (MDL0BoneNode b in linker.BoneCache)
+                        b._parent._children.Add(b);
 
                     //Make sure the node cache is the correct size
                     int highest = 0;
@@ -113,9 +121,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                             highest = b._nodeIndex;
                     if (highest >= linker.NodeCache.Length)
                         linker.NodeCache = new IMatrixNode[highest + 1];
-
-                    //Reset children so we can rebuild
-                    _children.Clear();
 
                     //Populate node cache
                     MDL0BoneNode bone = null;
@@ -126,11 +131,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     int nullCount = 0;
 
+                    bool nodeTreeError = false;
+
                     //Now that bones and primary influences have been cached, we can create weighted influences.
                     foreach (ResourcePair p in *linker.Defs)
                         if (p.Name == "NodeTree")
                         {
-                            //Use node tree to rebuild bone heirarchy
+                            //Double check bone tree using the NodeTree definition.
+                            //If the NodeTree is corrupt, the user will be informed that it needs to be rebuilt.
                             byte* pData = (byte*)p.Data;
 
                         Top:
@@ -140,15 +148,28 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 index = *(bushort*)(pData + 3);
 
                                 if (bone.Header->_parentOffset == 0)
-                                    _children.Add(bone);
+                                {
+                                    if (!_children.Contains(bone))
+                                    {
+                                        nodeTreeError = true;
+                                        continue;
+                                    }
+                                }
                                 else
-                                    (bone._parent = linker.NodeCache[index] as ResourceNode)._children.Add(bone);
-
+                                {
+                                    ResourceNode n = linker.NodeCache[index] as ResourceNode;
+                                    if (n == null || bone._parent != n || !n._children.Contains(bone))
+                                    {
+                                        nodeTreeError = true;
+                                        continue;
+                                    }
+                                }
                                 pData += 5;
                                 goto Top;
                             }
                         }
-                        else if (p.Name == "NodeMix")
+                        else 
+                            if (p.Name == "NodeMix")
                         {
                             //Use node mix to create weight groups
                             byte* pData = (byte*)p.Data;
@@ -211,6 +232,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                         model._errors.Add("There were " + nullCount + " null weights in NodeMix.");
                         SignalPropertyChange();
                     }
+
+                    if (nodeTreeError)
+                    {
+                        model._errors.Add("The NodeTree definition did not match the bone tree.");
+                        SignalPropertyChange();
+                    }
+
                     break;
 
                 case MDLResourceType.Materials:

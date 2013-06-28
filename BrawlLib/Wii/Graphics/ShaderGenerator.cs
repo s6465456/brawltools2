@@ -25,7 +25,7 @@ namespace BrawlLib.Wii.Graphics
 
             for (int i = 0; i < obj._uvSet.Length; i++)
                 if (obj._uvSet[i] != null)
-                    w("varying vec2 UVSet{0};\n", i);
+                    w("in vec2 UVSet{0};\n", i);
             
             //w("uniform vec4 C1Amb;\n");
             //w("uniform vec4 C2Amb;\n");

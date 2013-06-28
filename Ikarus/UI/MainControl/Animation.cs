@@ -367,6 +367,25 @@ namespace Ikarus.UI
         }
         private bool wasOff = false;
         public bool runningAction = false;
+
+        CoolTimer _timer;
+        void _timer_RenderFrame(object sender, FrameEventArgs e)
+        {
+            if (TargetAnimation == null)
+                return;
+
+            if (_animFrame >= _maxFrame)
+                if (!_loop)
+                    StopAnim();
+                else
+                    SetFrame(1);
+            else
+                SetFrame(_animFrame + 1);
+
+            if (_capture)
+                images.Add(modelPanel.GrabScreenshot(false));
+        }
+
         public void PlayAnim()
         {
             if (GetSelectedBRRESFile(TargetAnimType) == null || _maxFrame == 1)
@@ -390,8 +409,8 @@ namespace Ikarus.UI
 
             if (_animFrame < _maxFrame)
             {
-                animTimer.Start();
                 pnlPlayback.btnPlay.Text = "Stop";
+                _timer.Run(0, (double)pnlPlayback.numFPS.Value);
             }
             else
             {
@@ -402,7 +421,7 @@ namespace Ikarus.UI
         }
         public void StopAnim()
         {
-            animTimer.Stop();
+            _timer.Stop();
 
             _playing = false;
 

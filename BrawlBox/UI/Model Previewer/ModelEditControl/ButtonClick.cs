@@ -543,8 +543,8 @@ namespace System.Windows.Forms
                         ResetVertexColors();
                         if (_targetModels != null)
                             foreach (MDL0Node mdl in _targetModels)
-                                if (mdl._polyList != null)
-                                    foreach (MDL0ObjectNode o in mdl._polyList)
+                                if (mdl._objList != null)
+                                    foreach (MDL0ObjectNode o in mdl._objList)
                                         if (o._render)
                                             foreach (Vertex3 v in o._manager._vertices)
                                             {
@@ -871,16 +871,6 @@ namespace System.Windows.Forms
             RenderVertices = !RenderVertices;
         }
 
-        private void renderWireframeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            chkPolygons.CheckState = CheckState.Indeterminate;
-        }
-
-        private void openModelSwitherToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            new ModelSwitcher().ShowDialog(this, _targetModels);
-        }
-
         private void hideFromSceneToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _resetCam = false;
@@ -928,7 +918,10 @@ namespace System.Windows.Forms
 
             modelPanel.Invalidate();
         }
-        private void modifyLightingToolStripMenuItem_Click(object sender, EventArgs e) { new ModelViewerSettingsDialog().Show(this); }
+        private void modifyLightingToolStripMenuItem_Click(object sender, EventArgs e) 
+        { 
+            using (ModelViewerSettingsDialog s = new ModelViewerSettingsDialog()) { s.Show(this); } 
+        }
         private void toggleFloor_Click(object sender, EventArgs e) { RenderFloor = !RenderFloor; }
         private void resetCameraToolStripMenuItem_Click_1(object sender, EventArgs e) { modelPanel.ResetCamera(); }
     }

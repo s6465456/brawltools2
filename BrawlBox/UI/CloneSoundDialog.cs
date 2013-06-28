@@ -106,8 +106,6 @@ namespace BrawlBox
         private RSARFolderNode _parentNode;
         private RSARSoundNode _newNode;
 
-        public RSARSoundNode NewNode { get { return _newNode; } }
-
         public CloneSoundDialog() { InitializeComponent(); }
 
         public DialogResult ShowDialog(IWin32Window owner, RSARFolderNode parent)

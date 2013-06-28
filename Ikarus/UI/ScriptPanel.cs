@@ -59,8 +59,7 @@ namespace Ikarus.UI
         private CheckBox chkFixedScale;
         private Panel panel2;
         private Button button1;
-        private ComboBox comboBox1;
-        public System.Windows.Forms.Timer animTimer;
+        public ComboBox comboBox1;
         private Panel ActionFlagsPanel;
         public EventModifier eventModifier1;
         private ToolStripMenuItem renameToolStripMenuItem;
@@ -107,7 +106,6 @@ namespace Ikarus.UI
             this.button1 = new System.Windows.Forms.Button();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.flagsToggle = new System.Windows.Forms.Button();
-            this.animTimer = new System.Windows.Forms.Timer(this.components);
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.inTransTime = new System.Windows.Forms.NumericInputBox();
             this.scriptEditor1 = new Ikarus.UI.ScriptEditor();
@@ -416,11 +414,6 @@ namespace Ikarus.UI
             this.flagsToggle.UseVisualStyleBackColor = true;
             this.flagsToggle.Click += new System.EventHandler(this.flagsToggle_Click);
             // 
-            // animTimer
-            // 
-            this.animTimer.Interval = 1;
-            this.animTimer.Tick += new System.EventHandler(this.animTimer_Tick);
-            // 
             // splitter1
             // 
             this.splitter1.Dock = System.Windows.Forms.DockStyle.Bottom;
@@ -514,6 +507,27 @@ namespace Ikarus.UI
             scriptEditor1._mainWindow = this;
             //scriptEditor1.label1.Visible = false;
             //scriptEditor1.Offset.Visible = false;
+            _timer = new CoolTimer();
+            _timer.RenderFrame += _timer_RenderFrame;
+        }
+
+        void _timer_RenderFrame(object sender, FrameEventArgs e)
+        {
+            if (ActionsIdling && subactions && _animFrame >= _mainWindow.MaxFrame - 1 && _mainWindow._selectedSubActionGrp != null)
+            {
+                if (_mainWindow.CurrentFrame < _mainWindow.MaxFrame)
+                    _mainWindow.SetFrame(_mainWindow.CurrentFrame + 1);
+                else
+                {
+                    _animFrame = -1;
+                    if (_mainWindow.Loop)
+                        SetFrame(0);
+                    else
+                        StopScript();
+                }
+            }
+            else
+                SetFrame(_animFrame + 1);
         }
 
         public bool CloseReferences()
@@ -763,7 +777,7 @@ namespace Ikarus.UI
             //    ActionFlagsPanel.Visible = true;
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        public void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBox1.SelectedIndex != -1)
             if (subactions)
@@ -776,9 +790,10 @@ namespace Ikarus.UI
                 else { }
         }
 
+        public CoolTimer _timer;
         private void button1_Click_1(object sender, EventArgs e)
         {
-            if (animTimer.Enabled)
+            if (_timer.IsRunning)
                 StopScript();
             else
                 RunScript();
@@ -813,42 +828,16 @@ namespace Ikarus.UI
                     SetFrame(0);
             }
 
-            //if (!ActionsIdling)
-            //{
-                animTimer.Start();
-                button1.Text = "Stop Script";
-            //}
-            //else
-            //    _playing = false;
-        }
+            button1.Text = "Stop Script";
 
-        public void StopScript()
-        {
-            animTimer.Stop();
+            _timer.Run(0, (double)_mainWindow.PlaybackPanel.numFPS.Value);
+
             _playing = false;
             if (subactions)
                 _mainWindow.Playing = false;
             button1.Text = "Run Script";
-            //_animFrame = -1;
         }
-        private void animTimer_Tick(object sender, EventArgs e)
-        {
-            if (ActionsIdling && subactions && _animFrame >= _mainWindow.MaxFrame - 1 && _mainWindow._selectedSubActionGrp != null)
-            {
-                if (_mainWindow.CurrentFrame < _mainWindow.MaxFrame)
-                    _mainWindow.SetFrame(_mainWindow.CurrentFrame + 1);
-                else
-                {
-                    _animFrame = -1;
-                    if (_mainWindow.Loop)
-                        SetFrame(0);
-                    else
-                        StopScript();
-                }
-            }
-            else
-                SetFrame(_animFrame + 1);
-        }
+        public void StopScript() { _timer.Stop(); }
         public int _animFrame = -1;
         public void SetFrame(int index)
         {
@@ -930,7 +919,7 @@ namespace Ikarus.UI
             MoveDefActionNode._boneCollisions = new List<MDL0BoneNode>();
             MoveDefActionNode._hurtBoxType = 0;
 
-            if (TargetModel != null && TargetModel._polyList != null && FileManager.Moveset != null)
+            if (TargetModel != null && TargetModel._objList != null && FileManager.Moveset != null)
             {
                 MoveDefModelVisibilityNode node = FileManager.Moveset.data.mdlVisibility;
                 if (node.Children.Count != 0)

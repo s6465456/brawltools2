@@ -18,7 +18,7 @@ namespace BrawlLib
             "All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             //"All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             "Collada Scene (*.dae)|*.dae|" +
-            "Miku Miku Dance Model (*.pmd)|*.pmd|" +
+            //"Miku Miku Dance Model (*.pmd)|*.pmd|" +
             "MDL0 Raw Model (*.mdl0)|*.mdl0";
 
         public static string CHR0 =
@@ -72,13 +72,14 @@ namespace BrawlLib
             "REFT (*.breft)|*.breft";
 
         public static string Images =
-            "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif,*.*)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif;*.*|" +
+            "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif|" +
             "Portable Network Graphics (*.png)|*.png|" +
             "Truevision TARGA (*.tga)|*.tga|" +
             "Tagged Image File Format (*.tif, *.tiff)|*.tif;*.tiff|" +
             "Bitmap (*.bmp)|*.bmp|" +
             "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
-            "Gif (*.gif)|*.gif|" + "Raw (*.*)|*.*";
+            "Gif (*.gif)|*.gif|" + 
+            "Raw (*.*)|*.*";
 
         public static string EFLS =
             "Effect List (*.efls)|*.efls";

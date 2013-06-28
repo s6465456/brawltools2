@@ -17,25 +17,26 @@ namespace BrawlLib.Wii.Compression
             
             return size;
         }
-
+        public static void CXDecompressAny(VoidPtr srcp, VoidPtr destp) { CXDecompressAny(srcp, destp, 0); }
         public static void CXDecompressAny(VoidPtr srcp, VoidPtr destp, uint dstLen)
         {
-            switch (CX.GetCompressionType(srcp))
+            CompressionHeader* header = (CompressionHeader*)srcp;
+            switch (header->Algorithm)
             {
                 // Run-length compressed data
-                case CX.CompressionType.CX_COMPRESSION_RL:
+                case CompressionType.RunLength:
                     CXUncompressRL(srcp, destp);
                     break;
                 // LZ77 compressed data
-                case CX.CompressionType.CX_COMPRESSION_LZ:
-                    CXUncompressLZ(srcp, destp, dstLen);
+                case CompressionType.LZ77:
+                    CXDecompressLZ(header, destp, dstLen);
                     break;
                 // Huffman compressed data
-                case CX.CompressionType.CX_COMPRESSION_HUFFMAN:
+                case CompressionType.Huffman:
                     CXUncompressHuffman(srcp, destp);
                     break;
                 // Difference filter
-                case CX.CompressionType.CX_COMPRESSION_DIFF:
+                case CompressionType.Differential:
                     CXUnfilterDiff(srcp, destp);
                     break;
                 default:
@@ -62,7 +63,7 @@ namespace BrawlLib.Wii.Compression
                 byte  flags  = *pSrc++;
                 uint length = flags & 0x7fU;
                 if ((flags & 0x80) == 0)
-                {   
+                {
                     length++;
                     if (length > destCount)
                     // Measures for buffer overrun when invalid data is decompressed.
@@ -86,20 +87,15 @@ namespace BrawlLib.Wii.Compression
             }
         }
 
-        public static void CXUncompressLZ(VoidPtr srcp, VoidPtr destp, uint dstLen)
+        public static void CXDecompressLZ(CompressionHeader* header, VoidPtr dstAddr, uint dstLen)
         {
-            byte* pSrc = (byte*)srcp;
-            byte* pDst = (byte*)destp;
-            uint destCount = dstLen <= 0 ? CX.iConvertEndian(*(uint*)pSrc) >> 8 : dstLen;
-            bool exFormat = (*pSrc & 0x0F) != 0;
+            byte* pSrc = (byte*)header->Data;
+            byte* pDst = (byte*)dstAddr;
+            uint destCount = (uint)header->ExpandedSize;
+            bool exFormat = header->IsExtendedFormat;
 
-            pSrc += 4;
-
-            if (destCount == 0)
-            {
-                destCount = CX.iConvertEndian(*(uint*)pSrc);
-                pSrc += 4;
-            }
+            if (dstLen != 0) //Destination length override
+                destCount = dstLen;
 
             while (destCount > 0)
             {

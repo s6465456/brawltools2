@@ -114,12 +114,12 @@ namespace BrawlLib.Wii.Models
 
                         //DrawOpa and DrawXlu
                         //Get assigned materials and categorize
-                        if (model._polyList != null)
-                            for (int i = 0; i < model._polyList.Count; i++)
+                        if (model._objList != null)
+                            for (int i = 0; i < model._objList.Count; i++)
                             {
                                 //Entries are ordered by material, not by polygon.
                                 //Using the material's attached polygon list is untrustable if the definitions were corrupt on parse.
-                                MDL0ObjectNode poly = model._polyList[i] as MDL0ObjectNode;
+                                MDL0ObjectNode poly = model._objList[i] as MDL0ObjectNode;
                                 if (poly.OpaMaterialNode != null)
                                     opaLen += 8;
                                 if (poly.XluMaterialNode != null)
@@ -127,14 +127,10 @@ namespace BrawlLib.Wii.Models
                             }
 
                         //Add terminate byte and set model def flags
-                        if (model._hasTree = (treeLen > 0))
-                        { treeLen++; entries++; }
-                        if (model._hasMix = (mixLen > 0))
-                        { mixLen++; entries++; }
-                        if (model._hasOpa = (opaLen > 0))
-                        { opaLen++; entries++; }
-                        if (model._hasXlu = (xluLen > 0))
-                        { xluLen++; entries++; }
+                        if (model._hasTree = (treeLen > 0)) { treeLen++; entries++; }
+                        if (model._hasMix = (mixLen > 0)) { mixLen++; entries++; }
+                        if (model._hasOpa = (opaLen > 0)) { opaLen++; entries++; }
+                        if (model._hasXlu = (xluLen > 0)) { xluLen++; entries++; }
 
                         //Align data
                         defLen += (treeLen + mixLen + opaLen + xluLen).Align(4);
@@ -155,13 +151,13 @@ namespace BrawlLib.Wii.Models
 
                     EvalAssets:
 
-                        List<ResourceNode> polyList = model._polyList;
+                        List<ResourceNode> polyList = model._objList;
                         if (polyList == null)
                             break;
 
                         string str = "";
 
-                        bool direct = linker._forceDirectAssets[aInd.Clamp(0, 3)];
+                        bool direct = linker._forceDirectAssets[aInd];
 
                         //Create asset lists
                         IList aList;
@@ -278,8 +274,8 @@ namespace BrawlLib.Wii.Models
                         break;
 
                     case MDLResourceType.Objects:
-                        if (model._polyList != null)
-                            entryList = model._polyList; 
+                        if (model._objList != null)
+                            entryList = model._objList; 
                         break;
 
                     case MDLResourceType.Shaders:
@@ -457,10 +453,10 @@ namespace BrawlLib.Wii.Models
                 return;
 
             ResourceNode[] polyList = null;
-            if (mdl._polyList != null)
+            if (mdl._objList != null)
             {
-                polyList = new ResourceNode[mdl._polyList.Count];
-                Array.Copy(mdl._polyList.ToArray(), polyList, mdl._polyList.Count);
+                polyList = new ResourceNode[mdl._objList.Count];
+                Array.Copy(mdl._objList.ToArray(), polyList, mdl._objList.Count);
             }
             MDL0ObjectNode poly;
             int entryCount = 0;
@@ -601,7 +597,7 @@ namespace BrawlLib.Wii.Models
             int index;
             MDL0Node model = linker.Model;
 
-            if (linker._vertices != null && linker._vertices.Count != 0 && !linker._forceDirectAssets[0])
+            if (linker._vertices != null && linker._vertices.Count != 0)
             {
                 model.LinkGroup(new MDL0GroupNode(MDLResourceType.Vertices));
                 model._vertGroup._parent = model;
@@ -611,9 +607,9 @@ namespace BrawlLib.Wii.Models
                 {
                     MDL0VertexNode node = new MDL0VertexNode();
 
-                    node._name = model.Name + "_" + model._polyList[index]._name;
-                    if (((MDL0ObjectNode)model._polyList[index])._opaMaterial != null)
-                        node._name += "_" + ((MDL0ObjectNode)model._polyList[index])._opaMaterial._name;
+                    node._name = model.Name + "_" + model._objList[index]._name;
+                    if (((MDL0ObjectNode)model._objList[index])._opaMaterial != null)
+                        node._name += "_" + ((MDL0ObjectNode)model._objList[index])._opaMaterial._name;
 
                     if (form != null)
                         form.Say("Writing Vertices - " + node.Name);
@@ -640,7 +636,7 @@ namespace BrawlLib.Wii.Models
                 }
             }
 
-            if (linker._normals != null && linker._normals.Count != 0 && !linker._forceDirectAssets[1])
+            if (linker._normals != null && linker._normals.Count != 0)
             {
                 model.LinkGroup(new MDL0GroupNode(MDLResourceType.Normals));
                 model._normGroup._parent = model;
@@ -650,9 +646,9 @@ namespace BrawlLib.Wii.Models
                 {
                     MDL0NormalNode node = new MDL0NormalNode();
 
-                    node._name = model.Name + "_" + model._polyList[index]._name;
-                    if (((MDL0ObjectNode)model._polyList[index])._opaMaterial != null)
-                        node._name += "_" + ((MDL0ObjectNode)model._polyList[index])._opaMaterial._name;
+                    node._name = model.Name + "_" + model._objList[index]._name;
+                    if (((MDL0ObjectNode)model._objList[index])._opaMaterial != null)
+                        node._name += "_" + ((MDL0ObjectNode)model._objList[index])._opaMaterial._name;
 
                     if (form != null)
                         form.Say("Writing Normals - " + node.Name);
@@ -676,7 +672,7 @@ namespace BrawlLib.Wii.Models
                 }
             }
 
-            if (linker._colors != null && linker._colors.Count != 0 && !linker._forceDirectAssets[2])
+            if (linker._colors != null && linker._colors.Count != 0)
             {
                 model.LinkGroup(new MDL0GroupNode(MDLResourceType.Colors));
                 model._colorGroup._parent = model;
@@ -686,9 +682,9 @@ namespace BrawlLib.Wii.Models
                 {
                     MDL0ColorNode node = new MDL0ColorNode();
 
-                    node._name = model.Name + "_" + model._polyList[index]._name;
-                    if (((MDL0ObjectNode)model._polyList[index])._opaMaterial != null)
-                        node._name += "_" + ((MDL0ObjectNode)model._polyList[index])._opaMaterial._name;
+                    node._name = model.Name + "_" + model._objList[index]._name;
+                    if (((MDL0ObjectNode)model._objList[index])._opaMaterial != null)
+                        node._name += "_" + ((MDL0ObjectNode)model._objList[index])._opaMaterial._name;
 
                     if (form != null)
                         form.Say("Writing Colors - " + node.Name);
@@ -712,7 +708,7 @@ namespace BrawlLib.Wii.Models
                 }
             }
 
-            if (linker._uvs != null && linker._uvs.Count != 0 && !linker._forceDirectAssets[3])
+            if (linker._uvs != null && linker._uvs.Count != 0)
             {
                 model.LinkGroup(new MDL0GroupNode(MDLResourceType.UVs));
                 model._uvGroup._parent = model;
@@ -781,8 +777,8 @@ namespace BrawlLib.Wii.Models
                 model.UnlinkGroup(model._colorGroup);
 
             //Link sets
-            if (model._polyList != null)
-            foreach (MDL0ObjectNode poly in model._polyList)
+            if (model._objList != null)
+            foreach (MDL0ObjectNode poly in model._objList)
             {
                 if (poly._elementIndices[0] != -1 && model._vertList != null && model._vertList.Count > poly._elementIndices[0])
                     poly._vertexNode = (MDL0VertexNode)model._vertGroup._children[poly._elementIndices[0]];
@@ -875,11 +871,11 @@ namespace BrawlLib.Wii.Models
             linker.Model._min = min;
             linker.Model._max = max;
 
-            if (linker.Model._polyList != null)
+            if (linker.Model._objList != null)
             {
                 linker.Model._numFacepoints = 0;
                 linker.Model._numFaces = 0;
-                foreach (MDL0ObjectNode n in linker.Model._polyList)
+                foreach (MDL0ObjectNode n in linker.Model._objList)
                 {
                     linker.Model._numFacepoints += n._numFacepoints;
                     linker.Model._numFaces += n._numFaces;
@@ -889,10 +885,10 @@ namespace BrawlLib.Wii.Models
 
         private static void SetFormatLists(ModelLinker linker)
         {
-            if (linker.Model._polyList != null)
-            for (int i = 0; i < linker.Model._polyList.Count; i++)
+            if (linker.Model._objList != null)
+            for (int i = 0; i < linker.Model._objList.Count; i++)
             {
-                MDL0ObjectNode poly = (MDL0ObjectNode)linker.Model._polyList[i];
+                MDL0ObjectNode poly = (MDL0ObjectNode)linker.Model._objList[i];
                 poly._fmtList = poly._manager.setFmtList(poly, linker);
             }
         }

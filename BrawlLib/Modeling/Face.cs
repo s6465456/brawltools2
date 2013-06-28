@@ -13,7 +13,7 @@ namespace BrawlLib.Modeling
         public Vertex3 _vertex;
 
         private IMatrixNode Node { get { return _vertex != null ? _vertex.MatrixNode : null; } }
-        public int NodeID { get { if (Node != null) return Node.NodeIndex; throw new Exception(); } }
+        public int NodeID { get { if (Node != null) return Node.NodeIndex; return -1; } }
 
         public int _vertexIndex = -1;
         public int _normalIndex = -1;
@@ -31,7 +31,7 @@ namespace BrawlLib.Modeling
 
         public override string ToString()
         {
-            return String.Format("M({12}), V({0}), N({1}), C({2}, {3}), U({4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})", _vertexIndex, _normalIndex, _colorIndices[0], _colorIndices[1], _UVIndices[0], _UVIndices[1], _UVIndices[2], _UVIndices[3], _UVIndices[4], _UVIndices[5], _UVIndices[6], _UVIndices[7], Node.NodeIndex);
+            return String.Format("M({12}), V({0}), N({1}), C({2}, {3}), U({4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})", _vertexIndex, _normalIndex, _colorIndices[0], _colorIndices[1], _UVIndices[0], _UVIndices[1], _UVIndices[2], _UVIndices[3], _UVIndices[4], _UVIndices[5], _UVIndices[6], _UVIndices[7], NodeID);
         }
     }
 
@@ -154,6 +154,8 @@ namespace BrawlLib.Modeling
     public class Tristrip
     {
         public List<Facepoint> _points = new List<Facepoint>();
+        
+        public List<Triangle> _temp = new List<Triangle>();
     }
 
     public class Trifan
@@ -167,8 +169,50 @@ namespace BrawlLib.Modeling
         public Facepoint _y;
         public Facepoint _z;
 
-        public Triangle _adj1;
-        public Triangle _adj2;
-        public Triangle _adj3;
+        public Facepoint this[int i]
+        { 
+            get
+            {
+                switch (i)
+                {
+                    case 0: return _x;
+                    case 1: return _y;
+                    case 2: return _z;
+                }
+                return null;
+            }
+            set
+            {
+                switch (i)
+                {
+                    case 0: _x = value; break;
+                    case 1: _y = value; break;
+                    case 2: _z = value; break;
+                }
+            }
+        }
+
+        public Triangle() { }
+        public Triangle(Facepoint x, Facepoint y, Facepoint z)
+        {
+            _x = x;
+            _y = y;
+            _z = z;
+        }
+
+        public bool Contains(Facepoint f)
+        {
+            if (_x == f) return true;
+            if (_y == f) return true;
+            if (_z == f) return true;
+            return false;
+        }
+
+        public Triangle RotateUp()
+        {
+            return new Triangle(_y, _z, _x);
+        }
+
+        public bool _grouped = false;
     }
 }

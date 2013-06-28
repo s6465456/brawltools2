@@ -702,57 +702,6 @@ namespace BrawlLib.Modeling
             return _facepoints;
         }
 
-        internal void MergeFaceData()
-        {
-            for (int i = 1; i < 12; i++)
-            {
-                if (_faceData[i] == null)
-                    continue;
-
-                ushort* pIndex = (ushort*)_indices.Address;
-                byte* pIn = (byte*)_faceData[i].Address;
-                switch (i)
-                {
-                    case 0:
-                        for (int x = 0; x < _pointCount; x++, pIn += 12)
-                        {
-                            //_vertices[*pIndex].Position = *(Vector3*)pIn;
-                            _vertices[*pIndex]._faceDataIndices.Add(*pIndex++);
-                        }
-                        break;
-                    case 1:
-                        for (int x = 0; x < _pointCount; x++, pIn += 12)
-                        {
-                            //Vector3 v = *(Vector3*)pIn;
-                            //if (_vertices[*pIndex].Normal == null || _vertices[*pIndex].Normal == new Vector3())
-                            //    _vertices[*pIndex].Normal = v;
-                            //else if (_vertices[*pIndex].Normal != v)
-                            //        Console.WriteLine();
-                            //pIndex++;
-                        }
-
-                        break;
-                    case 2:
-                    case 3:
-                        for (int x = 0; x < _pointCount; x++, pIn += 4)
-                        {
-                            if (_vertices[*pIndex]._colors[i - 2] == null)
-                                _vertices[*pIndex]._colors[i - 2] = new List<RGBAPixel>();
-                            _vertices[*pIndex++]._colors[i - 2].Add(*(RGBAPixel*)pIn);
-                        }
-                        break;
-                    default:
-                        for (int x = 0; x < _pointCount; x++, pIn += 8)
-                        {
-                            if (_vertices[*pIndex]._uvs[i - 4] == null)
-                                _vertices[*pIndex]._uvs[i - 4] = new List<Vector2>();
-                            _vertices[*pIndex++]._uvs[i - 4].Add(*(Vector2*)pIn);
-                        }
-                        break;
-                }
-            }
-        }
-
         internal void Weight()
         {
             if (_vertices != null)
@@ -764,7 +713,7 @@ namespace BrawlLib.Modeling
 
         #region Flags
 
-        public GXVtxDescList[] setDescList(MDL0ObjectNode obj, params bool[] forceDirect)
+        public GXVtxDescList[] SetDescList(MDL0ObjectNode obj, params bool[] forceDirect)
         {
             //Everything is set in the order the facepoint is written!
 

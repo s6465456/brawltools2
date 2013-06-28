@@ -178,9 +178,9 @@ namespace System.Windows.Forms
             }
             newNode.RecalcIndices();
             newNode._bone = (MDL0BoneNode)_internalModel.BoneGroup.Children[0];
-            newNode.Name = "polygon" + (_internalModel._polyList.Count);
+            newNode.Name = "polygon" + (_internalModel._objList.Count);
             newNode.SignalPropertyChange();
-            _internalModel._polyGroup.AddChild(newNode);
+            _internalModel._objGroup.AddChild(newNode);
         }
 
         private unsafe void btnOkay_Click(object sender, EventArgs e)

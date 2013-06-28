@@ -22,9 +22,9 @@ namespace BrawlBox
         private static SaveFileDialog _saveDlg;
         private static FolderBrowserDialog _folderDlg;
 
-        private static ResourceNode _rootNode;
+        internal static ResourceNode _rootNode;
         public static ResourceNode RootNode { get { return _rootNode; } }
-        private static string _rootPath;
+        internal static string _rootPath;
         public static string RootPath { get { return _rootPath; } }
 
         static Program()
@@ -127,6 +127,42 @@ namespace BrawlBox
             return false;
         }
 
+        public static unsafe void Scan(FileMap map, FileScanNode node)
+        {
+            using (ProgressWindow progress = new ProgressWindow(MainForm.Instance, "File Scanner", "Scanning for known file types, please wait...", true))
+            {
+                progress.TopMost = true;
+                progress.Begin(0, map.Length, 0);
+
+                byte* data = (byte*)map.Address;
+                uint i = 0;
+                do
+                {
+                    ResourceNode n = null;
+                    DataSource d = new DataSource(&data[i], 0);
+                    if ((n = NodeFactory.GetRaw(d)) != null)
+                    {
+                        if (!(n is MSBinNode))
+                        {
+                            n.Initialize(node, d);
+                            try
+                            {
+                                i += (uint)n.CalculateSize(true);
+                            }
+                            catch
+                            {
+                                //Nope
+                            }
+                        }
+                    }
+                    progress.Update(i + 1);
+                }
+                while (++i + 4 < map.Length);
+
+                progress.Finish();
+            }
+        }
+
         public static bool Save()
         {
             if (_rootNode != null)
@@ -161,6 +197,7 @@ namespace BrawlBox
         public static int OpenFile(string filter, out string fileName, bool categorize)
         {
             _openDlg.Filter = filter;
+            //_openDlg.AutoUpgradeEnabled = false;
             //#if !DEBUG
             try
             {

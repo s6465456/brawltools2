@@ -574,13 +574,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string OpaMaterial
         {
             get { return _opaMaterial == null ? null : _opaMaterial._name; }
-            set { if (String.IsNullOrEmpty(value)) return; OpaMaterialNode = Model.FindOrCreateOpaMaterial(value); Model.SignalPropertyChange(); }
+            set { if (String.IsNullOrEmpty(value)) OpaMaterialNode = null; else { OpaMaterialNode = Model.FindOrCreateOpaMaterial(value); Model.SignalPropertyChange(); } }
         }
         [Browsable(true), TypeConverter(typeof(DropDownListXluMaterials))]
         public string XluMaterial
         {
             get { return _xluMaterial == null ? null : _xluMaterial._name; }
-            set { if (String.IsNullOrEmpty(value)) return; XluMaterialNode = Model.FindOrCreateXluMaterial(value); Model.SignalPropertyChange(); }
+            set { if (String.IsNullOrEmpty(value)) XluMaterialNode = null; else { XluMaterialNode = Model.FindOrCreateXluMaterial(value); Model.SignalPropertyChange(); } }
         }
         #endregion
 
@@ -835,7 +835,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
 
                 //Set vertex descriptor
-                _descList = _manager.setDescList(this, Model._linker._forceDirectAssets);
+                _descList = _manager.SetDescList(this, Model._linker._forceDirectAssets);
 
                 //Add table length
                 size += _nodeCache.Length * 2 + 4;
@@ -880,6 +880,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                             Triangles.Add(Tri);
                         }
 
+                        //TriangleConverter.GroupPrimitives(Triangles.ToArray());
+
+                        //foreach (Triangle t in Triangles)
+                        //{
+                        //    Console.WriteLine(t._x.ToString());
+                        //    Console.WriteLine(t._y.ToString());
+                        //    Console.WriteLine(t._z.ToString());
+                        //    Console.WriteLine();
+                        //}
+
                         //Groups as triangles
                         bool NewGroup = true;
                         PrimitiveGroup grp = new PrimitiveGroup();
@@ -893,6 +903,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                             }
                             if (!(grp.CanAdd(Triangles[i]))) //Will add automatically if true
                             {
+                                foreach (PrimitiveGroup g in _primGroups)
+                                    if (grp.CanAdd(Triangles[i]))
+                                        break;
+
                                 _primGroups.Add(grp);
                                 NewGroup = true;
                                 goto Top;
@@ -1004,9 +1018,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_vertexId = Model._isImport && Model._linker._forceDirectAssets[0] ? (short)-1 : (short)(_elementIndices[0] >= 0 ? _elementIndices[0] : -1);
                 header->_normalId = Model._isImport && Model._linker._forceDirectAssets[1] ? (short)-1 : (short)(_elementIndices[1] >= 0 ? _elementIndices[1] : -1);
                 for (int i = 2; i < 4; i++)
-                    *(bshort*)&header->_colorIds[i - 2] = Model._isImport && Model._linker._forceDirectAssets[2] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
+                    *(bshort*)&header->_colorIds[i - 2] = Model._isImport && Model._linker._forceDirectAssets[i] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
                 for (int i = 4; i < 12; i++)
-                    *(bshort*)&header->_uids[i - 4] = Model._isImport && Model._linker._forceDirectAssets[3] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
+                    *(bshort*)&header->_uids[i - 4] = Model._isImport && Model._linker._forceDirectAssets[i] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
 
                 //Write def list
                 MDL0PolygonDefs* Defs = (MDL0PolygonDefs*)header->DefList;
@@ -1568,8 +1582,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             Dispose();
 
-            if (node._polyList != null)
-                foreach (MDL0ObjectNode p in node._polyList)
+            if (node._objList != null)
+                foreach (MDL0ObjectNode p in node._objList)
                     p.RecalcIndices();
         }
 

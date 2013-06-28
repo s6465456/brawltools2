@@ -919,7 +919,6 @@ namespace System.Windows.Forms
         }
 
         private bool _updating;
-        private TreeNode _selectedNode;
         private CollisionObject _selectedObject;
         private Matrix _snapMatrix;
 
@@ -961,8 +960,6 @@ namespace System.Windows.Forms
             _selectedObject = null;
 
             _modelPanel.ClearAll();
-
-            _selectedNode = null;
 
             _targetNode = node;
 

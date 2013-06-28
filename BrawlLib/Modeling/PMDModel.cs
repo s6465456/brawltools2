@@ -558,7 +558,7 @@ namespace BrawlLib.Modeling
                 MDL0ObjectNode p = new MDL0ObjectNode() { _manager = manager, _opaMaterial = (MDL0MaterialNode)model._matList[x] };
                 p._manager._vertices = new List<Vertex3>();
                 p.Name = "polygon" + x++;
-                p._parent = model._polyGroup;
+                p._parent = model._objGroup;
 
                 p._manager._indices = new UnsafeBuffer((int)m.FaceVertCount * 2);
                 p._manager._faceData[1] = new UnsafeBuffer((int)m.FaceVertCount * 12);
@@ -627,7 +627,7 @@ namespace BrawlLib.Modeling
                     *Normals++ = new Vector3(mv.NormalVector[0], mv.NormalVector[1], mv.NormalVector[2]);
                     *UVs++ = new Vector2(mv.UV[0], mv.UV[1]);
                 }
-                model._polyList.Add(p);
+                model._objList.Add(p);
                 offset += (int)m.FaceVertCount;
             }
 

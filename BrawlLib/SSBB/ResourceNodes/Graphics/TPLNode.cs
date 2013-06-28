@@ -203,7 +203,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Texture")]
         public int EnableEdgeLOD { get { return _enableEdgeLod; } set { _enableEdgeLod = value; SignalPropertyChange(); } }
         [Category("Texture")]
-        public int LevelOfDetail { get { return _lod; } }
+        public int LevelOfDetail { get { return _lod.Clamp(1, 9); } }
 
         public TPLPaletteNode GetPaletteNode() { return (_parent == null) ? null : _parent.FindChild("Palette", false) as TPLPaletteNode; }
 
@@ -306,7 +306,32 @@ namespace BrawlLib.SSBB.ResourceNodes
             else if (outPath.EndsWith(".gif"))
                 using (Bitmap bmp = GetImage(0)) bmp.Save(outPath, ImageFormat.Gif);
             else
-                base.Export(outPath);
+            {
+                int dataLen = TPLTextureHeader.Size + CalculateSize(true);
+                using (FileStream stream = new FileStream(outPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 8, FileOptions.RandomAccess))
+                {
+                    stream.SetLength(dataLen);
+                    using (FileMap map = FileMap.FromStream(stream))
+                    {
+                        TPLTextureHeader* tex = (TPLTextureHeader*)map.Address;
+                        tex->_wrapS = _uWrap;
+                        tex->_wrapT = _vWrap;
+                        tex->_minFilter = _minFltr;
+                        tex->_magFilter = _magFltr;
+                        tex->PixelFormat = Format;
+                        tex->_width = (ushort)Width;
+                        tex->_height = (ushort)Height;
+                        tex->_LODBias = _lodBias;
+                        tex->_edgeLODEnable = (short)_enableEdgeLod;
+                        tex->_maxLOD = (short)(LevelOfDetail - 1);
+                        tex->_minLOD = 0;
+
+                        VoidPtr data = (VoidPtr)tex + TPLTextureHeader.Size;
+                        tex->_data = (uint)(data - map.Address);
+                        Rebuild(data, _calcSize, true);
+                    }
+                }
+            }
         }
 
         public override int OnCalculateSize(bool force)

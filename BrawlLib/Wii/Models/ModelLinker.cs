@@ -112,7 +112,7 @@ namespace BrawlLib.Wii.Models
         public List<ColorCodec> _colors;
         public List<VertexCodec> _uvs;
 
-        public bool[] _forceDirectAssets = new bool[4] { false, false, false, false };
+        public bool[] _forceDirectAssets = new bool[12];
 
         private ModelLinker() { }
 

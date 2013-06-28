@@ -19,14 +19,11 @@ namespace System.Windows.Forms
 {
     public partial class ModelEditControl : UserControl, IMainWindow
     {
-        public ModelPanel modelPanel;
-        
         #region Designer
-
+        public ModelPanel modelPanel;
         private ColorDialog dlgColor;
         private Button btnLeftToggle;
         private Button btnRightToggle;
-        private System.ComponentModel.IContainer components;
         private Button btnPlaybackToggle;
         private Splitter spltLeft;
         private Button btnOptionToggle;
@@ -50,7 +47,6 @@ namespace System.Windows.Forms
         private ToolStripMenuItem deleteToolStripMenuItem;
         private ToolStripMenuItem hideAllOtherModelsToolStripMenuItem;
         private ToolStripMenuItem deleteAllOtherModelsToolStripMenuItem;
-        private ToolStripMenuItem openModelSwitherToolStripMenuItem;
         private ToolStripMenuItem modelToolStripMenuItem;
         private ToolStripMenuItem toggleBones;
         private ToolStripMenuItem togglePolygons;
@@ -253,7 +249,6 @@ namespace System.Windows.Forms
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideAllOtherModelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteAllOtherModelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openModelSwitherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayBRRESRelativeAnimationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.kinectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.syncKinectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -1115,7 +1110,6 @@ namespace System.Windows.Forms
             this.deleteToolStripMenuItem,
             this.hideAllOtherModelsToolStripMenuItem,
             this.deleteAllOtherModelsToolStripMenuItem,
-            this.openModelSwitherToolStripMenuItem,
             this.displayBRRESRelativeAnimationsToolStripMenuItem});
             this.targetModelToolStripMenuItem.Name = "targetModelToolStripMenuItem";
             this.targetModelToolStripMenuItem.Size = new System.Drawing.Size(93, 20);
@@ -1148,16 +1142,6 @@ namespace System.Windows.Forms
             this.deleteAllOtherModelsToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
             this.deleteAllOtherModelsToolStripMenuItem.Text = "Delete all other models";
             this.deleteAllOtherModelsToolStripMenuItem.Click += new System.EventHandler(this.deleteAllOtherModelsToolStripMenuItem_Click);
-            // 
-            // openModelSwitherToolStripMenuItem
-            // 
-            this.openModelSwitherToolStripMenuItem.Enabled = false;
-            this.openModelSwitherToolStripMenuItem.Name = "openModelSwitherToolStripMenuItem";
-            this.openModelSwitherToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.H)));
-            this.openModelSwitherToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
-            this.openModelSwitherToolStripMenuItem.Text = "Open Model Switcher";
-            this.openModelSwitherToolStripMenuItem.Visible = false;
-            this.openModelSwitherToolStripMenuItem.Click += new System.EventHandler(this.openModelSwitherToolStripMenuItem_Click);
             // 
             // displayBRRESRelativeAnimationsToolStripMenuItem
             // 

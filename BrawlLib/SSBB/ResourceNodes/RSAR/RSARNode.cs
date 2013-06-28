@@ -48,17 +48,16 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _files = new List<RSARFileNode>();
             _children = new List<ResourceNode>();
+
+            //Retrieve all files to attach to entries
+            GetFiles();
             OnPopulate();
-            
             return true;
         }
 
         public RSARGroupNode _nullGroup;
         public override void OnPopulate()
         {
-            //Retrieve all files to attach to entries
-            GetFiles();
-
             //Enumerate entries, attaching them to the files.
             RSARHeader* rsar = Header;
             SYMBHeader* symb = rsar->SYMBBlock;

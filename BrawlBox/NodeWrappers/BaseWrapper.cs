@@ -29,7 +29,7 @@ namespace BrawlBox
             }
         }
     }
-
+    [Serializable]
     public abstract class BaseWrapper : TreeNode
     {
         protected static readonly ContextMenuStrip _emptyMenu = new ContextMenuStrip();

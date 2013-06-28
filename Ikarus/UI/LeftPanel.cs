@@ -8,6 +8,7 @@ using BrawlLib;
 using System.IO;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace Ikarus.UI
 {
@@ -1649,32 +1650,42 @@ namespace Ikarus.UI
 
             if (SubActionsList.SelectedItems.Count > 0)
             {
-                int i = SubActionsList.SelectedIndex;
-                switch (TargetAnimType)
+                string[] anims = _animations.Select(x => x.Name).ToArray();
+                string s = SubActionsList.SelectedItem.ToString();
+                int i = Array.IndexOf(anims, s);
+                if (i >= 0)
                 {
-                    case AnimType.CHR: _mainWindow.SelectedCHR0 = _animations[i] as CHR0Node;
-                        createNewToolStripMenuItem.Text = "Create New CHR0";
-                        break;
-                    case AnimType.SRT: _mainWindow.SelectedSRT0 = _animations[i] as SRT0Node;
-                        createNewToolStripMenuItem.Text = "Create New SRT0";
-                        break;
-                    case AnimType.SHP: _mainWindow.SelectedSHP0 = _animations[i] as SHP0Node;
-                        createNewToolStripMenuItem.Text = "Create New SHP0";
-                        break;
-                    case AnimType.PAT: _mainWindow.SelectedPAT0 = _animations[i] as PAT0Node;
-                        createNewToolStripMenuItem.Text = "Create New PAT0";
-                        break;
-                    case AnimType.VIS: _mainWindow.SelectedVIS0 = _animations[i] as VIS0Node;
-                        createNewToolStripMenuItem.Text = "Create New VIS0";
-                        break;
-                    case AnimType.SCN: _mainWindow.SelectedSCN0 = _animations[i] as SCN0Node;
-                        createNewToolStripMenuItem.Text = "Create New SCN0";
-                        break;
-                    case AnimType.CLR: _mainWindow.SelectedCLR0 = _animations[i] as CLR0Node;
-                        createNewToolStripMenuItem.Text = "Create New CLR0";
-                        break;
+                    switch (TargetAnimType)
+                    {
+                        case AnimType.CHR: _mainWindow.SelectedCHR0 = _animations[i] as CHR0Node;
+                            createNewToolStripMenuItem.Text = "Create New CHR0";
+                            break;
+                        case AnimType.SRT: _mainWindow.SelectedSRT0 = _animations[i] as SRT0Node;
+                            createNewToolStripMenuItem.Text = "Create New SRT0";
+                            break;
+                        case AnimType.SHP: _mainWindow.SelectedSHP0 = _animations[i] as SHP0Node;
+                            createNewToolStripMenuItem.Text = "Create New SHP0";
+                            break;
+                        case AnimType.PAT: _mainWindow.SelectedPAT0 = _animations[i] as PAT0Node;
+                            createNewToolStripMenuItem.Text = "Create New PAT0";
+                            break;
+                        case AnimType.VIS: _mainWindow.SelectedVIS0 = _animations[i] as VIS0Node;
+                            createNewToolStripMenuItem.Text = "Create New VIS0";
+                            break;
+                        case AnimType.SCN: _mainWindow.SelectedSCN0 = _animations[i] as SCN0Node;
+                            createNewToolStripMenuItem.Text = "Create New SCN0";
+                            break;
+                        case AnimType.CLR: _mainWindow.SelectedCLR0 = _animations[i] as CLR0Node;
+                            createNewToolStripMenuItem.Text = "Create New CLR0";
+                            break;
+                    }
+                    _mainWindow.GetFiles(TargetAnimType);
                 }
-                _mainWindow.GetFiles(TargetAnimType);
+                else
+                {
+                    _mainWindow.GetFiles(AnimType.None);
+                    _mainWindow.SetSelectedBRRESFile(TargetAnimType, null);
+                }
                 _mainWindow.UpdatePropDisplay();
             }
             else
@@ -1692,7 +1703,8 @@ namespace Ikarus.UI
             _mainWindow.Updating = true;
             _mainWindow.Loop = SelectedSubActionGrp._flags.HasFlag(AnimationFlags.Loop);
             _mainWindow.Updating = false;
-            _mainWindow.SetFrame(0);
+            _mainWindow.SetFrame(1);
+            _mainWindow.MovesetPanel.comboBox1_SelectedIndexChanged(this, null);
         }
 
         private void SubActionsList_KeyDown(object sender, KeyEventArgs e)

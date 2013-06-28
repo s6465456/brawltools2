@@ -128,9 +128,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public ActionEventInfo GetEventInfo(long id)
         {
-            if (FileManager.EventDictionary == null)
-                FileManager.LoadEventDictionary();
-
             if (FileManager.EventDictionary.ContainsKey(id))
                 return FileManager.EventDictionary[id];
 

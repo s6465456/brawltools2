@@ -458,7 +458,19 @@ namespace System.Windows.Forms
         CoolTimer _timer;
         void _timer_RenderFrame(object sender, FrameEventArgs e)
         {
-            animTimer_Tick(null, null);
+            if (TargetAnimation == null)
+                return;
+
+            if (_animFrame >= _maxFrame)
+                if (!_loop)
+                    StopAnim();
+                else
+                    SetFrame(1);
+            else
+                SetFrame(_animFrame + 1);
+
+            if (_capture)
+                images.Add(modelPanel.GrabScreenshot(false));
         }
 
         public void PlayAnim()
@@ -518,27 +530,6 @@ namespace System.Windows.Forms
                 images.Clear();
                 _capture = false;
             }
-        }
-        private void animTimer_Tick(object sender, EventArgs e)
-        {
-            if (TargetAnimation == null)
-                return;
-
-            if (_animFrame >= _maxFrame)
-                if (!_loop)
-                    StopAnim();
-                else
-                    SetFrame(1);
-            else
-                SetFrame(_animFrame + 1);
-
-            if (_capture)
-                images.Add(modelPanel.GrabScreenshot(false));
-        }
-
-        public void FrameCountChanged()
-        {
-
         }
     }
 }

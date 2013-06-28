@@ -127,7 +127,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
             _name = Header->Name;
-            Populate();
             return Header->_numFiles > 0;
         }
 
@@ -312,7 +311,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_name == null)
                     _name = String.Format("{0}[{1}]", _fileType, _fileIndex);
             }
-            else if (parent != null)
+            else if (parent != null && !(parent is FileScanNode))
             {
                 ARCFileHeader* header = (ARCFileHeader*)(origSource.Address - 0x20);
                 _fileType = header->FileType;

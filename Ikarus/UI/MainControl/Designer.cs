@@ -27,9 +27,8 @@ namespace Ikarus.UI
         private ColorDialog dlgColor;
         private Button btnLeftToggle;
         private Button btnRightToggle;
-        private System.ComponentModel.IContainer components;
+        private IContainer components;
         private Button btnPlaybackToggle;
-        public Timer animTimer;
         private Splitter spltLeft;
         private Button btnOptionToggle;
         private MenuStrip menuStrip1;
@@ -142,12 +141,10 @@ namespace Ikarus.UI
 
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.dlgColor = new System.Windows.Forms.ColorDialog();
             this.btnLeftToggle = new System.Windows.Forms.Button();
             this.btnRightToggle = new System.Windows.Forms.Button();
             this.btnPlaybackToggle = new System.Windows.Forms.Button();
-            this.animTimer = new System.Windows.Forms.Timer(this.components);
             this.spltLeft = new System.Windows.Forms.Splitter();
             this.btnOptionToggle = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -306,11 +303,6 @@ namespace Ikarus.UI
             this.btnPlaybackToggle.UseVisualStyleBackColor = false;
             this.btnPlaybackToggle.Click += new System.EventHandler(this.btnPlaybackToggle_Click);
             // 
-            // animTimer
-            // 
-            this.animTimer.Interval = 1;
-            this.animTimer.Tick += new System.EventHandler(this.animTimer_Tick);
-            // 
             // spltLeft
             // 
             this.spltLeft.BackColor = System.Drawing.SystemColors.Control;
@@ -319,7 +311,6 @@ namespace Ikarus.UI
             this.spltLeft.Size = new System.Drawing.Size(4, 391);
             this.spltLeft.TabIndex = 9;
             this.spltLeft.TabStop = false;
-            this.spltLeft.Visible = false;
             // 
             // btnOptionToggle
             // 
@@ -361,7 +352,7 @@ namespace Ikarus.UI
             this.btnLoadChar});
             this.newSceneToolStripMenuItem.Name = "newSceneToolStripMenuItem";
             this.newSceneToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.newSceneToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newSceneToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.newSceneToolStripMenuItem.Text = "Load";
             // 
             // btnLoadRoot
@@ -376,7 +367,7 @@ namespace Ikarus.UI
             // pathToolStripMenuItem
             // 
             this.pathToolStripMenuItem.Name = "pathToolStripMenuItem";
-            this.pathToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pathToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.pathToolStripMenuItem.Text = "<path>";
             this.pathToolStripMenuItem.Click += new System.EventHandler(this.btnLoadRoot_Click);
             // 
@@ -638,7 +629,7 @@ namespace Ikarus.UI
             this.showAnim,
             this.detachViewerToolStripMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.editorsToolStripMenuItem.Text = "Panels";
             // 
             // showOptions
@@ -701,7 +692,7 @@ namespace Ikarus.UI
             this.resetCameraToolStripMenuItem,
             this.showCameraCoordinatesToolStripMenuItem});
             this.backColorToolStripMenuItem.Name = "backColorToolStripMenuItem";
-            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.backColorToolStripMenuItem.Text = "Viewer";
             // 
             // backgroundToolStripMenuItem
@@ -863,7 +854,7 @@ namespace Ikarus.UI
             this.togglePolygons,
             this.boundingBoxToolStripMenuItem});
             this.modelToolStripMenuItem.Name = "modelToolStripMenuItem";
-            this.modelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.modelToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.modelToolStripMenuItem.Text = "Model";
             // 
             // toggleBones
@@ -900,7 +891,7 @@ namespace Ikarus.UI
             this.hitboxesOffToolStripMenuItem,
             this.hurtboxesOffToolStripMenuItem});
             this.movesetToolStripMenuItem1.Name = "movesetToolStripMenuItem1";
-            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(135, 22);
             this.movesetToolStripMenuItem1.Text = "Moveset";
             this.movesetToolStripMenuItem1.Visible = false;
             // 
@@ -934,7 +925,7 @@ namespace Ikarus.UI
             this.playVIS0ToolStripMenuItem,
             this.playCLR0ToolStripMenuItem});
             this.fileTypesToolStripMenuItem.Name = "fileTypesToolStripMenuItem";
-            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.fileTypesToolStripMenuItem.Text = "Animations";
             // 
             // playCHR0ToolStripMenuItem
@@ -993,7 +984,7 @@ namespace Ikarus.UI
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
@@ -1338,7 +1329,6 @@ namespace Ikarus.UI
             this.spltRight.Size = new System.Drawing.Size(4, 391);
             this.spltRight.TabIndex = 31;
             this.spltRight.TabStop = false;
-            this.spltRight.Visible = false;
             // 
             // rightPanel
             // 
@@ -1398,6 +1388,7 @@ namespace Ikarus.UI
             leftPanel._mainWindow = 
             rightPanel.pnlMoveset._mainWindow = 
             this;
+            MovesetPanel._mainWindow = this;
             rightPanel.pnlKeyframes._mainWindow =
             rightPanel.pnlBones._mainWindow = 
             chr0Editor._mainWindow =
@@ -1408,6 +1399,7 @@ namespace Ikarus.UI
             clr0Editor._mainWindow =
             pnlPlayback._mainWindow =
             this;
+            MovesetPanel.comboBox1.SelectedIndex = 0;
 
             //pnlKeyframes.visEditor._mainWindow = vis0Editor;
             //animEditors.HorizontalScroll.Enabled = addedHeight = (!(animEditors.Width - panel3.Width >= pnlPlayback.MinimumSize.Width));
@@ -1427,6 +1419,13 @@ namespace Ikarus.UI
 
             FileManager.RootChanged += new EventHandler(FolderManager_RootChanged);
             FileManager.TargetCharacterChanged += new EventHandler(FolderManager_TargetCharacterChanged);
+
+            _timer = new CoolTimer();
+            _timer.RenderFrame += _timer_RenderFrame;
+
+            modelPanel._defaultTranslate = new Vector3(20.0f, 15.0f, 35.0f);
+            modelPanel._defaultRotate = new Vector2(-10.0f, 30.0f);
+            modelPanel.ResetCamera();
         }
 
         #endregion

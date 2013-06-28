@@ -868,8 +868,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             amb2 = C2AmbientColor;
 
             (_userEntries = new UserDataCollection()).Read(header->UserData(_initVersion));
-
-            Populate();
+            
             return true;
         }
 

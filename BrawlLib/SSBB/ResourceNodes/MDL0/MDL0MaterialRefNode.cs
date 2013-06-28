@@ -354,7 +354,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
 
-            if (((MDL0MaterialNode)Parent).XFCommands.Length != 0)
+            int len = ((MDL0MaterialNode)Parent).XFCommands.Length;
+            if (len != 0 && Index * 2 < len)
             {
                 TexMtxFlags = new XFTexMtxInfo(((MDL0MaterialNode)Parent).XFCommands[Index * 2].values[0]);
                 DualTexFlags = new XFDualTex(((MDL0MaterialNode)Parent).XFCommands[Index * 2 + 1].values[0]);

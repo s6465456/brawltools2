@@ -42,7 +42,6 @@ namespace System.Windows.Forms
         //private void btnSaveMoveset_Click(object sender, EventArgs e) { pnlMoveset.SaveMoveset(); }
 
         public ResourceNode _externalAnimationsNode;
-        private SaveFileDialog dlgSave = new SaveFileDialog();
         private OpenFileDialog dlgOpen = new OpenFileDialog();
         private bool LoadExternal()
         {
