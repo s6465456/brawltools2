@@ -352,38 +352,38 @@ namespace Ikarus.UI
             if (val != _animFrame)
             {
                 int difference = val - _animFrame;
-                //if (FileManager.Moveset != null && MoveDefActionNode._runningActions.Count > 0)
-                //{
-                //    //Run frame value through the moveset panel.
-                //    if (val < _animFrame)
-                //    {
-                //        if (MovesetPanel._animFrame > 0)
-                //            MovesetPanel.SetFrame(MovesetPanel._animFrame + difference);
-                //        else if (MovesetPanel.subactions)
-                //            MovesetPanel.SetFrame(_maxFrame - 1);
-                //    }
-                //    else if (val > _animFrame)
-                //        if (MovesetPanel.ActionsIdling || (MovesetPanel.subactions && MovesetPanel._animFrame >= _maxFrame - 1))
-                //        {
-                //            if (MovesetPanel.subactions && SelectedSubActionGrp != null)
-                //                if (_animFrame < _maxFrame)
-                //                {
-                //                    SetFrame(_animFrame + difference);
-                //                    MovesetPanel._animFrame += difference;
-                //                }
-                //                else
-                //                    MovesetPanel.SetFrame(0);
-                //        }
-                //        else
-                //            MovesetPanel.SetFrame(MovesetPanel._animFrame + difference);
-                //}
-                //else 
+                if (FileManager.Moveset != null && MoveDefActionNode._runningActions.Count > 0)
+                {
+                    //Run frame value through the moveset panel.
+                    if (val < _animFrame)
+                    {
+                        if (MovesetPanel._animFrame + 1 > 0)
+                            MovesetPanel.SetFrame(MovesetPanel._animFrame + difference);
+                        else// if (MovesetPanel.subactions)
+                            MovesetPanel.SetFrame(_maxFrame - 2);
+                    }
+                    else if (val > _animFrame)
+                        if (MovesetPanel.ActionsIdling || (MovesetPanel.subactions && MovesetPanel._animFrame + 1 >= _maxFrame - 1))
+                        {
+                            if (MovesetPanel.subactions && SelectedSubActionGrp != null)
+                                if (_animFrame < _maxFrame)
+                                {
+                                    SetFrame(_animFrame + difference);
+                                    MovesetPanel._animFrame += difference;
+                                }
+                                else
+                                    MovesetPanel.SetFrame(0);
+                        }
+                        else
+                            MovesetPanel.SetFrame(MovesetPanel._animFrame + difference);
+                }
+                else 
                     if (GetSelectedBRRESFile(TargetAnimType) != null)
                     SetFrame(_animFrame += difference);
                 //pnlKeyframes.numFrame_ValueChanged();
             }
         }
-        public void numFPS_ValueChanged(object sender, EventArgs e) { MovesetPanel.animTimer.Interval = animTimer.Interval = pnlPlayback.numFPS.Value == 60 ? 1 : 1000 / (int)pnlPlayback.numFPS.Value; }
+        public void numFPS_ValueChanged(object sender, EventArgs e) { _timer.TargetRenderFrequency = MovesetPanel._timer.TargetRenderFrequency = (double)pnlPlayback.numFPS.Value; }
         public void chkLoop_CheckedChanged(object sender, EventArgs e) 
         {
             _loop = pnlPlayback.chkLoop.Checked;
@@ -418,7 +418,7 @@ namespace Ikarus.UI
 
         public void SelectedPolygonChanged(object sender, EventArgs e) 
         {
-            _targetModel._polyIndex = _targetModel._polyList.IndexOf(leftPanel.SelectedPolygon);
+            _targetModel._polyIndex = _targetModel._objList.IndexOf(leftPanel.SelectedPolygon);
 
             if (leftPanel._syncObjTex)
                 leftPanel.UpdateTextures();

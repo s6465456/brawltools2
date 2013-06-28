@@ -31,15 +31,16 @@ namespace BrawlLib.Wii.Compression
             get { return (CompressionType)_algorithm[4, 4]; }
             set { _algorithm[4, 4] = (byte)value; }
         }
-        public int Parameter
+        private int Parameter
         {
             get { return (int)_algorithm[0, 4]; }
             set { _algorithm[0, 4] = (byte)value; }
         }
+        public bool IsExtendedFormat { get { return Parameter != 0; } }
         public bool LargeSize { get { return (uint)_size == 0; } }
         public int ExpandedSize
         {
-            get { return (int)(LargeSize ? (int)_extSize : (int)_size); }
+            get { return (int)(LargeSize ? _extSize : (uint)_size); }
             set 
             {
                 if ((value & 0xFFFFFF) != value) //Use extended header for sizes > 24 bits

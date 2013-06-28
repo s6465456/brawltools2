@@ -8,8 +8,6 @@ namespace System.Windows.Forms
 {
     public class ModelViewerHelp : Form
     {
-        private ModelEditControl form;
-
         public ModelViewerHelp() { InitializeComponent(); }
 
         protected override void OnLoad(EventArgs e)
@@ -17,9 +15,8 @@ namespace System.Windows.Forms
             base.OnLoad(e);
         }
 
-        public DialogResult ShowDialog(ModelEditControl owner)
+        public DialogResult ShowDialog(IWin32Window owner)
         {
-            form = owner;
             return base.ShowDialog(owner);
         }
 
@@ -29,7 +26,6 @@ namespace System.Windows.Forms
             Close();
         }
 
-        private HelpProvider helpProvider1;
         private RichTextBox richTextBox1;
 
         #region Designer
@@ -40,7 +36,6 @@ namespace System.Windows.Forms
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelViewerHelp));
             this.btnOkay = new System.Windows.Forms.Button();
-            this.helpProvider1 = new System.Windows.Forms.HelpProvider();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 

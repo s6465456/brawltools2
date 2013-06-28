@@ -235,12 +235,12 @@ namespace BrawlLib.Modeling
                                 bone._name = "TransN";
                                 model._boneGroup._children[0]._children.Add(bone);
                                 bone._parent = model._boneGroup._children[0];
-                                bone.ReferenceCount = model._polyList.Count;
+                                bone.ReferenceCount = model._objList.Count;
                                 break;
                         }
                     }
-                    if (model._polyList != null && model._polyList.Count != 0)
-                        foreach (MDL0ObjectNode poly in model._polyList)
+                    if (model._objList != null && model._objList.Count != 0)
+                        foreach (MDL0ObjectNode poly in model._objList)
                         {
                             poly._nodeId = 0;
                             poly.MatrixNode = (MDL0BoneNode)model._boneGroup._children[0]._children[0];
@@ -249,8 +249,8 @@ namespace BrawlLib.Modeling
                 else
                 {
                     //Check each polygon to see if it can be single-binded!
-                    if (model._polyList != null && model._polyList.Count != 0)
-                        foreach (MDL0ObjectNode p in model._polyList)
+                    if (model._objList != null && model._objList.Count != 0)
+                        foreach (MDL0ObjectNode p in model._objList)
                         {
                             IMatrixNode node = null; 
                             bool singlebind = true;
@@ -291,8 +291,8 @@ namespace BrawlLib.Modeling
                     RGBAPixel pixel = new RGBAPixel() { R = 100, G = 100, B = 100, A = 255 };
 
                     //Color nodes will be remapped later
-                    if (model._polyList != null && model._polyList.Count != 0)
-                        foreach (MDL0ObjectNode p in model._polyList)
+                    if (model._objList != null && model._objList.Count != 0)
+                        foreach (MDL0ObjectNode p in model._objList)
                         {
                             p._elementIndices[2] = 0;
                             RGBAPixel* pIn = (RGBAPixel*)(p._manager._faceData[2] = new UnsafeBuffer(4 * p._manager._pointCount)).Address;
@@ -305,8 +305,8 @@ namespace BrawlLib.Modeling
                 if (model._importOptions._rmpMats && model._matList != null)
                 {
                     //Remap materials
-                    if (model._polyList != null)
-                        foreach (MDL0ObjectNode p in model._polyList)
+                    if (model._objList != null)
+                        foreach (MDL0ObjectNode p in model._objList)
                             foreach (MDL0MaterialNode m in model._matList)
                                 if (m.Children.Count > 0 && 
                                     m.Children[0] != null &&
@@ -445,10 +445,10 @@ namespace BrawlLib.Modeling
                 model._numFaces += poly._numFaces = manager._faceCount = manager._pointCount / 3;
                 model._numFacepoints += poly._numFacepoints = manager._pointCount;
 
-                poly._parent = model._polyGroup;
+                poly._parent = model._objGroup;
                 poly._index = tempNo++;
 
-                model._polyList.Add(poly);
+                model._objList.Add(poly);
             }
         }
 

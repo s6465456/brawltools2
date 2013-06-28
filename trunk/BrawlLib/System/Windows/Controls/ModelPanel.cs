@@ -661,8 +661,8 @@ namespace System.Windows.Forms
                 if (o is MDL0Node)
                 {
                     MDL0Node m = o as MDL0Node;
-                    if (m._polyList != null)
-                        foreach (MDL0ObjectNode n in m._polyList)
+                    if (m._objList != null)
+                        foreach (MDL0ObjectNode n in m._objList)
                         {
                             byte r = (byte)(n.Index & 0xFF);
                             byte g = (byte)((n.Index & 0xFF00) >> 8);

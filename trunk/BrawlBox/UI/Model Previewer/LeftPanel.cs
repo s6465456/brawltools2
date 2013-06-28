@@ -291,60 +291,60 @@ namespace System.Windows.Forms
             this.renameTextureTextureToolStripMenuItem,
             this.resetToolStripMenuItem});
             this.ctxTextures.Name = "ctxTextures";
-            this.ctxTextures.Size = new System.Drawing.Size(125, 164);
+            this.ctxTextures.Size = new System.Drawing.Size(153, 186);
             this.ctxTextures.Opening += new System.ComponentModel.CancelEventHandler(this.ctxTextures_Opening);
             // 
             // sourceToolStripMenuItem
             // 
             this.sourceToolStripMenuItem.Enabled = false;
             this.sourceToolStripMenuItem.Name = "sourceToolStripMenuItem";
-            this.sourceToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.sourceToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.sourceToolStripMenuItem.Text = "Source";
             // 
             // sizeToolStripMenuItem
             // 
             this.sizeToolStripMenuItem.Enabled = false;
             this.sizeToolStripMenuItem.Name = "sizeToolStripMenuItem";
-            this.sizeToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.sizeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.sizeToolStripMenuItem.Text = "Size";
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(121, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
             // 
             // viewToolStripMenuItem
             // 
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.viewToolStripMenuItem.Text = "View...";
             this.viewToolStripMenuItem.Click += new System.EventHandler(this.viewToolStripMenuItem_Click);
             // 
             // exportTextureToolStripMenuItem
             // 
             this.exportTextureToolStripMenuItem.Name = "exportTextureToolStripMenuItem";
-            this.exportTextureToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.exportTextureToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exportTextureToolStripMenuItem.Text = "Export...";
             this.exportTextureToolStripMenuItem.Click += new System.EventHandler(this.exportTextureToolStripMenuItem_Click);
             // 
             // replaceTextureToolStripMenuItem
             // 
             this.replaceTextureToolStripMenuItem.Name = "replaceTextureToolStripMenuItem";
-            this.replaceTextureToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.replaceTextureToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.replaceTextureToolStripMenuItem.Text = "Replace...";
             this.replaceTextureToolStripMenuItem.Click += new System.EventHandler(this.replaceTextureToolStripMenuItem_Click);
             // 
             // renameTextureTextureToolStripMenuItem
             // 
             this.renameTextureTextureToolStripMenuItem.Name = "renameTextureTextureToolStripMenuItem";
-            this.renameTextureTextureToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.renameTextureTextureToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.renameTextureTextureToolStripMenuItem.Text = "Rename";
             this.renameTextureTextureToolStripMenuItem.Click += new System.EventHandler(this.renameTextureToolStripMenuItem_Click);
             // 
             // resetToolStripMenuItem
             // 
             this.resetToolStripMenuItem.Name = "resetToolStripMenuItem";
-            this.resetToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.resetToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.resetToolStripMenuItem.Text = "Reload";
             this.resetToolStripMenuItem.Click += new System.EventHandler(this.resetToolStripMenuItem_Click);
             // 
@@ -447,7 +447,8 @@ namespace System.Windows.Forms
             this.deleteToolStripMenuItem,
             this.createNewToolStripMenuItem});
             this.ctxAnim.Name = "ctxAnim";
-            this.ctxAnim.Size = new System.Drawing.Size(195, 186);
+            this.ctxAnim.Size = new System.Drawing.Size(195, 164);
+            this.ctxAnim.Opening += new System.ComponentModel.CancelEventHandler(this.ctxAnim_Opening);
             // 
             // toolStripMenuItem2
             // 
@@ -503,14 +504,14 @@ namespace System.Windows.Forms
             this.createNewToolStripMenuItem.Text = "Create New Animation";
             this.createNewToolStripMenuItem.Click += new System.EventHandler(this.createNewToolStripMenuItem_Click);
             // 
-            // AnimModelPanel
+            // LeftPanel
             // 
             this.Controls.Add(this.pnlObjects);
             this.Controls.Add(this.spltObjTex);
             this.Controls.Add(this.spltAnimObj);
             this.Controls.Add(this.pnlAnims);
             this.Controls.Add(this.pnlTextures);
-            this.Name = "AnimModelPanel";
+            this.Name = "LeftPanel";
             this.Size = new System.Drawing.Size(137, 500);
             this.pnlObjects.ResumeLayout(false);
             this.pnlAnims.ResumeLayout(false);

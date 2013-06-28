@@ -179,7 +179,7 @@ namespace Ikarus.UI
         { 
             //new ModelViewerHelp().Show(this); 
         }
-        Form popoutForm;
+        //Form popoutForm;
         private void detachViewerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //if (detachViewerToolStripMenuItem.Text == "Detach Viewer")
@@ -390,13 +390,13 @@ namespace Ikarus.UI
         public void btnPlay_Click(object sender, EventArgs e)
         {
             if (FileManager.Moveset != null && MoveDefActionNode._runningActions.Count > 0)
-                if (MovesetPanel.animTimer.Enabled)
+                if (MovesetPanel._timer.IsRunning)
                     MovesetPanel.StopScript();
                 else
                     MovesetPanel.RunScript();
             else
             {
-                if (animTimer.Enabled)
+                if (_timer.IsRunning)
                     StopAnim();
                 else
                     PlayAnim();
@@ -444,8 +444,8 @@ namespace Ikarus.UI
                         _selectedVertices.Clear();
                         if (_targetModels != null)
                             foreach (MDL0Node mdl in _targetModels)
-                                if (mdl._polyList != null)
-                                    foreach (MDL0ObjectNode o in mdl._polyList)
+                                if (mdl._objList != null)
+                                    foreach (MDL0ObjectNode o in mdl._objList)
                                         if (o._render)
                                             foreach (Vertex3 v in o._manager._vertices)
                                             {

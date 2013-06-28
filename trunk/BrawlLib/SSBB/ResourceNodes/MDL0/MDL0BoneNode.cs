@@ -30,58 +30,57 @@ namespace BrawlLib.SSBB.ResourceNodes
         public bool _moved = false;
         [Browsable(false)]
         public bool Moved
-        {  
+        {
             get { return _moved;  } 
             set 
             {
                 _moved = true;
                 Model.SignalPropertyChange();
-                Model.Rebuild(false); //Bone rebuilds are forced automatically
             } 
         }
 
         #region IK Settings
 
-        bool _lockXRot, _lockYRot, _lockZRot;
-        //float _maxX, _maxY, _maxZ;
-        //float _minX, _minY, _minZ;
-        bool _ikStart, _ikBone, _ikEnd;
+        //bool _lockXRot, _lockYRot, _lockZRot;
+        ////float _maxX, _maxY, _maxZ;
+        ////float _minX, _minY, _minZ;
+        //bool _ikStart, _ikBone, _ikEnd;
 
-        void DefaultIKs()
-        {
-            switch (_name)
-            {
-                case "RLegJ":
-                case "LLegJ":
-                    _ikStart = true;
-                    break;
+        //void DefaultIKs()
+        //{
+        //    switch (_name)
+        //    {
+        //        case "RLegJ":
+        //        case "LLegJ":
+        //            _ikStart = true;
+        //            break;
 
-                case "LKneeJ":
-                case "RKneeJ":
-                    _ikBone = true;
-                    break;
+        //        case "LKneeJ":
+        //        case "RKneeJ":
+        //            _ikBone = true;
+        //            break;
 
-                case "LFootJ":
-                case "RFootJ":
-                    _ikEnd = true;
-                    break;
+        //        case "LFootJ":
+        //        case "RFootJ":
+        //            _ikEnd = true;
+        //            break;
 
-                case "LShoulderJ":
-                case "RShoulderJ":
-                    _ikStart = true;
-                    break;
+        //        case "LShoulderJ":
+        //        case "RShoulderJ":
+        //            _ikStart = true;
+        //            break;
 
-                case "LArmJ":
-                case "RArmJ":
-                    _ikBone = true;
-                    break;
+        //        case "LArmJ":
+        //        case "RArmJ":
+        //            _ikBone = true;
+        //            break;
 
-                case "LHandN":
-                case "RHandN":
-                    _ikEnd = true;
-                    break;
-            }
-        }
+        //        case "LHandN":
+        //        case "RHandN":
+        //            _ikEnd = true;
+        //            break;
+        //    }
+        //}
         
         #endregion
 
@@ -139,31 +138,23 @@ namespace BrawlLib.SSBB.ResourceNodes
         //        b.TransferWeights(n);
         //}
 
-        public override void Remove()
-        {
-            if (Parent == null)
-                return;
-            //Model.RemoveBone(this);
-            base.Remove();
-        }
-
 //#if DEBUG
-//        [Category("Bone")]
-//        public int HeaderLen { get { return _headerLen; } }
-//        [Category("Bone")]
-//        public int MDL0Offset { get { return _mdl0Offset; } }
-//        [Category("Bone")]
-//        public int StringOffset { get { return _stringOffset; } }
-//        [Category("Bone")]
-//        public int ParentOffset { get { return _parentOffset / 0xD0; } }
-//        [Category("Bone")]
-//        public int FirstChildOffset { get { return _firstChildOffset / 0xD0; } }
-//        [Category("Bone")]
-//        public int NextOffset { get { return _nextOffset / 0xD0; } }
-//        [Category("Bone")]
-//        public int PrevOffset { get { return _prevOffset / 0xD0; } }
-//        [Category("Bone")]
-//        public int UserDataOffset { get { return _userDataOffset; } }
+        //[Category("Bone")]
+        //public int HeaderLen { get { return _headerLen; } }
+        //[Category("Bone")]
+        //public int MDL0Offset { get { return _mdl0Offset; } }
+        //[Category("Bone")]
+        //public int StringOffset { get { return _stringOffset; } }
+        //[Category("Bone")]
+        //public int ParentOffset { get { return _parentOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int FirstChildOffset { get { return _firstChildOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int NextOffset { get { return _nextOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int PrevOffset { get { return _prevOffset / 0xD0; } }
+        //[Category("Bone")]
+        //public int UserDataOffset { get { return _userDataOffset; } }
 //#endif
         
         [Category("Bone")]
@@ -400,7 +391,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Search bone list for matching header
                 foreach (MDL0BoneNode bone in Parent._children)
                     if (pHeader == bone.Header)
-                    { _parent = bone; break; } //Assign parent and break
+                    {
+                        _parent = bone;
+                        break;
+                    }
             }
 
             //Conditional name assignment
@@ -426,7 +420,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Model._billboardBones.Add(this); //Update mesh in T-Pose
 
             _bindState = _frameState = new FrameState(header->_scale, (Vector3)header->_rotation, header->_translation);
-            //(_bindState._quaternion = new Vector4()).FromEuler(header->_rotation);
             _bindMatrix = _frameMatrix = header->_transform;
             _inverseBindMatrix = _inverseFrameMatrix = header->_transformInv;
 

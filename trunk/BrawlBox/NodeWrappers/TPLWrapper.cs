@@ -56,7 +56,27 @@ namespace BrawlBox.NodeWrappers
         {
             string path;
             int index = Program.OpenFile(ExportFilters.Images, out path);
-            if (index > 0)
+            if (index == 8)
+            {
+                TPLTextureNode t = new TPLTextureNode() { Name = "Texture" };
+                TPLGroupNode g = new TPLGroupNode() { Name = _resource.FindName("Texture") };
+                _resource.AddChild(g);
+                g.AddChild(t);
+                //if (_paletteData != null)
+                //{
+                //    _origTPLPlt = new TPLPaletteNode() { Name = "Palette" };
+                //    g.AddChild(_origTPLPlt);
+                //    _origTPLPlt.ReplaceRaw(_paletteData);
+                //}
+                g._texture = t;
+                //g._palette = _origTPLPlt;
+                t.Replace(path);
+
+                BaseWrapper w = this.FindResource(t, true);
+                w.EnsureVisible();
+                w.TreeView.SelectedNode = w;
+            }
+            else if (index > 0)
                 using (TextureConverterDialog dlg = new TextureConverterDialog())
                 {
                     dlg.ImageSource = path;

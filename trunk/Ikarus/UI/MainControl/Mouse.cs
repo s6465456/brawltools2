@@ -502,8 +502,8 @@ namespace Ikarus.UI
             //foreach (Vertex3 v in _selectedVertices)
             if (_targetModels != null)
             foreach (MDL0Node m in _targetModels)
-                if (m._polyList != null)
-                    foreach (MDL0ObjectNode o in m._polyList)
+                if (m._objList != null)
+                    foreach (MDL0ObjectNode o in m._objList)
                         foreach (Vertex3 v in o._manager._vertices)
                         {
                             v._highlightColor = Color.Transparent;

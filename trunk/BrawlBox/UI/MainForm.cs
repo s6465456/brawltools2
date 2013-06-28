@@ -33,6 +33,9 @@ namespace BrawlBox
         {
             InitializeComponent();
             Text = Program.AssemblyTitle;
+//#if _DEBUG
+//            Text += " - DEBUG";
+//#endif
             soundPackControl1._grid = propertyGrid1;
             soundPackControl1.lstSets.SmallImageList = ResourceTree.Images;
             msBinEditor1.Dock =
@@ -97,6 +100,10 @@ namespace BrawlBox
                 Text = String.Format("{0} - {1}", Program.AssemblyTitle, Program.RootPath);
             else
                 Text = Program.AssemblyTitle;
+
+//#if DEBUG
+//            Text += " - DEBUG";
+//#endif
         }
 
         public void TargetResource(ResourceNode n)
@@ -261,6 +268,12 @@ namespace BrawlBox
             //Model panel has to be loaded first to display model correctly
             if (_currentControl is ModelPanel)
             {
+                if (node._children == null)
+                {
+                    node._children = new List<ResourceNode>();
+                    node.OnPopulate();
+                }
+
                 if (node is MDL0Node)
                 {
                     MDL0Node m = node as MDL0Node;
@@ -289,44 +302,96 @@ namespace BrawlBox
             base.OnClosing(e);
         }
 
+        private static string _filter = null;
+        private static string InFilter 
+        {
+            get 
+            {
+                if (_filter != null)
+                    return _filter;
+
+                string f = "All Supported Formats (*.*)|";
+                string f2 = "";
+                string[] s = _inFilter.Split('|');
+                for (int i = 0; i < s.Length; i++)
+                {
+                    if ((i & 1) != 0)
+                    {
+                        string[] t = s[i].Split(';');
+                        string n = "";
+                        for (int x = 0; x < t.Length; x++)
+                        {
+                            string l = t[x].Substring(t[x].IndexOf('.') + 1);
+                            if (!l.Contains("*"))
+                                n += (x != 0 ? ";" : "") + t[x];
+                        }
+                        f += (i != 1 ? ";" : "") + n;
+                    }
+                    else
+                        f2 += String.Format("|{0} ({1})|{1}", s[i], s[i + 1]);
+                }
+                return _filter = f + f2;
+            }
+        }
+
         private static string _inFilter =
-        "All Supported Formats |*.pac;*.pcs;*.brres;*.brtex;*.brmdl;*.breff;*.breft;*.plt0;*.tex0;*.tpl;*.mdl0;*.chr0;*.srt0;*.shp0;*.pat0;*.vis0;*.clr0;*.scn0;*.brstm;*.brsar;*.msbin;*.brwsd;*.brseq;*.brbnk;*.efls;*.breff;*.breft;*.arc;*.dol;*.rel;*.szs;*.mrg;*.mrgc;*.thp|" +
-        "PAC File Archive (*.pac)|*.pac|" +
-        "PCS Compressed File Archive (*.pcs)|*.pcs|" +
-        "Resource Package (*.brres;*.brtex;*.brmdl)|*.brres;*.brtex;*.brmdl|" +
-        "Palette (*.plt0)|*.plt0|" +
-        "Texture (*.tex0)|*.tex0|" +
-        "TPL Texture Archive (*.tpl)|*.tpl|" +
-        "Model (*.mdl0)|*.mdl0|" +
-        "Model Animation (*.chr0)|*.chr0|" +
-        "Texture Animation (*.srt0)|*.srt0|" +
-        "Vertex Morph (*.shp0)|*.shp0|" +
-        "Texture Pattern (*.pat0)|*.pat0|" +
-        "Visibility Sequence (*.vis0)|*.vis0|" +
-        "Color Sequence (*.clr0)|*.clr0|" +
-        "Scene Settings (*.scn0)|*.scn0|" +
-        "Message Pack (*.msbin)|*.msbin|" +
-        "Audio Stream (*.brstm)|*.brstm|" +
-        "Sound Archive (*.brsar)|*.brsar|" +
-        "Sound Stream (*.brwsd)|*.brwsd|" +
-        "Sound Bank (*.brbnk)|*.brbnk|" +
-        "Sound Sequence (*.brseq)|*.brseq|" +
-        "Effect List (*.efls)|*.efls|" +
-        "Effect Parameters (*.breff)|*.breff|" +
-        "Effect Textures (*.breft)|*.breft|" +
-        "ARC File Archive (*.arc)|*.arc|" +
-        "SZS Compressed File Archive (*.szs)|*.szs|" +
-        "Static Module (*.dol)|*.dol|" +
-        "Relocatable Module (*.rel)|*.rel|" +
-        "MRG Resource Group (*.mrg)|*.mrg|" +
-        "MRG Compressed Resource Group (*.mrgc)|*.mrgc|" +
-        "THP Audio/Video (*.thp)|*.thp";
+        "PAC File Archive|*.pac"
+        +"|PCS Compressed File Archive|*.pcs"
+        +"|Resource Package|*.brres;*.brtex;*.brmdl"
+        +"|Palette|*.plt0"
+        +"|Texture|*.tex0"
+        +"|TPL Texture Archive|*.tpl"
+        +"|Model|*.mdl0"
+        +"|Model Animation|*.chr0"
+        +"|Texture Animation|*.srt0"
+        +"|Vertex Morph|*.shp0"
+        +"|Texture Pattern|*.pat0"
+        +"|Visibility Sequence|*.vis0"
+        +"|Color Sequence|*.clr0"
+        +"|Scene Settings|*.scn0"
+        +"|Message Pack|*.msbin"
+        +"|Audio Stream|*.brstm"
+        +"|Sound Archive|*.brsar"
+        +"|Sound Stream|*.brwsd"
+        +"|Sound Bank|*.brbnk"
+        +"|Sound Sequence|*.brseq"
+        +"|Effect List|*.efls"
+        +"|Effect Parameters|*.breff"
+        +"|Effect Textures|*.breft"
+        +"|ARC File Archive|*.arc"
+        +"|SZS Compressed File Archive|*.szs"
+        +"|Static Module|*.dol"
+        +"|Relocatable Module|*.rel"
+        +"|MRG Resource Group|*.mrg"
+        +"|MRG Compressed Resource Group|*.mrgc"
+        +"|THP Audio/Video|*.thp"
+        //+"|Scan File|*.*"
+        ;
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string inFile;
-            if (Program.OpenFile(_inFilter, out inFile) != 0)
-                Program.Open(inFile);
+            int i = Program.OpenFile(InFilter, out inFile);
+            if (i != 0)
+            {
+                if (i == 32)
+                {
+                    FileMap map = FileMap.FromFile(inFile, FileMapProtect.Read);
+                    FileScanNode node = new FileScanNode();
+                    Program.Scan(map, node);
+                    if (node.Children.Count == 0)
+                        MessageBox.Show("No formats recognized.");
+                    else
+                    {
+                        Program._rootNode = node;
+                        Program._rootPath = inFile;
+                        node._list = node._children;
+                        node.Initialize(null, new DataSource(map));
+                        Reset();
+                    }
+                }
+                else Program.Open(inFile);
+            }
         }
 
         #region File Menu

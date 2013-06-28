@@ -198,15 +198,28 @@ namespace BrawlLib.Wii.Compression
 
         public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen)
         {
-            if ((header->Algorithm != CompressionType.LZ77) || (header->Parameter != 0))
+            if (header->Algorithm != CompressionType.LZ77)
                 throw new InvalidCompressionException("Compression header does not match LZ77 format.");
 
+            //CXDecompression.CXDecompressLZ(header, dstAddress, (uint)dstLen);
+            bool exFmt = header->IsExtendedFormat;
             for (byte* srcPtr = (byte*)header->Data, dstPtr = (byte*)dstAddress, ceiling = dstPtr + dstLen; dstPtr < ceiling; )
                 for (byte control = *srcPtr++, bit = 8; (bit-- != 0) && (dstPtr != ceiling); )
                     if ((control & (1 << bit)) == 0)
                         *dstPtr++ = *srcPtr++;
                     else
-                        for (int num = (*srcPtr >> 4) + 3, offset = (((*srcPtr++ & 0xF) << 8) | *srcPtr++) + 2; (dstPtr != ceiling) && (num-- > 0); *dstPtr++ = dstPtr[-offset]) ;
+                    {
+                        int num = (*srcPtr >> 4);
+                        if (!exFmt)
+                            num += 3;
+                        else if (num == 1)
+                            num = (((*srcPtr++ & 0x0F) << 12) | ((*srcPtr++) << 4) | (*srcPtr >> 4)) + 0xFF + 0xF + 3;
+                        else if (num == 0)
+                            num = (((*srcPtr++ & 0x0F) << 4) | (*srcPtr >> 4)) + 0xF + 2;
+                        else
+                            num += 1;
+                        for (int offset = (((*srcPtr++ & 0xF) << 8) | *srcPtr++) + 2; (dstPtr != ceiling) && (num-- > 0); *dstPtr++ = dstPtr[-offset]) ;
+                    }
         }
     }
 }

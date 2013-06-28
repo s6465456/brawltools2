@@ -1161,7 +1161,7 @@ namespace System.Windows.Forms
         }
         private bool CompareVertexDistance(Vector3 point, ref Vertex3 match)
         {
-            foreach (MDL0ObjectNode o in TargetModel._polyList)
+            foreach (MDL0ObjectNode o in TargetModel._objList)
                 foreach (Vertex3 v in o._manager._vertices)
                 {
                     float t = v.WeightedPosition.TrueDistance(point);

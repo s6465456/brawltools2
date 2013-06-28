@@ -52,8 +52,6 @@ namespace BrawlBox
 
         public ModelForm() { InitializeComponent(); }
 
-        private System.ComponentModel.IContainer components;
-
         private List<MDL0Node> _models = new List<MDL0Node>();
 
         public DialogResult ShowDialog(List<MDL0Node> models) { return ShowDialog(null, models); }

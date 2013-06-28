@@ -239,10 +239,6 @@ namespace Ikarus.UI
         private MoveDefNode _mDef;
         private Panel panel2;
         public ListBox EventList;
-
-        public string[] iRequirements = new string[0];
-        public string[] iAirGroundStats = new string[0];
-        public string[] iCollisionStats = new string[0];
         
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MoveDefNode MoveDef
@@ -273,7 +269,6 @@ namespace Ikarus.UI
             set { _targetNode = value; TargetChanged(); }
         }
 
-        public bool called = false;
         public ScriptEditor() { InitializeComponent(); }
         public ScriptEditor(ScriptPanel owner)
         {
@@ -285,13 +280,6 @@ namespace Ikarus.UI
         {
             if (TargetNode != null)
             {
-                if (!called)
-                {
-                    called = true;
-                    iRequirements = FileManager.iRequirements;
-                    iAirGroundStats = FileManager.iAirGroundStats;
-                    iCollisionStats = FileManager.iCollisionStats;
-                }
                 MoveDef = TargetNode.Root;
                 //Offset.Text = TargetNode.HexOffset;
                 MakeScript();
@@ -374,19 +362,19 @@ namespace Ikarus.UI
         //Return the collision status corresponding to the value passed.
         public string GetCollisionStatus(long value)
         {
-            if (value > iCollisionStats.Length)
+            if (value > FileManager.iCollisionStats.Length)
                 return "Undefined(" + value + ")";
 
-            return iCollisionStats[value];
+            return FileManager.iCollisionStats[value];
         }
 
         //Return the air or ground status corresponding to the value passed.
         public string GetAirGroundStatus(long value)
         {
-            if (value > iAirGroundStats.Length)
+            if (value > FileManager.iAirGroundStats.Length)
                 return "Undefined(" + value + ")";
 
-            return iAirGroundStats[value];
+            return FileManager.iAirGroundStats[value];
         }
 
         //Return the collision status corresponding to the value passed.
@@ -630,19 +618,16 @@ namespace Ikarus.UI
             bool not = (value & 0x80000000) == 0x80000000;
             long requirement = value & 0xFF;
 
-            if (requirement > iRequirements.Length)
+            if (requirement > FileManager.iRequirements.Length)
                 return Helpers.Hex(requirement);
 
             if (not == true)
-                return "Not " + iRequirements[requirement];
+                return "Not " + FileManager.iRequirements[requirement];
 
-            return iRequirements[requirement];
+            return FileManager.iRequirements[requirement];
         }
         public ActionEventInfo GetEventInfo(long id)
         {
-            if (FileManager.EventDictionary == null)
-                FileManager.LoadEventDictionary();
-
             if (FileManager.EventDictionary.ContainsKey(id))
                 return FileManager.EventDictionary[id];
 

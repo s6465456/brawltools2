@@ -104,6 +104,12 @@ namespace Ikarus.UI
         public bool _renderFloor, _renderBones = true, _renderBox, _dontRenderOffscreen = true, _renderVertices, _renderNormals, _renderHurtboxes, _renderHitboxes;
         public CheckState _renderPolygons = CheckState.Checked;
 
+        public AnimationNode TargetAnimation
+        {
+            get { return GetSelectedBRRESFile(TargetAnimType); }
+            set { SetSelectedBRRESFile(TargetAnimType, value); }
+        }
+
         public AnimationNode GetSelectedBRRESFile(AnimType type)
         {
             switch (type)

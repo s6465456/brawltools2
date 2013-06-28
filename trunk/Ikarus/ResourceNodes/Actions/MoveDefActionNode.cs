@@ -485,7 +485,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     break;
                 case 0x0B000200: //Model Changer 1
                 case 0x0B010200: //Model Changer 2
-                    if (Root.Model._polyList == null)  break;
+                    if (Root.Model._objList == null)  break;
                     if (Root.data.mdlVisibility.Children.Count == 0) break;
                     MoveDefModelVisRefNode entry = Root.data.mdlVisibility.Children[((int)(e._event >> 16 & 1))] as MoveDefModelVisRefNode;
                     if (entry.Children.Count == 0 || p[0] < 0 && p[0] >= entry.Children.Count) break;

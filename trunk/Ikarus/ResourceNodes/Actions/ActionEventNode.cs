@@ -34,7 +34,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Browsable(false)]
-        public ActionEventInfo EventInfo { get { if (FileManager.EventDictionary == null) FileManager.LoadEventDictionary(); if (FileManager.EventDictionary.ContainsKey(_event)) return FileManager.EventDictionary[_event]; else return null; } }
+        public ActionEventInfo EventInfo 
+        { 
+            get
+            { 
+                if (FileManager.EventDictionary.ContainsKey(_event)) 
+                    return FileManager.EventDictionary[_event]; 
+                else 
+                    return null; 
+            } 
+        }
         public uint _event;
 
         [Browsable(false)]

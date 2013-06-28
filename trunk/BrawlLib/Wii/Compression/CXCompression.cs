@@ -48,7 +48,7 @@ namespace BrawlLib.Wii.Compression
         public static int CX_UNCOMPRESS_LH_WORK_SIZE = ((1 << 11) + (1 << 7));
         public static int CX_UNCOMPRESS_LRC_WORK_SIZE = (((1 << 12) + (1 << 9)) * 8);
 
-        public static bool CX_PLATFORM_IS_BIGENDIAN = false;
+        public static bool CX_PLATFORM_IS_BIGENDIAN = true;
         public static uint iConvertEndian(uint x)
         {
             if (CX_PLATFORM_IS_BIGENDIAN)

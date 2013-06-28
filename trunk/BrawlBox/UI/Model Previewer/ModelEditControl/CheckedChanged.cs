@@ -325,16 +325,6 @@ namespace System.Windows.Forms
             pnlPlayback.numTotalFrames.Value = _pat0.FrameCount;
         }
 
-        private void pnlOptions_FloorRenderChanged(object sender, EventArgs e)
-        {
-            if (RenderFloor == false)
-                toggleFloor.Checked = false;
-            else
-                toggleFloor.Checked = true;
-
-            modelPanel.Invalidate();
-        }
-
         private void Undo(object sender, EventArgs e)
         {
             if (btnUndo.Enabled)
@@ -379,14 +369,9 @@ namespace System.Windows.Forms
         //    movesetToolStripMenuItem1.Visible = chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = pnlMoveset._mainMoveset != null;
         //}
 
-        private void RenderStateChanged(object sender, EventArgs e)
-        {
-            modelPanel.Invalidate();
-        }
-
         public void SelectedPolygonChanged(object sender, EventArgs e) 
         {
-            _targetModel._polyIndex = _targetModel._polyList.IndexOf(leftPanel.SelectedPolygon);
+            _targetModel._polyIndex = _targetModel._objList.IndexOf(leftPanel.SelectedPolygon);
 
             if (leftPanel._syncObjTex)
                 leftPanel.UpdateTextures();

@@ -15,7 +15,7 @@ http://forums.kc-mm.com/index.php?topic=17547.0
 |************ Change Log ************|
  ====================================
 
- - v0.68d- (6//2013)
+ - v0.68d- (6/22/2013)
 	. Fixed BRSTM encoder issue
 	. Fixed issue with mini model viewer when first loaded
 	. Fixed bug where the frame count and loop animation properties were gone
@@ -28,7 +28,6 @@ http://forums.kc-mm.com/index.php?topic=17547.0
 	. Added support for viewing THPs (video and audio may desync though)
 
  - v0.68c- (5/27/2013)
-	. Updated to .NET 4.5
 	. Added bones panel to the keyframes panel in the model previewer
 	. Removed buttons to toggle playback and bones panels
 	. Removed moveset editor (Moveset editing moved to Ikarus)

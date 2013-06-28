@@ -387,7 +387,6 @@ namespace System.Windows.Forms
                             {
                                 vertex._weightedPosition = pos;
                                 vertex.Unweight();
-                                vertex._moved = true;
                             }
                         }
                     }
@@ -694,15 +693,15 @@ namespace System.Windows.Forms
                         ResetVertexColors();
 
                     if (TargetModel._polyIndex == -1)
-                        foreach (MDL0ObjectNode o in TargetModel._polyList)
+                        foreach (MDL0ObjectNode o in TargetModel._objList)
                             SelectVerts(o);
                     else
-                        SelectVerts((MDL0ObjectNode)TargetModel._polyList[TargetModel._polyIndex]);
+                        SelectVerts((MDL0ObjectNode)TargetModel._objList[TargetModel._polyIndex]);
                 }
                 else
                 {
                     Vector3 point = modelPanel.UnProject(e.X, e.Y, depth);
-                    if ((depth < 1.0f) && (_targetModel != null) && (_targetModel._polyList != null))
+                    if ((depth < 1.0f) && (_targetModel != null) && (_targetModel._objList != null))
                     {
                         Vertex3 v = null;
 
@@ -780,8 +779,8 @@ namespace System.Windows.Forms
         {
             if (_targetModels != null)
             foreach (MDL0Node m in _targetModels)
-                if (m._polyList != null)
-                    foreach (MDL0ObjectNode o in m._polyList)
+                if (m._objList != null)
+                    foreach (MDL0ObjectNode o in m._objList)
                         foreach (Vertex3 v in o._manager._vertices)
                         {
                             v._highlightColor = Color.Transparent;

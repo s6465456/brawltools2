@@ -178,7 +178,7 @@ namespace BrawlLib.Modeling
 
         private static unsafe void WriteGeometry(MDL0Node model, XmlWriter writer)
         {
-            ResourceNode grp = model._polyGroup;
+            ResourceNode grp = model._objGroup;
             if (grp == null)
                 return;
 
@@ -611,7 +611,7 @@ namespace BrawlLib.Modeling
 
         private static unsafe void WriteControllers(MDL0Node model, XmlWriter writer)
         {
-            if (model._polyList == null)
+            if (model._objList == null)
                 return;
 
             writer.WriteStartElement("library_controllers");
@@ -632,7 +632,7 @@ namespace BrawlLib.Modeling
             Matrix m;
             bool first;
 
-            foreach (MDL0ObjectNode poly in model._polyList)
+            foreach (MDL0ObjectNode poly in model._objList)
             {
                 List<Vertex3> verts = poly._manager._vertices;
 
@@ -907,8 +907,8 @@ namespace BrawlLib.Modeling
                 foreach (MDL0BoneNode bone in model._boneList)
                     WriteBone(bone, writer);
 
-            if (model._polyList != null)
-                foreach (MDL0ObjectNode poly in model._polyList)
+            if (model._objList != null)
+                foreach (MDL0ObjectNode poly in model._objList)
                     //if (poly._singleBind == null) //Single bind objects will be written under their bone
                         WritePolyInstance(poly, writer);
         }
