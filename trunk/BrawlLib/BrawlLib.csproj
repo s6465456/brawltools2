@@ -594,10 +594,6 @@
     <Compile Include="Wii\Audio\RSARSoundConverter.cs" />
     <Compile Include="Wii\Compression\Huffman.cs" />
     <Compile Include="Wii\Compression\Differential.cs" />
-    <Compile Include="Wii\Compression\CXSecureDecompression.cs" />
-    <Compile Include="Wii\Compression\CXStreamingDecompression.cs" />
-    <Compile Include="Wii\Compression\CXDecompression.cs" />
-    <Compile Include="Wii\Compression\CXCompression.cs" />
     <Compile Include="Wii\Compression\RunLength.cs" />
     <Compile Include="Wii\Graphics\ShaderGenerator.cs" />
     <Compile Include="Wii\Models\AnimationCode.cs" />

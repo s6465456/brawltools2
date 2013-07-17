@@ -15,51 +15,42 @@ namespace BrawlLib.Wii.Compression
 
         }
 
-        public int Compress(VoidPtr srcAddr, int srcLen, Stream outStream, IProgressTracker progress, bool extFmt)
+        public int Compress(VoidPtr srcAddr, int srcLen, Stream outStream, IProgressTracker progress)
         {
             return 0;
         }
         
         public static int Compact(VoidPtr srcAddr, int srcLen, Stream outStream, ResourceNode r, bool extendedFormat)
         {
-            using (ProgressWindow prog = new ProgressWindow(r.RootNode._mainForm, (extendedFormat ? "Extended " : "") + "LZ77", String.Format("Compressing {0}, please wait...", r.Name), false))
-                return new Differential().Compress(srcAddr, srcLen, outStream, prog, extendedFormat);
+            using (ProgressWindow prog = new ProgressWindow(r.RootNode._mainForm, "Differential", String.Format("Compressing {0}, please wait...", r.Name), false))
+                return new Differential().Compress(srcAddr, srcLen, outStream, prog);
         }
         public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen)
         {
-            byte* pSrc = (byte*)header->Data;
-            byte* pDst = (byte*)dstAddress;
-            uint bitSize = header->Parameter;
-            uint sum = 0;
-            int destCount = dstLen;
+            uint total = 0;
+            VoidPtr ceil = dstAddress + dstLen;
 
-            pSrc += 4;
-
-            if (bitSize != 1)
+            if (header->Parameter != 1)
             {
-                // Difference calculation in units of 8 bits
+                byte* pSrc = (byte*)header->Data;
+                byte* pDst = (byte*)dstAddress;
                 do
                 {
-                    byte tmp = *(pSrc++);
-                    destCount--;
-                    sum += tmp;
-                    *(pDst++) = (byte)sum;
-                } 
-                while (destCount > 0);
+                    total += *pSrc++;
+                    *pDst++ = (byte)total;
+                }
+                while (pSrc < ceil);
             }
             else
             {
-                // Difference calculation in units of 16 bits
+                bushort* pSrc = (bushort*)header->Data;
+                bushort* pDst = (bushort*)dstAddress;
                 do
                 {
-                    ushort tmp = *(bushort*)pSrc;
-                    pSrc += 2;
-                    destCount -= 2;
-                    sum += tmp;
-                    *(bushort*)pDst = (ushort)sum;
-                    pDst += 2;
-                } 
-                while (destCount > 0);
+                    total += *pSrc++;
+                    *pDst++ = (ushort)total;
+                }
+                while (pSrc < ceil);
             }
         }
     }

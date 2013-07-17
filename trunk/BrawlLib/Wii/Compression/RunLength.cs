@@ -15,6 +15,8 @@ namespace BrawlLib.Wii.Compression
 {
     public unsafe class RunLength
     {
+        //Credit goes to Chadderz for this compressor included in CTools.
+        //http://wiki.tockdom.com/wiki/User:Chadderz
         private struct Contraction
         {
             public int Location;
@@ -204,6 +206,8 @@ namespace BrawlLib.Wii.Compression
                 return new RunLength().Compress(srcAddr, srcLen, outStream, prog, false);
         }
 
+        //Credit goes to Wiimm for this decompressor included in Wiimms SZS Tools.
+        //http://wiki.tockdom.com/wiki/User:Wiimm
         public static void ExpandYAZ0(YAZ0* header, VoidPtr dstAddress, int dstLen) { Expand(header->Data, dstAddress, dstLen); }
         public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen) { Expand(header->Data, dstAddress, dstLen); }
         public static void Expand(VoidPtr srcAddress, VoidPtr dstAddress, int dstLen)
