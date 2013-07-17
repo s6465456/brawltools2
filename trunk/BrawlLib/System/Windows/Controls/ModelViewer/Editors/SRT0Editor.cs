@@ -557,13 +557,10 @@ namespace System.Windows.Forms
             InitializeComponent();
             _transBoxes[0] = numScaleX; numScaleX.Tag = 0;
             _transBoxes[1] = numScaleY; numScaleY.Tag = 1;
-            //_transBoxes[2] = numScaleZ; numScaleZ.Tag = 2;
             _transBoxes[3] = numRot; numRot.Tag = 3;
-            //_transBoxes[4] = numRotY; numRotY.Tag = 4;
-            //_transBoxes[5] = numRotZ; numRotZ.Tag = 5;
             _transBoxes[6] = numTransX; numTransX.Tag = 6;
             _transBoxes[7] = numTransY; numTransY.Tag = 7;
-            //_transBoxes[8] = numTransZ; numTransZ.Tag = 8;
+            
         }
         public void UpdatePropDisplay()
         {
@@ -571,7 +568,7 @@ namespace System.Windows.Forms
                 return;
 
             grpTransAll.Enabled = SelectedAnimation != null;
-            btnInsert.Enabled = btnDelete.Enabled = btnClear.Enabled = CurrentFrame != 0;
+            btnInsert.Enabled = btnDelete.Enabled = btnClear.Enabled = CurrentFrame != 0 && SelectedAnimation != null;
             grpTransform.Enabled = TargetTexRef != null;
             for (int i = 0; i < 9; i++)
                 ResetBox(i);

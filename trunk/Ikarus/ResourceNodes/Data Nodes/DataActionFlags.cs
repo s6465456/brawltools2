@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -34,7 +35,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
 
             ActionFlags* data = (ActionFlags*)address;
             foreach (MoveDefActionFlagsEntryNode e in Children)
@@ -87,7 +88,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             ActionFlags* header = (ActionFlags*)address;
             header->_flags1 = flags1;
             header->_flags2 = flags2;

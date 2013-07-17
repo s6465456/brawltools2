@@ -93,24 +93,31 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             ARCFileHeader* entry = Header->First;
             for (int i = 0; i < Header->_numFiles; i++, entry = entry->Next)
-                if ((entry->_size == 0) || (NodeFactory.FromAddress(this, entry->Data, entry->Length) == null))
-                    //if (((SpecialName.Contains(_name) && RootNode == this) || ((FileType == ARCFileType.Type7 && Name.EndsWith("Param")) || Name == "Fighter")) && i == 0)
-                    //    new MoveDefNode().Initialize(this, entry->Data, entry->Length);
-                    //else
+            {
+                DataSource source = new DataSource(entry->Data, entry->Length);
+                if ((entry->Length == 0) || (NodeFactory.FromSource(this, source) == null))
+                //if (((SpecialName.Contains(_name) && RootNode == this) || ((FileType == ARCFileType.Type7 && Name.EndsWith("Param")) || Name == "Fighter")) && i == 0)
+                //    new MoveDefNode().Initialize(this, source);
+                //else
+                {
+                    CompressionHeader* cmpr = (CompressionHeader*)source.Address;
+                    if (Compressor.IsDataCompressed(source))
                     {
-                        VoidPtr addr = entry->Data;
-                        CompressionHeader* cmpr = (CompressionHeader*)addr;
-                        if (cmpr->ExpandedSize >= entry->Length && cmpr->Algorithm == CompressionType.LZ77)
+                        source.Compression = cmpr->Algorithm;
+                        if (cmpr->ExpandedSize >= entry->Length && Compressor.Supports(cmpr->Algorithm))
                         {
                             //Expand the whole resource and initialize
-                            FileMap map = FileMap.FromTempFile(cmpr->ExpandedSize);
-                            Compressor.Expand(cmpr, map.Address, map.Length);
-                            DataSource source = new DataSource(entry->Data, entry->Length, cmpr->Algorithm);
-                            new ARCEntryNode().Initialize(this, source, new DataSource(map));
+                            FileMap uncompMap = FileMap.FromTempFile(cmpr->ExpandedSize);
+                            Compressor.Expand(cmpr, uncompMap.Address, uncompMap.Length);
+                            new ARCEntryNode().Initialize(this, source, new DataSource(uncompMap));
                         }
                         else
-                            new ARCEntryNode().Initialize(this, addr, entry->Length);
+                            new ARCEntryNode().Initialize(this, source);
                     }
+                    else
+                        new ARCEntryNode().Initialize(this, source);
+                }
+            }
         }
 
         public override void Initialize(ResourceNode parent, DataSource origSource, DataSource uncompSource)
@@ -241,7 +248,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void ExportPCS(string outPath)
         {
             Rebuild();
-            if (Compression == CompressionType.LZ77)
+            if (_compression != CompressionType.None)
                 base.Export(outPath);
             else
             {
@@ -264,8 +271,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         public override ResourceType ResourceType { get { return ResourceType.ARCEntry; } }
 
-        [Browsable(true)]
-        public override CompressionType Compression
+        [Browsable(true), TypeConverter(typeof(DropDownListCompression))]
+        public override string Compression
         {
             get { return base.Compression; }
             set { base.Compression = value; }

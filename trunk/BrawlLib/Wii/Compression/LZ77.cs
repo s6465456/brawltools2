@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows.Forms;
 using BrawlLib.SSBBTypes;
 using BrawlLib.SSBB.ResourceNodes;
+using System.Collections.Generic;
 
 namespace BrawlLib.Wii.Compression
 {
@@ -11,7 +12,7 @@ namespace BrawlLib.Wii.Compression
     {
         public const int WindowMask = 0xFFF;
         public const int WindowLength = 4096; //12 bits - 1, 1 - 4096
-        public const int PatternLength = 18; //4 bits + 3, 3 - 18
+        public int PatternLength = 18; //4 bits + 3, 3 - 18
         public const int MinMatch = 3;
 
         VoidPtr _dataAddr;
@@ -40,14 +41,15 @@ namespace BrawlLib.Wii.Compression
             GC.SuppressFinalize(this);
         }
 
-        public int Compress(VoidPtr srcAddr, int srcLen, Stream outStream, IProgressTracker progress)
+        public int Compress(VoidPtr srcAddr, int srcLen, Stream outStream, IProgressTracker progress, bool extFmt)
         {
             int dstLen = 4, bitCount;
             byte control;
 
-            byte* sPtr = (byte*)srcAddr;//, ceil = sPtr + srcLen;
+            byte* sPtr = (byte*)srcAddr;
             int matchLength, matchOffset = 0;
-
+            PatternLength = extFmt ? (0xFFFF + 0xFF + 0xF + 3) : (0xF + 3);
+            
             //Initialize
             Memory.Fill(_First, 0x40000, 0xFF);
             _wIndex = _wLength = 0;
@@ -56,10 +58,10 @@ namespace BrawlLib.Wii.Compression
             CompressionHeader header = new CompressionHeader();
             header.Algorithm = CompressionType.LZ77;
             header.ExpandedSize = (int)srcLen;
+            header.IsExtendedLZ77 = extFmt;
             outStream.Write(&header, 4 + (header.LargeSize ? 4 : 0));
 
-            byte[] blockBuffer = new byte[17];
-            int dInd;
+            List<byte> blockBuffer;
             int lastUpdate = srcLen;
             int remaining = srcLen;
 
@@ -68,42 +70,53 @@ namespace BrawlLib.Wii.Compression
 
             while (remaining > 0)
             {
-                dInd = 1;
-                //dPtr = blockBuffer + 1;
+                blockBuffer = new List<byte>() { 0 };
                 for (bitCount = 0, control = 0; (bitCount < 8) && (remaining > 0); bitCount++)
                 {
                     control <<= 1;
                     if ((matchLength = FindPattern(sPtr, remaining, ref matchOffset)) != 0)
                     {
-                        control |= 1;
-                        blockBuffer[dInd++] = (byte)(((matchLength - 3) << 4) | ((matchOffset - 1) >> 8));
-                        blockBuffer[dInd++] = (byte)(matchOffset - 1);
-                        //*dPtr++ = (byte)(((matchLength - 3) << 4) | ((matchOffset - 1) >> 8));
-                        //*dPtr++ = (byte)(matchOffset - 1);
+                        int length;
+                        if (extFmt)
+                        {
+                            if (matchLength >= 0xFF + 0xF + 3)
+                            {
+                                length = (matchLength - 0xFF - 0xF - 3);
+                                blockBuffer.Add((byte)(0x10 | (length >> 12)));
+                                blockBuffer.Add((byte)(length >> 4));
+                            }
+                            else if (matchLength >= 0xF + 2)
+                            {
+                                length = (matchLength - 0xF - 2);
+                                blockBuffer.Add((byte)(length >> 4));
+                            }
+                            else
+                                length = matchLength - 1;
+                        }
+                        else
+                            length = matchLength - 3;
 
-                        //Consume(sPtr, matchLength);
-                        //sPtr += matchLength;
+                        control |= 1;
+                        blockBuffer.Add((byte)((length << 4) | ((matchOffset - 1) >> 8)));
+                        blockBuffer.Add((byte)(matchOffset - 1));
                     }
                     else
                     {
                         matchLength = 1;
-                        //Consume(sPtr, 1);
-                        blockBuffer[dInd++] = *sPtr;
+                        blockBuffer.Add(*sPtr);
                     }
                     Consume(sPtr, matchLength, remaining);
                     sPtr += matchLength;
                     remaining -= matchLength;
                 }
+
                 //Left-align bits
                 control <<= 8 - bitCount;
 
                 //Write buffer
                 blockBuffer[0] = control;
-                outStream.Write(blockBuffer, 0, dInd);
-                dstLen += dInd;
-                //*blockBuffer = control;
-                //outStream.Write(blockBuffer, (uint)(dPtr - blockBuffer));
-                //dstLen += (int)(dPtr - blockBuffer);
+                outStream.Write(blockBuffer.ToArray(), 0, blockBuffer.Count);
+                dstLen += blockBuffer.Count;
 
                 if (progress != null)
                     if ((lastUpdate - remaining) > 0x4000)
@@ -113,14 +126,6 @@ namespace BrawlLib.Wii.Compression
                     }
             }
 
-            //if (progress != null)
-            //    progress.Update(srcLen);
-
-            //while ((dstLen & 3) != 0)
-            //{
-            //    outStream.WriteByte(0);
-            //    dstLen++;
-            //}
             outStream.Flush();
 
             if (progress != null)
@@ -189,20 +194,16 @@ namespace BrawlLib.Wii.Compression
             }
         }
 
-        public static int Compact(VoidPtr srcAddr, int srcLen, Stream outStream, ResourceNode r)
+        public static int Compact(VoidPtr srcAddr, int srcLen, Stream outStream, ResourceNode r, bool extendedFormat)
         {
             using (LZ77 lz = new LZ77())
-            using (ProgressWindow prog = new ProgressWindow(r.RootNode._mainForm, "LZ77", String.Format("Compressing {0}, please wait...", r.Name), false))
-                return lz.Compress(srcAddr, srcLen, outStream, prog);
+            using (ProgressWindow prog = new ProgressWindow(r.RootNode._mainForm, (extendedFormat ? "Extended " : "") + "LZ77", String.Format("Compressing {0}, please wait...", r.Name), false))
+                return lz.Compress(srcAddr, srcLen, outStream, prog, extendedFormat);
         }
 
         public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen)
         {
-            if (header->Algorithm != CompressionType.LZ77)
-                throw new InvalidCompressionException("Compression header does not match LZ77 format.");
-
-            //CXDecompression.CXDecompressLZ(header, dstAddress, (uint)dstLen);
-            bool exFmt = header->IsExtendedFormat;
+            bool exFmt = header->IsExtendedLZ77;
             for (byte* srcPtr = (byte*)header->Data, dstPtr = (byte*)dstAddress, ceiling = dstPtr + dstLen; dstPtr < ceiling; )
                 for (byte control = *srcPtr++, bit = 8; (bit-- != 0) && (dstPtr != ceiling); )
                     if ((control & (1 << bit)) == 0)

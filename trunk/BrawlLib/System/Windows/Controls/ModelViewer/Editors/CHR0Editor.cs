@@ -625,7 +625,7 @@ namespace System.Windows.Forms
                 return;
 
             grpTransAll.Enabled = SelectedAnimation != null;
-            btnInsert.Enabled = btnDelete.Enabled = btnClearAll.Enabled = CurrentFrame != 0;
+            btnInsert.Enabled = btnDelete.Enabled = btnClearAll.Enabled = CurrentFrame != 0 && SelectedAnimation != null;
             grpTransform.Enabled = TargetBone != null;
             
             for (int i = 0; i < 9; i++)
@@ -742,56 +742,56 @@ namespace System.Windows.Forms
                 else //Set to existing CHR0 entry 
                     if (float.IsNaN(box.Value))
                     {
-                        if (_mainWindow.TargetAnimType == AnimType.CHR)
-                        {
-                            //Value removed, find keyframe and zero it out
-                            if (kfIndex >= 0)
-                            {
-                                kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
-                                kf.forKeyframeCHR = true;
-                                kf.SetBool(index + 0x10, false);
-                                pkf[index] = box.Value;
+                        //if (_mainWindow.TargetAnimType == AnimType.CHR)
+                        //{
+                        //    //Value removed, find keyframe and zero it out
+                        //    if (kfIndex >= 0)
+                        //    {
+                        //        kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
+                        //        kf.forKeyframeCHR = true;
+                        //        kf.SetBool(index + 0x10, false);
+                        //        pkf[index] = box.Value;
 
-                                for (x = 0; (x < 9) && (float.IsNaN(pkf[x]) || !kf.GetBool(x + 0x10)); x++) ;
-                                if (x == 9)
-                                {
-                                    _mainWindow.KeyframePanel.listKeyframes.Items.RemoveAt(kfIndex);
-                                    _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = -1;
-                                }
-                                else
-                                    _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
-                            }
-                        }
+                        //        for (x = 0; (x < 9) && (float.IsNaN(pkf[x]) || !kf.GetBool(x + 0x10)); x++) ;
+                        //        if (x == 9)
+                        //        {
+                        //            _mainWindow.KeyframePanel.listKeyframes.Items.RemoveAt(kfIndex);
+                        //            _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = -1;
+                        //        }
+                        //        else
+                        //            _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
+                        //    }
+                        //}
 
                         entry.RemoveKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1);
                     }
                     else
                     {
-                        if (_mainWindow.TargetAnimType == AnimType.CHR)
-                        {
-                            if (kfIndex >= 0)
-                            {
-                                kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
-                                kf.forKeyframeCHR = true;
-                                kf.SetBool(index + 0x10, true);
-                                pkf[index] = box.Value;
-                                _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
-                            }
-                            else
-                            {
-                                kf = AnimationFrame.Empty;
-                                kf.forKeyframeCHR = true;
-                                kf.SetBool(index + 0x10, true);
-                                kf.Index = CurrentFrame - 1;
-                                pkf[index] = box.Value;
+                        //if (_mainWindow.TargetAnimType == AnimType.CHR)
+                        //{
+                        //    if (kfIndex >= 0)
+                        //    {
+                        //        kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
+                        //        kf.forKeyframeCHR = true;
+                        //        kf.SetBool(index + 0x10, true);
+                        //        pkf[index] = box.Value;
+                        //        _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
+                        //    }
+                        //    else
+                        //    {
+                        //        kf = AnimationFrame.Empty;
+                        //        kf.forKeyframeCHR = true;
+                        //        kf.SetBool(index + 0x10, true);
+                        //        kf.Index = CurrentFrame - 1;
+                        //        pkf[index] = box.Value;
 
-                                int count = _mainWindow.KeyframePanel.listKeyframes.Items.Count;
-                                for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
+                        //        int count = _mainWindow.KeyframePanel.listKeyframes.Items.Count;
+                        //        for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
 
-                                _mainWindow.KeyframePanel.listKeyframes.Items.Insert(x, kf);
-                                _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = x;
-                            }
-                        }
+                        //        _mainWindow.KeyframePanel.listKeyframes.Items.Insert(x, kf);
+                        //        _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = x;
+                        //    }
+                        //}
                         entry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
                     }
             }

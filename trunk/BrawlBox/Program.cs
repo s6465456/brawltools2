@@ -107,23 +107,24 @@ namespace BrawlBox
             if (!Close())
                 return false;
 
-            //#if !DEBUG
             try
             {
-            //#endif
                 if ((_rootNode = NodeFactory.FromFile(null, _rootPath = path)) != null)
                 {
                     MainForm.Instance.Reset();
                     return true;
                 }
                 else
+                {
+                    _rootPath = null;
                     Say("Unable to recognize input file.");
-            //#if !DEBUG
+                    MainForm.Instance.Reset();
+                }
             }
             catch (Exception x) { Say(x.ToString()); }
-            //finally { }
-            //#endif
-                Close();
+
+            Close();
+
             return false;
         }
 

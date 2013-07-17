@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -41,18 +42,18 @@ namespace BrawlLib.SSBB.ResourceNodes
             bint* addr = (bint*)address;
             foreach (MoveDefIndexNode b in Children)
             {
-                b._entryOffset = addr;
+                b._rebuildAddr = addr;
                 *addr++ = b.ItemIndex;
             }
 
             FDefListOffset* header = (FDefListOffset*)addr;
 
-            _entryOffset = header;
+            _rebuildAddr = header;
 
             if (Children.Count > 0)
             {
-                header->_startOffset = (int)address - (int)_rebuildBase;
-                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+                header->_startOffset = (int)address - (int)RebuildBase;
+                _lookupOffsets.Add(header->_startOffset.Address);
             }
 
             header->_listCount = Children.Count;

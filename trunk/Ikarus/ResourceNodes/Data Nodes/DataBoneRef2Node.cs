@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -59,7 +60,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (MoveDefBoneIndexNode b in Children)
                 b.Rebuild(addr++, 4, true);
 
-            _entryOffset = addr;
+            _rebuildAddr = addr;
 
             FDefBoneRef2* header = (FDefBoneRef2*)addr;
             header->_handNBoneIndex1 = HandNBoneIndex1;
@@ -70,8 +71,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (Children.Count > 0)
             {
-                header->_offset = (int)address - (int)_rebuildBase;
-                _lookupOffsets.Add((int)header->_offset.Address - (int)_rebuildBase);
+                header->_offset = (int)address - (int)RebuildBase;
+                _lookupOffsets.Add(header->_offset.Address);
             }
         }
     }

@@ -496,7 +496,7 @@ namespace BrawlLib.Modeling
             else
                 MessageBox.Show(Header.Comment);
 
-            ModelBone prev = null;
+            ModelBone parent = null;
             foreach (ModelBone b in Bones)
             {
                 MDL0BoneNode bone = new MDL0BoneNode();
@@ -508,24 +508,28 @@ namespace BrawlLib.Modeling
 
                 bone._entryIndex = index++;
 
-                //if (b.ParentBoneIndex != ushort.MaxValue)
-                //{
-                //    prev = Bones[b.ParentBoneIndex];
-                //    foreach (MDL0BoneNode v in model._boneGroup._children)
-                //        AssignParent(v, b, bone, model, prev);
-                //}
-                //else
+                if (b.ParentBoneIndex != ushort.MaxValue)
+                {
+                    parent = Bones[b.ParentBoneIndex];
+                    foreach (MDL0BoneNode v in model._boneGroup._children)
+                        AssignParent(v, b, bone, parent);
+                }
+                else
                 {
                     bone.Parent = model._boneGroup;
-                    bone._bindState.Translate = new Vector3(b.BoneHeadPos[0], b.BoneHeadPos[1], b.BoneHeadPos[2]);
+                    bone._bindState._scale = new Vector3(1.0f);
+                    bone._bindState._translate = new Vector3(b.BoneHeadPos[0], b.BoneHeadPos[1], b.BoneHeadPos[2]);
+                    bone._bindState.CalcTransforms();
+                    bone.RecalcBindState();
                 }
-                
+
                 BoneCache.Add(bone);
             }
 
             model._version = 9;
             model._needNrmMtxArray = model._needTexMtxArray = 1;
             model._isImport = true;
+            model._reopen = true;
 
             index = 0;
             foreach (ModelMaterial m in Materials)
@@ -534,9 +538,20 @@ namespace BrawlLib.Modeling
                 mn.Name = "Material" + index++;
 
                 MDL0MaterialRefNode mr = new MDL0MaterialRefNode();
-                mr.Name = Path.GetFileNameWithoutExtension(m.TextureFileName);
 
-                if (mr.Name != String.Empty)
+                if (!String.IsNullOrEmpty(m.TextureFileName))
+                {
+                    mr.Name = m.TextureFileName.Substring(0, m.TextureFileName.IndexOf('.'));//Path.GetFileNameWithoutExtension(m.TextureFileName);
+
+                    string spa = null;
+                    if (m.TextureFileName.Contains('*'))
+                    {
+                        spa = m.TextureFileName.Substring(m.TextureFileName.IndexOf('*') + 1);
+                        spa = spa.Substring(0, spa.IndexOf('.'));
+                    }
+                }
+
+                if (!String.IsNullOrEmpty(mr.Name))
                     (mr._texture = model.FindOrCreateTexture(mr.Name))._references.Add(mr);
                 else
                     mr.Name = "Diffuse: [R] " + (m.DiffuseColor[0]*255) + " [G] " + (m.DiffuseColor[1]*255) + " [B] " + (m.DiffuseColor[2]*255);
@@ -561,10 +576,12 @@ namespace BrawlLib.Modeling
                 p._parent = model._objGroup;
 
                 p._manager._indices = new UnsafeBuffer((int)m.FaceVertCount * 2);
+                p._manager._faceData[0] = new UnsafeBuffer((int)m.FaceVertCount * 12);
                 p._manager._faceData[1] = new UnsafeBuffer((int)m.FaceVertCount * 12);
                 p._manager._faceData[4] = new UnsafeBuffer((int)m.FaceVertCount * 8);
 
                 ushort* Indices = (ushort*)p._manager._indices.Address;
+                Vector3* Vertices = (Vector3*)p._manager._faceData[0].Address;
                 Vector3* Normals = (Vector3*)p._manager._faceData[1].Address;
                 Vector2* UVs = (Vector2*)p._manager._faceData[4].Address;
 
@@ -583,17 +600,21 @@ namespace BrawlLib.Modeling
                     if (!usedVertices.Contains(i))
                     {
                         Influence inf;
-                        BoneWeight weight1, weight2 = new BoneWeight(null);
-                        weight1 = new BoneWeight();
-                        weight1.Weight = (float)mv.BoneWeight / 100f; //Convert from percentage to decimal
-                        weight1.Bone = BoneCache[mv.BoneNum[0]];
-                        if (mv.BoneNum[1] != mv.BoneNum[0])
+                        BoneWeight weight1 = null, weight2 = null;
+
+                        float weight = ((float)mv.BoneWeight / 100.0f).Clamp(0.0f, 1.0f);
+
+                        if (weight > 0.0f && weight < 1.0f)
                         {
-                            weight2 = new BoneWeight();
-                            weight2.Weight = 1.0f - (mv.BoneWeight / 100f); //Convert from percentage to decimal
-                            weight2.Bone = BoneCache[mv.BoneNum[1]];
+                            weight1 = new BoneWeight(BoneCache[mv.BoneNum[0]], weight);
+                            weight2 = new BoneWeight(BoneCache[mv.BoneNum[1]], 1.0f - weight);
                         }
-                        if (weight2.Bone != null && weight2.Weight != 0)
+                        else if (weight == 0.0f)
+                            weight1 = new BoneWeight(BoneCache[mv.BoneNum[1]]);
+                        else
+                            weight1 = new BoneWeight(BoneCache[mv.BoneNum[0]]);
+
+                        if (weight2 != null)
                             inf = new Influence(new List<BoneWeight> { weight1, weight2 });
                         else
                             inf = new Influence(new List<BoneWeight> { weight1 });
@@ -605,13 +626,14 @@ namespace BrawlLib.Modeling
                         t._z = mv.Pos[2];
                         if (inf._weights.Count > 1)
                         {
-                            inf = model._influences.FindOrCreate(inf, false);
+                            inf = model._influences.FindOrCreate(inf, true);
+                            inf.CalcMatrix();
                             v = new Vertex3(t, inf);
                         }
                         else
                         {
                             MDL0BoneNode bone = inf._weights[0].Bone;
-                            v = new Vertex3(bone._inverseBindMatrix * t, bone);
+                            v = new Vertex3(t * bone._inverseBindMatrix, bone);
                         }
 
                         p._manager._vertices.Add(v);
@@ -624,6 +646,7 @@ namespace BrawlLib.Modeling
 
                     *Indices++ = j;
                     *pTri++ = (uint)l;
+                    *Vertices++ = p._manager._vertices[j]._position;
                     *Normals++ = new Vector3(mv.NormalVector[0], mv.NormalVector[1], mv.NormalVector[2]);
                     *UVs++ = new Vector2(mv.UV[0], mv.UV[1]);
                 }
@@ -631,24 +654,32 @@ namespace BrawlLib.Modeling
                 offset += (int)m.FaceVertCount;
             }
 
+            model._importOptions._forceCCW = true;
             model.CleanGroups();
+            model._linker = ModelLinker.Prepare(model);
         }
-        public static void AssignParent(MDL0BoneNode v, ModelBone b, MDL0BoneNode bone, MDL0Node model, ModelBone prev)
+        public static void AssignParent(MDL0BoneNode pBone, ModelBone child, MDL0BoneNode cBone, ModelBone parent)
         {
-            if (v._entryIndex == b.ParentBoneIndex)
+            if (pBone._entryIndex == child.ParentBoneIndex)
             {
-                bone._parent = v;
-                //Vector3 p1 = new Vector3(prev.BoneHeadPos[0], prev.BoneHeadPos[1], prev.BoneHeadPos[2]);
-                Vector3 p2 = new Vector3(b.BoneHeadPos[0], b.BoneHeadPos[1], b.BoneHeadPos[2]);
+                //Link child to its parent
+                (cBone._parent = pBone)._children.Add(cBone);
 
-                bone._bindState.Translate = p2 - v._bindState._translate;
-                bone.RecalcBindState();
+                //Convert the world point into a local point relative to the bone's parent
+                Vector3 pPos = new Vector3(parent.BoneHeadPos[0], parent.BoneHeadPos[1], parent.BoneHeadPos[2]);
+                Vector3 cPos = new Vector3(child.BoneHeadPos[0], child.BoneHeadPos[1], child.BoneHeadPos[2]);
 
-                v._children.Add(bone);
+                Matrix pMatrix = Matrix.TransformMatrix(new Vector3(1), new Vector3(), pPos);
+                Matrix cMatrix = Matrix.TransformMatrix(new Vector3(1), new Vector3(), cPos);
+
+                Matrix childTransform = cMatrix * Matrix.Invert(pMatrix);
+                
+                cBone._bindState = childTransform.Derive();
+                cBone.RecalcBindState();
             }
             else //Parent not found, continue searching children.
-                foreach (MDL0BoneNode x in v._children)
-                    AssignParent(x, b, bone, model, prev);
+                foreach (MDL0BoneNode pMatch in pBone._children)
+                    AssignParent(pMatch, child, cBone, parent);
         }
         #endregion
 

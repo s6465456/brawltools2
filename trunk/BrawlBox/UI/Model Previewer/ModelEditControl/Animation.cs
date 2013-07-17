@@ -231,7 +231,6 @@ namespace System.Windows.Forms
                         rightPanel.pnlKeyframes.visEditor._updating = false;
                     } 
                     break;
-
                 case AnimType.SHP: shp0Editor.UpdatePropDisplay(); break;
                 case AnimType.PAT: pat0Editor.UpdatePropDisplay(); break;
                 case AnimType.SCN: scn0Editor.UpdatePropDisplay(); break;
@@ -379,7 +378,7 @@ namespace System.Windows.Forms
                 pnlPlayback.btnLast.Enabled = false;
                 pnlPlayback.btnFirst.Enabled = false;
                 pnlPlayback.Enabled = false;
-                EnableTransformEdit = false;
+                EnableTransformEdit = true;
                 SetFrame(0);
             }
             else
@@ -409,8 +408,7 @@ namespace System.Windows.Forms
                     SetFrame(1);
                 }
 
-                if (!_playing)
-                    EnableTransformEdit = true;
+                EnableTransformEdit = !_playing;
             }
         }
 

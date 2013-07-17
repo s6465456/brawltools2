@@ -33,8 +33,18 @@ namespace BrawlBox.NodeWrappers
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("Add New S&hader", null, NewShaderAction, Keys.Control | Keys.H));
             _menu.Items.Add(new ToolStripMenuItem("Add New &Material", null, NewMaterialAction, Keys.Control | Keys.M));
-            _menu.Items.Add(new ToolStripMenuItem("Add New Color &Node", null, NewColorAction, Keys.Control | Keys.G));
-            _menu.Items.Add(new ToolStripMenuItem("Add New Vertex &Set", null, NewVertexAction, Keys.Control | Keys.J));
+            _menu.Items.Add(new ToolStripMenuItem("Ne&w Asset", null,
+                new ToolStripMenuItem("Vertices", null, NewVertexAction),
+                new ToolStripMenuItem("Normals", null, NewNormalAction),
+                new ToolStripMenuItem("Colors", null, NewColorAction),
+                new ToolStripMenuItem("UVs", null, NewUVAction)
+                ));
+            _menu.Items.Add(new ToolStripMenuItem("&Import Asset", null,
+                new ToolStripMenuItem("Vertices", null, ImportVertexAction),
+                new ToolStripMenuItem("Normals", null, ImportNormalAction),
+                new ToolStripMenuItem("Colors", null, ImportColorAction),
+                new ToolStripMenuItem("UVs", null, ImportUVAction)
+                ));
             _menu.Items.Add(new ToolStripMenuItem("&Import New Object", null, ImportObjectAction, Keys.Control | Keys.I));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("&Delete", null, DeleteAction, Keys.Control | Keys.Delete));
@@ -42,12 +52,22 @@ namespace BrawlBox.NodeWrappers
             _menu.Closing += MenuClosing;
         }
         protected static void PreviewAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().Preview(); }
+        protected static void ImportObjectAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().ImportObject(); }
         //protected static void MetalAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().AutoMetal(); }
+
         protected static void NewShaderAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewShader(); }
         protected static void NewMaterialAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewMaterial(); }
-        protected static void NewColorAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewColor(); }
+
         protected static void NewVertexAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewVertex(); }
-        protected static void ImportObjectAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().ImportObject(); }
+        protected static void NewNormalAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewNormal(); }
+        protected static void NewColorAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewColor(); }
+        protected static void NewUVAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().NewUV(); }
+
+        protected static void ImportVertexAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().ImportVertex(); }
+        protected static void ImportNormalAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().ImportNormal(); }
+        protected static void ImportColorAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().ImportColor(); }
+        protected static void ImportUVAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().ImportUV(); }
+        
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
             _menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[10].Enabled = _menu.Items[16].Enabled = true;
@@ -154,34 +174,10 @@ namespace BrawlBox.NodeWrappers
         //    ((MDL0Node)_resource).AutoMetalMaterials = true;
         //}
 
-        public void NewColor()
+        public MDL0VertexNode NewVertex()
         {
             if (_modelViewerOpen)
-                return;
-
-            MDL0Node model = ((MDL0Node)_resource);
-
-            MDL0GroupNode g = model._colorGroup;
-            if (g == null)
-            {
-                model.AddChild(g = new MDL0GroupNode(MDLResourceType.Colors), true);
-                model._colorGroup = g; model._colorList = g.Children;
-            }
-
-            MDL0ColorNode node = new MDL0ColorNode() { Name = "ColorSet" + ((MDL0Node)_resource)._colorList.Count };
-            node.Colors = new RGBAPixel[] { new RGBAPixel() { A = 255, R = 128, G = 128, B = 128 } };
-            g.AddChild(node, true);
-
-            node.Rebuild(true);
-            node.SignalPropertyChange();
-
-            FindResource(node, true).EnsureVisible();
-        }
-
-        public void NewVertex()
-        {
-            if (_modelViewerOpen)
-                return;
+                return null;
 
             MDL0Node model = ((MDL0Node)_resource);
 
@@ -200,6 +196,134 @@ namespace BrawlBox.NodeWrappers
             node.SignalPropertyChange();
 
             FindResource(node, true).EnsureVisible();
+
+            return node;
+        }
+
+        public MDL0NormalNode NewNormal()
+        {
+            if (_modelViewerOpen)
+                return null;
+            
+            MDL0Node model = ((MDL0Node)_resource);
+
+            MDL0GroupNode g = model._normGroup;
+            if (g == null)
+            {
+                model.AddChild(g = new MDL0GroupNode(MDLResourceType.Normals), true);
+                model._normGroup = g; model._normList = g.Children;
+            }
+
+            MDL0NormalNode node = new MDL0NormalNode() { Name = "NormalSet" + ((MDL0Node)_resource)._normList.Count };
+            node.Normals = new Vector3[] { new Vector3(0) };
+            g.AddChild(node, true);
+            node._forceRebuild = true;
+            node.Rebuild(true);
+            node.SignalPropertyChange();
+
+            FindResource(node, true).EnsureVisible();
+
+            return node;
+        }
+
+        public MDL0ColorNode NewColor()
+        {
+            if (_modelViewerOpen)
+                return null;
+
+            MDL0Node model = ((MDL0Node)_resource);
+
+            MDL0GroupNode g = model._colorGroup;
+            if (g == null)
+            {
+                model.AddChild(g = new MDL0GroupNode(MDLResourceType.Colors), true);
+                model._colorGroup = g; model._colorList = g.Children;
+            }
+
+            MDL0ColorNode node = new MDL0ColorNode() { Name = "ColorSet" + ((MDL0Node)_resource)._colorList.Count };
+            node.Colors = new RGBAPixel[] { new RGBAPixel() { A = 255, R = 128, G = 128, B = 128 } };
+            g.AddChild(node, true);
+
+            node.Rebuild(true);
+            node.SignalPropertyChange();
+
+            FindResource(node, true).EnsureVisible();
+
+            return node;
+        }
+
+        public MDL0UVNode NewUV()
+        {
+            if (_modelViewerOpen)
+                return null;
+
+            MDL0Node model = ((MDL0Node)_resource);
+
+            MDL0GroupNode g = model._uvGroup;
+            if (g == null)
+            {
+                model.AddChild(g = new MDL0GroupNode(MDLResourceType.UVs), true);
+                model._uvGroup = g; model._uvList = g.Children;
+            }
+
+            MDL0UVNode node = new MDL0UVNode() { Name = "#" + ((MDL0Node)_resource)._uvList.Count };
+            node.Points = new Vector2[] { new Vector2(0) };
+            g.AddChild(node, true);
+            node._forceRebuild = true;
+            node.Rebuild(true);
+            node.SignalPropertyChange();
+
+            FindResource(node, true).EnsureVisible();
+
+            return node;
+        }
+
+        public void ImportVertex()
+        {
+            if (_modelViewerOpen)
+                return;
+
+            OpenFileDialog o = new OpenFileDialog();
+            o.Filter = "Raw Vertex Set (*.*)|*.*";
+            o.Title = "Please select a vertex set to import.";
+            if (o.ShowDialog() == DialogResult.OK)
+                NewVertex().Replace(o.FileName);
+        }
+
+        public void ImportNormal()
+        {
+            if (_modelViewerOpen)
+                return;
+
+            OpenFileDialog o = new OpenFileDialog();
+            o.Filter = "Raw Normal Set (*.*)|*.*";
+            o.Title = "Please select a normal set to import.";
+            if (o.ShowDialog() == DialogResult.OK)
+                NewNormal().Replace(o.FileName);
+        }
+
+        public void ImportColor()
+        {
+            if (_modelViewerOpen)
+                return;
+
+            OpenFileDialog o = new OpenFileDialog();
+            o.Filter = "Raw Color Set (*.*)|*.*";
+            o.Title = "Please select a color set to import.";
+            if (o.ShowDialog() == DialogResult.OK)
+                NewColor().Replace(o.FileName);
+        }
+
+        public void ImportUV()
+        {
+            if (_modelViewerOpen)
+                return;
+
+            OpenFileDialog o = new OpenFileDialog();
+            o.Filter = "Raw Vertex Set (*.*)|*.*";
+            o.Title = "Please select a vertex set to import.";
+            if (o.ShowDialog() == DialogResult.OK)
+                NewUV().Replace(o.FileName);
         }
 
         public void ImportObject()

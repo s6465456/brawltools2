@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -819,9 +820,17 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.Uniform4(currUniform, 40, values.ToArray());
             }
         }
-        public void SetUniforms(int programHandle)
+        public void SetUniforms(int programHandle, ModelPanel panel)
         {
             int currUniform = -1;
+
+            Matrix projection = panel._projectionMatrix;
+            Matrix modelview = panel._camera._matrix;
+
+            currUniform = GL.GetUniformLocation(programHandle, "projection_matrix");
+            GL.UniformMatrix4(currUniform, 16, false, (float*)&projection);
+            currUniform = GL.GetUniformLocation(programHandle, "modelview_matrix");
+            GL.UniformMatrix4(currUniform, 16, false, (float*)&modelview);
 
             //currUniform = GL.GetUniformLocation(programHandle, I_POSNORMALMATRIX);
             //if (currUniform > -1) GL.Uniform4(currUniform, 6, new float[] 
@@ -833,50 +842,50 @@ namespace BrawlLib.SSBB.ResourceNodes
             //{
 
             //});
-            currUniform = GL.GetUniformLocation(programHandle, I_MATERIALS);
-            if (currUniform > -1) GL.Uniform4(currUniform, 4, new float[] 
-            {
-                UsableMaterialNode.C1AmbientColor.R * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C1AmbientColor.G * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C1AmbientColor.B * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C1AmbientColor.A * RGBAPixel.ColorFactor,
+            //currUniform = GL.GetUniformLocation(programHandle, I_MATERIALS);
+            //if (currUniform > -1) GL.Uniform4(currUniform, 4, new float[] 
+            //{
+            //    UsableMaterialNode.C1AmbientColor.R * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C1AmbientColor.G * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C1AmbientColor.B * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C1AmbientColor.A * RGBAPixel.ColorFactor,
 
-                UsableMaterialNode.C2AmbientColor.R * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C2AmbientColor.G * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C2AmbientColor.B * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C2AmbientColor.A * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C2AmbientColor.R * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C2AmbientColor.G * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C2AmbientColor.B * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C2AmbientColor.A * RGBAPixel.ColorFactor,
 
-                UsableMaterialNode.C1MaterialColor.R * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C1MaterialColor.G * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C1MaterialColor.B * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C1MaterialColor.A * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C1MaterialColor.R * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C1MaterialColor.G * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C1MaterialColor.B * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C1MaterialColor.A * RGBAPixel.ColorFactor,
 
-                UsableMaterialNode.C2MaterialColor.R * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C2MaterialColor.G * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C2MaterialColor.B * RGBAPixel.ColorFactor,
-                UsableMaterialNode.C2MaterialColor.A * RGBAPixel.ColorFactor,
-            });
-            currUniform = GL.GetUniformLocation(programHandle, I_TEXMATRICES);
-            if (currUniform > -1)
-            {
-                List<float> mtxValues = new List<float>();
-                int i = 0;
-                foreach (MDL0MaterialRefNode m in UsableMaterialNode.Children)
-                {
-                    for (int x = 0; x < 12; x++)
-                        mtxValues.Add(m.EffectMatrix[x]);
-                    i++;
-                }
-                while (i < 8)
-                {
-                    for (int x = 0; x < 12; x++)
-                        mtxValues.Add(Matrix43.Identity[x]);
-                    i++;
-                }
-                if (mtxValues.Count != 96)
-                    Console.WriteLine();
-                GL.Uniform4(currUniform, 24, mtxValues.ToArray());
-            }
+            //    UsableMaterialNode.C2MaterialColor.R * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C2MaterialColor.G * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C2MaterialColor.B * RGBAPixel.ColorFactor,
+            //    UsableMaterialNode.C2MaterialColor.A * RGBAPixel.ColorFactor,
+            //});
+            //currUniform = GL.GetUniformLocation(programHandle, I_TEXMATRICES);
+            //if (currUniform > -1)
+            //{
+            //    List<float> mtxValues = new List<float>();
+            //    int i = 0;
+            //    foreach (MDL0MaterialRefNode m in UsableMaterialNode.Children)
+            //    {
+            //        for (int x = 0; x < 12; x++)
+            //            mtxValues.Add(m.EffectMatrix[x]);
+            //        i++;
+            //    }
+            //    while (i < 8)
+            //    {
+            //        for (int x = 0; x < 12; x++)
+            //            mtxValues.Add(Matrix43.Identity[x]);
+            //        i++;
+            //    }
+            //    if (mtxValues.Count != 96)
+            //        Console.WriteLine();
+            //    GL.Uniform4(currUniform, 24, mtxValues.ToArray());
+            //}
             //currUniform = GL.GetUniformLocation(programHandle, I_TRANSFORMMATRICES);
             //if (currUniform > -1) GL.Uniform4(currUniform, 64, new float[] 
             //{

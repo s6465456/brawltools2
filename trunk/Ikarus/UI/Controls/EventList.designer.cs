@@ -36,9 +36,9 @@
             // 
             // lstEvents
             // 
-            this.lstEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstEvents.FormattingEnabled = true;
             this.lstEvents.Location = new System.Drawing.Point(8, 8);
             this.lstEvents.Name = "lstEvents";
@@ -72,7 +72,7 @@
             // txtEventId
             // 
             this.txtEventId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtEventId.Location = new System.Drawing.Point(136, 224);
+            this.txtEventId.Location = new System.Drawing.Point(136, 227);
             this.txtEventId.MaxLength = 8;
             this.txtEventId.Name = "txtEventId";
             this.txtEventId.Size = new System.Drawing.Size(80, 20);
@@ -93,8 +93,8 @@
             this.Name = "FormEventList";
             this.ShowIcon = false;
             this.Text = "Events";
-            this.Load += new System.EventHandler(this.FormEventList_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormEventList_FormClosing);
+            this.Load += new System.EventHandler(this.FormEventList_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

@@ -231,7 +231,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             header->_relOffset = _relOffset;
-           
         }
 
         public static List<RELNode> _files = new List<RELNode>();

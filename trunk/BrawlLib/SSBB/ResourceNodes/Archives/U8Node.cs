@@ -39,20 +39,25 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 else
                 {
-                    if ((entry->_dataLength == 0) || (e = NodeFactory.FromAddress(this, (VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength) as ARCEntryNode) == null)
+                    DataSource source = new DataSource((VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength);
+                    if ((entry->_dataLength == 0) || (e = NodeFactory.FromSource(this, source) as U8EntryNode) == null)
                     {
-                        VoidPtr addr = (VoidPtr)Header + entry->_dataOffset;
-                        CompressionHeader* cmpr = (CompressionHeader*)addr;
-                        if (cmpr->ExpandedSize >= entry->_dataLength && cmpr->Algorithm == CompressionType.LZ77)
+                        CompressionHeader* cmpr = (CompressionHeader*)source.Address;
+                        if (Compressor.IsDataCompressed(source))
                         {
-                            //Expand the whole resource and initialize
-                            FileMap map = FileMap.FromTempFile(cmpr->ExpandedSize);
-                            Compressor.Expand(cmpr, map.Address, map.Length);
-                            DataSource source = new DataSource((VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength, cmpr->Algorithm);
-                            new ARCEntryNode().Initialize(this, source, new DataSource(map));
+                            source.Compression = cmpr->Algorithm;
+                            if (cmpr->ExpandedSize >= entry->_dataLength && Compressor.Supports(cmpr->Algorithm))
+                            {
+                                //Expand the whole resource and initialize
+                                FileMap uncompMap = FileMap.FromTempFile(cmpr->ExpandedSize);
+                                Compressor.Expand(cmpr, uncompMap.Address, uncompMap.Length);
+                                (e = new ARCEntryNode()).Initialize(this, source, new DataSource(uncompMap));
+                            }
+                            else
+                                (e = new ARCEntryNode()).Initialize(this, source);
                         }
                         else
-                            (e = new ARCEntryNode()).Initialize(this, (VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength);
+                            (e = new ARCEntryNode()).Initialize(this, source);
                     }
                     e._name = new String(table + (int)entry->_stringOffset);
                     e.index = i;
@@ -92,7 +97,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         int entrySize = 0, id = 0;
-        U8StringTable table;
+        CompactStringTable table;
         public int GetSize(ResourceNode node, bool force)
         {
             if (node is U8EntryNode)
@@ -113,7 +118,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             entrySize = 12;
             id = 1;
-            table = new U8StringTable();
+            table = new CompactStringTable();
             table._table.Add("", 0);
             int childSize = 0;
             foreach (ResourceNode e in Children)
@@ -122,7 +127,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return 0x20 + childSize + entryLength.Align(0x20);
         }
 
-        public void RebuildNode(VoidPtr header, U8EntryNode node, ref U8Entry* entry, VoidPtr sTableStart, ref VoidPtr dataAddr, U8StringTable sTable, bool force)
+        public void RebuildNode(VoidPtr header, U8EntryNode node, ref U8Entry* entry, VoidPtr sTableStart, ref VoidPtr dataAddr, CompactStringTable sTable, bool force)
         {
             entry->_type = (byte)((node is U8FolderNode) ? 1 : 0);
             entry->_stringOffset.Value = (uint)sTable[node.Name] - (uint)sTableStart;
@@ -194,14 +199,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void ExportCompressed(string outPath)
         {
             //Rebuild();
-            if (Compression == CompressionType.RunLength)
-                Export(outPath);
+            if (_compression == CompressionType.RunLength)
+                base.Export(outPath);
             else
             {
                 using (FileStream inStream = new FileStream(Path.GetTempFileName(), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 0x8, FileOptions.SequentialScan | FileOptions.DeleteOnClose))
                 using (FileStream outStream = new FileStream(outPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 8, FileOptions.SequentialScan))
                 {
-                    Compressor.CompactYAZ0(WorkingUncompressed.Address, WorkingUncompressed.Length, inStream);
+                    Compressor.CompactYAZ0(WorkingUncompressed.Address, WorkingUncompressed.Length, inStream, this);
                     outStream.SetLength(inStream.Length);
                     using (FileMap map = FileMap.FromStream(inStream))
                     using (FileMap outMap = FileMap.FromStream(outStream))
@@ -267,44 +272,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             AddChild(n);
 
             return n;
-        }
-    }
-
-    public unsafe class U8StringTable
-    {
-        public SortedList<string, VoidPtr> _table = new SortedList<string, VoidPtr>(StringComparer.OrdinalIgnoreCase);
-
-        public void Add(string s)
-        {
-            if ((!String.IsNullOrEmpty(s)) && (!_table.ContainsKey(s)))
-                _table.Add(s, 0);
-        }
-
-        public int TotalSize
-        {
-            get
-            {
-                int len = 0;
-                foreach (string s in _table.Keys)
-                    len += (s.Length + 1);
-                return len;
-            }
-        }
-
-        public void Clear() { _table.Clear(); }
-
-        public VoidPtr this[string s] { get { return _table[s]; } }
-
-        public void WriteTable(VoidPtr address)
-        {
-            FDefReferenceString* entry = (FDefReferenceString*)address;
-            for (int i = 0; i < _table.Count; i++)
-            {
-                string s = _table.Keys[i];
-                _table[s] = entry;
-                entry->Value = s;
-                entry = entry->Next;
-            }
         }
     }
 }

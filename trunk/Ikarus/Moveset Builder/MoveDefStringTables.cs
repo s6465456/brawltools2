@@ -9,6 +9,7 @@ using BrawlLib.IO;
 using BrawlLib.Wii.Animations;
 using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.OpenGL;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {

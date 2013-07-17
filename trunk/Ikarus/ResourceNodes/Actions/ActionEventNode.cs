@@ -8,6 +8,7 @@ using System.ComponentModel;
 using BrawlLib.SSBB.ResourceNodes;
 using OpenTK.Graphics.OpenGL;
 using Ikarus;
+using BrawlLib.Modeling;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -175,48 +176,48 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if ((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && i == 12)
                 {
-                    child = (new HitboxFlagsNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value, val = new HitboxFlags() { data = value } });
+                    child = (new HitboxFlagsNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value, val = new HitboxFlags() { data = value } });
                     (child as HitboxFlagsNode).GetFlags();
                 }
                 else if (((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && (i == 0 || i == 3 || i == 4)))
-                    child = (new MoveDefEventValue2HalfNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
+                    child = (new MoveDefEventValue2HalfNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value });
                 else if (((_event == 0x11150300 || _event == 0x11001000 || _event == 0x11010A00 || _event == 0x11020A00) && i == 0))
-                    child = (new MoveDefEventValue2HalfGFXNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
+                    child = (new MoveDefEventValue2HalfGFXNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value });
                 else if (i == 14 && _event == 0x06150F00)
                 {
-                    child = (new SpecialHitboxFlagsNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value, val = new SpecialHitboxFlags() { data = value } });
+                    child = (new SpecialHitboxFlagsNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value, val = new SpecialHitboxFlags() { data = value } });
                     (child as SpecialHitboxFlagsNode).GetFlags();
                 }
                 else //Not a special value
                 {
                     if (EventInfo != null && EventInfo.Enums != null && EventInfo.Enums.ContainsKey(i))
-                        child = new MoveDefEventValueEnumNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { Enums = EventInfo.Enums[i].ToArray() };
+                        child = new MoveDefEventValueEnumNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { Enums = EventInfo.Enums[i].ToArray() };
                     else
-                        child = (new MoveDefEventValueNode(info != null && i < info.Params.Length ? info.Params[i] : "Value") { _value = value });
+                        child = (new MoveDefEventValueNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value });
                 }
             }
             else if ((ArgVarType)(int)type == ArgVarType.Scalar)
-                child = (new MoveDefEventScalarNode(info != null && i < info.Params.Length ? info.Params[i] : "Scalar") { _value = value });
+                child = (new MoveDefEventScalarNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Scalar") { _value = value });
             else if ((ArgVarType)(int)type == ArgVarType.Boolean)
-                child = (new MoveDefEventBoolNode(info != null && i < info.Params.Length ? info.Params[i] : "Boolean") { _value = value });
+                child = (new MoveDefEventBoolNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Boolean") { _value = value });
             else if ((ArgVarType)(int)type == ArgVarType.Unknown)
-                child = (new MoveDefEventUnkNode(info != null && i < info.Params.Length ? info.Params[i] : "Unknown") { _value = value });
+                child = (new MoveDefEventUnkNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Unknown") { _value = value });
             else if ((ArgVarType)(int)type == ArgVarType.Requirement)
             {
-                MoveDefEventRequirementNode r = new MoveDefEventRequirementNode(info != null && i < info.Params.Length ? info.Params[i] : "Requirement") { _value = value };
+                MoveDefEventRequirementNode r = new MoveDefEventRequirementNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Requirement") { _value = value };
                 child = r;
                 r._parent = Root;
                 r._val = r.GetRequirement(r._value);
             }
             else if ((ArgVarType)(int)type == ArgVarType.Variable)
             {
-                MoveDefEventVariableNode v = new MoveDefEventVariableNode(info != null && i < info.Params.Length ? info.Params[i] : "Variable") { _value = value };
+                MoveDefEventVariableNode v = new MoveDefEventVariableNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Variable") { _value = value };
                 child = v;
                 v._parent = Root;
                 v.val = v.ResolveVariable(v._value);
             }
             else if ((ArgVarType)(int)type == ArgVarType.Offset)
-                child = (new MoveDefEventOffsetNode(info != null && i < info.Params.Length ? info.Params[i] : "Offset") { _value = value });
+                child = (new MoveDefEventOffsetNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Offset") { _value = value });
             child._parent = null;
             if (i == Children.Count)
                 AddChild(child);
@@ -296,8 +297,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 arguments.Add(e = *header);
 
                 string param = null;
-                if (EventInfo != null && EventInfo.Params != null && EventInfo.Params.Length != 0 && EventInfo.Params.Length > i)
-                    param = String.IsNullOrEmpty(EventInfo.Params[i]) ? null : EventInfo.Params[i];
+                if (EventInfo != null && EventInfo._parameters != null && EventInfo._parameters.Length != 0 && EventInfo._parameters.Length > i)
+                    param = String.IsNullOrEmpty(EventInfo._parameters[i]) ? null : EventInfo._parameters[i];
 
                 if ((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && i == 12)
                     new HitboxFlagsNode(param).Initialize(this, header, 8);
@@ -394,13 +395,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public class HitBox
     {
-        //A seperate class for rendering hitboxes so that the values can be modified by other events.
+        //A seperate class for rendering hitboxes.
+        //This allows the values to be modified by other events.
         public HitBox(MoveDefEventNode ev)
         {
             Root = ev.Root;
             _event = ev._event;
             EventData = ev.EventData;
-            if (_event != 101320704)
+            if (_event != 0x060A0800)
                 flags = ev.Children[12] as HitboxFlagsNode;
             if (_event == 0x06150F00)
                 specialFlags = ev.Children[14] as SpecialHitboxFlagsNode;
@@ -414,31 +416,31 @@ namespace BrawlLib.SSBB.ResourceNodes
         public SpecialHitboxFlagsNode specialFlags;
 
         #region Offensive Collision
-        public unsafe void RenderOffensiveCollision(ResourceNode[] bl, TKContext c, Vector3 cam, Helpers.DrawStyle style)
+        public unsafe void RenderOffensiveCollision(MDL0Node model, TKContext c, Vector3 cam)
         {
-            //Coded by Toomai
-            //Modified for release v0.67
-
             if (_event != 0x06000D00) //Offensive Collision
                 return;
 
+            MoveDefNode node = Root;
+            ResourceNode[] bl = model._linker.BoneCache;
+
             Event e = EventData;
-            //HitboxFlagsNode flags = Children[12] as HitboxFlagsNode;
 
             int boneindex = (int)e.parameters[0]._data >> 16;
             long size = HitboxSize;
             long angle = e.parameters[2]._data;
 
-            Root.GetBoneIndex(ref boneindex);
+            node.GetBoneIndex(ref boneindex);
 
-            if (boneindex == 0) // if a hitbox is on TopN, make it follow TransN
+            if (boneindex == 0) //If a hitbox is on TopN, make it follow TransN
             {
-                if (Root.data != null)
+                //Use assigned references
+                if (node._data != null)
                 {
-                    boneindex = (Root.data.misc.boneRefs.Children[4] as MoveDefBoneIndexNode).boneIndex;
-                    Root.GetBoneIndex(ref boneindex);
+                    boneindex = (node._data._misc.boneRefs.Children[4] as MoveDefBoneIndexNode).boneIndex;
+                    node.GetBoneIndex(ref boneindex);
                 }
-                else
+                else //Search manually
                 {
                     int transindex = 0;
                     foreach (MDL0BoneNode bn in bl)
@@ -453,130 +455,116 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             MDL0BoneNode b;
             b = bl[boneindex] as MDL0BoneNode;
-            Vector3 bonepos = b._frameMatrix.GetPoint();
-            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data));
-            Vector3 bonerot = b._frameMatrix.GetAngles();
-            Matrix r = b._frameMatrix.GetRotationMatrix();
-            Vector3 bonescl = b.RecursiveScale();
-            pos._x /= bonescl._x;
-            pos._y /= bonescl._y;
-            pos._z /= bonescl._z;
-            Vector3 globpos = r.Multiply(pos);
-            Matrix m = Matrix.TransformMatrix(new Vector3(1), bonerot, globpos + bonepos);
-            Vector3 resultpos = new Vector3(m[12], m[13], m[14]);
-            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultpos);
+
+            Matrix r = b.Matrix.GetRotationMatrix();
+            FrameState state = b.Matrix.Derive();
+            Vector3 bonePos = state._translate;
+            Vector3 globalPos = r.Multiply(new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data)) / state._scale);
+
+            Matrix m = Matrix.TransformMatrix(new Vector3(1), state._rotate, globalPos + bonePos);
+            Vector3 resultPos = m.GetPoint();
+
+            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultPos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16;
-            double drawangle = 360.0 / res;
-            // bubble
-            if (style == Helpers.DrawStyle.SSB64)
+            double drawAngle = 360.0 / res;
+
+            Vector3 color = Helpers.GetTypeColor(flags.Type);
+            GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.5f);
+            
+            GLDisplayList spheres = c.GetSphereList();
+            spheres.Call();
+
+            //Angle indicator
+            double rangle = angle / 180.0 * Math.PI;
+
+            //Apply color
+            color = Helpers.GetEffectColor(flags.Effect);
+            GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.75f);
+            
+            GL.PushMatrix();
+            if (angle == 361) //Sakurai angle
             {
-                GL.Color4(1.0f, 1.0f, 1.0f, 0.25f);
-                c.DrawInvertedCube(new Vector3(0, 0, 0), 1.025f);
-                GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
-                c.DrawCube(new Vector3(0, 0, 0), 0.975f);
+                m = Matrix.TransformMatrix(new Vector3(0.5f), (globalPos + bonePos).LookatAngles(cam) * Maths._rad2degf, new Vector3(0));
+                GL.MultMatrix((float*)&m);
+                GL.Begin(BeginMode.Quads);
+                for (int i = 0; i < 16; i += 2)
+                {
+                    GL.Vertex3(Math.Cos((i - 1) * Math.PI / 8) * 0.5, Math.Sin((i - 1) * Math.PI / 8) * 0.5, 0);
+                    GL.Vertex3(Math.Cos(i * Math.PI / 8), Math.Sin(i * Math.PI / 8), 0);
+                    GL.Vertex3(Math.Cos((i + 1) * Math.PI / 8) * 0.5, Math.Sin((i + 1) * Math.PI / 8) * 0.5, 0);
+                    GL.Vertex3(0, 0, 0);
+                }
+                GL.End();
             }
             else
             {
-                if (style == Helpers.DrawStyle.Melee)
-                    GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
-                else
-                {
-                    Vector3 typecolour = Helpers.getTypeColour(flags.Type);
-                    GL.Color4((typecolour._x / 255.0f), (typecolour._y / 225.0f), (typecolour._z / 255.0f), 0.5f);
-                }
-                GLDisplayList spheres = c.GetSphereList();
-                spheres.Call();
+                long a = -angle; //Otherwise 90 would point down
+                int angleflip = 0;
+                if (resultPos._z < 0)
+                    angleflip = 180;
+                m = Matrix.TransformMatrix(new Vector3(1), new Vector3(a, angleflip, 0), new Vector3());
+                GL.MultMatrix((float*)&m);
+                GL.Begin(BeginMode.Quads);
+                // left face
+                GL.Vertex3(0.1, 0.1, 0);
+                GL.Vertex3(0.1, 0.1, 1);
+                GL.Vertex3(0.1, -0.1, 1);
+                GL.Vertex3(0.1, -0.1, 0);
+                // right face
+                GL.Vertex3(-0.1, -0.1, 0);
+                GL.Vertex3(-0.1, -0.1, 1);
+                GL.Vertex3(-0.1, 0.1, 1);
+                GL.Vertex3(-0.1, 0.1, 0);
+                // top face
+                GL.Vertex3(-0.1, 0.1, 0);
+                GL.Vertex3(-0.1, 0.1, 1);
+                GL.Vertex3(0.1, 0.1, 1);
+                GL.Vertex3(0.1, 0.1, 0);
+                // bottom face
+                GL.Vertex3(0.1, -0.1, 0);
+                GL.Vertex3(0.1, -0.1, 1);
+                GL.Vertex3(-0.1, -0.1, 1);
+                GL.Vertex3(-0.1, -0.1, 0);
+                // front face
+                GL.Vertex3(-0.1, -0.1, 1);
+                GL.Vertex3(0.1, -0.1, 1);
+                GL.Vertex3(0.1, 0.1, 1);
+                GL.Vertex3(-0.1, 0.1, 1);
+                // back face
+                GL.Vertex3(-0.1, 0.1, 0);
+                GL.Vertex3(0.1, 0.1, 0);
+                GL.Vertex3(0.1, -0.1, 0);
+                GL.Vertex3(-0.1, -0.1, 0);
+                GL.End();
             }
-            if (style == Helpers.DrawStyle.Brawl)
+            GL.PopMatrix();
+
+            // border
+            GLDisplayList rings = c.GetRingList();
+            for (int i = -5; i <= 5; i++)
             {
-                // angle indicator
-                double rangle = angle / 180.0 * Math.PI;
-                Vector3 effectcolour = Helpers.getEffectColour(flags.Effect);
-                GL.Color4((effectcolour._x / 255.0f), (effectcolour._y / 225.0f), (effectcolour._z / 255.0f), 0.75f);
                 GL.PushMatrix();
-                if (angle == 361)
-                {
-                    m = Matrix.TransformMatrix(new Vector3(0.5f), (globpos + bonepos).LookatAngles(cam) * Maths._rad2degf, new Vector3(0));
-                    GL.MultMatrix((float*)&m);
-                    GL.Begin(BeginMode.Quads);
-                    for (int i = 0; i < 16; i += 2)
-                    {
-                        GL.Vertex3(Math.Cos((i - 1) * Math.PI / 8) * 0.5, Math.Sin((i - 1) * Math.PI / 8) * 0.5, 0);
-                        GL.Vertex3(Math.Cos(i * Math.PI / 8), Math.Sin(i * Math.PI / 8), 0);
-                        GL.Vertex3(Math.Cos((i + 1) * Math.PI / 8) * 0.5, Math.Sin((i + 1) * Math.PI / 8) * 0.5, 0);
-                        GL.Vertex3(0, 0, 0);
-                    }
-                    GL.End();
-                }
+                m = Matrix.TransformMatrix(new Vector3(1 + 0.0025f * i), (globalPos + bonePos).LookatAngles(cam) * Maths._rad2degf, new Vector3());
+                GL.MultMatrix((float*)&m);
+                if (flags.Clang)
+                    rings.Call();
                 else
                 {
-                    long a = -angle; // otherwise 90 would point down
-                    int angleflip = 0;
-                    if (resultpos._z < 0)
-                        angleflip = 180;
-                    m = Matrix.TransformMatrix(new Vector3(1), new Vector3(a, angleflip, 0), new Vector3());
-                    GL.MultMatrix((float*)&m);
-                    GL.Begin(BeginMode.Quads);
-                    // left face
-                    GL.Vertex3(0.1, 0.1, 0);
-                    GL.Vertex3(0.1, 0.1, 1);
-                    GL.Vertex3(0.1, -0.1, 1);
-                    GL.Vertex3(0.1, -0.1, 0);
-                    // right face
-                    GL.Vertex3(-0.1, -0.1, 0);
-                    GL.Vertex3(-0.1, -0.1, 1);
-                    GL.Vertex3(-0.1, 0.1, 1);
-                    GL.Vertex3(-0.1, 0.1, 0);
-                    // top face
-                    GL.Vertex3(-0.1, 0.1, 0);
-                    GL.Vertex3(-0.1, 0.1, 1);
-                    GL.Vertex3(0.1, 0.1, 1);
-                    GL.Vertex3(0.1, 0.1, 0);
-                    // bottom face
-                    GL.Vertex3(0.1, -0.1, 0);
-                    GL.Vertex3(0.1, -0.1, 1);
-                    GL.Vertex3(-0.1, -0.1, 1);
-                    GL.Vertex3(-0.1, -0.1, 0);
-                    // front face
-                    GL.Vertex3(-0.1, -0.1, 1);
-                    GL.Vertex3(0.1, -0.1, 1);
-                    GL.Vertex3(0.1, 0.1, 1);
-                    GL.Vertex3(-0.1, 0.1, 1);
-                    // back face
-                    GL.Vertex3(-0.1, 0.1, 0);
-                    GL.Vertex3(0.1, 0.1, 0);
-                    GL.Vertex3(0.1, -0.1, 0);
-                    GL.Vertex3(-0.1, -0.1, 0);
-                    GL.End();
+                    for (double j = 0; j < 360 / (drawAngle / 2); j += 2)
+                    {
+                        double ang1 = (j * (drawAngle / 2)) / 180 * Math.PI;
+                        double ang2 = ((j + 1) * (drawAngle / 2)) / 180 * Math.PI;
+                        GL.Begin(BeginMode.LineStrip);
+                        GL.Vertex3(Math.Cos(ang1), Math.Sin(ang1), 0);
+                        GL.Vertex3(Math.Cos(ang2), Math.Sin(ang2), 0);
+                        GL.End();
+                    }
                 }
                 GL.PopMatrix();
-                // border
-                GLDisplayList rings = c.GetRingList();
-                for (int i = -5; i <= 5; i++)
-                {
-                    GL.PushMatrix();
-                    m = Matrix.TransformMatrix(new Vector3(1 + 0.0025f * i), (globpos + bonepos).LookatAngles(cam) * Maths._rad2degf, new Vector3());
-                    GL.MultMatrix((float*)&m);
-                    if (flags.Clang)
-                        rings.Call();
-                    else
-                    {
-                        for (double j = 0; j < 360 / (drawangle / 2); j += 2)
-                        {
-                            double ang1 = (j * (drawangle / 2)) / 180 * Math.PI;
-                            double ang2 = ((j + 1) * (drawangle / 2)) / 180 * Math.PI;
-                            int q = 0;
-                            GL.Begin(BeginMode.LineStrip);
-                            GL.Vertex3(Math.Cos(ang1), Math.Sin(ang1), 0);
-                            GL.Vertex3(Math.Cos(ang2), Math.Sin(ang2), 0);
-                            GL.End();
-                        }
-                    }
-                    GL.PopMatrix();
-                }
             }
+            
             GL.PopMatrix();
             GL.PopMatrix();
         }
@@ -584,17 +572,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Special Offensive Collision
-        public unsafe void RenderSpecialOffensiveCollision(ResourceNode[] bl, TKContext c, Vector3 cam, Helpers.DrawStyle style)
+        public unsafe void RenderSpecialOffensiveCollision(MDL0Node model, TKContext c, Vector3 cam)
         {
-            //Coded by Toomai
-            //Modified for release v0.67
-
             if (_event != 0x06150F00) //Special Offensive Collision
                 return;
 
             Event e = EventData;
-            //HitboxFlagsNode flags = Children[12] as HitboxFlagsNode;
-            //SpecialHitboxFlagsNode specialFlags = Children[14] as SpecialHitboxFlagsNode;
+            ResourceNode[] bl = model._linker.BoneCache;
 
             int boneindex = (int)e.parameters[0]._data >> 16;
             long size = HitboxSize;
@@ -602,11 +586,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             Root.GetBoneIndex(ref boneindex);
 
-            if (boneindex == 0) // if a hitbox is on TopN, make it follow TransN
+            if (boneindex == 0) //If a hitbox is on TopN, make it follow TransN
             {
-                if (Root.data != null)
+                if (Root._data != null)
                 {
-                    boneindex = (Root.data.misc.boneRefs.Children[4] as MoveDefBoneIndexNode).boneIndex;
+                    boneindex = (Root._data._misc.boneRefs.Children[4] as MoveDefBoneIndexNode).boneIndex;
                     Root.GetBoneIndex(ref boneindex);
                 }
                 else
@@ -623,231 +607,161 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             MDL0BoneNode b;
             b = bl[boneindex] as MDL0BoneNode;
-            Vector3 bonepos = b._frameMatrix.GetPoint();
-            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data));
-            Vector3 bonerot = b._frameMatrix.GetAngles();
-            Matrix r = b._frameMatrix.GetRotationMatrix();
-            Vector3 bonescl = b.RecursiveScale();
-            pos._x /= bonescl._x;
-            pos._y /= bonescl._y;
-            pos._z /= bonescl._z;
-            Vector3 globpos = r.Multiply(pos);
-            Matrix m = Matrix.TransformMatrix(new Vector3(1), bonerot, globpos + bonepos);
-            Vector3 resultpos = new Vector3(m[12], m[13], m[14]);
-            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultpos);
+
+            Matrix r = b.Matrix.GetRotationMatrix();
+            FrameState state = b.Matrix.Derive();
+            Vector3 bonePos = state._translate;
+            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data)) / state._scale;
+            Vector3 globalPos = r.Multiply(pos);
+
+            Matrix m = Matrix.TransformMatrix(new Vector3(1), state._rotate, globalPos + bonePos);
+            Vector3 resultPos = m.GetPoint();
+
+            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultPos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16, stretchres = 10;
             double drawangle = 360.0 / res;
-            // bubble
-            if (style == Helpers.DrawStyle.SSB64)
+            
+            Vector3 color = Helpers.GetTypeColor(flags.Type);
+            GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.5f);
+                
+            GLDisplayList spheres = c.GetSphereList();
+            spheres.Call();
+            if (specialFlags.Stretches)
             {
-                GL.Color4(1.0f, 1.0f, 1.0f, 0.25f);
-                c.DrawInvertedCube(new Vector3(0, 0, 0), 1.025f);
-                GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
-                c.DrawCube(new Vector3(0, 0, 0), 0.975f);
-                if (specialFlags.Stretches)
+                GL.PushMatrix();
+                m = Matrix.TransformMatrix(new Vector3(1), state._rotate, new Vector3());
+                GL.MultMatrix((float*)&m);
+                Vector3 reversepos = new Vector3(-pos._x / Helpers.UnScalar(size), -pos._y / Helpers.UnScalar(size), -pos._z / Helpers.UnScalar(size));
+
+                color = Helpers.GetEffectColor(flags.Effect);
+                GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.5f);
+                
+                GL.Translate(reversepos._x, reversepos._y, reversepos._z);
+                GL.Begin(BeginMode.Lines); // stretch lines
+                GL.Vertex3(1, 0, 0);
+                GL.Vertex3(1 - reversepos._x, 0 - reversepos._y, 0 - reversepos._z);
+                GL.Vertex3(-1, 0, 0);
+                GL.Vertex3(-1 - reversepos._x, 0 - reversepos._y, 0 - reversepos._z);
+                GL.Vertex3(0, 1, 0);
+                GL.Vertex3(0 - reversepos._x, 1 - reversepos._y, 0 - reversepos._z);
+                GL.Vertex3(0, -1, 0);
+                GL.Vertex3(0 - reversepos._x, -1 - reversepos._y, 0 - reversepos._z);
+                GL.Vertex3(0, 0, 1);
+                GL.Vertex3(0 - reversepos._x, 0 - reversepos._y, 1 - reversepos._z);
+                GL.Vertex3(0, 0, -1);
+                GL.Vertex3(0 - reversepos._x, 0 - reversepos._y, -1 - reversepos._z);
+                GL.End();
+
+                color = Helpers.GetTypeColor(flags.Type);
+                GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.25f);
+                
+                spheres.Call(); // root sphere
+                GL.Translate(-reversepos._x, -reversepos._y, -reversepos._z);
+                GL.PopMatrix();
+            }
+
+            // angle indicator
+            double rangle = angle / 180.0 * Math.PI;
+            Vector3 effectcolour = Helpers.GetEffectColor(flags.Effect);
+            GL.Color4((effectcolour._x / 255.0f), (effectcolour._y / 225.0f), (effectcolour._z / 255.0f), 0.75f);
+            GL.PushMatrix();
+            if (angle == 361)
+            {
+                m = Matrix.TransformMatrix(new Vector3(0.5f), (globalPos + bonePos).LookatAngles(cam) * Maths._rad2degf, new Vector3(0));
+                GL.MultMatrix((float*)&m);
+                GL.Begin(BeginMode.Quads);
+                for (int i = 0; i < 16; i += 2)
                 {
-                    Vector3 reversepos = new Vector3(-globpos._x / Helpers.UnScalar(size), -globpos._y / Helpers.UnScalar(size), -globpos._z / Helpers.UnScalar(size));
-                    GL.Translate(reversepos._x, reversepos._y, reversepos._z);
-                    GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
-                    GL.Begin(BeginMode.Lines);
-                    GL.Vertex3(-1, -1, -1); // stretch lines
-                    GL.Vertex3(-1 - reversepos._x, -1 - reversepos._y, -1 - reversepos._z);
-                    GL.Vertex3(-1, -1, 1);
-                    GL.Vertex3(-1 - reversepos._x, -1 - reversepos._y, 1 - reversepos._z);
-                    GL.Vertex3(-1, 1, -1);
-                    GL.Vertex3(-1 - reversepos._x, 1 - reversepos._y, -1 - reversepos._z);
-                    GL.Vertex3(-1, 1, 1);
-                    GL.Vertex3(-1 - reversepos._x, 1 - reversepos._y, 1 - reversepos._z);
-                    GL.Vertex3(1, -1, -1);
-                    GL.Vertex3(1 - reversepos._x, -1 - reversepos._y, -1 - reversepos._z);
-                    GL.Vertex3(1, -1, 1);
-                    GL.Vertex3(1 - reversepos._x, -1 - reversepos._y, 1 - reversepos._z);
-                    GL.Vertex3(1, 1, -1);
-                    GL.Vertex3(1 - reversepos._x, 1 - reversepos._y, -1 - reversepos._z);
-                    GL.Vertex3(1, 1, 1);
-                    GL.Vertex3(1 - reversepos._x, 1 - reversepos._y, 1 - reversepos._z);
-                    GL.End();
-                    GL.Begin(BeginMode.LineLoop); // root box
-                    GL.Vertex3(-1, -1, -1);
-                    GL.Vertex3(-1, -1, 1);
-                    GL.Vertex3(-1, 1, 1);
-                    GL.Vertex3(-1, 1, -1);
-                    GL.End();
-                    GL.Begin(BeginMode.LineLoop);
-                    GL.Vertex3(1, -1, -1);
-                    GL.Vertex3(1, -1, 1);
-                    GL.Vertex3(1, 1, 1);
-                    GL.Vertex3(1, 1, -1);
-                    GL.End();
-                    GL.Begin(BeginMode.Lines);
-                    GL.Vertex3(-1, -1, -1);
-                    GL.Vertex3(1, -1, -1);
-                    GL.Vertex3(-1, -1, 1);
-                    GL.Vertex3(1, -1, 1);
-                    GL.Vertex3(-1, 1, -1);
-                    GL.Vertex3(1, 1, -1);
-                    GL.Vertex3(-1, 1, 1);
-                    GL.Vertex3(1, 1, 1);
-                    GL.End();
-                    GL.Translate(-reversepos._x, -reversepos._y, -reversepos._z);
+                    GL.Vertex3(Math.Cos((i - 1) * Math.PI / 8) * 0.5, Math.Sin((i - 1) * Math.PI / 8) * 0.5, 0);
+                    GL.Vertex3(Math.Cos(i * Math.PI / 8), Math.Sin(i * Math.PI / 8), 0);
+                    GL.Vertex3(Math.Cos((i + 1) * Math.PI / 8) * 0.5, Math.Sin((i + 1) * Math.PI / 8) * 0.5, 0);
+                    GL.Vertex3(0, 0, 0);
                 }
+                GL.End();
             }
             else
             {
-                if (style == Helpers.DrawStyle.Melee)
-                    GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
-                else
-                {
-                    Vector3 typecolour = Helpers.getTypeColour(flags.Type);
-                    GL.Color4((typecolour._x / 255.0f), (typecolour._y / 225.0f), (typecolour._z / 255.0f), 0.5f);
-                }
-                GLDisplayList spheres = c.GetSphereList();
-                spheres.Call();
-                if (specialFlags.Stretches)
-                {
-                    GL.PushMatrix();
-                    m = Matrix.TransformMatrix(new Vector3(1), bonerot, new Vector3());
-                    GL.MultMatrix((float*)&m);
-                    Vector3 reversepos = new Vector3(-pos._x / Helpers.UnScalar(size), -pos._y / Helpers.UnScalar(size), -pos._z / Helpers.UnScalar(size));
-                    if (style == Helpers.DrawStyle.Melee)
-                        GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
-                    else
-                    {
-                        Vector3 effectcolour = Helpers.getEffectColour(flags.Effect);
-                        GL.Color4((effectcolour._x / 255.0f), (effectcolour._y / 225.0f), (effectcolour._z / 255.0f), 0.5f);
-                    }
-                    GL.Translate(reversepos._x, reversepos._y, reversepos._z);
-                    GL.Begin(BeginMode.Lines); // stretch lines
-                    GL.Vertex3(1, 0, 0);
-                    GL.Vertex3(1 - reversepos._x, 0 - reversepos._y, 0 - reversepos._z);
-                    GL.Vertex3(-1, 0, 0);
-                    GL.Vertex3(-1 - reversepos._x, 0 - reversepos._y, 0 - reversepos._z);
-                    GL.Vertex3(0, 1, 0);
-                    GL.Vertex3(0 - reversepos._x, 1 - reversepos._y, 0 - reversepos._z);
-                    GL.Vertex3(0, -1, 0);
-                    GL.Vertex3(0 - reversepos._x, -1 - reversepos._y, 0 - reversepos._z);
-                    GL.Vertex3(0, 0, 1);
-                    GL.Vertex3(0 - reversepos._x, 0 - reversepos._y, 1 - reversepos._z);
-                    GL.Vertex3(0, 0, -1);
-                    GL.Vertex3(0 - reversepos._x, 0 - reversepos._y, -1 - reversepos._z);
-                    GL.End();
-                    if (style == Helpers.DrawStyle.Melee)
-                        GL.Color4(1.0f, 0.0f, 0.0f, 0.25f);
-                    else
-                    {
-                        Vector3 typecolour = Helpers.getTypeColour(flags.Type);
-                        GL.Color4((typecolour._x / 255.0f), (typecolour._y / 225.0f), (typecolour._z / 255.0f), 0.25f);
-                    }
-                    spheres.Call(); // root sphere
-                    GL.Translate(-reversepos._x, -reversepos._y, -reversepos._z);
-                    GL.PopMatrix();
-                }
+                long a = -angle; // otherwise 90 would point down
+                int angleflip = 0;
+                if (resultPos._z < 0)
+                    angleflip = 180;
+                m = Matrix.TransformMatrix(new Vector3(1), new Vector3(a, angleflip, 0), new Vector3());
+                GL.MultMatrix((float*)&m);
+                GL.Begin(BeginMode.Quads);
+                // left face
+                GL.Vertex3(0.1, 0.1, 0);
+                GL.Vertex3(0.1, 0.1, 1);
+                GL.Vertex3(0.1, -0.1, 1);
+                GL.Vertex3(0.1, -0.1, 0);
+                // right face
+                GL.Vertex3(-0.1, -0.1, 0);
+                GL.Vertex3(-0.1, -0.1, 1);
+                GL.Vertex3(-0.1, 0.1, 1);
+                GL.Vertex3(-0.1, 0.1, 0);
+                // top face
+                GL.Vertex3(-0.1, 0.1, 0);
+                GL.Vertex3(-0.1, 0.1, 1);
+                GL.Vertex3(0.1, 0.1, 1);
+                GL.Vertex3(0.1, 0.1, 0);
+                // bottom face
+                GL.Vertex3(0.1, -0.1, 0);
+                GL.Vertex3(0.1, -0.1, 1);
+                GL.Vertex3(-0.1, -0.1, 1);
+                GL.Vertex3(-0.1, -0.1, 0);
+                // front face
+                GL.Vertex3(-0.1, -0.1, 1);
+                GL.Vertex3(0.1, -0.1, 1);
+                GL.Vertex3(0.1, 0.1, 1);
+                GL.Vertex3(-0.1, 0.1, 1);
+                // back face
+                GL.Vertex3(-0.1, 0.1, 0);
+                GL.Vertex3(0.1, 0.1, 0);
+                GL.Vertex3(0.1, -0.1, 0);
+                GL.Vertex3(-0.1, -0.1, 0);
+                GL.End();
             }
-            if (style == Helpers.DrawStyle.Brawl)
+            GL.PopMatrix();
+
+            // border
+            GLDisplayList rings = c.GetRingList();
+            for (int i = -5; i <= 5; i++)
             {
-                // angle indicator
-                double rangle = angle / 180.0 * Math.PI;
-                Vector3 effectcolour = Helpers.getEffectColour(flags.Effect);
-                GL.Color4((effectcolour._x / 255.0f), (effectcolour._y / 225.0f), (effectcolour._z / 255.0f), 0.75f);
                 GL.PushMatrix();
-                if (angle == 361)
-                {
-                    m = Matrix.TransformMatrix(new Vector3(0.5f), (globpos + bonepos).LookatAngles(cam) * Maths._rad2degf, new Vector3(0));
-                    GL.MultMatrix((float*)&m);
-                    GL.Begin(BeginMode.Quads);
-                    for (int i = 0; i < 16; i += 2)
-                    {
-                        GL.Vertex3(Math.Cos((i - 1) * Math.PI / 8) * 0.5, Math.Sin((i - 1) * Math.PI / 8) * 0.5, 0);
-                        GL.Vertex3(Math.Cos(i * Math.PI / 8), Math.Sin(i * Math.PI / 8), 0);
-                        GL.Vertex3(Math.Cos((i + 1) * Math.PI / 8) * 0.5, Math.Sin((i + 1) * Math.PI / 8) * 0.5, 0);
-                        GL.Vertex3(0, 0, 0);
-                    }
-                    GL.End();
-                }
+                m = Matrix.TransformMatrix(new Vector3(1 + 0.0025f * i), (globalPos + bonePos).LookatAngles(cam) * Maths._rad2degf, new Vector3());
+                GL.MultMatrix((float*)&m);
+                if (flags.Clang)
+                    rings.Call();
                 else
                 {
-                    long a = -angle; // otherwise 90 would point down
-                    int angleflip = 0;
-                    if (resultpos._z < 0)
-                        angleflip = 180;
-                    m = Matrix.TransformMatrix(new Vector3(1), new Vector3(a, angleflip, 0), new Vector3());
-                    GL.MultMatrix((float*)&m);
-                    GL.Begin(BeginMode.Quads);
-                    // left face
-                    GL.Vertex3(0.1, 0.1, 0);
-                    GL.Vertex3(0.1, 0.1, 1);
-                    GL.Vertex3(0.1, -0.1, 1);
-                    GL.Vertex3(0.1, -0.1, 0);
-                    // right face
-                    GL.Vertex3(-0.1, -0.1, 0);
-                    GL.Vertex3(-0.1, -0.1, 1);
-                    GL.Vertex3(-0.1, 0.1, 1);
-                    GL.Vertex3(-0.1, 0.1, 0);
-                    // top face
-                    GL.Vertex3(-0.1, 0.1, 0);
-                    GL.Vertex3(-0.1, 0.1, 1);
-                    GL.Vertex3(0.1, 0.1, 1);
-                    GL.Vertex3(0.1, 0.1, 0);
-                    // bottom face
-                    GL.Vertex3(0.1, -0.1, 0);
-                    GL.Vertex3(0.1, -0.1, 1);
-                    GL.Vertex3(-0.1, -0.1, 1);
-                    GL.Vertex3(-0.1, -0.1, 0);
-                    // front face
-                    GL.Vertex3(-0.1, -0.1, 1);
-                    GL.Vertex3(0.1, -0.1, 1);
-                    GL.Vertex3(0.1, 0.1, 1);
-                    GL.Vertex3(-0.1, 0.1, 1);
-                    // back face
-                    GL.Vertex3(-0.1, 0.1, 0);
-                    GL.Vertex3(0.1, 0.1, 0);
-                    GL.Vertex3(0.1, -0.1, 0);
-                    GL.Vertex3(-0.1, -0.1, 0);
-                    GL.End();
+                    for (double j = 0; j < 360 / (drawangle / 2); j += 2)
+                    {
+                        double ang1 = (j * (drawangle / 2)) / 180 * Math.PI;
+                        double ang2 = ((j + 1) * (drawangle / 2)) / 180 * Math.PI;
+                        int q = 0;
+                        GL.Begin(BeginMode.LineStrip);
+                        GL.Vertex3(Math.Cos(ang1), Math.Sin(ang1), 0);
+                        GL.Vertex3(Math.Cos(ang2), Math.Sin(ang2), 0);
+                        GL.End();
+                    }
                 }
                 GL.PopMatrix();
-                // border
-                GLDisplayList rings = c.GetRingList();
-                for (int i = -5; i <= 5; i++)
-                {
-                    GL.PushMatrix();
-                    m = Matrix.TransformMatrix(new Vector3(1 + 0.0025f * i), (globpos + bonepos).LookatAngles(cam) * Maths._rad2degf, new Vector3());
-                    GL.MultMatrix((float*)&m);
-                    if (flags.Clang)
-                        rings.Call();
-                    else
-                    {
-                        for (double j = 0; j < 360 / (drawangle / 2); j += 2)
-                        {
-                            double ang1 = (j * (drawangle / 2)) / 180 * Math.PI;
-                            double ang2 = ((j + 1) * (drawangle / 2)) / 180 * Math.PI;
-                            int q = 0;
-                            GL.Begin(BeginMode.LineStrip);
-                            GL.Vertex3(Math.Cos(ang1), Math.Sin(ang1), 0);
-                            GL.Vertex3(Math.Cos(ang2), Math.Sin(ang2), 0);
-                            GL.End();
-                        }
-                    }
-                    GL.PopMatrix();
-                }
             }
+            
             GL.PopMatrix();
             GL.PopMatrix();
         }
         #endregion
 
         #region Catch Collision
-        public unsafe void RenderCatchCollision(ResourceNode[] bl, TKContext c, Vector3 cam, Helpers.DrawStyle style)
+        public unsafe void RenderCatchCollision(MDL0Node model, TKContext c, Vector3 cam)
         {
-            //Coded by Toomai
-            //Modified for release v0.67
-
             if (_event != 0x060A0800 && _event != 0x060A0900 && _event != 0x060A0A00)
                 return;
 
             Event e = EventData;
+            ResourceNode[] bl = model._linker.BoneCache;
 
             int boneindex = (int)e.parameters[1]._data;
             long size = HitboxSize;
@@ -856,9 +770,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (boneindex == 0) // if a hitbox is on TopN, make it follow TransN
             {
-                if (Root.data != null)
+                if (Root._data != null)
                 {
-                    boneindex = (Root.data.misc.boneRefs.Children[4] as MoveDefBoneIndexNode).boneIndex;
+                    boneindex = (Root._data._misc.boneRefs.Children[4] as MoveDefBoneIndexNode).boneIndex;
                     Root.GetBoneIndex(ref boneindex);
                 }
                 else
@@ -874,37 +788,27 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
             MDL0BoneNode b = bl[boneindex] as MDL0BoneNode;
-            Vector3 bonepos = b._frameMatrix.GetPoint();
-            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[3]._data), Helpers.UnScalar(e.parameters[4]._data), Helpers.UnScalar(e.parameters[5]._data));
-            Vector3 bonerot = b._frameMatrix.GetAngles();
-            Matrix r = b._frameMatrix.GetRotationMatrix();
-            Vector3 bonescl = b.RecursiveScale();
-            pos._x /= bonescl._x;
-            pos._y /= bonescl._y;
-            pos._z /= bonescl._z;
-            Vector3 globpos = r.Multiply(pos);
-            Matrix m = Matrix.TransformMatrix(new Vector3(1), bonerot, globpos + bonepos);
-            Vector3 resultpos = new Vector3(m[12], m[13], m[14]);
-            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultpos);
+
+            Matrix r = b.Matrix.GetRotationMatrix();
+            FrameState state = b.Matrix.Derive();
+            Vector3 bonePos = state._translate;
+            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data)) / state._scale;
+            Vector3 globalPos = r.Multiply(pos);
+
+            Matrix m = Matrix.TransformMatrix(new Vector3(1), state._rotate, globalPos + bonePos);
+            Vector3 resultPos = m.GetPoint();
+
+            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultPos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16;
             double drawangle = 360.0 / res;
-            // bubble
-            if (style == Helpers.DrawStyle.SSB64)
-            {
-                GL.Color4(1.0f, 1.0f, 1.0f, 0.25f);
-                c.DrawInvertedCube(new Vector3(0, 0, 0), 1.025f);
-                GL.Color4(1.0f, 0.0f, 0.0f, 0.5f);
-                c.DrawCube(new Vector3(0, 0, 0), 0.975f);
-            }
-            else
-            {
-                Vector3 typecolour = Helpers.getTypeColour(Helpers.HitboxType.Throwing);
-                GL.Color4((typecolour._x / 255.0f), (typecolour._y / 225.0f), (typecolour._z / 255.0f), 0.375f);
-                GLDisplayList spheres = c.GetSphereList();
-                spheres.Call();
-            }
+
+            Vector3 color = Helpers.GetTypeColor(Helpers.HitboxType.Throwing);
+            GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.375f);
+            GLDisplayList spheres = c.GetSphereList();
+            spheres.Call();
+            
             GL.PopMatrix();
         }
         #endregion

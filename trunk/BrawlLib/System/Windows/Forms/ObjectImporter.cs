@@ -95,7 +95,7 @@ namespace System.Windows.Forms
             if (node.NormalNode != null)
             {
                 _internalModel.NormalGroup.AddChild(node._normalNode);
-                (newNode._normalNode = (MDL0NormalNode)_internalModel.NormalGroup.Children[_internalModel._normList.Count - 1])._polygons.Add(newNode);
+                (newNode._normalNode = (MDL0NormalNode)_internalModel.NormalGroup.Children[_internalModel._normList.Count - 1])._objects.Add(newNode);
             }
             for (int i = 0; i < 8; i++)
                 if (node._uvSet[i] != null)
@@ -103,14 +103,14 @@ namespace System.Windows.Forms
                     _internalModel.UVGroup.AddChild(node._uvSet[i]);
                     newNode._uvSet[i] = (MDL0UVNode)_internalModel.UVGroup.Children[_internalModel._uvList.Count - 1];
                     newNode._uvSet[i].Name = "#" + (_internalModel._uvList.Count - 1);
-                    newNode._uvSet[i]._polygons.Add(newNode);
+                    newNode._uvSet[i]._objects.Add(newNode);
                 }
 
             for (int i = 0; i < 2; i++)
                 if (node._colorSet[i] != null)
                 {
                     _internalModel.ColorGroup.AddChild(node._colorSet[i]);
-                    (newNode._colorSet[i] = (MDL0ColorNode)_internalModel.ColorGroup.Children[_internalModel._colorList.Count - 1])._polygons.Add(newNode);
+                    (newNode._colorSet[i] = (MDL0ColorNode)_internalModel.ColorGroup.Children[_internalModel._colorList.Count - 1])._objects.Add(newNode);
                 }
 
             if (node.OpaMaterialNode != null)

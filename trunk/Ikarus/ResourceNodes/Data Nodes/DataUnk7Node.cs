@@ -37,7 +37,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
 
             long* addr = (long*)(address);
             foreach (MoveDefUnk7EntryNode b in Children)
@@ -79,7 +79,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             *(buint*)address = v1._data;
             *(buint*)(address + 4) = v2._data;
         }

@@ -420,59 +420,62 @@ namespace System.Windows.Forms
 
         public EventModifier() { InitializeComponent(); frmEventList = new FormEventList(); }
 
-        public DialogResult status;
-        public MoveDefEventNode origEvent;
-        public ScriptPanel p;
+        public DialogResult _status;
 
-        MoveDefEventNode eventData { get { return newEvent; } }
-        MoveDefEventNode newEv = null;
-        MoveDefEventNode newEvent 
+        private MoveDefEventNode _origEvent;
+        private MoveDefEventNode _newEv = null;
+        public MoveDefEventNode NewEvent 
         {
             get 
             {
-                if (newEv == null)
+                //Generate a copy of the original event
+                //So that changes don't affect the original event until the user finishes
+                if (_newEv == null)
                 {
-                    newEv = new MoveDefEventNode() { _parent = origEvent.Parent };
+                    _newEv = new MoveDefEventNode() { _parent = _origEvent.Parent };
 
-                    newEv.EventID = origEvent._event;
-                    ActionEventInfo info = origEvent.EventInfo;
+                    _newEv.EventID = _origEvent._event;
+                    ActionEventInfo info = _origEvent.EventInfo;
 
-                    for (int i = 0; i < newEv.numArguments; i++)
+                    for (int i = 0; i < _newEv.numArguments; i++)
                     {
                         int type = 0, value = 0;
-                        if (origEvent.Children.Count > i)
+                        if (_origEvent.Children.Count > i)
                         {
-                            type = (int)(origEvent.Children[i] as MoveDefEventParameterNode)._type;
-                            value = (int)(origEvent.Children[i] as MoveDefEventParameterNode)._value;
+                            type = (int)(_origEvent.Children[i] as MoveDefEventParameterNode)._type;
+                            value = (int)(_origEvent.Children[i] as MoveDefEventParameterNode)._value;
                         }
-                        newEv.NewParam(i, value, type);
+                        _newEv.NewParam(i, value, type);
                         if (type == (int)ArgVarType.Offset)
                         {
-                            MoveDefEventOffsetNode oldoff = origEvent.Children[i] as MoveDefEventOffsetNode;
-                            MoveDefEventOffsetNode newoff = newEv.Children[i] as MoveDefEventOffsetNode;
+                            MoveDefEventOffsetNode oldoff = _origEvent.Children[i] as MoveDefEventOffsetNode;
+                            MoveDefEventOffsetNode newoff = _newEv.Children[i] as MoveDefEventOffsetNode;
                             newoff.list = oldoff.list;
                             newoff.index = oldoff.index;
                             newoff.type = oldoff.type;
                             newoff.action = oldoff.action;
                         }
-                    }
+                    } 
+
+                    //Set the node to be "Clean", so that if the user makes a change and cancels, we'll know
+                    _newEv.IsDirty = false;
                 }
-                return newEv;
+                return _newEv;
             }
         }
 
         public MoveDefEventParameterNode param = null;
 
-        public void Setup(ScriptPanel parent)
+        public void Setup(MoveDefEventNode original)
         {
-            p = parent;
+            _origEvent = original;
 
             //Setup requirements list.
             if (cboRequirement.Items.Count == 0)
                 cboRequirement.Items.AddRange(FileManager.iRequirements);
 
-            status = DialogResult.Cancel;
-            newEv = null;
+            _status = DialogResult.Cancel;
+            _newEv = null;
 
             DisplayEvent();
         }
@@ -491,15 +494,15 @@ namespace System.Windows.Forms
             offsetPanel.Visible = false;
 
             ActionEventInfo info = null;
-            if (FileManager.EventDictionary.ContainsKey(eventData._event))
-                info = FileManager.EventDictionary[eventData._event];
+            if (FileManager.EventDictionary.ContainsKey(NewEvent._event))
+                info = FileManager.EventDictionary[NewEvent._event];
 
             if (info != null)
                 lblEventName.Text = info._name;
 
-            lblEventId.Text = Helpers.Hex8(eventData._event);
+            lblEventId.Text = Helpers.Hex8(NewEvent._event);
 
-            foreach (MoveDefEventParameterNode n in eventData.Children)
+            foreach (MoveDefEventParameterNode n in NewEvent.Children)
                 if (!String.IsNullOrEmpty(n.Name))
                     lstParameters.Items.Add(n.Name);
         }
@@ -507,7 +510,7 @@ namespace System.Windows.Forms
         //Display the selected parameter's value, type and description.
         private void DisplayParameter(int index)
         {
-            param = eventData.Children[index] as MoveDefEventParameterNode;
+            param = NewEvent.Children[index] as MoveDefEventParameterNode;
 
             cboType.Enabled = true;
             try { cboType.SelectedIndex = (int)param._type; }
@@ -552,19 +555,19 @@ namespace System.Windows.Forms
         private void btnChangeEvent_Click(object sender, EventArgs e)
         {
             //Pass in the event Event.
-            frmEventList.eventEvent = eventData._event;
-            frmEventList.p = eventData.Root;
+            frmEventList.eventEvent = NewEvent._event;
+            frmEventList.p = NewEvent.Root;
             frmEventList.ShowDialog();
 
             //Retrieve and setup the new event according to the new event Event.
             if (frmEventList.status == DialogResult.OK)
             {
-                newEv = new MoveDefEventNode() { _parent = origEvent.Parent };
+                _newEv = new MoveDefEventNode() { _parent = _origEvent.Parent };
 
-                newEvent.EventID = (uint)frmEventList.eventEvent;
-                ActionEventInfo info = newEvent.EventInfo;
+                NewEvent.EventID = (uint)frmEventList.eventEvent;
+                ActionEventInfo info = NewEvent.EventInfo;
 
-                newEvent.NewChildren();
+                NewEvent.NewChildren();
             }
 
             DisplayEvent();
@@ -585,25 +588,25 @@ namespace System.Windows.Forms
 
             //Change the type to the type selected and update the view window.
 
-            param = eventData.Children[index] as MoveDefEventParameterNode;
+            param = NewEvent.Children[index] as MoveDefEventParameterNode;
 
             if (param._type != (ArgVarType)cboType.SelectedIndex)
             {
                 int ind = param.Index;
-                ActionEventInfo info = eventData.EventInfo;
+                ActionEventInfo info = NewEvent.EventInfo;
                 string name = ((ArgVarType)cboType.SelectedIndex).ToString();
 
                 int value = 0;
 
-                MoveDefEventParameterNode p = newEvent.Children[ind] as MoveDefEventParameterNode;
+                MoveDefEventParameterNode p = NewEvent.Children[ind] as MoveDefEventParameterNode;
                 if (p is MoveDefEventValueNode || p is MoveDefEventScalarNode || p is MoveDefEventBoolNode)
                     value = p._value;
 
-                newEvent.Children[ind].Remove();
+                NewEvent.Children[ind].Remove();
 
                 ArgVarType t = ((ArgVarType)cboType.SelectedIndex);
 
-                newEvent.NewParam(ind, value, (int)t);
+                NewEvent.NewParam(ind, value, (int)t);
             }
 
             DisplayParameter(index);
@@ -617,48 +620,40 @@ namespace System.Windows.Forms
             long value = cboRequirement.SelectedIndex;
             if (chkNot.Checked) value |= 0x80000000;
 
-            (newEvent.Children[index] as MoveDefEventParameterNode)._value = (int)value;
+            (NewEvent.Children[index] as MoveDefEventParameterNode)._value = (int)value;
         }
 
         public event EventHandler Completed;
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            status = DialogResult.Cancel;
+            if (NewEvent.IsDirty)
+                if (MessageBox.Show("Are you sure you want to cancel editing this event? You have unsaved changes.", "Done Editing?", MessageBoxButtons.YesNo) == DialogResult.No)
+                    return;
 
-            if (p != null)
-                p.SelectedObject = _oldSelectedObject;
-            else
+            _status = DialogResult.Cancel;
+
             if (Completed != null)
                 Completed(this, null);
         }
 
         private void btnDone_Click(object sender, EventArgs e)
         {
-            if (newEv == null) //No changes were made.
+            if (!NewEvent.IsDirty) //No changes were made.
             {
                 btnCancel_Click(sender, e);
                 return;
             }
 
-            status = DialogResult.OK;
-            int index = origEvent.Index;
-            MoveDefActionNode action = origEvent.Parent as MoveDefActionNode;
-            origEvent.Remove();
-            action.InsertChild(newEvent, true, index);
+            _status = DialogResult.OK;
+            int index = _origEvent.Index;
+            MoveDefActionNode action = _origEvent.Parent as MoveDefActionNode;
+            _origEvent.Remove();
+            action.InsertChild(NewEvent, true, index);
 
-            if (p != null)
-            {
-                p.SelectedObject = _oldSelectedObject;
-                p.scriptEditor1.MakeScript();
-                p.SetFrame(p._animFrame); //Reset and then run script to show changes
-            }
-            else
-                if (Completed != null)
-                    Completed(this, null);
+            if (Completed != null)
+                Completed(this, null);
         }
-
-        public object _oldSelectedObject;
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {

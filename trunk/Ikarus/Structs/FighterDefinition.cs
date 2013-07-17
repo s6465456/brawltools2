@@ -4,7 +4,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using BrawlLib.SSBB.ResourceNodes;
 
-namespace BrawlLib.SSBBTypes
+namespace Ikarus
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct FDefHeader
@@ -135,7 +135,6 @@ namespace BrawlLib.SSBBTypes
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
-
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct patternPowerMul

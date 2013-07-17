@@ -57,8 +57,8 @@ namespace BrawlLib.OpenGL
         public void BeginUpdate() { _updateCounter++; }
         public void EndUpdate() { if ((_updateCounter = Math.Max(_updateCounter - 1, 0)) == 0) Invalidate(); }
 
-        public new void Capture() { _ctx.Capture(); }
-        public void Release() { _ctx.Release(); }
+        public new void Capture() { if (_ctx != null) _ctx.Capture(); }
+        public void Release() { if (_ctx != null) _ctx.Release(); }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -69,7 +69,7 @@ namespace BrawlLib.OpenGL
             GL.ClearDepth(1.0f);
 
             Capture();
-
+            
             OnInit(_ctx);
 
             base.OnLoad(e);
@@ -347,7 +347,7 @@ namespace BrawlLib.OpenGL
 
         internal virtual void OnInit(TKContext ctx) { }
 
-        public float _fovY = 45.0f, _nearZ = 1.0f, _farZ = 20000.0f, _aspect;
+        public float _fovY = 45.0f, _nearZ = 1.0f, _farZ = 200000.0f, _aspect;
 
         internal Matrix _projectionMatrix;
         internal Matrix _projectionInverse;

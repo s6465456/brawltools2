@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using BrawlLib.IO;
 using BrawlLib.Wii.Compression;
 using System.IO;
-using System.Windows;
 using System.Windows.Forms;
 using BrawlLib.SSBBTypes;
 
@@ -32,29 +31,34 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             ResourceNode node = null;
             FileMap map = FileMap.FromFile(path, FileMapProtect.Read);
-            try 
+            try
             {
+                DataSource source = new DataSource(map);
                 if (String.Equals(Path.GetExtension(path), ".mrg", StringComparison.OrdinalIgnoreCase) || String.Equals(Path.GetExtension(path), ".mrgc", StringComparison.OrdinalIgnoreCase))
                 {
                     node = new MRGNode();
-                    DataSource source = new DataSource(map);
                     if (Compressor.IsDataCompressed(source.Address, source.Length))
                     {
                         CompressionHeader* cmpr = (CompressionHeader*)source.Address;
-                        try
+                        source.Compression = cmpr->Algorithm;
+                        if (Compressor.Supports(cmpr->Algorithm))
                         {
-                            //Expand the whole resource and initialize
-                            FileMap map2 = FileMap.FromTempFile(cmpr->ExpandedSize);
-                            Compressor.Expand(cmpr, map2.Address, map2.Length);
-                            source.Compression = cmpr->Algorithm;
-                            node.Initialize(parent, source, new DataSource(map2));
+                            try
+                            {
+                                //Expand the whole resource and initialize
+                                FileMap uncompMap = FileMap.FromTempFile(cmpr->ExpandedSize);
+                                Compressor.Expand(cmpr, uncompMap.Address, uncompMap.Length);
+                                node.Initialize(parent, source, new DataSource(uncompMap));
+                            }
+                            catch (InvalidCompressionException e) { MessageBox.Show(e.ToString()); }
                         }
-                        catch (InvalidCompressionException) { }
+                        else
+                            node.Initialize(parent, source);
                     }
-                    else node.Initialize(parent, map);
+                    else
+                        node.Initialize(parent, source);
                 }
-                else
-                    if (String.Equals(Path.GetExtension(path), ".rel", StringComparison.OrdinalIgnoreCase))
+                else if (String.Equals(Path.GetExtension(path), ".rel", StringComparison.OrdinalIgnoreCase))
                 {
                     node = new RELNode();
                     node.Initialize(parent, map);
@@ -64,7 +68,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                     node = new DOLNode();
                     node.Initialize(parent, map);
                 }
-                else node = FromSource(parent, new DataSource(map)); 
+                else if ((node = FromSource(parent, source)) == null)
+                {
+                    if (Compressor.IsDataCompressed(source.Address, source.Length))
+                    {
+                        CompressionHeader* cmpr = (CompressionHeader*)source.Address;
+                        if (!Compressor.Supports(cmpr->Algorithm))
+                            MessageBox.Show("File uses unsupported " + cmpr->Algorithm.ToString() + " compression.");
+                    }
+                }
             }
             finally { if (node == null) map.Dispose(); }
             return node;
@@ -97,28 +109,31 @@ namespace BrawlLib.SSBB.ResourceNodes
                             if ((n = GetRaw(new DataSource(map.Address, map.Length))) != null)
                                 n.Initialize(parent, source, new DataSource(map));
                         }
-                        catch (InvalidCompressionException) { }
+                        catch (InvalidCompressionException e) { MessageBox.Show(e.ToString()); }
                     }
                     else
                     {
                         CompressionHeader* cmpr = (CompressionHeader*)source.Address;
-                        try
+                        if (Compressor.Supports(cmpr->Algorithm))
                         {
-                            //Expand a portion of the data
-                            byte* buffer = stackalloc byte[CompressBufferLen];
-                            Compressor.Expand(cmpr, buffer, CompressBufferLen);
-
-                            //Check for a match
-                            if ((n = GetRaw(new DataSource(buffer, CompressBufferLen))) != null)
+                            try
                             {
-                                //Expand the whole resource and initialize
-                                FileMap map = FileMap.FromTempFile(cmpr->ExpandedSize);
-                                Compressor.Expand(cmpr, map.Address, map.Length);
-                                source.Compression = cmpr->Algorithm;
-                                n.Initialize(parent, source, new DataSource(map));
+                                //Expand a portion of the data
+                                byte* buffer = stackalloc byte[CompressBufferLen];
+                                Compressor.Expand(cmpr, buffer, CompressBufferLen);
+
+                                //Check for a match
+                                if ((n = GetRaw(new DataSource(buffer, CompressBufferLen))) != null)
+                                {
+                                    //Expand the whole resource and initialize
+                                    FileMap map = FileMap.FromTempFile(cmpr->ExpandedSize);
+                                    Compressor.Expand(cmpr, map.Address, map.Length);
+                                    source.Compression = cmpr->Algorithm;
+                                    n.Initialize(parent, source, new DataSource(map));
+                                }
                             }
+                            catch (InvalidCompressionException e) { MessageBox.Show(e.ToString()); }
                         }
-                        catch (InvalidCompressionException) { }
                     }
                 }
             }

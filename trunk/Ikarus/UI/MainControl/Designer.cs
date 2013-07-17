@@ -278,7 +278,7 @@ namespace Ikarus.UI
             this.btnLeftToggle.TabStop = false;
             this.btnLeftToggle.Text = "<";
             this.btnLeftToggle.UseVisualStyleBackColor = false;
-            this.btnLeftToggle.Click += new System.EventHandler(this.btnAssetToggle_Click);
+            this.btnLeftToggle.Click += new System.EventHandler(this.btnLeftToggle_Click);
             // 
             // btnRightToggle
             // 
@@ -1109,8 +1109,6 @@ namespace Ikarus.UI
             // 
             // chkHurtboxes
             // 
-            this.chkHurtboxes.Checked = true;
-            this.chkHurtboxes.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkHurtboxes.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkHurtboxes.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.chkHurtboxes.Name = "chkHurtboxes";
@@ -1139,14 +1137,14 @@ namespace Ikarus.UI
             // chkPolygons
             // 
             this.chkPolygons.Checked = true;
+            this.chkPolygons.CheckOnClick = true;
             this.chkPolygons.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkPolygons.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkPolygons.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.chkPolygons.Name = "chkPolygons";
             this.chkPolygons.Size = new System.Drawing.Size(60, 21);
             this.chkPolygons.Text = "Polygons";
-            this.chkPolygons.CheckStateChanged += new System.EventHandler(this.chkPolygons_CheckStateChanged);
-            this.chkPolygons.Click += new System.EventHandler(this.chkPolygons_Click);
+            this.chkPolygons.CheckedChanged += new System.EventHandler(this.chkPolygons_CheckedChanged);
             // 
             // chkShaders
             // 
@@ -1524,8 +1522,8 @@ namespace Ikarus.UI
             if (FileManager.SelectedInfo != null)
             {
                 _resetCam = false;
-                TargetModel = FileManager.SelectedInfo._models[colorIndex].Children[0].Children[0].Children[0] as MDL0Node;
-                leftPanel.UpdateMoveset(FileManager.SelectedInfo.Moveset);
+                TargetModel = FileManager.SelectedInfo.FileCollection._models[colorIndex].Children[0].Children[0].Children[0] as MDL0Node;
+                leftPanel.UpdateMoveset(FileManager.SelectedInfo.FileCollection.Moveset);
                 ResetBoneColors();
             }
         }

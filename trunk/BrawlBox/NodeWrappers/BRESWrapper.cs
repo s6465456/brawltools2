@@ -153,7 +153,8 @@ namespace BrawlBox
                     if ((node as MDL0Node)._reopen == true)
                     {
                         string tempPath = Path.GetTempFileName();
-                        _resource.Export(tempPath);
+                        using (FileStream stream = new FileStream(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 8, FileOptions.SequentialScan | FileOptions.DeleteOnClose))
+                            _resource.Export(stream);
                         _resource.Replace(tempPath);
                         _resource.SignalPropertyChange();
                     }

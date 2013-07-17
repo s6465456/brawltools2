@@ -643,14 +643,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             return list;
         }
 
-        public Vector3 RecursiveScale()
-        {
-            if (_parent is MDL0GroupNode)
-                return _frameState._scale;
-            
-            return _frameState._scale * ((MDL0BoneNode)_parent).RecursiveScale();
-        }
-
         #region Rendering
 
         public static Color DefaultBoneColor = Color.FromArgb(0, 0, 128);

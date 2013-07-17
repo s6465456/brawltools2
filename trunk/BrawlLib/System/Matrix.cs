@@ -11,6 +11,8 @@ namespace System
 
         fixed float _values[16];
 
+        #region Value Management
+
         public Vector4 Row0 { get { return *(Vector4*)&Data[0]; } set { *(Vector4*)&Data[0] = value; } }
         public Vector4 Row1 { get { return *(Vector4*)&Data[4]; } set { *(Vector4*)&Data[4] = value; } }
         public Vector4 Row2 { get { return *(Vector4*)&Data[8]; } set { *(Vector4*)&Data[8] = value; } }
@@ -141,6 +143,8 @@ namespace System
             get { return Data[index]; }
             set { Data[index] = value; }
         }
+
+        #endregion
 
         public Matrix Copy()
         {
@@ -332,7 +336,8 @@ namespace System
             //nv._z = (p[2] * v._x) + (p[6] * v._y) + (p[10] * v._z) + p[14];
             return nv;
         }
-        public static Vector3 MultiplyVec3(Vector3 v, Matrix m)
+
+        private static Vector3 Transform(Vector3 v, Matrix m)
         {
             Vector3 nv;
             float* p = (float*)&m;
@@ -341,8 +346,8 @@ namespace System
             nv._z = (p[2] * v._x) + (p[6] * v._y) + (p[10] * v._z) + p[14];
             return nv;
         }
-        public static Vector3 operator *(Vector3 v, Matrix m) { return MultiplyVec3(v, m); }
-        public static Vector3 operator *(Matrix m, Vector3 v) { return MultiplyVec3(v, m); }
+        public static Vector3 operator *(Vector3 v, Matrix m) { return Transform(v, m); }
+        public static Vector3 operator *(Matrix m, Vector3 v) { return Transform(v, m); }
 
         public static Vector4 operator *(Matrix m, Vector4 v)
         {
@@ -354,7 +359,7 @@ namespace System
             return nv;
         }
 
-        internal void Multiply(float p)
+        private void Multiply(float p)
         {
             fixed (float* dPtr = _values)
             {
@@ -363,7 +368,7 @@ namespace System
             }
         }
 
-        public void Multiply(Matrix m)
+        private void Multiply(Matrix m)
         {
             this *= m;
         }
@@ -403,14 +408,14 @@ namespace System
                 *dPtr++ -= *sPtr++;
             return m1;
         }
-        public static Matrix operator /(Matrix m1, Matrix m2)
-        {
-            float* dPtr = (float*)&m1;
-            float* sPtr = (float*)&m2;
-            for (int i = 0; i < 16; i++)
-                *dPtr++ /= *sPtr++;
-            return m1;
-        }
+        //public static Matrix operator /(Matrix m1, Matrix m2)
+        //{
+        //    float* dPtr = (float*)&m1;
+        //    float* sPtr = (float*)&m2;
+        //    for (int i = 0; i < 16; i++)
+        //        *dPtr++ /= *sPtr++;
+        //    return m1;
+        //}
         public static Matrix operator *(Matrix m, float f)
         {
             float* p = (float*)&m;
@@ -453,11 +458,6 @@ namespace System
             int i = 0;
             while (i++ < 16) *p = -*p++;
             return m;
-        }
-
-        public override string ToString()
-        {
-            return String.Format("({0},{1},{2},{3})({4},{5},{6},{7})({8},{9},{10},{11})({12},{13},{14},{15})", this[0], this[1], this[2], this[3], this[4], this[5], this[6], this[7], this[8], this[9], this[10], this[11], this[12], this[13], this[14], this[15]);
         }
 
         public void RotateX(float x)
@@ -545,22 +545,63 @@ namespace System
             return m;
         }
 
-        public Vector4 QuaternionFromMatrix()
+        public Vector4 GetQuaternion1()
         {
             Matrix m = this;
-            Vector4 q = new Vector4();
+            float* p = (float*)&m;
 
-            q._w = (float)Math.Sqrt(Math.Max(0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2;
-            q._x = (float)Math.Sqrt(Math.Max(0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2;
-            q._y = (float)Math.Sqrt(Math.Max(0, 1 - m[0, 0] + m[1, 1] - m[2, 2])) / 2;
-            q._z = (float)Math.Sqrt(Math.Max(0, 1 - m[0, 0] - m[1, 1] + m[2, 2])) / 2;
-            q._x *= Math.Sign(q._x * (m[2, 1] - m[1, 2]));
-            q._y *= Math.Sign(q._y * (m[0, 2] - m[2, 0]));
-            q._z *= Math.Sign(q._z * (m[1, 0] - m[0, 1]));
-            return q;
+            Vector4 result = new Vector4();
+
+            float scale = p[0] + p[5] + p[10] + 1;
+            float sqrt;
+
+            if (scale > 0.0f)
+            {
+                sqrt = 0.5f / (float)Math.Sqrt((double)scale);
+
+                result._x = (p[9] - p[6]) * sqrt;
+                result._y = (p[2] - p[8]) * sqrt;
+                result._z = (p[4] - p[1]) * sqrt;
+                result._w = 0.25f / sqrt;
+
+                return result;
+            }
+
+            if ((p[0] >= p[5]) && (p[0] >= p[10]))
+            {
+                sqrt = (float)Math.Sqrt(1.0 + p[0] - p[5] - p[10]) * 2;
+
+                result._x = 0.5f / sqrt;
+                result._y = (p[1] + p[4]) / sqrt;
+                result._z = (p[2] + p[8]) / sqrt;
+                result._w = (p[6] + p[9]) / sqrt;
+
+                return result;
+            }
+
+            if (p[5] > p[10])
+            {
+                sqrt = (float)Math.Sqrt(1.0 + p[5] - p[0] - p[10]) * 2;
+
+                result._x = (p[1] + p[4]) / sqrt;
+                result._y = 0.5f / sqrt;
+                result._z = (p[6] + p[9]) / sqrt;
+                result._w = (p[2] + p[8]) / sqrt;
+
+                return result;
+            }
+
+            sqrt = (float)Math.Sqrt(1.0 + p[10] - p[0] - p[5]) * 2;
+
+            result._x = (p[2] + p[8]) / sqrt;
+            result._y = (p[6] + p[9]) / sqrt;
+            result._z = 0.5f / sqrt;
+            result._w = (p[1] + p[4]) / sqrt;
+
+            return result;
         }
 
-        public Vector4 toQuaternion()
+        public Vector4 GetQuaternion2()
         {
             Vector4 q = new Vector4();
 
@@ -610,37 +651,19 @@ namespace System
             return q * Maths._rad2degf;
         }
 
-        public void fromQuaternion(Vector4 q)
+        public Vector4 GetQuaternion3()
         {
             Matrix m = this;
-            float* p = (float*)&m;
+            Vector4 q = new Vector4();
 
-            double X = q[0];
-            double Y = q[1];
-            double Z = q[2];
-            double W = q[3];
-
-            double xx = X * X;
-            double xy = X * Y;
-            double xz = X * Z;
-            double xw = X * W;
-            double yy = Y * Y;
-            double yz = Y * Z;
-            double yw = Y * W;
-            double zz = Z * Z;
-            double zw = Z * W;
-
-            this = Identity;
-
-            p[0] = (float)(1 - 2 * (yy + zz));
-            p[1] = (float)(2 * (xy - zw));
-            p[2] = (float)(2 * (xz + yw));
-            p[4] = (float)(2 * (xy + zw));
-            p[5] = (float)(1 - 2 * (xx + zz));
-            p[6] = (float)(2 * (yz - xw));
-            p[8] = (float)(2 * (xz - yw));
-            p[9] = (float)(2 * (yz + xw));
-            p[10] = (float)(1 - 2 * (xx + yy));
+            q._w = (float)Math.Sqrt(Math.Max(0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2;
+            q._x = (float)Math.Sqrt(Math.Max(0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2;
+            q._y = (float)Math.Sqrt(Math.Max(0, 1 - m[0, 0] + m[1, 1] - m[2, 2])) / 2;
+            q._z = (float)Math.Sqrt(Math.Max(0, 1 - m[0, 0] - m[1, 1] + m[2, 2])) / 2;
+            q._x *= Math.Sign(q._x * (m[2, 1] - m[1, 2]));
+            q._y *= Math.Sign(q._y * (m[0, 2] - m[2, 0]));
+            q._z *= Math.Sign(q._z * (m[1, 0] - m[0, 1]));
+            return q;
         }
 
         //Derive Euler angles from matrix, simply by reversing the transformation process.
@@ -997,44 +1020,6 @@ namespace System
             return m;
         }
 
-        //public FrameState QuatDerive()
-        //{
-        //    FrameState state = new FrameState();
-
-        //    fixed (float* p = _values)
-        //    {
-        //        //Translation is easy!
-        //        state._translate = *(Vector3*)&p[12];
-
-        //        //Scale, use sqrt of rotation columns
-        //        state._scale._x = (float)Math.Round(Math.Sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 4);
-        //        state._scale._y = (float)Math.Round(Math.Sqrt(p[4] * p[4] + p[5] * p[5] + p[6] * p[6]), 4);
-        //        state._scale._z = (float)Math.Round(Math.Sqrt(p[8] * p[8] + p[9] * p[9] + p[10] * p[10]), 4);
-
-        //        Matrix m = new Matrix();
-        //        float* d = (float*)&m;
-
-        //        d[0] = p[0] / state._scale._x;
-        //        d[1] = p[1] / state._scale._x;
-        //        d[2] = p[2] / state._scale._x;
-
-        //        d[4] = p[4] / state._scale._y;
-        //        d[5] = p[5] / state._scale._y;
-        //        d[6] = p[6] / state._scale._y;
-
-        //        d[8] = p[8] / state._scale._z;
-        //        d[9] = p[9] / state._scale._z;
-        //        d[10] = p[10] / state._scale._z;
-
-        //        d[15] = 1;
-
-        //        //state._quaternion = m.ToQuaternion();
-        //    }
-
-        //    //state.CalcQuatTransforms();
-        //    return state;
-        //}
-
         public static Matrix AxisAngleMatrix(Vector3 point1, Vector3 point2)
         {
             Matrix m = Matrix.Identity;
@@ -1132,142 +1117,6 @@ namespace System
             pOut[14] = (eye._x * pOut[2]) + (eye._y * pOut[6]) + (eye._z * pOut[10]);
 
             return m;
-        }
-
-        public Matrix QuaternionRotMatrix(Vector4 quaternion)
-        {
-            Matrix result;
-
-            float xx = quaternion._x * quaternion._x;
-            float yy = quaternion._y * quaternion._y;
-            float zz = quaternion._z * quaternion._z;
-            float xy = quaternion._x * quaternion._y;
-            float zw = quaternion._z * quaternion._w;
-            float zx = quaternion._z * quaternion._x;
-            float yw = quaternion._y * quaternion._w;
-            float yz = quaternion._y * quaternion._z;
-            float xw = quaternion._x * quaternion._w;
-
-            result[0, 0] = 1.0f - (2.0f * (yy + zz));
-            result[0, 1] = 2.0f * (xy + zw);
-            result[0, 2] = 2.0f * (zx - yw);
-            result[0, 3] = 0.0f;
-
-            result[1, 0] = 2.0f * (xy - zw);
-            result[1, 1] = 1.0f - (2.0f * (zz + xx));
-            result[1, 2] = 2.0f * (yz + xw);
-            result[1, 3] = 0.0f;
-
-            result[2, 0] = 2.0f * (zx + yw);
-            result[2, 1] = 2.0f * (yz - xw);
-            result[2, 2] = 1.0f - (2.0f * (yy + xx));
-            result[2, 3] = 0.0f;
-
-            result[3, 0] = 0.0f;
-            result[3, 1] = 0.0f;
-            result[3, 2] = 0.0f;
-            result[3, 3] = 1.0f;
-
-            return result;
-        }
-        public static Matrix RotationAxis(Vector3 axis, float angle)
-        {
-            if (axis.Dot() != 1.0f)
-                axis.Normalize();
-
-            Matrix result;
-            float x = axis._x;
-            float y = axis._y;
-            float z = axis._z;
-            float cos = (float)(Math.Cos((double)(angle)));
-            float sin = (float)(Math.Sin((double)(angle)));
-            float xx = x * x;
-            float yy = y * y;
-            float zz = z * z;
-            float xy = x * y;
-            float xz = x * z;
-            float yz = y * z;
-
-            result[0, 0] = xx + (cos * (1.0f - xx));
-            result[0, 1] = (xy - (cos * xy)) + (sin * z);
-            result[0, 2] = (xz - (cos * xz)) - (sin * y);
-            result[0, 3] = 1.0f;
-            result[1, 0] = (xy - (cos * xy)) - (sin * z);
-            result[1, 1] = yy + (cos * (1.0f - yy));
-            result[1, 2] = (yz - (cos * yz)) + (sin * x);
-            result[1, 3] = 1.0f;
-            result[2, 0] = (xz - (cos * xz)) + (sin * y);
-            result[2, 1] = (yz - (cos * yz)) - (sin * x);
-            result[2, 2] = zz + (cos * (1.0f - zz));
-            result[2, 3] = 1.0f;
-            result[3, 0] = 0.0f;
-            result[3, 1] = 0.0f;
-            result[3, 2] = 0.0f;
-            result[3, 3] = 1.0f;
-
-            return result;
-        }
-
-        //public MatrixStruct RotationYawPitchRoll(float yaw, float pitch, float roll)
-        //{
-        //    Quaternion quaternion = Quaternion.FromAxisAngle(yaw, pitch, roll);
-        //    return QuaternionRotMatrix(quaternion);
-        //}
-
-        public Vector4 GetQuaternion()
-        {
-            Matrix m = this;
-            float* p = (float*)&m;
-
-            Vector4 result = new Vector4();
-
-            float scale = p[0] + p[5] + p[10] + 1;
-            float sqrt;
-
-            if (scale > 0.0f)
-            {
-                sqrt = 0.5f / (float)Math.Sqrt((double)scale);
-
-                result._x = (p[9] - p[6]) * sqrt;
-                result._y = (p[2] - p[8]) * sqrt;
-                result._z = (p[4] - p[1]) * sqrt;
-                result._w = 0.25f / sqrt;
-
-                return result;
-            }
-
-            if ((p[0] >= p[5]) && (p[0] >= p[10]))
-            {
-                sqrt = (float)Math.Sqrt(1.0 + p[0] - p[5] - p[10]) * 2;
-
-                result._x = 0.5f / sqrt;
-                result._y = (p[1] + p[4]) / sqrt;
-                result._z = (p[2] + p[8]) / sqrt;
-                result._w = (p[6] + p[9]) / sqrt;
-
-                return result;
-            }
-
-            if (p[5] > p[10])
-            {
-                sqrt = (float)Math.Sqrt(1.0 + p[5] - p[0] - p[10]) * 2;
-
-                result._x = (p[1] + p[4]) / sqrt;
-                result._y = 0.5f / sqrt;
-                result._z = (p[6] + p[9]) / sqrt;
-                result._w = (p[2] + p[8]) / sqrt;
-
-                return result;
-            }
-
-            sqrt = (float)Math.Sqrt(1.0 + p[10] - p[0] - p[5]) * 2;
-
-            result._x = (p[2] + p[8]) / sqrt;
-            result._y = (p[6] + p[9]) / sqrt;
-            result._z = 0.5f / sqrt;
-            result._w = (p[1] + p[4]) / sqrt;
-
-            return result;
         }
 
         //From OpenTK
@@ -1374,6 +1223,11 @@ namespace System
         public override int GetHashCode()
         {
             return base.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return String.Format("({0},{1},{2},{3})({4},{5},{6},{7})({8},{9},{10},{11})({12},{13},{14},{15})", this[0], this[1], this[2], this[3], this[4], this[5], this[6], this[7], this[8], this[9], this[10], this[11], this[12], this[13], this[14], this[15]);
         }
     }
 }

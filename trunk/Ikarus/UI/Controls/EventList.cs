@@ -47,7 +47,7 @@ namespace System.Windows.Forms
         private void lstEvents_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstEvents.SelectedIndex == -1) return;
-            txtEventId.Text = Helpers.Hex8((lstEvents.SelectedItem as ActionEventInfo).idNumber);
+            txtEventId.Text = Helpers.Hex8((lstEvents.SelectedItem as ActionEventInfo)._idNumber);
         }
 
         private void txtEventId_TextChanged(object sender, EventArgs e)
@@ -58,7 +58,7 @@ namespace System.Windows.Forms
             //Select the event corresponding to the id input.
             lstEvents.SelectedIndex = -1;
             for (int i = 0; i < lstEvents.Items.Count; i++)
-                if (eventId == Helpers.Hex8((lstEvents.Items[i] as ActionEventInfo).idNumber))
+                if (eventId == Helpers.Hex8((lstEvents.Items[i] as ActionEventInfo)._idNumber))
                 {
                     lstEvents.SelectedIndex = i; 
                     break;

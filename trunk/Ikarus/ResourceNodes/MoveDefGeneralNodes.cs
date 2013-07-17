@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using BrawlLib.SSBBTypes;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -21,7 +22,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (MoveDefEntryNode g in Children)
                 {
                     MoveDefActionNode a = (MoveDefActionNode)g.Children[i];
-                    addr[g.Index + Children.Count * count] = a._rebuildOffset;
+                    addr[g.Index + Children.Count * count] = a.RebuildOffset;
                 }
         }
 
@@ -88,7 +89,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             byte* header = (byte*)address;
             if (data != null)
                 for (int i = 0; i < data.Length; i++)
@@ -125,11 +126,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             bint* addr = (bint*)address;
             foreach (MoveDefBoneIndexNode b in Children)
             {
-                b._entryOffset = addr;
+                b._rebuildAddr = addr;
                 *addr++ = b.boneIndex;
             }
         }
@@ -175,7 +176,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             *(bint*)address = boneIndex;
         }
     }
@@ -209,11 +210,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             bint* addr = (bint*)address;
             foreach (MoveDefIndexNode b in Children)
             {
-                b._entryOffset = addr;
+                b._rebuildAddr = addr;
                 *addr++ = b.ItemIndex;
             }
         }
@@ -246,7 +247,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             *(bint*)address = i;
         }
     }

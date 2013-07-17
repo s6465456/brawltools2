@@ -15,7 +15,6 @@ namespace System.Windows.Forms
         public RightPanel()
         {
             InitializeComponent();
-
             editor.SelectedIndex = 0;
         }
 
@@ -24,9 +23,6 @@ namespace System.Windows.Forms
             pnlKeyframes.Visible = !(pnlBones.Visible = editor.SelectedIndex == 0);
         }
 
-        public void Reset()
-        {
-            pnlBones.Reset();
-        }
+        public void Reset() { pnlBones.Reset(); }
     }
 }

@@ -60,8 +60,8 @@ namespace Ikarus.UI
         }
         public AnimType TargetAnimType
         {
-            get { return (AnimType)leftPanel.fileType.SelectedIndex; }
-            set { leftPanel.fileType.SelectedIndex = (int)value; }
+            get { return leftPanel.TargetAnimType; }
+            set { leftPanel.TargetAnimType = value; }
         }
         private Control _currentControl = null;
         public int prevHeight = 0, prevWidth = 0;
@@ -150,38 +150,27 @@ namespace Ikarus.UI
             if (animEditors.Height == 0 || animEditors.Visible == false)
                 return;
 
-            if (TargetAnimType == AnimType.CHR)
+            switch (TargetAnimType)
             {
-                chr0Editor.UpdatePropDisplay();
-                chr0Editor.btnInsert.Enabled =
-                chr0Editor.btnDelete.Enabled =
-                chr0Editor.btnClearAll.Enabled = SelectedCHR0 == null ? false : true;
-            }
-
-            if (TargetAnimType == AnimType.SRT)
-            {
-                srt0Editor.UpdatePropDisplay();
-                srt0Editor.btnInsert.Enabled =
-                srt0Editor.btnDelete.Enabled =
-                srt0Editor.btnClear.Enabled = SelectedSRT0 == null ? false : true;
+                case AnimType.CHR: chr0Editor.UpdatePropDisplay(); break;
+                case AnimType.SRT: srt0Editor.UpdatePropDisplay(); break;
+                case AnimType.SHP: shp0Editor.UpdatePropDisplay(); break;
+                //case AnimType.VIS: vis0Editor.UpdatePropDisplay(); break;
+                case AnimType.PAT: pat0Editor.UpdatePropDisplay(); break;
+                //case AnimType.SCN: scn0Editor.UpdatePropDisplay(); break;
+                case AnimType.CLR: clr0Editor.UpdatePropDisplay(); break;
             }
 
             if (TargetAnimType == AnimType.VIS)
             {
-                //if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))
-                //{
-                //    rightPanel.pnlKeyframes.visEditor._updating = true;
-                //    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
-                //    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame;
-                //    rightPanel.pnlKeyframes.visEditor._updating = false;
-                //}
+                if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))
+                {
+                    rightPanel.pnlKeyframes.visEditor._updating = true;
+                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
+                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame;
+                    rightPanel.pnlKeyframes.visEditor._updating = false;
+                }
             }
-
-            if (TargetAnimType == AnimType.SHP)
-                shp0Editor.UpdatePropDisplay();
-
-            if (TargetAnimType == AnimType.PAT)
-                pat0Editor.UpdatePropDisplay();
         }
 
         public bool _editingAll { get { return (!(comboCharacters.SelectedItem is MDL0Node) && comboCharacters.SelectedItem != null && comboCharacters.SelectedItem.ToString() == "All"); } }
@@ -437,28 +426,14 @@ namespace Ikarus.UI
             EnableTransformEdit = true;
             UpdatePropDisplay();
 
+            MovesetPanel.StopScript();
+
             if (_capture)
             {
                 RenderToGIF(images.ToArray());
                 images.Clear();
                 _capture = false;
             }
-        }
-        private void animTimer_Tick(object sender, EventArgs e)
-        {
-            if (GetSelectedBRRESFile(TargetAnimType) == null)
-                return;
-
-            if (_animFrame >= _maxFrame)
-                if (!_loop)
-                    StopAnim();
-                else
-                    SetFrame(1);
-            else
-                SetFrame(_animFrame + 1);
-
-            if (_capture)
-                images.Add(modelPanel.GrabScreenshot(false));
         }
     }
 }

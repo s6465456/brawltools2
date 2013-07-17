@@ -159,7 +159,7 @@ namespace System.Windows.Forms
             string name = attributes.Rows[index][0].ToString();
             if (AttributeArray[index]._name != name && TargetNode.Root.Params.ContainsKey(TargetNode.OldName))
             {
-                AttributeArray[index]._name = _targetNode._info[index]._name = TargetNode.Root.Params[TargetNode.OldName].Attributes[index]._name = name;
+                AttributeArray[index]._name = _targetNode._info[index]._name = TargetNode.Root.Params[TargetNode.OldName]._attributes[index]._name = name;
                 FileManager._dictionaryChanged = true;
                 return;
             }
@@ -235,7 +235,7 @@ namespace System.Windows.Forms
                 AttributeArray[index]._description = _targetNode._info[index]._description = description.Text;
                 if (TargetNode.Root.Params.ContainsKey(TargetNode.OldName))
                 {
-                    TargetNode.Root.Params[TargetNode.OldName].Attributes[index]._description = AttributeArray[index]._description;
+                    TargetNode.Root.Params[TargetNode.OldName]._attributes[index]._description = AttributeArray[index]._description;
                     FileManager._dictionaryChanged = true;
                 }
             }

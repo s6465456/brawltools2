@@ -544,14 +544,14 @@ namespace Ikarus.UI
                         name = _targetNode.Root._subRoutineList[node.index].Name;
                         break;
                     case 3:
-                        return "External: " + _targetNode.Root.references.Children[node.index].Name;
+                        return "External: " + _targetNode.Root._references.Children[node.index].Name;
                     case 5:
                         grp = "Screen Tints";
-                        name = _targetNode.Root.dataCommon._screenTint.Children[node.index].Name;
+                        name = _targetNode.Root._dataCommon._screenTint.Children[node.index].Name;
                         break;
                     case 6:
                         grp = "Flash Overlays";
-                        name = _targetNode.Root.dataCommon._flashOverlay.Children[node.index].Name;
+                        name = _targetNode.Root._dataCommon._flashOverlay.Children[node.index].Name;
                         break;
                 }
 
@@ -717,19 +717,18 @@ namespace Ikarus.UI
         private void btnModify_Click(object sender, EventArgs e)
         {
             if (EventList.SelectedIndex != -1)
-            if (_mainWindow != null)
-            {
-                _mainWindow.eventModifier1._oldSelectedObject = _mainWindow.SelectedObject;
-                _mainWindow.SelectedObject = TargetNode.Children[EventList.SelectedIndex] as MoveDefEventNode;
-            }
-            else
-            {
-                FormModifyEvent p = new FormModifyEvent();
-                p.eventModifier1.origEvent = TargetNode.Children[EventList.SelectedIndex] as MoveDefEventNode;
-                p.eventModifier1.Setup(null);
-                if (p.ShowDialog() == DialogResult.OK)
-                    MakeScript();
-            }
+                if (_mainWindow != null)
+                {
+                    _mainWindow.SelectedEvent = TargetNode.Children[EventList.SelectedIndex] as MoveDefEventNode;
+                    _mainWindow.ModifyEvent();
+                }
+                else
+                {
+                    FormModifyEvent p = new FormModifyEvent();
+                    p.eventModifier.Setup(TargetNode.Children[EventList.SelectedIndex] as MoveDefEventNode);
+                    if (p.ShowDialog() == DialogResult.OK)
+                        MakeScript();
+                }
         }
 
         private void btnRemove_Click(object sender, EventArgs e)

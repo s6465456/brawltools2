@@ -34,7 +34,7 @@ namespace System.Windows.Forms
 
         public int _baseOffset;
         
-        protected virtual void Display()
+        void Display()
         {
             grdDisassembler.Rows.Clear();
             if (_targetNode == null || _targetNode.HasNoCode) return;

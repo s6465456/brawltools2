@@ -6,133 +6,13 @@ using BrawlLib.SSBB.ResourceNodes;
 using System.IO;
 using System.Windows.Forms;
 using System.ComponentModel;
+using BrawlLib.SSBBTypes;
 
 namespace Ikarus
 {
-    public static class FileManager
+    public static partial class FileManager
     {
-        static FileManager()
-        {
-            LoadEventDictionary();
-            LoadOtherData();
-        }
-
-        public static CharName[] _supportedCharacters = new CharName[]
-        {
-            CharName.Link,
-            CharName.Mario,
-            CharName.Pit,
-            CharName.ZeroSuitSamus
-        };
-
-        public static CharacterInfo[] _characters = new CharacterInfo[46];
-        public static CharacterInfo GetInfo(CharName i)
-        {
-            return (int)i >= 0 && (int)i < 46 ? _characters[(int)i] : null;
-        }
-        public static void SetInfo(CharName i, CharacterInfo value)
-        {
-            if ((int)i >= 0 && (int)i < 46) _characters[(int)i] = value;
-        }
-
-        //Information for the selected character
-        private static CharacterInfo _selected = null;
-        public static CharacterInfo SelectedInfo { get { return _selected; } set { _selected = value; } }
-        private static CharName _targetChar = _supportedCharacters[0];
-        public static CharName TargetCharacter
-        {
-            get { return _targetChar; }
-            set
-            {
-                _targetChar = value; 
-                _selected = GetInfo(_targetChar);
-
-                if (TargetCharacterChanged != null)
-                    TargetCharacterChanged(null, EventArgs.Empty);
-            }
-        }
-
-        //Nodes specific to the selected character
-        public static BRESNode Animations { get { return _selected == null ? null : _selected.Animations; } }
-        public static MoveDefNode Moveset { get { return _selected == null ? null : _selected.Moveset; } }
-
-        //Nodes used by all characters
-        private static MoveDefNode _cmnMoveset;
-        private static ARCNode _cmnEffects;
-        private static RSARNode _rsar;
-        public static MoveDefNode CommonMoveset { get { return _cmnMoveset; } }
-        public static ARCNode Common5 { get { return _cmnEffects; } }
-        public static RSARNode SoundArchive { get { return _rsar; } }
-
-        //Stores every file opened by the program
-        private static List<ResourceNode> _openedFiles = new List<ResourceNode>();
-        public static List<ResourceNode> OpenedFiles { get { return _openedFiles; } }
-        private static BindingList<string> _openedFilePaths = new BindingList<string>();
-        public static BindingList<string> OpenedFilePaths { get { return _openedFilePaths; } }
-        
-        public static void AddFile(ResourceNode r)
-        {
-            string path = r._origPath.Substring(Program.RootPath.Length).Replace('\\', '/');
-            if (!_openedFilePaths.Contains(path))
-            {
-                _openedFiles.Add(r);
-                _openedFilePaths.Add(path);
-            }
-        }
-
-        public static void RemoveFile(ResourceNode r)
-        {
-            string path = r._origPath.Substring(Program.RootPath.Length).Replace('\\', '/');
-            if (_openedFilePaths.Contains(path))
-            {
-                _openedFiles.Remove(r);
-                _openedFilePaths.Remove(path);
-            }
-        }
-
-        public static ResourceNode GetFile(int i)
-        {
-            if (i >= 0 && i < _openedFiles.Count)
-                return _openedFiles[i];
-            return null;
-        }
-
-        public static void OpenRoot(string path)
-        {
-            //Load characters
-            string fighter = path + "\\fighter";
-            if (Directory.Exists(fighter))
-                foreach (CharName n in _supportedCharacters)
-                {
-                    string s = ((CharFolder)(int)n).ToString();
-                    if (Directory.Exists(fighter + "\\" + s))
-                        OpenFighter(fighter + "\\" + ((CharFolder)(int)n).ToString());
-                }
-
-            _selected = GetInfo(TargetCharacter);
-
-            if (RootChanged != null)
-                RootChanged(null, EventArgs.Empty);
-        }
-
-        public static void OpenFighter(string path)
-        {
-            if (String.IsNullOrEmpty(path))
-                return;
-
-            string name = path.Substring(path.LastIndexOf('\\') + 1);
-            if (String.Equals(name, path))
-                return;
-
-            CharFolder c;
-            if (!Enum.TryParse(name, out c))
-                return;
-
-            _characters[(int)c] = new CharacterInfo(path);
-        }
-
-        public static event EventHandler RootChanged;
-        public static event EventHandler TargetCharacterChanged;
+        #region Data Loading
 
         #region Event Dictionary
         public static SortedDictionary<long, ActionEventInfo> EventDictionary
@@ -904,16 +784,16 @@ namespace Ikarus
                 "",
                 new long[] { 0, 0 }));
             _eventDictionary.Add(0x18000100, new ActionEventInfo(0x18000100, "Slope Contour Stand",
-                "Moves specific parts of the character if on sloped ground?",
-                new string[] { "Parameter 0" },
-                new string[] { "Unknown." },
-                "",
+                "Moves the character's feet if on sloped ground.",
+                new string[] { "Hip Bone Index" },
+                new string[] { "The index of the bone that is the parent of the leg bones (Usually HipN)." },
+                "\\name(): \\bone(\\unhex(\\value(0)))",
                 new long[] { }));
-            _eventDictionary.Add(0x18010200, new ActionEventInfo(0x18010200, "Slope Contour Full?",
-                "Moves entire character to match sloped ground?",
-                new string[] { "Parameter 0", "Parameter 1" },
-                new string[] { "Unknown.", "Unknown." },
-                "",
+            _eventDictionary.Add(0x18010200, new ActionEventInfo(0x18010200, "Slope Contour Full",
+                "Moves entire character to match sloped ground.",
+                new string[] { "HipN/TopN Bone Index", "Translation Bone Index" },
+                new string[] { "The index of the HipN or TopN bone.", "The index of the bone that is used to translate the character (Usually TransN or HipN)." },
+                "\\name(): \\bone(\\unhex(\\value(0))), \\bone(\\unhex(\\value(0)))",
                 new long[] { }));
             _eventDictionary.Add(0x10000200, new ActionEventInfo(0x10000200, "Generate Article",
                 "Generate a pre-made prop effect from the prop library.",
@@ -1996,7 +1876,7 @@ namespace Ikarus
                         if (!_eventDictionary.Keys.Contains(idNumber))
                             _eventDictionary.Add(idNumber, new ActionEventInfo());
 
-                        _eventDictionary[idNumber].idNumber = idNumber;
+                        _eventDictionary[idNumber]._idNumber = idNumber;
                         _eventDictionary[idNumber]._name = sr.ReadLine();
                         _eventDictionary[idNumber]._description = sr.ReadLine();
                         _eventDictionary[idNumber].SetDfltParameters(sr.ReadLine());
@@ -2022,10 +1902,10 @@ namespace Ikarus
 
                             if (name != "")
                             {
-                                Array.Resize<string>(ref _eventDictionary[idNumber].Params, i2 + 1);
-                                Array.Resize<string>(ref _eventDictionary[idNumber].pDescs, i2 + 1);
-                                _eventDictionary[idNumber].Params[i2] = name;
-                                _eventDictionary[idNumber].pDescs[i2] = sr.ReadLine();
+                                Array.Resize<string>(ref _eventDictionary[idNumber]._parameters, i2 + 1);
+                                Array.Resize<string>(ref _eventDictionary[idNumber]._paramDescs, i2 + 1);
+                                _eventDictionary[idNumber]._parameters[i2] = name;
+                                _eventDictionary[idNumber]._paramDescs[i2] = sr.ReadLine();
                             }
                             else break;
                         }
@@ -2050,7 +1930,7 @@ namespace Ikarus
                         if (!_eventDictionary.Keys.Contains(idNumber))
                             _eventDictionary.Add(idNumber, new ActionEventInfo());
 
-                        _eventDictionary[idNumber].idNumber = idNumber;
+                        _eventDictionary[idNumber]._idNumber = idNumber;
 
                     AddSyntax:
                         while (syntax != "" && syntax != null)
@@ -2120,11 +2000,11 @@ namespace Ikarus
             string dic = "", idString = "";
             foreach (ActionEventInfo i in _eventDictionary.Values)
             {
-                idString = "0x" + i.idNumber.ToString("X").PadLeft(8, '0');
+                idString = "0x" + i._idNumber.ToString("X").PadLeft(8, '0');
                 dic += p1 + idString + p2 + idString + p3 + i._name.Replace("\"", "\\\"") + p4 + i._description.Replace("\"", "\\\"") + p5;
                 bool first = true;
-                if (i.Params != null)
-                    foreach (string s in i.Params)
+                if (i._parameters != null)
+                    foreach (string s in i._parameters)
                     {
                         if (!first) dic += ",";
                         else first = false;
@@ -2133,8 +2013,8 @@ namespace Ikarus
                 else dic += " ";
                 dic += p6;
                 first = true;
-                if (i.pDescs != null)
-                    foreach (string s in i.pDescs)
+                if (i._paramDescs != null)
+                    foreach (string s in i._paramDescs)
                     {
                         if (!first) dic += ",";
                         else first = false;
@@ -2143,8 +2023,8 @@ namespace Ikarus
                 else dic += " ";
                 dic += p7 + i._syntax.Replace("\\", "\\\\") + p8;
                 first = true;
-                if (i.defaultParams != null)
-                    foreach (long s in i.defaultParams)
+                if (i._defaultParams != null)
+                    foreach (long s in i._defaultParams)
                     {
                         if (!first) dic += ",";
                         else first = false;
@@ -2166,6 +2046,8 @@ namespace Ikarus
         public static string[] iCollisionStats = null;
         public static string[] iGFXFiles = null;
         public static AttributeInfo[] AttributeArray = null;
+
+        public static bool _attributesChanged = false;
 
         public static void LoadOtherData()
         {
@@ -2868,228 +2750,307 @@ namespace Ikarus
             //Console.WriteLine(s + e);
         }
         #endregion
-    }
 
-    public class CharacterInfo
-    {
-        public CharName _name;
-        public ARCNode[] _models = new ARCNode[12];
-        public ARCNode _movesetArc;
-        public ARCNode _motionEtcArc;
-        public ARCNode _entry;
-        public ARCNode _final;
-        
-        private MoveDefNode _moveset = null;
-        public MoveDefNode Moveset 
+        #endregion
+
+        #region Data Saving
+        public static void SaveAllData()
         {
-            get 
-            {
-                if (_moveset != null) 
-                    return _moveset; 
-                if (_movesetArc == null) 
-                    return null;
-                if (_movesetArc.Children.Count == 0)
-                    return null;
-                ARCEntryNode entry = _movesetArc.Children[0] as ARCEntryNode;
-                (_moveset = new MoveDefNode() { _name = "fit" + ((CharFolder)(int)_name).ToString() }).Initialize(null, entry.WorkingUncompressed.Address, entry.WorkingUncompressed.Length);
-                if (_moveset != null)
+            SaveEvents();
+            SaveParameters();
+            SaveEventSyntax();
+            SaveAttributes();
+            SaveRequirements();
+            SaveEnums();
+        }
+        public static void SaveEvents()
+        {
+            if (!Directory.Exists(Application.StartupPath + "/MovesetData"))
+                Directory.CreateDirectory(Application.StartupPath + "/MovesetData");
+
+            bool go = true;
+            string events = Application.StartupPath + "/MovesetData/Events.txt";
+            if (File.Exists(events))
+                if (MessageBox.Show("Do you want to overwrite Events.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(events))
                 {
-                    _moveset._model = _models[0].Children[0].Children[0].Children[0] as MDL0Node;
-                    _moveset.Populate(0);
+                    foreach (ActionEventInfo info in EventDictionary.Values)
+                    {
+                        file.WriteLine(Helpers.Hex8(info._idNumber));
+                        file.WriteLine(info._name);
+                        file.WriteLine(info._description);
+                        string s = "";
+                        foreach (int i in info._defaultParams)
+                            s += i;
+                        file.WriteLine(s);
+                        file.WriteLine();
+                    }
                 }
-                return _moveset;
-            }
         }
 
-        private BRESNode _animations = null;
-        public BRESNode Animations { get { if (_animations != null) return _animations; return _motionEtcArc == null || _motionEtcArc.Children.Count < 2 || _motionEtcArc.Children[1] == null ? null : _animations = _motionEtcArc.Children[1].Children[0] as BRESNode; } }
-
-        public Dictionary<int, Dictionary<int, List<ARCEntryNode>>> _characterEtcFiles;
-        
-        public CharacterInfo(string path)
+        public static void SaveParameters()
         {
-            _name = (CharName)Enum.Parse(typeof(CharFolder), path.Substring(path.LastIndexOf('\\') + 1));
-            string[] files = Directory.GetFiles(path);
-            List<string> opened = new List<string>();
-            foreach (string s in files)
-            {
-                string name = Path.GetFileNameWithoutExtension(s);
+            if (!Directory.Exists(Application.StartupPath + "/MovesetData"))
+                Directory.CreateDirectory(Application.StartupPath + "/MovesetData");
 
-                //if (FolderManager.OpenedFilePaths.Contains(s))
-                //    continue;
-                if (opened.Contains(name))
-                    continue;
+            bool go = true;
+            string parameters = Application.StartupPath + "/MovesetData/Parameters.txt";
 
-                string ext = Path.GetExtension(s);
-                bool pac = String.Equals(ext, ".pac", StringComparison.OrdinalIgnoreCase);
-                bool pcs = String.Equals(ext, ".pcs", StringComparison.OrdinalIgnoreCase);
-
-                string dest = "fit" + ((CharFolder)(int)_name).ToString();
-
-                if (String.Equals(name, dest, StringComparison.OrdinalIgnoreCase) && pac)
-                {
-                    //Found the moveset file
-                    FileManager.AddFile(_movesetArc = NodeFactory.FromFile(null, s) as ARCNode);
-                    opened.Add(name);
-                    continue;
-                }
-                else if (String.Equals(name, dest + "motionetc", StringComparison.OrdinalIgnoreCase) && pac)
-                {
-                    //Found the animations and effects
-                    FileManager.AddFile(_motionEtcArc = NodeFactory.FromFile(null, s) as ARCNode);
-                    opened.Add(name);
-                    continue;
-                }
-                else if (String.Equals(name, dest + "entry", StringComparison.OrdinalIgnoreCase) && pac)
-                {
-                    //Found the entry file
-                    FileManager.AddFile(_entry = NodeFactory.FromFile(null, s) as ARCNode);
-                    opened.Add(name);
-                    continue;
-                }
-                else if (String.Equals(name, dest + "final", StringComparison.OrdinalIgnoreCase) && pac)
-                {
-                    //Found the final smash file
-                    FileManager.AddFile(_final = NodeFactory.FromFile(null, s) as ARCNode);
-                    opened.Add(name);
-                    continue;
-                }
+            if (File.Exists(parameters))
+                if (MessageBox.Show("Do you want to overwrite Parameters.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
                 else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(parameters))
                 {
-                    for (int i = 0; i < 12; i++)
+                    foreach (ActionEventInfo info in EventDictionary.Values)
                     {
-                        if (String.Equals(name, dest + i.ToString().PadLeft(2, '0'), StringComparison.OrdinalIgnoreCase) && (pac || pcs))
+                        if (info._parameters != null && info._parameters.Length > 0)
                         {
-                            //Found a character color
-                            FileManager.AddFile(_models[i] = NodeFactory.FromFile(null, s) as ARCNode);
-                            opened.Add(name);
-                            break;
+                            file.WriteLine(Helpers.Hex8(info._idNumber));
+                            for (int i = 0; i < info._parameters.Length; i++)
+                            {
+                                file.WriteLine(info._parameters[i]);
+                                if (info._paramDescs.Length > i)
+                                    file.WriteLine(info._paramDescs[i]);
+                                else
+                                    file.WriteLine();
+                            }
+                            file.WriteLine();
                         }
+                    }
+                }
+        }
+
+        public static void SaveEventSyntax()
+        {
+            if (!Directory.Exists(Application.StartupPath + "/MovesetData"))
+                Directory.CreateDirectory(Application.StartupPath + "/MovesetData");
+
+            bool go = true;
+            string syntax = Application.StartupPath + "/MovesetData/EventSyntax.txt";
+
+            if (File.Exists(syntax))
+                if (MessageBox.Show("Do you want to overwrite EventSyntax.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(syntax))
+                {
+                    foreach (ActionEventInfo info in EventDictionary.Values)
+                    {
+                        if (String.IsNullOrEmpty(info._syntax))
+                            continue;
+
+                        file.WriteLine(Helpers.Hex8(info._idNumber));
+                        file.WriteLine(info._syntax);
+                        file.WriteLine();
+                    }
+                }
+        }
+
+        public static void SaveAttributes()
+        {
+            if (!Directory.Exists(Application.StartupPath + "/MovesetData"))
+                Directory.CreateDirectory(Application.StartupPath + "/MovesetData");
+
+            bool go = true;
+            string attributes = Application.StartupPath + "/MovesetData/Attributes.txt";
+
+            if (File.Exists(attributes))
+                if (MessageBox.Show("Do you want to overwrite Attributes.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(attributes))
+                {
+                    foreach (AttributeInfo i in AttributeArray)
+                    {
+                        file.WriteLine(i._name);
+                        file.WriteLine(i._description);
+                        file.WriteLine(i._type);
+                        file.WriteLine();
+                    }
+                }
+        }
+
+        public static void SaveRequirements()
+        {
+            if (!Directory.Exists(Application.StartupPath + "/MovesetData"))
+                Directory.CreateDirectory(Application.StartupPath + "/MovesetData");
+
+            bool go = true;
+            string requirements = Application.StartupPath + "/MovesetData/Requirements.txt";
+
+            if (File.Exists(requirements))
+                if (MessageBox.Show("Do you want to overwrite Requirements.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(requirements))
+                {
+                    foreach (string i in iRequirements)
+                        file.WriteLine(i);
+                }
+        }
+
+        public static void SaveEnums()
+        {
+            if (!Directory.Exists(Application.StartupPath + "/MovesetData"))
+                Directory.CreateDirectory(Application.StartupPath + "/MovesetData");
+
+            bool go = true;
+            string airground = Application.StartupPath + "/MovesetData/AirGroundStats.txt";
+            string collision = Application.StartupPath + "/MovesetData/CollisionStats.txt";
+            string gfx = Application.StartupPath + "/MovesetData/GFXFiles.txt";
+            string enums = Application.StartupPath + "/MovesetData/Enums.txt";
+
+            if (File.Exists(airground))
+                if (MessageBox.Show("Do you want to overwrite AirGroundStats.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(airground))
+                {
+                    foreach (string i in iAirGroundStats)
+                        file.WriteLine(i);
+                }
+            if (File.Exists(collision))
+                if (MessageBox.Show("Do you want to overwrite CollisionStats.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(collision))
+                {
+                    foreach (string i in iCollisionStats)
+                        file.WriteLine(i);
+                }
+            if (File.Exists(gfx))
+                if (MessageBox.Show("Do you want to overwrite GFXFiles.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+                using (StreamWriter file = new StreamWriter(gfx))
+                {
+                    foreach (string i in iGFXFiles)
+                        file.WriteLine(i);
+                }
+            if (File.Exists(enums))
+                if (MessageBox.Show("Do you want to overwrite Enums.txt in the MovesetData folder?", "Overwrite Permission", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    go = true;
+                else
+                    go = false;
+            else
+                go = true;
+            if (go)
+            {
+                //list of enum dictionaries
+                List<Dictionary<int, List<string>>> EnumList = new List<Dictionary<int, List<string>>>();
+                //enum index, event id, param index list
+                Dictionary<int, Dictionary<long, List<int>>> EnumIds = new Dictionary<int, Dictionary<long, List<int>>>();
+                //remap events and enums
+                foreach (ActionEventInfo info in EventDictionary.Values)
+                {
+                    if (info.Enums != null && info.Enums.Count > 0)
+                    {
+                        List<int> p = new List<int>();
+
+                        bool has = false; int index = -1;
+                        foreach (Dictionary<int, List<string>> t in EnumList)
+                        {
+                            bool match = true;
+                            index++;
+                            foreach (int g in info.Enums.Keys)
+                            {
+                                if (t.ContainsKey(g))
+                                {
+                                    int r = 0;
+                                    foreach (string s in t[g])
+                                    {
+                                        if (s != info.Enums[g][r++])
+                                        {
+                                            match = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                else match = false;
+                            }
+                            if (match)
+                            {
+                                has = true;
+                                break;
+                            }
+                            else
+                                continue;
+                        }
+
+                        if (!has)
+                        {
+                            EnumList.Add(info.Enums);
+                            index = EnumList.Count - 1;
+                        }
+
+                        if (!EnumIds.ContainsKey(index))
+                            EnumIds.Add(index, new Dictionary<long, List<int>>());
+
+                        foreach (int i in info.Enums.Keys) p.Add(i);
+                        EnumIds[index].Add(info._idNumber, p);
+                    }
+                }
+
+                using (StreamWriter file = new StreamWriter(enums))
+                {
+                    int i = 0;
+                    foreach (Dictionary<int, List<string>> d in EnumList)
+                    {
+                        Dictionary<long, List<int>> events = EnumIds[i];
+                        foreach (var ev in events)
+                        {
+                            file.WriteLine(Helpers.Hex8(ev.Key));
+                            foreach (int v in ev.Value)
+                                file.WriteLine(v);
+                            file.WriteLine();
+                        }
+                        file.WriteLine();
+                        foreach (int x in d.Keys)
+                            if (d[x] != null && d[x].Count > 0)
+                                foreach (string value in d[x])
+                                    file.WriteLine(value);
+                        file.WriteLine();
+                        i++;
                     }
                 }
             }
         }
 
-        public override string ToString() { return _name.ToString(); }
-    }
-
-    public enum MarioColors
-    {
-        Original = 0,
-        Green = 2,
-        Jumpman = 3,
-        Wario = 4,
-        Black = 5,
-        Fire = 6
-    }
-
-    public enum YoshiColors
-    {
-        Original = 0,
-        Red = 1,
-        Blue = 3,
-        Yellow = 4,
-        Pink = 5,
-        LightBlue = 6,
-    }
-
-    public enum CharFolder
-    {
-        captain = 0,
-        dedede,
-        diddy,
-        donkey,
-        falco,
-        fox = 5,
-        gamewatch,
-        ganon,
-        gkoopa,
-        ike,
-        kirby = 10,
-        koopa,
-        link,
-        lucario,
-        lucas,
-        luigi = 15,
-        mario,
-        marth,
-        metaknight,
-        ness,
-        peach = 20,
-        pikachu,
-        pikmin,
-        pit,
-        pokefushigisou,
-        pokelizardon = 25,
-        poketrainer,
-        pokezenigame,
-        popo,
-        purin,
-        robot = 30,
-        samus,
-        sheik,
-        snake,
-        sonic,
-        szerosuit = 35,
-        toonlink,
-        wario,
-        warioman,
-        wolf,
-        yoshi = 40,
-        zakoball,
-        zakoboy,
-        zakochild,
-        zakogirl,
-        zelda = 45
-    }
-    public enum CharName
-    {
-        None = -1,
-        CaptainFalcon = 0,
-        KingDedede,
-        DiddyKong,
-        DonkeyKong,
-        Falco,
-        Fox = 5,
-        MrGameNWatch,
-        Ganondorf,
-        GigaBowser,
-        Ike,
-        Kirby = 10,
-        Bowser,
-        Link,
-        Lucario,
-        Lucas,
-        Luigi = 15,
-        Mario,
-        Marth,
-        Metaknight,
-        Ness,
-        Peach = 20,
-        Pikachu,
-        Pikmin,
-        Pit,
-        Ivysaur,
-        Charizard = 25,
-        PokemonTrainer,
-        Squirtle,
-        Popo,
-        Jigglypuff,
-        ROB = 30,
-        Samus,
-        Sheik,
-        Snake,
-        Sonic,
-        ZeroSuitSamus = 35,
-        ToonLink,
-        Wario,
-        WarioMan,
-        Wolf,
-        Yoshi = 40,
-        GreenAlloy,
-        RedAlloy,
-        YellowAlloy,
-        BlueAlloy,
-        Zelda = 45,
+        #endregion
     }
 }

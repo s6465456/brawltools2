@@ -10,6 +10,7 @@ using BrawlLib.Wii.Animations;
 using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.OpenGL;
 using System.Windows.Forms;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -104,14 +105,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MoveDefGroupNode _articleGroup = null;
 
         public MoveDefFlagsNode _animFlags;
-        public MoveDefAttributeNode attributes, sseAttributes;
-        public MoveDefMiscNode misc;
-        public MoveDefActionOverrideNode override1;
-        public MoveDefActionOverrideNode override2;
-        public MoveDefActionFlagsNode commonActionFlags, actionFlags;
-        public MoveDefUnk7Node unk7;
-        public MoveDefActionPreNode actionPre;
-        public MoveDefUnk22Node unk22;
+        public MoveDefAttributeNode _attributes, _sseAttributes;
+        public MoveDefMiscNode _misc;
+        public MoveDefActionOverrideNode _override1;
+        public MoveDefActionOverrideNode _override2;
+        public MoveDefActionFlagsNode _commonActionFlags, _actionFlags;
+        public MoveDefUnk7Node _unk7;
+        public MoveDefActionPreNode _actionPre;
+        public MoveDefUnk22Node _unk22;
         public MoveDefUnk17Node boneFloats3;
         public MoveDefModelVisibilityNode mdlVisibility;
         public MoveDefUnk17Node boneFloats1, boneFloats2;
@@ -135,9 +136,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int warioSwing4StringOffset = -1;
 
         public List<MoveDefEntryNode> _extraEntries;
-        public List<int> _extraOffsets;
-        public List<int> ExtraOffsets { get { return _extraOffsets; } }
-
         public SortedList<int, MoveDefEntryNode> _articles;
 
         public override bool OnInitialize()
@@ -148,7 +146,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             flags2 = Header->Flags2;
             hdr = *Header;
             _extraEntries = new List<MoveDefEntryNode>();
-            _extraOffsets = new List<int>();
             _articles = new SortedList<int, MoveDefEntryNode>();
             //base.OnInitialize();
             bint* current = (bint*)Header;
@@ -162,525 +159,503 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnPopulate()
         {
             #region Populate
-            //if (ARCNode.SpecialName.Contains(RootNode.Name, StringComparison.OrdinalIgnoreCase) && RootNode.Name != "Fighter")
+            int commonActionFlagsCount = 0;
+            int actionFlagsCount = 0;
+            int totalActionCount = 0;
+            List<int> ActionOffsets;
+
+            MoveDefActionListNode subActions = new MoveDefActionListNode() { _name = "SubAction Scripts", _parent = this }, actions = new MoveDefActionListNode() { _name = "Action Scripts", _parent = this };
+
+            bint* actionOffset;
+
+            //Parse offsets first
+            for (int i = 9; i < 11; i++)
             {
-                int commonActionFlagsCount = 0;
-                int actionFlagsCount = 0;
-                int totalActionCount = 0;
-                List<int> ActionOffsets;
-
-                MoveDefActionListNode subActions = new MoveDefActionListNode() { _name = "SubAction Scripts", _parent = this }, actions = new MoveDefActionListNode() { _name = "Action Scripts", _parent = this };
-
-                bint* actionOffset;
-
-                //Parse offsets first
-                for (int i = 9; i < 11; i++)
-                {
-                    actionOffset = (bint*)(BaseAddress + specialOffsets[i].Offset);
-                    ActionOffsets = new List<int>();
-                    for (int x = 0; x < specialOffsets[i].Size / 4; x++)
-                        ActionOffsets.Add(actionOffset[x]);
-                    actions.ActionOffsets.Add(ActionOffsets);
-                }
-                for (int i = 12; i < 16; i++)
-                {
-                    actionOffset = (bint*)(BaseAddress + specialOffsets[i].Offset);
-                    ActionOffsets = new List<int>();
-                    for (int x = 0; x < specialOffsets[i].Size / 4; x++)
-                        ActionOffsets.Add(actionOffset[x]);
-                    subActions.ActionOffsets.Add(ActionOffsets);
-                }
-
-                if (specialOffsets[4].Size != 0)
-                    (misc = new MoveDefMiscNode("Misc Section") { offsetID = 4 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[4].Offset, 0));
-
-                int amt = 0;
-
-                //The only way to compute the amount of extra offsets is broken by PSA.
-                //Using the exact amount will work for now until REL editing is available.
-                switch (RootNode.Name)
-                {
-                    case "FitZakoBall":
-                    case "FitZakoBoy":
-                    case "FitZakoGirl":
-                    case "FitZakoChild":
-                        amt = 1; break;
-                    case "FitPurin":
-                        amt = 3; break;
-                    case "FitKoopa":
-                    case "FitMetaknight":
-                        amt = 5; break;
-                    case "FitGanon":
-                    case "FitGKoopa":
-                    case "FitMarth":
-                        amt = 6; break;
-                    case "FitPokeFushigisou":
-                        amt = 7; break;
-                    case "FitCaptain": 
-                    case "FitIke":
-                    case "FitLuigi":
-                    case "FitPokeLizardon":
-                    case "FitPokeTrainer":
-                    case "FitPokeZenigame":
-                    case "FitSonic":
-                        amt = 8; break;
-                    case "FitDonkey":
-                    case "FitSheik":
-                    case "FitWarioMan":
-                        amt = 9; break;
-                    case "FitMario":
-                    case "FitWario":
-                    case "FitZelda":
-                        amt = 10; break;
-                    case "FitFalco":
-                    case "FitLucario":
-                    case "FitPikachu":
-                        amt = 11; break;
-                    case "FitSZerosuit":
-                        amt = 12; break;
-                    case "FitDiddy":
-                    case "FitFox":
-                    case "FitLucas":
-                    case "FitPikmin":
-                    case "FitPit":
-                    case "FitWolf":
-                    case "FitYoshi":
-                        amt = 13; break;
-                    case "FitNess":
-                    case "FitPeach":
-                    case "FitRobot":
-                        amt = 14; break;
-                    case "FitDedede":
-                    case "FitGameWatch":
-                        amt = 16; break;
-                    case "FitPopo":
-                        amt = 18; break;
-                    case "FitLink":
-                    case "FitSnake":
-                    case "FitToonLink":
-                        amt = 20; break;
-                    case "FitSamus":
-                        amt = 22; break;
-                    case "FitKirby":
-                        amt = 68; break;
-                    default: //Only works on movesets untouched by PSA
-                        amt = (Size - 124) / 4; break;
-                }
-
-                bint* sPtr = (bint*)(BaseAddress + _offset + 124);
-                for (int i = 0; i < amt; i++)
-                    _extraOffsets.Add(*sPtr++);
-
-                (attributes = new MoveDefAttributeNode("Attributes") { offsetID = 2 }).Initialize(this, new DataSource(BaseAddress + 0, 0x2E4));
-                (sseAttributes = new MoveDefAttributeNode("SSE Attributes") { offsetID = 3 }).Initialize(this, new DataSource(BaseAddress + 0x2E4, 0x2E4));
-                if (specialOffsets[5].Size != 0)
-                    (commonActionFlags = new MoveDefActionFlagsNode("Common Action Flags", commonActionFlagsCount = ((Unknown7 - CommonActionFlagsStart) / 16)) { offsetID = 5 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[5].Offset, commonActionFlagsCount * 16));
-                if (specialOffsets[6].Size != 0)
-                    (actionFlags = new MoveDefActionFlagsNode("Action Flags", actionFlagsCount = ((EntryActionsStart - ActionFlagsStart) / 16)) { offsetID = 6 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[6].Offset, actionFlagsCount * 16));
-                totalActionCount = commonActionFlagsCount + actionFlagsCount;
-                if (specialOffsets[7].Size != 0)
-                    (unk7 = new MoveDefUnk7Node(totalActionCount) { offsetID = 7 }).Initialize(this, BaseAddress + specialOffsets[7].Offset, totalActionCount * 8);
-                if (specialOffsets[9].Size != 0 || specialOffsets[10].Size != 0)
-                {
-                    int count;
-                    if (specialOffsets[9].Size == 0)
-                        count = specialOffsets[10].Size / 4;
-                    else
-                        count = specialOffsets[9].Size / 4;
-
-                    if (Root.GetSize(specialOffsets[10].Offset) != Root.GetSize(specialOffsets[9].Offset))
-                        Console.WriteLine(Root.GetSize(specialOffsets[10].Offset) + " " + Root.GetSize(specialOffsets[9].Offset));
-
-                    //Initialize using first offset so the node is sorted correctly
-                    actions.Initialize(this, BaseAddress + specialOffsets[9].Offset, 0);
-
-                    //Set up groups
-                    for (int i = 0; i < count; i++)
-                        actions.AddChild(new MoveDefActionGroupNode() { _name = "Action" + (i + 274), offsetID = i }, false);
-
-                    //Add children
-                    for (int i = 0; i < 2; i++)
-                        if (specialOffsets[i + 9].Size != 0)
-                            PopulateActionGroup(actions, actions.ActionOffsets[i], false, i);
-
-                    //Add to children (because the parent was set before initialization)
-                    Children.Add(actions);
-
-                    //actions.Children.Sort(MoveDefEntryNode.ActionCompare);
-
-                    Root._actions = actions;
-                }
-                if (specialOffsets[11].Size != 0)
-                    (actionPre = new MoveDefActionPreNode(totalActionCount)).Initialize(this, new DataSource(BaseAddress + specialOffsets[11].Offset, totalActionCount * 4));
-                if (specialOffsets[0].Size != 0)
-                    (_animFlags = new MoveDefFlagsNode() { offsetID = 0, _parent = this }).Initialize(this, BaseAddress + specialOffsets[0].Offset, specialOffsets[0].Size);
-                if (specialOffsets[12].Size != 0 || specialOffsets[13].Size != 0 || specialOffsets[14].Size != 0 || specialOffsets[15].Size != 0)
-                {
-                    string name;
-                    int count = 0;
-                    for (int i = 0; i < 4; i++)
-                        if (specialOffsets[i + 12].Size != 0)
-                        {
-                            count = specialOffsets[i + 12].Size / 4;
-                            break;
-                        }
-
-                    //Initialize using first offset so the node is sorted correctly
-                    subActions.Initialize(this, BaseAddress + specialOffsets[12].Offset, 0);
-
-                    //Set up groups
-                    for (int i = 0; i < count; i++)
-                    {
-                        if (_animFlags._names.Count > i && _animFlags._flags[i]._stringOffset > 0)
-                            name = _animFlags._names[i];
-                        else
-                            name = "<null>";
-                        subActions.AddChild(new MoveDefSubActionGroupNode() { _name = name, _flags = _animFlags._flags[i]._Flags, _inTransTime = _animFlags._flags[i]._InTranslationTime }, false);
-                    }
-
-                    //Add children
-                    for (int i = 0; i < 4; i++)
-                        if (specialOffsets[i + 12].Size != 0)
-                            PopulateActionGroup(subActions, subActions.ActionOffsets[i], true, i);
-
-                    //Add to children (because the parent was set before initialization)
-                    Children.Add(subActions);
-
-                    Root._subActions = subActions;
-                }
-                if (specialOffsets[1].Size != 0)
-                    (mdlVisibility = new MoveDefModelVisibilityNode() { offsetID = 1 }).Initialize(this, BaseAddress + specialOffsets[1].Offset, 0);
-                if (specialOffsets[19].Size != 0)
-                    (boneRef2 = new MoveDefBoneRef2Node() { offsetID = 19 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[19].Offset, 0));
-                if (specialOffsets[24].Size != 0)
-                    (unk24 = new MoveDefUnk24Node() { offsetID = 24 }).Initialize(this, BaseAddress + specialOffsets[24].Offset, 8);
-                if (specialOffsets[22].Size != 0)
-                    (unk22 = new MoveDefUnk22Node() { offsetID = 22 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[22].Offset, 0));
-                if (specialOffsets[25].Size != 0)
-                    (staticArticles = new MoveDefStaticArticleGroupNode() { _name = "Static Articles", offsetID = 25 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[25].Offset, 8));
-                if (specialOffsets[26].Size != 0)
-                    (entryArticle = new MoveDefArticleNode() { Static = true, _name = "Entry Article", offsetID = 26 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[26].Offset, 0));
-                if (specialOffsets[8].Size != 0)
-                    (actionInterrupts = new MoveDefActionInterruptsNode() { offsetID = 8 }).Initialize(this, BaseAddress + specialOffsets[8].Offset, 8);
-                if (specialOffsets[16].Size != 0)
-                    (boneFloats1 = new MoveDefUnk17Node() { _name = "Bone Floats 1", offsetID = 16 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[16].Offset, 0));
-                if (specialOffsets[17].Size != 0)
-                    (boneFloats2 = new MoveDefUnk17Node() { _name = "Bone Floats 2", offsetID = 17 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[17].Offset, 0));
-                if (specialOffsets[23].Size != 0)
-                    (boneFloats3 = new MoveDefUnk17Node() { _name = "Bone Floats 3", offsetID = 23 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[23].Offset, 0));
-                if (specialOffsets[18].Size != 0)
-                    (boneRef1 = new MoveDefBoneIndicesNode("Bone References", (misc.BoneRefOffset - specialOffsets[18].Offset) / 4) { offsetID = 18 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[18].Offset, 0));
-                if (specialOffsets[20].Size != 0)
-                    (override1 = new MoveDefActionOverrideNode() { offsetID = 20 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[20].Offset, 0));
-                if (specialOffsets[21].Size != 0)
-                    (override2 = new MoveDefActionOverrideNode() { offsetID = 21 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[21].Offset, 0));
-
-                //These offsets follow no patterns
-                int y = 0;
-                MoveDefExternalNode ext = null;
-                foreach (int DataOffset in _extraOffsets)
-                {
-                    if (y == 2 && RootNode.Name == "FitPokeTrainer")
-                    {
-                        MoveDefSoundDatasNode p = new MoveDefSoundDatasNode() { isExtra = true, seperate = true, _name = "Sound Data 2" };
-                        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(p);
-                    }
-                    else if (y == 49 && RootNode.Name == "FitKirby")
-                    {
-                        MoveDefKirbyParamList49Node p = new MoveDefKirbyParamList49Node() { isExtra = true, offsetID = y };
-                        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(p);
-                    }
-                    else if (y == 50 && RootNode.Name == "FitKirby")
-                    {
-                        //6 offsets
-                        //that point to:
-                        //offset
-                        //count
-                        //align to 0x10
-                        //that points to list of:
-                        //offset
-                        //align list to 0x10
-                        //that points to:
-                        //offset
-                        //count
-                        //offset (sometimes 0)
-                        //count (sometimes 0)
-                        //that points to list of:
-                        //offset
-                        //count
-                        //align list to 0x10
-                        //that points to:
-                        //int value
-                    }
-                    else if ((y == 51 || y == 52) && RootNode.Name == "FitKirby")
-                    {
-                        MoveDefKirbyParamList5152Node p = new MoveDefKirbyParamList5152Node() { isExtra = true, offsetID = y };
-                        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(p);
-                    }
-                    else if ((y == 7 && RootNode.Name == "FitPit") || (y == 13 && RootNode.Name == "FitRobot"))
-                    {
-                        Pit7Robot13Node p = new Pit7Robot13Node() { isExtra = true, offsetID = y };
-                        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(p);
-                    }
-                    else if (y == 8 && RootNode.Name == "FitLucario")
-                    {
-                        HitDataListOffsetNode p = new HitDataListOffsetNode() { isExtra = true, _name = "HitDataList" + y, offsetID = y };
-                        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(p);
-                    }
-                    else if (y > 9 && RootNode.Name == "FitYoshi")
-                    {
-                        Yoshi9 p = new Yoshi9() { isExtra = true, offsetID = y };
-                        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(p);
-                    }
-                    else if (y == 15 && RootNode.Name == "FitDedede")
-                    {
-                        Data2ListNode p = new Data2ListNode() { isExtra = true, offsetID = y };
-                        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(p);
-                    }
-                    else if (
-                        (y == 56 && RootNode.Name == "FitKirby") ||
-                        (y == 7 && RootNode.Name == "FitLink") ||
-                        (y == 8 && RootNode.Name == "FitPeach") ||
-                        (y == 4 && RootNode.Name == "FitPit") ||
-                        (y == 7 && RootNode.Name == "FitToonLink"))
-                    {
-                        MoveDefHitDataListNode p = new MoveDefHitDataListNode() { isExtra = true, _name = "HitDataList" + y, offsetID = y };
-                        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(p);
-                    }
-                    else if (y == 6 && RootNode.Name.StartsWith("FitWario"))
-                    {
-                        warioParams6 = new Wario6() { isExtra = true, offsetID = y };
-                        warioParams6.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(warioParams6);
-                    }
-                    else if (y == 8 && RootNode.Name.StartsWith("FitWario"))
-                    {
-                        warioParams8 = new Wario8() { isExtra = true, offsetID = y };
-                        warioParams8.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
-                        _extraEntries.Add(warioParams8);
-                    }
-                    else if (y == 8 && RootNode.Name == "FitSZerosuit")
-                    {
-                        (zssParams8 = new SZerosuitExtraParams8Node() { isExtra = true, offsetID = y }).Initialize(this, BaseAddress + DataOffset, 32);
-                        _extraEntries.Add(zssParams8);
-                    }
-                    else if (y < 4 && RootNode.Name == "FitPopo")
-                    {
-                        _extraEntries.Add(null);
-
-                        if (y == 0)
-                            nanaSubActions = new MoveDefActionListNode() { _name = "Nana SubAction Scripts", isExtra = true };
-
-                        actionOffset = (bint*)(BaseAddress + DataOffset);
-                        ActionOffsets = new List<int>();
-                        for (int x = 0; x < Root.GetSize(DataOffset) / 4; x++)
-                            ActionOffsets.Add(actionOffset[x]);
-                        nanaSubActions.ActionOffsets.Add(ActionOffsets);
-
-                        if (y == 3)
-                        {
-                            string name;
-                            int count = 0;
-                            for (int i = 0; i < 4; i++)
-                                if ((count = Root.GetSize(DataOffset) / 4) > 0)
-                                    break;
-
-                            //Initialize using first offset so the node is sorted correctly
-                            nanaSubActions.Initialize(this, BaseAddress + _extraOffsets[0], 0);
-
-                            //Set up groups
-                            for (int i = 0; i < count; i++)
-                            {
-                                if (_animFlags._names.Count > i && _animFlags._flags[i]._stringOffset > 0)
-                                    name = _animFlags._names[i];
-                                else
-                                    name = "<null>";
-                                nanaSubActions.AddChild(new MoveDefSubActionGroupNode() { _name = name, _flags = _animFlags._flags[i]._Flags, _inTransTime = _animFlags._flags[i]._InTranslationTime }, false);
-                            }
-
-                            //Add children
-                            for (int i = 0; i < 4; i++)
-                                PopulateActionGroup(nanaSubActions, nanaSubActions.ActionOffsets[i], true, i);
-                        }
-                    }
-                    else if (y == 10 && RootNode.Name == "FitPopo")
-                    {
-                        (nanaSoundData = new MoveDefSoundDatasNode() { _name = "Nana Sound Data", isExtra = true }).Initialize(this, (VoidPtr)Header + 124 + y * 4, 8);
-                        _extraEntries.Add(null);
-                    }
-                    else
-                    {
-                        if (DataOffset > Root.dataSize) //probably flags or float
-                            continue;
-
-                        ext = null;
-                        if (DataOffset > 1480) //I don't think a count would be greater than this
-                        {
-                            MoveDefEntryNode entry = null;
-                            if ((ext = Root.IsExternal(DataOffset)) != null)
-                            {
-                                if (ext.Name.StartsWith("param"))
-                                {
-                                    int o = 0;
-                                    if (y < _extraOffsets.Count - 1 && (o = _extraOffsets[y + 1]) < 1480 && o > 1)
-                                    {
-                                        MoveDefRawDataNode d = new MoveDefRawDataNode("ExtraParams" + y) { offsetID = y, isExtra = true };
-                                        d.Initialize(this, BaseAddress + DataOffset, 0);
-                                        for (int i = 0; i < o; i++)
-                                            new MoveDefSectionParamNode() { _name = "Part" + i, _extOverride = i == 0 }.Initialize(d, BaseAddress + DataOffset + ((d.Size / o) * i), (d.Size / o));
-                                        entry = d;
-                                    }
-                                    else
-                                    {
-                                        MoveDefSectionParamNode p = new MoveDefSectionParamNode() { _name = "ExtraParams" + y, isExtra = true, offsetID = y };
-                                        p.Initialize(this, BaseAddress + DataOffset, 0);
-                                        entry = p;
-                                    }
-                                }
-                                else
-                                {
-                                    Article* test = (Article*)(BaseAddress + DataOffset);
-                                    if (Root.GetSize(DataOffset) < 52 ||
-                                        test->_actionsStart > Root.dataSize || test->_actionsStart % 4 != 0 ||
-                                        test->_subactionFlagsStart > Root.dataSize || test->_subactionFlagsStart % 4 != 0 ||
-                                        test->_subactionGFXStart > Root.dataSize || test->_subactionGFXStart % 4 != 0 ||
-                                        test->_subactionSFXStart > Root.dataSize || test->_subactionSFXStart % 4 != 0 ||
-                                        test->_modelVisibility > Root.dataSize || test->_modelVisibility % 4 != 0 ||
-                                        test->_arcGroup > byte.MaxValue || test->_boneID > short.MaxValue || test->_id > 1480)
-                                    {
-                                        int o = 0;
-                                        if (y < _extraOffsets.Count - 1 && (o = _extraOffsets[y + 1]) < 1480 && o > 1)
-                                        {
-                                            MoveDefRawDataNode d = new MoveDefRawDataNode("ExtraParams" + y) { offsetID = y, isExtra = true };
-                                            d.Initialize(this, BaseAddress + DataOffset, 0);
-                                            for (int i = 0; i < o; i++)
-                                                new MoveDefSectionParamNode() { _name = "Part" + i, _extOverride = i == 0 }.Initialize(d, BaseAddress + DataOffset + ((d.Size / o) * i), (d.Size / o));
-                                            entry = d;
-                                        }
-                                        else
-                                        {
-                                            MoveDefSectionParamNode p = new MoveDefSectionParamNode() { _name = "ExtraParams" + y, isExtra = true, offsetID = y };
-                                            p.Initialize(this, BaseAddress + DataOffset, 0);
-                                            entry = p;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (_articleGroup == null)
-                                        {
-                                            _articleGroup = new MoveDefGroupNode() { _name = "Articles" };
-                                            _articleGroup.Initialize(this, BaseAddress + DataOffset, 0);
-                                        }
-
-                                        (entry = new MoveDefArticleNode() { offsetID = y, Static = true, isExtra = true, extraOffset = true }).Initialize(_articleGroup, BaseAddress + DataOffset, 0);
-                                        _articles.Add(entry._offset, entry);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Article* test = (Article*)(BaseAddress + DataOffset);
-                                if (Root.GetSize(DataOffset) < 52 ||
-                                    test->_actionsStart > Root.dataSize || test->_actionsStart % 4 != 0 ||
-                                    test->_subactionFlagsStart > Root.dataSize || test->_subactionFlagsStart % 4 != 0 ||
-                                    test->_subactionGFXStart > Root.dataSize || test->_subactionGFXStart % 4 != 0 ||
-                                    test->_subactionSFXStart > Root.dataSize || test->_subactionSFXStart % 4 != 0 ||
-                                    test->_modelVisibility > Root.dataSize || test->_modelVisibility % 4 != 0 ||
-                                    test->_arcGroup > byte.MaxValue || test->_boneID > short.MaxValue || test->_id > 1480)
-                                {
-                                    int o = 0;
-                                    if (y < _extraOffsets.Count - 1 && (o = _extraOffsets[y + 1]) < 1480 && o > 1)
-                                    {
-                                        MoveDefRawDataNode d = new MoveDefRawDataNode("ExtraParams" + y) { offsetID = y, isExtra = true };
-                                        d.Initialize(this, BaseAddress + DataOffset, 0);
-                                        for (int i = 0; i < o; i++)
-                                            new MoveDefSectionParamNode() { _name = "Part" + i, _extOverride = i == 0 }.Initialize(d, BaseAddress + DataOffset + ((d.Size / o) * i), (d.Size / o));
-                                        entry = d;
-                                    }
-                                    else
-                                    {
-                                        MoveDefSectionParamNode p = new MoveDefSectionParamNode() { _name = "ExtraParams" + y, isExtra = true, offsetID = y };
-                                        p.Initialize(this, BaseAddress + DataOffset, 0);
-                                        entry = p;
-                                    }
-                                }
-                                else
-                                {
-                                    if (_articleGroup == null)
-                                    {
-                                        _articleGroup = new MoveDefGroupNode() { _name = "Articles" };
-                                        _articleGroup.Initialize(this, BaseAddress + DataOffset, 0);
-                                    }
-
-                                    (entry = new MoveDefArticleNode() { offsetID = y, isExtra = true, Static = true, extraOffset = true }).Initialize(_articleGroup, BaseAddress + DataOffset, 0);
-                                    _articles.Add(entry._offset, entry);
-                                }
-                            }
-                            _extraEntries.Add(entry);
-                        }
-                        else { } //Probably a count
-                    }
-                    y++;
-                }
-
-                misc.Populate(0);
-
-                //if (_extraEntries.Count > 0)
-                //{
-                //    if (!Directory.Exists(Application.StartupPath + "/MovesetData/CharSpecific"))
-                //        Directory.CreateDirectory(Application.StartupPath + "/MovesetData/CharSpecific");
-                //    string events = Application.StartupPath + "/MovesetData/CharSpecific/" + Root.Parent.Name + ".txt";
-                //    using (StreamWriter file = new StreamWriter(events))
-                //    {
-                //        foreach (MoveDefEntryNode e in _extraEntries)
-                //        {
-                //            if (e is MoveDefSectionParamNode)
-                //            {
-                //                MoveDefSectionParamNode p = e as MoveDefSectionParamNode;
-                //                file.WriteLine(p.Name);
-                //                file.WriteLine(p.Name); //Replaced name
-                //                foreach (AttributeInfo i in p._info)
-                //                {
-                //                    file.WriteLine(i._name);
-                //                    file.WriteLine(i._description);
-                //                    file.WriteLine(i._type == false ? 0 : 1);
-                //                    file.WriteLine();
-                //                }
-                //                file.WriteLine();
-                //            }
-                //        }
-                //    }
-                //}
-
-                //if (specialOffsets[9].Size != 0)
-                //    new MoveDefActionsNode("Actions 1").Initialize(this, new DataSource(BaseAddress + specialOffsets[9].Offset, specialOffsets[9].Size));
-                
-                //if (specialOffsets[10].Size != 0)
-                //    new MoveDefActionsNode("Actions 2").Initialize(this, new DataSource(BaseAddress + specialOffsets[10].Offset, specialOffsets[10].Size));
-
-                ////if (specialOffsets[12].Size != 0)
-                //(Root.Main = new MoveDefActionsNode("Main SubActions") { /*_parent = this*/ }).Initialize(this, new DataSource(BaseAddress + specialOffsets[12].Offset, specialOffsets[12].Size));
-
-                ////if (specialOffsets[13].Size != 0)
-                //(Root.GFX = new MoveDefActionsNode("GFX SubActions") { /*_parent = this*/ }).Initialize(this, new DataSource(BaseAddress + specialOffsets[13].Offset, specialOffsets[13].Size));
-
-                ////if (specialOffsets[14].Size != 0)
-                //(Root.SFX = new MoveDefActionsNode("SFX SubActions") { /*_parent = this*/ }).Initialize(this, new DataSource(BaseAddress + specialOffsets[14].Offset, specialOffsets[14].Size));
-
-                ////if (specialOffsets[15].Size != 0)
-                //(Root.Other = new MoveDefActionsNode("Other SubActions") { /*_parent = this*/ }).Initialize(this, new DataSource(BaseAddress + specialOffsets[15].Offset, specialOffsets[15].Size));
-
-                //MoveDefGroupNode articles = new MoveDefGroupNode() { _name = "Articles", _parent = this };
-
+                actionOffset = (bint*)(BaseAddress + specialOffsets[i].Offset);
+                ActionOffsets = new List<int>();
+                for (int x = 0; x < specialOffsets[i].Size / 4; x++)
+                    ActionOffsets.Add(actionOffset[x]);
+                actions.ActionOffsets.Add(ActionOffsets);
             }
+            for (int i = 12; i < 16; i++)
+            {
+                actionOffset = (bint*)(BaseAddress + specialOffsets[i].Offset);
+                ActionOffsets = new List<int>();
+                for (int x = 0; x < specialOffsets[i].Size / 4; x++)
+                    ActionOffsets.Add(actionOffset[x]);
+                subActions.ActionOffsets.Add(ActionOffsets);
+            }
+
+            if (specialOffsets[4].Size != 0)
+                (_misc = new MoveDefMiscNode("Misc Section") { offsetID = 4 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[4].Offset, 0));
+
+            CharFolder character = (CharFolder)(int)Root._character;
+
+            //The only way to compute the amount of extra offsets is broken by PSA.
+            //Using the exact amount will work for now until REL editing is available.
+            //switch (character)
+            //{
+            //    case CharFolder.ZakoBall:
+            //    case CharFolder.ZakoBoy:
+            //    case CharFolder.ZakoGirl:
+            //    case CharFolder.ZakoChild:
+            //        ExtraDataOffsets._count = 1; break;
+            //    case CharFolder.Purin:
+            //        ExtraDataOffsets._count = 3; break;
+            //    case CharFolder.Koopa:
+            //    case CharFolder.Metaknight:
+            //        ExtraDataOffsets._count = 5; break;
+            //    case CharFolder.Ganon:
+            //    case CharFolder.GKoopa:
+            //    case CharFolder.Marth:
+            //        ExtraDataOffsets._count = 6; break;
+            //    case CharFolder.PokeFushigisou:
+            //        ExtraDataOffsets._count = 7; break;
+            //    case CharFolder.Captain:
+            //    case CharFolder.Ike:
+            //    case CharFolder.Luigi:
+            //    case CharFolder.PokeLizardon:
+            //    case CharFolder.PokeTrainer:
+            //    case CharFolder.PokeZenigame:
+            //    case CharFolder.Sonic:
+            //        ExtraDataOffsets._count = 8; break;
+            //    case CharFolder.Donkey:
+            //    case CharFolder.Sheik:
+            //    case CharFolder.WarioMan:
+            //        ExtraDataOffsets._count = 9; break;
+            //    case CharFolder.Mario:
+            //    case CharFolder.Wario:
+            //    case CharFolder.Zelda:
+            //        ExtraDataOffsets._count = 10; break;
+            //    case CharFolder.Falco:
+            //    case CharFolder.Lucario:
+            //    case CharFolder.Pikachu:
+            //        ExtraDataOffsets._count = 11; break;
+            //    case CharFolder.SZerosuit:
+            //        ExtraDataOffsets._count = 12; break;
+            //    case CharFolder.Diddy:
+            //    case CharFolder.Fox:
+            //    case CharFolder.Lucas:
+            //    case CharFolder.Pikmin:
+            //    case CharFolder.Pit:
+            //    case CharFolder.Wolf:
+            //    case CharFolder.Yoshi:
+            //        ExtraDataOffsets._count = 13; break;
+            //    case CharFolder.Ness:
+            //    case CharFolder.Peach:
+            //    case CharFolder.Robot:
+            //        ExtraDataOffsets._count = 14; break;
+            //    case CharFolder.Dedede:
+            //    case CharFolder.Gamewatch:
+            //        ExtraDataOffsets._count = 16; break;
+            //    case CharFolder.Popo:
+            //        ExtraDataOffsets._count = 18; break;
+            //    case CharFolder.Link:
+            //    case CharFolder.Snake:
+            //    case CharFolder.ToonLink:
+            //        ExtraDataOffsets._count = 20; break;
+            //    case CharFolder.Samus:
+            //        ExtraDataOffsets._count = 22; break;
+            //    case CharFolder.Kirby:
+            //        ExtraDataOffsets._count = 68; break;
+            //    default: //Only works on movesets untouched by PSA
+            //        ExtraDataOffsets._count = (Size - 124) / 4; break;
+            //}
+
+            (_attributes = new MoveDefAttributeNode("Attributes") { offsetID = 2 }).Initialize(this, new DataSource(BaseAddress + 0, 0x2E4));
+            (_sseAttributes = new MoveDefAttributeNode("SSE Attributes") { offsetID = 3 }).Initialize(this, new DataSource(BaseAddress + 0x2E4, 0x2E4));
+            if (specialOffsets[5].Size != 0)
+                (_commonActionFlags = new MoveDefActionFlagsNode("Common Action Flags", commonActionFlagsCount = ((Unknown7 - CommonActionFlagsStart) / 16)) { offsetID = 5 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[5].Offset, commonActionFlagsCount * 16));
+            if (specialOffsets[6].Size != 0)
+                (_actionFlags = new MoveDefActionFlagsNode("Action Flags", actionFlagsCount = ((EntryActionsStart - ActionFlagsStart) / 16)) { offsetID = 6 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[6].Offset, actionFlagsCount * 16));
+            totalActionCount = commonActionFlagsCount + actionFlagsCount;
+            if (specialOffsets[7].Size != 0)
+                (_unk7 = new MoveDefUnk7Node(totalActionCount) { offsetID = 7 }).Initialize(this, BaseAddress + specialOffsets[7].Offset, totalActionCount * 8);
+            if (specialOffsets[9].Size != 0 || specialOffsets[10].Size != 0)
+            {
+                int count;
+                if (specialOffsets[9].Size == 0)
+                    count = specialOffsets[10].Size / 4;
+                else
+                    count = specialOffsets[9].Size / 4;
+
+                if (Root.GetSize(specialOffsets[10].Offset) != Root.GetSize(specialOffsets[9].Offset))
+                    Console.WriteLine(Root.GetSize(specialOffsets[10].Offset) + " " + Root.GetSize(specialOffsets[9].Offset));
+
+                //Initialize using first offset so the node is sorted correctly
+                actions.Initialize(this, BaseAddress + specialOffsets[9].Offset, 0);
+
+                //Set up groups
+                for (int i = 0; i < count; i++)
+                    actions.AddChild(new MoveDefActionGroupNode() { _name = "Action" + (i + 274), offsetID = i }, false);
+
+                //Add children
+                for (int i = 0; i < 2; i++)
+                    if (specialOffsets[i + 9].Size != 0)
+                        PopulateActionGroup(actions, actions.ActionOffsets[i], false, i);
+
+                //Add to children (because the parent was set before initialization)
+                Children.Add(actions);
+
+                //actions.Children.Sort(MoveDefEntryNode.ActionCompare);
+
+                Root._actions = actions;
+            }
+            if (specialOffsets[11].Size != 0)
+                (_actionPre = new MoveDefActionPreNode(totalActionCount)).Initialize(this, new DataSource(BaseAddress + specialOffsets[11].Offset, totalActionCount * 4));
+            if (specialOffsets[0].Size != 0)
+                (_animFlags = new MoveDefFlagsNode() { offsetID = 0, _parent = this }).Initialize(this, BaseAddress + specialOffsets[0].Offset, specialOffsets[0].Size);
+            if (specialOffsets[12].Size != 0 || specialOffsets[13].Size != 0 || specialOffsets[14].Size != 0 || specialOffsets[15].Size != 0)
+            {
+                string name;
+                int count = 0;
+                for (int i = 0; i < 4; i++)
+                    if (specialOffsets[i + 12].Size != 0)
+                    {
+                        count = specialOffsets[i + 12].Size / 4;
+                        break;
+                    }
+
+                //Initialize using first offset so the node is sorted correctly
+                subActions.Initialize(this, BaseAddress + specialOffsets[12].Offset, 0);
+
+                //Set up groups
+                for (int i = 0; i < count; i++)
+                {
+                    if (_animFlags._names.Count > i && _animFlags._flags[i]._stringOffset > 0)
+                        name = _animFlags._names[i];
+                    else
+                        name = "<null>";
+                    subActions.AddChild(new MoveDefSubActionGroupNode() { _name = name, _flags = _animFlags._flags[i]._Flags, _inTransTime = _animFlags._flags[i]._InTranslationTime }, false);
+                }
+
+                //Add children
+                for (int i = 0; i < 4; i++)
+                    if (specialOffsets[i + 12].Size != 0)
+                        PopulateActionGroup(subActions, subActions.ActionOffsets[i], true, i);
+
+                //Add to children (because the parent was set before initialization)
+                Children.Add(subActions);
+
+                Root._subActions = subActions;
+            }
+            if (specialOffsets[1].Size != 0)
+                (mdlVisibility = new MoveDefModelVisibilityNode() { offsetID = 1 }).Initialize(this, BaseAddress + specialOffsets[1].Offset, 0);
+            if (specialOffsets[19].Size != 0)
+                (boneRef2 = new MoveDefBoneRef2Node() { offsetID = 19 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[19].Offset, 0));
+            if (specialOffsets[24].Size != 0)
+                (unk24 = new MoveDefUnk24Node() { offsetID = 24 }).Initialize(this, BaseAddress + specialOffsets[24].Offset, 8);
+            if (specialOffsets[22].Size != 0)
+                (_unk22 = new MoveDefUnk22Node() { offsetID = 22 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[22].Offset, 0));
+            if (specialOffsets[25].Size != 0)
+                (staticArticles = new MoveDefStaticArticleGroupNode() { _name = "Static Articles", offsetID = 25 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[25].Offset, 8));
+            if (specialOffsets[26].Size != 0)
+                (entryArticle = new MoveDefArticleNode() { Static = true, _name = "Entry Article", offsetID = 26 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[26].Offset, 0));
+            if (specialOffsets[8].Size != 0)
+                (actionInterrupts = new MoveDefActionInterruptsNode() { offsetID = 8 }).Initialize(this, BaseAddress + specialOffsets[8].Offset, 8);
+            if (specialOffsets[16].Size != 0)
+                (boneFloats1 = new MoveDefUnk17Node() { _name = "Bone Floats 1", offsetID = 16 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[16].Offset, 0));
+            if (specialOffsets[17].Size != 0)
+                (boneFloats2 = new MoveDefUnk17Node() { _name = "Bone Floats 2", offsetID = 17 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[17].Offset, 0));
+            if (specialOffsets[23].Size != 0)
+                (boneFloats3 = new MoveDefUnk17Node() { _name = "Bone Floats 3", offsetID = 23 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[23].Offset, 0));
+            if (specialOffsets[18].Size != 0)
+                (boneRef1 = new MoveDefBoneIndicesNode("Bone References", (_misc.BoneRefOffset - specialOffsets[18].Offset) / 4) { offsetID = 18 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[18].Offset, 0));
+            if (specialOffsets[20].Size != 0)
+                (_override1 = new MoveDefActionOverrideNode() { offsetID = 20 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[20].Offset, 0));
+            if (specialOffsets[21].Size != 0)
+                (_override2 = new MoveDefActionOverrideNode() { offsetID = 21 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[21].Offset, 0));
+
+            if (_articleGroup == null)
+                AddChild(_articleGroup = new MoveDefGroupNode() { _name = "Articles" });
+
+            //ExtraDataOffsets.GetOffsets((CharName)(int)character).Parse(this, Data + 124);
+
+            ////These offsets follow no patterns
+            //int y = 0;
+            //MoveDefExternalNode ext = null;
+            //foreach (int DataOffset in _extraOffsets)
+            //{
+            //    if (y == 2 && character == CharFolder.poketrainer)
+            //    {
+            //        MoveDefSoundDatasNode p = new MoveDefSoundDatasNode() { isExtra = true, seperate = true, _name = "Sound Data 2" };
+            //        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(p);
+            //    }
+            //    else if (y == 49 && character == CharFolder.kirby)
+            //    {
+            //        MoveDefKirbyParamList49Node p = new MoveDefKirbyParamList49Node() { isExtra = true, offsetID = y };
+            //        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(p);
+            //    }
+            //    else if (y == 50 && character == CharFolder.kirby)
+            //    {
+            //        //6 offsets
+            //        //that point to:
+            //        //offset
+            //        //count
+            //        //align to 0x10
+            //        //that points to list of:
+            //        //offset
+            //        //align list to 0x10
+            //        //that points to:
+            //        //offset
+            //        //count
+            //        //offset (sometimes 0)
+            //        //count (sometimes 0)
+            //        //that points to list of:
+            //        //offset
+            //        //count
+            //        //align list to 0x10
+            //        //that points to:
+            //        //int value
+            //    }
+            //    else if ((y == 51 || y == 52) && character == CharFolder.kirby)
+            //    {
+            //        MoveDefKirbyParamList5152Node p = new MoveDefKirbyParamList5152Node() { isExtra = true, offsetID = y };
+            //        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(p);
+            //    }
+            //    else if ((y == 7 && character == CharFolder.pit) || (y == 13 && character == CharFolder.robot))
+            //    {
+            //        Pit7Robot13Node p = new Pit7Robot13Node() { isExtra = true, offsetID = y };
+            //        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(p);
+            //    }
+            //    else if (y == 8 && character == CharFolder.lucario)
+            //    {
+            //        HitDataListOffsetNode p = new HitDataListOffsetNode() { isExtra = true, _name = "HitDataList" + y, offsetID = y };
+            //        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(p);
+            //    }
+            //    else if (y > 9 && character == CharFolder.yoshi)
+            //    {
+            //        Yoshi9 p = new Yoshi9() { isExtra = true, offsetID = y };
+            //        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(p);
+            //    }
+            //    else if (y == 15 && character == CharFolder.dedede)
+            //    {
+            //        Data2ListNode p = new Data2ListNode() { isExtra = true, offsetID = y };
+            //        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(p);
+            //    }
+            //    else if (
+            //        (y == 56 && character == CharFolder.kirby) ||
+            //        (y == 7 && character == CharFolder.link) ||
+            //        (y == 8 && character == CharFolder.peach) ||
+            //        (y == 4 && character == CharFolder.pit) ||
+            //        (y == 7 && character == CharFolder.toonlink))
+            //    {
+            //        MoveDefHitDataListNode p = new MoveDefHitDataListNode() { isExtra = true, _name = "HitDataList" + y, offsetID = y };
+            //        p.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(p);
+            //    }
+            //    else if (y == 6 && character == CharFolder.wario)
+            //    {
+            //        warioParams6 = new Wario6() { isExtra = true, offsetID = y };
+            //        warioParams6.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(warioParams6);
+            //    }
+            //    else if (y == 8 && character == CharFolder.wario)
+            //    {
+            //        warioParams8 = new Wario8() { isExtra = true, offsetID = y };
+            //        warioParams8.Initialize(this, new DataSource(BaseAddress + DataOffset, 0));
+            //        _extraEntries.Add(warioParams8);
+            //    }
+            //    else if (y == 8 && character == CharFolder.szerosuit)
+            //    {
+            //        (zssParams8 = new SZerosuitExtraParams8Node() { isExtra = true, offsetID = y }).Initialize(this, BaseAddress + DataOffset, 32);
+            //        _extraEntries.Add(zssParams8);
+            //    }
+            //    else if (y < 4 && character == CharFolder.popo)
+            //    {
+            //        _extraEntries.Add(null);
+
+            //        if (y == 0)
+            //            nanaSubActions = new MoveDefActionListNode() { _name = "Nana SubAction Scripts", isExtra = true };
+
+            //        actionOffset = (bint*)(BaseAddress + DataOffset);
+            //        ActionOffsets = new List<int>();
+            //        for (int x = 0; x < Root.GetSize(DataOffset) / 4; x++)
+            //            ActionOffsets.Add(actionOffset[x]);
+            //        nanaSubActions.ActionOffsets.Add(ActionOffsets);
+
+            //        if (y == 3)
+            //        {
+            //            string name;
+            //            int count = 0;
+            //            for (int i = 0; i < 4; i++)
+            //                if ((count = Root.GetSize(DataOffset) / 4) > 0)
+            //                    break;
+
+            //            //Initialize using first offset so the node is sorted correctly
+            //            nanaSubActions.Initialize(this, BaseAddress + _extraOffsets[0], 0);
+
+            //            //Set up groups
+            //            for (int i = 0; i < count; i++)
+            //            {
+            //                if (_animFlags._names.Count > i && _animFlags._flags[i]._stringOffset > 0)
+            //                    name = _animFlags._names[i];
+            //                else
+            //                    name = "<null>";
+            //                nanaSubActions.AddChild(new MoveDefSubActionGroupNode() { _name = name, _flags = _animFlags._flags[i]._Flags, _inTransTime = _animFlags._flags[i]._InTranslationTime }, false);
+            //            }
+
+            //            //Add children
+            //            for (int i = 0; i < 4; i++)
+            //                PopulateActionGroup(nanaSubActions, nanaSubActions.ActionOffsets[i], true, i);
+            //        }
+            //    }
+            //    else if (y == 10 && character == CharFolder.popo)
+            //    {
+            //        (nanaSoundData = new MoveDefSoundDatasNode() { _name = "Nana Sound Data", isExtra = true }).Initialize(this, (VoidPtr)Header + 124 + y * 4, 8);
+            //        _extraEntries.Add(null);
+            //    }
+            //    else
+            //    {
+            //        if (DataOffset > Root.dataSize) //probably flags or float
+            //            continue;
+
+            //        ext = null;
+            //        if (DataOffset > 1480) //I don't think a count would be greater than this
+            //        {
+            //            MoveDefEntryNode entry = null;
+            //            if ((ext = Root.IsExternal(DataOffset)) != null)
+            //            {
+            //                if (ext.Name.StartsWith("param"))
+            //                {
+            //                    int o = 0;
+            //                    if (y < _extraOffsets.Count - 1 && (o = _extraOffsets[y + 1]) < 1480 && o > 1)
+            //                    {
+            //                        MoveDefRawDataNode d = new MoveDefRawDataNode("ExtraParams" + y) { offsetID = y, isExtra = true };
+            //                        d.Initialize(this, BaseAddress + DataOffset, 0);
+            //                        for (int i = 0; i < o; i++)
+            //                            new MoveDefSectionParamNode() { _name = "Part" + i, _extOverride = i == 0 }.Initialize(d, BaseAddress + DataOffset + ((d.Size / o) * i), (d.Size / o));
+            //                        entry = d;
+            //                    }
+            //                    else
+            //                    {
+            //                        MoveDefSectionParamNode p = new MoveDefSectionParamNode() { _name = "ExtraParams" + y, isExtra = true, offsetID = y };
+            //                        p.Initialize(this, BaseAddress + DataOffset, 0);
+            //                        entry = p;
+            //                    }
+            //                }
+            //                else
+            //                {
+            //                    Article* test = (Article*)(BaseAddress + DataOffset);
+            //                    if (Root.GetSize(DataOffset) < 52 ||
+            //                        test->_actionsStart > Root.dataSize || test->_actionsStart % 4 != 0 ||
+            //                        test->_subactionFlagsStart > Root.dataSize || test->_subactionFlagsStart % 4 != 0 ||
+            //                        test->_subactionGFXStart > Root.dataSize || test->_subactionGFXStart % 4 != 0 ||
+            //                        test->_subactionSFXStart > Root.dataSize || test->_subactionSFXStart % 4 != 0 ||
+            //                        test->_modelVisibility > Root.dataSize || test->_modelVisibility % 4 != 0 ||
+            //                        test->_arcGroup > byte.MaxValue || test->_boneID > short.MaxValue || test->_id > 1480)
+            //                    {
+            //                        int o = 0;
+            //                        if (y < _extraOffsets.Count - 1 && (o = _extraOffsets[y + 1]) < 1480 && o > 1)
+            //                        {
+            //                            MoveDefRawDataNode d = new MoveDefRawDataNode("ExtraParams" + y) { offsetID = y, isExtra = true };
+            //                            d.Initialize(this, BaseAddress + DataOffset, 0);
+            //                            for (int i = 0; i < o; i++)
+            //                                new MoveDefSectionParamNode() { _name = "Part" + i, _extOverride = i == 0 }.Initialize(d, BaseAddress + DataOffset + ((d.Size / o) * i), (d.Size / o));
+            //                            entry = d;
+            //                        }
+            //                        else
+            //                        {
+            //                            MoveDefSectionParamNode p = new MoveDefSectionParamNode() { _name = "ExtraParams" + y, isExtra = true, offsetID = y };
+            //                            p.Initialize(this, BaseAddress + DataOffset, 0);
+            //                            entry = p;
+            //                        }
+            //                    }
+            //                    else
+            //                    {
+            //                        if (_articleGroup == null)
+            //                        {
+            //                            _articleGroup = new MoveDefGroupNode() { _name = "Articles" };
+            //                            _articleGroup.Initialize(this, BaseAddress + DataOffset, 0);
+            //                        }
+
+            //                        (entry = new MoveDefArticleNode() { offsetID = y, Static = true, isExtra = true, extraOffset = true }).Initialize(_articleGroup, BaseAddress + DataOffset, 0);
+            //                        _articles.Add(entry._offset, entry);
+            //                    }
+            //                }
+            //            }
+            //            else
+            //            {
+            //                Article* test = (Article*)(BaseAddress + DataOffset);
+            //                if (Root.GetSize(DataOffset) < 52 ||
+            //                    test->_actionsStart > Root.dataSize || test->_actionsStart % 4 != 0 ||
+            //                    test->_subactionFlagsStart > Root.dataSize || test->_subactionFlagsStart % 4 != 0 ||
+            //                    test->_subactionGFXStart > Root.dataSize || test->_subactionGFXStart % 4 != 0 ||
+            //                    test->_subactionSFXStart > Root.dataSize || test->_subactionSFXStart % 4 != 0 ||
+            //                    test->_modelVisibility > Root.dataSize || test->_modelVisibility % 4 != 0 ||
+            //                    test->_arcGroup > byte.MaxValue || test->_boneID > short.MaxValue || test->_id > 1480)
+            //                {
+            //                    int o = 0;
+            //                    if (y < _extraOffsets.Count - 1 && (o = _extraOffsets[y + 1]) < 1480 && o > 1)
+            //                    {
+            //                        MoveDefRawDataNode d = new MoveDefRawDataNode("ExtraParams" + y) { offsetID = y, isExtra = true };
+            //                        d.Initialize(this, BaseAddress + DataOffset, 0);
+            //                        for (int i = 0; i < o; i++)
+            //                            new MoveDefSectionParamNode() { _name = "Part" + i, _extOverride = i == 0 }.Initialize(d, BaseAddress + DataOffset + ((d.Size / o) * i), (d.Size / o));
+            //                        entry = d;
+            //                    }
+            //                    else
+            //                    {
+            //                        MoveDefSectionParamNode p = new MoveDefSectionParamNode() { _name = "ExtraParams" + y, isExtra = true, offsetID = y };
+            //                        p.Initialize(this, BaseAddress + DataOffset, 0);
+            //                        entry = p;
+            //                    }
+            //                }
+            //                else
+            //                {
+            //                    if (_articleGroup == null)
+            //                    {
+            //                        _articleGroup = new MoveDefGroupNode() { _name = "Articles" };
+            //                        _articleGroup.Initialize(this, BaseAddress + DataOffset, 0);
+            //                    }
+
+            //                    (entry = new MoveDefArticleNode() { offsetID = y, isExtra = true, Static = true, extraOffset = true }).Initialize(_articleGroup, BaseAddress + DataOffset, 0);
+            //                    _articles.Add(entry._offset, entry);
+            //                }
+            //            }
+            //            _extraEntries.Add(entry);
+            //        }
+            //        else { } //Probably a count
+            //    }
+            //    y++;
+            //}
+
+            _misc.Populate(0);
+
+            //if (_extraEntries.Count > 0)
+            //{
+            //    if (!Directory.Exists(Application.StartupPath + "/MovesetData/CharSpecific"))
+            //        Directory.CreateDirectory(Application.StartupPath + "/MovesetData/CharSpecific");
+            //    string events = Application.StartupPath + "/MovesetData/CharSpecific/" + Root.Parent.Name + ".txt";
+            //    using (StreamWriter file = new StreamWriter(events))
+            //    {
+            //        foreach (MoveDefEntryNode e in _extraEntries)
+            //        {
+            //            if (e is MoveDefSectionParamNode)
+            //            {
+            //                MoveDefSectionParamNode p = e as MoveDefSectionParamNode;
+            //                file.WriteLine(p.Name);
+            //                file.WriteLine(p.Name); //Replaced name
+            //                foreach (AttributeInfo i in p._info)
+            //                {
+            //                    file.WriteLine(i._name);
+            //                    file.WriteLine(i._description);
+            //                    file.WriteLine(i._type == false ? 0 : 1);
+            //                    file.WriteLine();
+            //                }
+            //                file.WriteLine();
+            //            }
+            //        }
+            //    }
+            //}
+
             #endregion
 
             SortChildren();
@@ -750,14 +725,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override int OnCalculateSize(bool force)
         {
             zssFirstOffset = warioSwing4StringOffset = -1;
-            _entryLength = 124 + _extraOffsets.Count * 4;
-            _childLength = MovesetConverter.CalcDataSize(this);
+            _entryLength = 124 + ExtraDataOffsets.GetOffsets(Root._character).Count * 4;
+            _childLength = MoveDefNode.Builder.CalcDataSize(this);
             return (_entryLength + _childLength);
         }
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            MovesetConverter.BuildData(this, (MovesetHeader*)dataHeaderAddr, address, length, force);
+            MoveDefNode.Builder.BuildData(this, (MovesetHeader*)dataHeaderAddr, address, length, force);
         }
     }
 }

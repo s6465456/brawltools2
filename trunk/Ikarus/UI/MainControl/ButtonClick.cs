@@ -213,6 +213,8 @@ namespace Ikarus.UI
             //}
         }
 
+        #region Settings
+
         public unsafe void SaveSettings(bool maximize)
         {            
             try
@@ -250,8 +252,8 @@ namespace Ikarus.UI
                 settings._emis = modelPanel._emission;
                 settings.ImageCapFmt = _imgExtIndex;
                 settings.Bones = _renderBones;
-                settings.Polys = _renderPolygons == CheckState.Checked;
-                settings.Wireframe = _renderPolygons == CheckState.Indeterminate;
+                settings.Polys = _renderPolygons;
+                settings.Wireframe = _renderWireframe;
                 settings.Vertices = _renderVertices;
                 settings.Normals = _renderNormals;
                 settings.HideOffscreen = _dontRenderOffscreen;
@@ -297,6 +299,8 @@ namespace Ikarus.UI
 
             SaveSettings(maximize);
         }
+
+        #endregion
 
         private void alwaysSyncFrameCountsToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
@@ -372,7 +376,7 @@ namespace Ikarus.UI
                 loadImageToolStripMenuItem.Text = "Load Image";
             }
         }
-        private void btnAssetToggle_Click(object sender, EventArgs e)
+        private void btnLeftToggle_Click(object sender, EventArgs e)
         {
             showLeft.Checked = !showLeft.Checked;
         }
@@ -385,6 +389,9 @@ namespace Ikarus.UI
         {
             showRight.Checked = !showRight.Checked;
         }
+
+        #region Animation
+
         public void btnPrevFrame_Click(object sender, EventArgs e) { pnlPlayback.numFrameIndex.Value--; }
         public void btnNextFrame_Click(object sender, EventArgs e) { pnlPlayback.numFrameIndex.Value++; }
         public void btnPlay_Click(object sender, EventArgs e)
@@ -402,6 +409,9 @@ namespace Ikarus.UI
                     PlayAnim();
             }
         }
+
+        #endregion
+
         private void setColorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (dlgColor.ShowDialog(this) == DialogResult.OK)
@@ -457,7 +467,7 @@ namespace Ikarus.UI
                     }
                     else
                     {
-                        btnAssetToggle_Click(null, null);
+                        btnLeftToggle_Click(null, null);
                         return true;
                     }
                 }

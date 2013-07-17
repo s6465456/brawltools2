@@ -6,6 +6,7 @@ using System.ComponentModel;
 using BrawlLib.SSBBTypes;
 using System.Runtime.InteropServices;
 using System.Runtime.ExceptionServices;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -61,7 +62,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("MoveDef Lookup Node")]
         public int DataOffset { get { return Header->_offset; } }
         [Category("MoveDef Lookup Node")]
-        public int DataSize { get { return Index == Parent.Children.Count - 1 ? Root.sections.dataOffset - DataOffset : ((MoveDefLookupOffsetNode)Parent.Children[Index + 1]).DataOffset - DataOffset; } }
+        public int DataSize { get { return Index == Parent.Children.Count - 1 ? Root._sections.dataOffset - DataOffset : ((MoveDefLookupOffsetNode)Parent.Children[Index + 1]).DataOffset - DataOffset; } }
 
         public static int LookupCompare(ResourceNode n1, ResourceNode n2)
         {

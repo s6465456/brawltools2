@@ -311,6 +311,8 @@ namespace System.Windows.Forms
                         rightPanel.pnlKeyframes.TargetSequence = _chr0.FindChild(_selectedBone.Name, false);
                     else
                         rightPanel.pnlKeyframes.TargetSequence = null;
+
+                UpdatePropDisplay();
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

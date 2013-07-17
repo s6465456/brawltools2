@@ -278,7 +278,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         if (path != null)
                         {
                             DirectoryInfo dir = new DirectoryInfo(Path.GetDirectoryName(path));
-                            if (dir.Exists)
+                            if (dir.Exists && Name != "<null>")
                                 foreach (FileInfo file in dir.GetFiles(Name + ".*"))
                                 {
                                     if (file.Name.EndsWith(".tga"))
