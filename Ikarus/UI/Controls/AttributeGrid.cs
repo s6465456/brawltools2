@@ -97,7 +97,7 @@ namespace System.Windows.Forms
 
         #endregion
 
-        public AttributeInfo[] AttributeArray;
+        public AttributeInfo[] AttributeArray { get { return FileManager.AttributeArray; } }
 
         public AttributeGrid()
         {
@@ -119,8 +119,6 @@ namespace System.Windows.Forms
 
         public void LoadData()
         {
-            AttributeArray = FileManager.AttributeArray;
-
             attributes.Columns.Clear();
             attributes.Rows.Clear();
 
@@ -167,7 +165,7 @@ namespace System.Windows.Forms
             string name = attributes.Rows[index][0].ToString();
             if (AttributeArray[index]._name != name)
             {
-                AttributeArray[index]._name = FileManager.AttributeArray[index]._name = name;
+                AttributeArray[index]._name = name;
                 FileManager._dictionaryChanged = true;
                 return;
             }

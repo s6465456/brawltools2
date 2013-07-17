@@ -13,8 +13,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal MDL0FurPosData* Header { get { return (MDL0FurPosData*)WorkingUncompressed.Address; } }
 
-        public MDL0ObjectNode[] Objects { get { return _polygons.ToArray(); } }
-        internal List<MDL0ObjectNode> _polygons = new List<MDL0ObjectNode>();
+        public MDL0ObjectNode[] Objects { get { return _objects.ToArray(); } }
+        internal List<MDL0ObjectNode> _objects = new List<MDL0ObjectNode>();
 
         MDL0FurPosData hdr = new MDL0FurPosData();
 

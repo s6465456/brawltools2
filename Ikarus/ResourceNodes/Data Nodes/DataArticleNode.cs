@@ -6,6 +6,8 @@ using System.ComponentModel;
 using BrawlLib.SSBBTypes;
 using BrawlLib.OpenGL;
 using System.Windows.Forms;
+using Ikarus;
+using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -16,7 +18,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public MDL0BoneNode BoneNode
         {
-            get { if (Model == null) return null; if (bone > Model._linker.BoneCache.Length || bone < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[bone]; }
+            get { if (Root._model == null) return null; if (bone > Root._model._linker.BoneCache.Length || bone < 0) return null; return (MDL0BoneNode)Root._model._linker.BoneCache[bone]; }
             set { bone = value.BoneIndex; }
         }
 
@@ -64,6 +66,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
 
+            return false;
+
             id = Header->_id;
             group = Header->_arcGroup;
             bone = Header->_boneID;
@@ -97,14 +101,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             return SubactionFlagsStart > 0 || extra || ActionsStart > 0 || ActionFlagsStart > 0 || CollisionData > 0 || DataOffset2 > 0 || DataOffset3 > 0;
         }
 
-        public MoveDefActionFlagsNode actionFlags;
-        public MoveDefActionListNode actions;
-        public MoveDefFlagsNode subActionFlags;
-        public MoveDefEntryNode subActions;
-        public MoveDefModelVisibilityNode mdlVis;
-        public CollisionDataNode data1;
-        public Data2ListNode data2;
-        public MoveDefSectionParamNode data3;
+        public MoveDefActionFlagsNode _actionFlags;
+        public MoveDefActionListNode _actions;
+        public MoveDefFlagsNode _subActionFlags;
+        public MoveDefEntryNode _subActions;
+        public MoveDefModelVisibilityNode _mdlVis;
+        public CollisionDataNode _data1;
+        public Data2ListNode _data2;
+        public MoveDefSectionParamNode _data3;
 
         [Category("Article")]
         public List<int> ExtraOffsets { get { return _extraOffsets; } }
@@ -125,35 +129,35 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (actionCount > 0)
             {
-                (actionFlags = new MoveDefActionFlagsNode("ActionFlags", actionCount)).Initialize(this, BaseAddress + ActionFlagsStart, actionCount * 16);
+                (_actionFlags = new MoveDefActionFlagsNode("ActionFlags", actionCount)).Initialize(this, BaseAddress + ActionFlagsStart, actionCount * 16);
                 if (ActionsStart > 0 || (dedede && _extraOffsets[0] > 0))
                 {
-                    actions = new MoveDefActionListNode() { _name = "Actions" };
-                    actions.Parent = this;
+                    _actions = new MoveDefActionListNode() { _name = "Actions" };
+                    _actions.Parent = this;
                     for (int i = 0; i < actionCount; i++)
                     {
                         if (pikmin)
                         {
-                            actions.AddChild(new MoveDefActionGroupNode() { _name = "Action" + i }, false);
+                            _actions.AddChild(new MoveDefActionGroupNode() { _name = "Action" + i }, false);
 
                             off = *((bint*)(BaseAddress + ActionsStart) + i);
                             if (off > 0)
-                                new MoveDefActionNode("Entry", false, actions.Children[i]).Initialize(actions.Children[i], BaseAddress + off, 0);
+                                new MoveDefActionNode("Entry", false, _actions.Children[i]).Initialize(_actions.Children[i], BaseAddress + off, 0);
                             else
-                                actions.Children[i].Children.Add(new MoveDefActionNode("Entry", true, actions.Children[i]));
+                                _actions.Children[i].Children.Add(new MoveDefActionNode("Entry", true, _actions.Children[i]));
                             off = *((bint*)(BaseAddress + _extraOffsets[0]) + i);
                             if (off > 0)
-                                new MoveDefActionNode("Exit", false, actions.Children[i]).Initialize(actions.Children[i], BaseAddress + off, 0);
+                                new MoveDefActionNode("Exit", false, _actions.Children[i]).Initialize(_actions.Children[i], BaseAddress + off, 0);
                             else
-                                actions.Children[i].Children.Add(new MoveDefActionNode("Exit", true, actions.Children[i]));
+                                _actions.Children[i].Children.Add(new MoveDefActionNode("Exit", true, _actions.Children[i]));
                         }
                         else
                         {
                             off = *((bint*)(BaseAddress + ActionsStart) + i);
                             if (off > 0)
-                                new MoveDefActionNode("Action" + i, false, actions).Initialize(actions, BaseAddress + off, 0);
+                                new MoveDefActionNode("Action" + i, false, _actions).Initialize(_actions, BaseAddress + off, 0);
                             else
-                                actions.Children.Add(new MoveDefActionNode("Action" + i, true, actions));
+                                _actions.Children.Add(new MoveDefActionNode("Action" + i, true, _actions));
                         }
                     }
                 }
@@ -161,11 +165,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (SubactionFlagsStart > 0)
             {
-                subActionFlags = new MoveDefFlagsNode() { _parent = this };
-                subActionFlags.Initialize(this, BaseAddress + SubactionFlagsStart, subactions * 8);
+                _subActionFlags = new MoveDefFlagsNode() { _parent = this };
+                _subActionFlags.Initialize(this, BaseAddress + SubactionFlagsStart, subactions * 8);
                 
                 if (subactions == 0)
-                    subactions = subActionFlags._names.Count;
+                    subactions = _subActionFlags._names.Count;
 
                 int populateCount = 1;
                 bool child = false;
@@ -173,60 +177,60 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 if (dedede)
                 {
-                    subActions = new MoveDefGroupNode() { Name = "SubActions" };
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Waddle Dee" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Waddle Doo" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Gyro" }, false);
+                    _subActions = new MoveDefGroupNode() { Name = "SubActions" };
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Waddle Dee" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Waddle Doo" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Gyro" }, false);
                     populateCount = 3;
                     child = true;
                 }
                 else if (pikmin)
                 {
-                    subActions = new MoveDefGroupNode() { Name = "SubActions" };
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Red" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Yellow" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Blue" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Purple" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "White" }, false);
+                    _subActions = new MoveDefGroupNode() { Name = "SubActions" };
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Red" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Yellow" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Blue" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Purple" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "White" }, false);
                     populateCount = 5;
                     child = true;
                     bias = 1;
                 }
                 else if (ArticleStringID == "ArticleType1_61" && RootNode.Name == "FitKirby")
                 {
-                    subActions = new MoveDefGroupNode() { Name = "SubActions" };
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "100 Ton Stone" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Thwomp Stone" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Spike Ball" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Stone Kirby" }, false);
-                    subActions.AddChild(new MoveDefActionListNode() { _name = "Happy Stone" }, false);
+                    _subActions = new MoveDefGroupNode() { Name = "SubActions" };
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "100 Ton Stone" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Thwomp Stone" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Spike Ball" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Stone Kirby" }, false);
+                    _subActions.AddChild(new MoveDefActionListNode() { _name = "Happy Stone" }, false);
                     populateCount = 5;
                     child = true;
                 }
                 else
-                    subActions = new MoveDefActionListNode() { _name = "SubActions" };
+                    _subActions = new MoveDefActionListNode() { _name = "SubActions" };
 
-                subActions.Parent = this;
+                _subActions.Parent = this;
 
                 for (int x = 0; x < populateCount; x++)
                 {
-                    ResourceNode Base = subActions;
+                    ResourceNode Base = _subActions;
                     int main = SubactionMainStart,
                         gfx = SubactionGFXStart,
                         sfx = SubactionSFXStart;
                     if (child)
                     {
-                        Base = subActions.Children[x];
+                        Base = _subActions.Children[x];
                         main = _extraOffsets[x + bias];
                         gfx = _extraOffsets[x + populateCount + bias];
                         sfx = _extraOffsets[x + populateCount * 2 + bias];
                     }
 
-                    for (int i = 0; i < subactions && i < subActionFlags._names.Count; i++)
-                        Base.AddChild(new MoveDefSubActionGroupNode() { _name = subActionFlags._names[i], _flags = subActionFlags._flags[i]._Flags, _inTransTime = subActionFlags._flags[i]._InTranslationTime }, false);
+                    for (int i = 0; i < subactions && i < _subActionFlags._names.Count; i++)
+                        Base.AddChild(new MoveDefSubActionGroupNode() { _name = _subActionFlags._names[i], _flags = _subActionFlags._flags[i]._Flags, _inTransTime = _subActionFlags._flags[i]._InTranslationTime }, false);
 
                     if (main > 0)
-                        for (int i = 0; i < subactions && i < subActionFlags._names.Count; i++)
+                        for (int i = 0; i < subactions && i < _subActionFlags._names.Count; i++)
                         {
                             off = *((bint*)(BaseAddress + main) + i);
                             if (off > 0)
@@ -235,11 +239,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 Base.Children[i].Children.Add(new MoveDefActionNode("Main", true, Base.Children[i]));
                         }
                     else
-                        for (int i = 0; i < subactions && i < subActionFlags._names.Count; i++)
+                        for (int i = 0; i < subactions && i < _subActionFlags._names.Count; i++)
                             Base.Children[i].Children.Add(new MoveDefActionNode("Main", true, Base.Children[i]));
 
                     if (gfx > 0)
-                        for (int i = 0; i < subactions && i < subActionFlags._names.Count; i++)
+                        for (int i = 0; i < subactions && i < _subActionFlags._names.Count; i++)
                         {
                             off = *((bint*)(BaseAddress + gfx) + i);
                             if (off > 0)
@@ -248,11 +252,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 Base.Children[i].Children.Add(new MoveDefActionNode("GFX", true, Base.Children[i]));
                         }
                     else
-                        for (int i = 0; i < subactions && i < subActionFlags._names.Count; i++)
+                        for (int i = 0; i < subactions && i < _subActionFlags._names.Count; i++)
                             Base.Children[i].Children.Add(new MoveDefActionNode("GFX", true, Base.Children[i]));
 
                     if (sfx > 0)
-                        for (int i = 0; i < subactions && i < subActionFlags._names.Count; i++)
+                        for (int i = 0; i < subactions && i < _subActionFlags._names.Count; i++)
                         {
                             off = *((bint*)(BaseAddress + sfx) + i);
                             if (off > 0)
@@ -261,22 +265,22 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 Base.Children[i].Children.Add(new MoveDefActionNode("SFX", true, Base.Children[i]));
                         }
                     else
-                        for (int i = 0; i < subactions && i < subActionFlags._names.Count; i++)
+                        for (int i = 0; i < subactions && i < _subActionFlags._names.Count; i++)
                             Base.Children[i].Children.Add(new MoveDefActionNode("SFX", true, Base.Children[i]));
                 }
             }
 
             if (ModelVisibility != 0)
-                (mdlVis = new MoveDefModelVisibilityNode()).Initialize(this, BaseAddress + ModelVisibility, 16);
+                (_mdlVis = new MoveDefModelVisibilityNode()).Initialize(this, BaseAddress + ModelVisibility, 16);
 
             if (CollisionData != 0)
-                (data1 = new CollisionDataNode() { _name = "Collision Data" }).Initialize(this, BaseAddress + CollisionData, 8);
+                (_data1 = new CollisionDataNode() { _name = "Collision Data" }).Initialize(this, BaseAddress + CollisionData, 8);
 
             if (DataOffset2 != 0)
-                (data2 = new Data2ListNode() { _name = "Data2" }).Initialize(this, BaseAddress + DataOffset2, 8);
+                (_data2 = new Data2ListNode() { _name = "Data2" }).Initialize(this, BaseAddress + DataOffset2, 8);
 
             if (DataOffset3 != 0)
-                (data3 = new MoveDefSectionParamNode() { _name = "Data3" }).Initialize(this, BaseAddress + DataOffset3, 0);
+                (_data3 = new MoveDefSectionParamNode(3) { _name = "Data3" }).Initialize(this, BaseAddress + DataOffset3, 0);
 
             //Extra offsets.
             //Dedede:
@@ -432,7 +436,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     entry = d;
                                     d.Initialize(this, BaseAddress + i, 0);
                                     for (int x = 0; x < count; x++)
-                                        new MoveDefSectionParamNode() { _name = "Part" + x }.Initialize(d, BaseAddress + i + x * size, size);
+                                        new MoveDefSectionParamNode(x) { _name = "Part" + x }.Initialize(d, BaseAddress + i + x * size, size);
                                 }
                             }
                             else
@@ -444,7 +448,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     p.Initialize(this, new DataSource(BaseAddress + i, 0));
                                 }
                                 else
-                                    (entry = new MoveDefSectionParamNode() { _name = "ExtraParams" + index }).Initialize(this, BaseAddress + i, 0);
+                                    (entry = new MoveDefSectionParamNode(index) { _name = "ExtraParams" + index }).Initialize(this, BaseAddress + i, 0);
                             }
                     }
                 }
@@ -464,19 +468,19 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             int size = 0;
 
-            if (actionFlags != null)
+            if (_actionFlags != null)
             {
                 _lookupCount++; //action flags offset
-                size += 16 * actionFlags.Children.Count;
+                size += 16 * _actionFlags.Children.Count;
             }
 
-            if (actions != null)
+            if (_actions != null)
             {
                 if (pikmin)
                 {
                     //false for now
                     bool actions1Null = false, actions2Null = false;
-                    foreach (MoveDefActionGroupNode grp in actions.Children)
+                    foreach (MoveDefActionGroupNode grp in _actions.Children)
                         foreach (MoveDefActionNode a in grp.Children)
                             if (a.Children.Count > 0)
                                 if (a.Index == 0)
@@ -486,48 +490,48 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _lookupCount += 2; //actions offsets
                     if (!actions1Null || !actions2Null)
                     {
-                        foreach (MoveDefActionGroupNode grp in actions.Children)
+                        foreach (MoveDefActionGroupNode grp in _actions.Children)
                             foreach (MoveDefActionNode a in grp.Children)
                                 if (a.Children.Count > 0)
                                     _lookupCount++; //action offset
-                        size += actions.Children.Count * 8;
+                        size += _actions.Children.Count * 8;
                     }
                 }
                 else
                 {
                     bool actionsNull = true;
-                    foreach (MoveDefActionNode a in actions.Children)
+                    foreach (MoveDefActionNode a in _actions.Children)
                         if (a.Children.Count > 0) actionsNull = false;
 
                     if (!actionsNull)
                     {
                         _lookupCount++; //actions offsets
-                        foreach (MoveDefActionNode a in actions.Children)
+                        foreach (MoveDefActionNode a in _actions.Children)
                             if (a.Children.Count > 0)
                                 _lookupCount++; //action offset
-                        size += actions.Children.Count * 4;
+                        size += _actions.Children.Count * 4;
                     }
                 }
             }
 
-            if (subActions != null)
+            if (_subActions != null)
             {
-                if (subActions.Children.Count > 0)
+                if (_subActions.Children.Count > 0)
                     _lookupCount++; //subaction flags offset
 
                 bool mainNull = true, gfxNull = true, sfxNull = true;
-                MoveDefEntryNode e = subActions;
+                MoveDefEntryNode e = _subActions;
                 int populateCount = 1;
                 bool children = false;
-                if (subActions.Children[0] is MoveDefActionListNode)
+                if (_subActions.Children[0] is MoveDefActionListNode)
                 {
-                    populateCount = subActions.Children.Count;
+                    populateCount = _subActions.Children.Count;
                     children = true;
                 }
                 for (int i = 0; i < populateCount; i++)
                 {
                     if (children)
-                        e = subActions.Children[i] as MoveDefEntryNode;
+                        e = _subActions.Children[i] as MoveDefEntryNode;
 
                     foreach (MoveDefSubActionGroupNode g in e.Children)
                     {
@@ -566,7 +570,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 for (int i = 0; i < populateCount; i++)
                 {
                     if (children)
-                        e = subActions.Children[i] as MoveDefEntryNode;
+                        e = _subActions.Children[i] as MoveDefEntryNode;
 
                     if (!(mainNull && Static))
                     {
@@ -586,38 +590,38 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
 
-            if (mdlVis != null)
+            if (_mdlVis != null)
             {
                 _lookupCount++; //model vis offset
-                size += mdlVis.CalculateSize(true);
-                _lookupCount += mdlVis._lookupCount;
+                size += _mdlVis.CalculateSize(true);
+                _lookupCount += _mdlVis._lookupCount;
             }
 
-            if (data1 != null)
+            if (_data1 != null)
             {
                 _lookupCount++; //data 1 offset
-                if (!data1.External)
+                if (!_data1.External)
                 {
-                    size += data1.CalculateSize(true);
-                    _lookupCount += data1._lookupCount;
+                    size += _data1.CalculateSize(true);
+                    _lookupCount += _data1._lookupCount;
                 }
             }
 
-            if (data2 != null)
+            if (_data2 != null)
             {
                 _lookupCount++; //data 2 offset
-                if (!data2.External)
+                if (!_data2.External)
                 {
-                    size += data2.CalculateSize(true);
-                    _lookupCount += data2._lookupCount;
+                    size += _data2.CalculateSize(true);
+                    _lookupCount += _data2._lookupCount;
                 }
             }
 
-            if (data3 != null)
+            if (_data3 != null)
             {
                 _lookupCount++; //data 3 offset
-                if (!data3.External)
-                    size += data3.CalculateSize(true);
+                if (!_data3.External)
+                    size += _data3.CalculateSize(true);
             }
 
             foreach (MoveDefEntryNode e in _extraEntries)
@@ -649,30 +653,30 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             VoidPtr addr = address;
 
-            if (subActions != null)
+            if (_subActions != null)
             {
                 subActionStrings.WriteTable(addr);
                 addr += subActionStrings.TotalSize;
             }
 
-            if (actionFlags != null)
+            if (_actionFlags != null)
             {
                 ActionFlags* actionFlagsAddr = (ActionFlags*)addr;
-                aFlags = (int)actionFlagsAddr - (int)_rebuildBase;
+                aFlags = (int)actionFlagsAddr - (int)RebuildBase;
 
-                foreach (MoveDefActionFlagsEntryNode a in actionFlags.Children)
+                foreach (MoveDefActionFlagsEntryNode a in _actionFlags.Children)
                     a.Rebuild(actionFlagsAddr++, 16, true);
 
                 addr = (VoidPtr)actionFlagsAddr;
             }
 
-            if (actions != null)
+            if (_actions != null)
             {
                 if (pikmin)
                 {
                     //false for now
                     bool actions1Null = false, actions2Null = false;
-                    foreach (MoveDefActionGroupNode grp in actions.Children)
+                    foreach (MoveDefActionGroupNode grp in _actions.Children)
                         foreach (MoveDefActionNode a in grp.Children)
                             if (a.Children.Count > 0)
                                 if (a.Index == 0)
@@ -682,19 +686,19 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (!actions1Null || !actions2Null)
                     {
                         bint* action1Offsets = (bint*)addr;
-                        aStart = (int)action1Offsets - (int)_rebuildBase;
-                        bint* action2Offsets = (bint*)(addr + actions.Children.Count * 4);
-                        a2Start = (int)action2Offsets - (int)_rebuildBase;
+                        aStart = (int)action1Offsets - (int)RebuildBase;
+                        bint* action2Offsets = (bint*)(addr + _actions.Children.Count * 4);
+                        a2Start = (int)action2Offsets - (int)RebuildBase;
 
-                        foreach (MoveDefActionGroupNode grp in actions.Children)
+                        foreach (MoveDefActionGroupNode grp in _actions.Children)
                             foreach (MoveDefActionNode a in grp.Children)
                             {
                                 if (a.Index == 0)
                                 {
                                     if (a.Children.Count > 0)
                                     {
-                                        *action1Offsets = (int)a._entryOffset - (int)a._rebuildBase;
-                                        _lookupOffsets.Add((int)action1Offsets - (int)_rebuildBase);
+                                        *action1Offsets = (int)a._rebuildAddr - (int)a.RebuildBase;
+                                        _lookupOffsets.Add(action1Offsets);
                                     }
                                     action1Offsets++;
                                 }
@@ -702,8 +706,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 {
                                     if (a.Children.Count > 0)
                                     {
-                                        *action2Offsets = (int)a._entryOffset - (int)a._rebuildBase;
-                                        _lookupOffsets.Add((int)action2Offsets - (int)_rebuildBase);
+                                        *action2Offsets = (int)a._rebuildAddr - (int)a.RebuildBase;
+                                        _lookupOffsets.Add(action2Offsets);
                                     }
                                     action2Offsets++;
                                 }
@@ -715,20 +719,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                 {
                     bool actionsNull = true;
-                    foreach (MoveDefActionNode a in actions.Children)
+                    foreach (MoveDefActionNode a in _actions.Children)
                         if (a.Children.Count > 0) actionsNull = false;
 
                     if (!actionsNull)
                     {
                         bint* actionOffsets = (bint*)addr;
-                        aStart = (int)actionOffsets - (int)_rebuildBase;
+                        aStart = (int)actionOffsets - (int)RebuildBase;
 
-                        foreach (MoveDefActionNode a in actions.Children)
+                        foreach (MoveDefActionNode a in _actions.Children)
                         {
                             if (a.Children.Count > 0)
                             {
-                                *actionOffsets = (int)a._entryOffset - (int)a._rebuildBase;
-                                _lookupOffsets.Add((int)actionOffsets - (int)_rebuildBase);
+                                *actionOffsets = (int)a._rebuildAddr - (int)a.RebuildBase;
+                                _lookupOffsets.Add(actionOffsets);
                             }
                             actionOffsets++;
                         }
@@ -736,59 +740,59 @@ namespace BrawlLib.SSBB.ResourceNodes
                     }
                 }
             }
-            if (mdlVis != null)
+            if (_mdlVis != null)
             {
-                mdlVis.Rebuild(addr, mdlVis._calcSize, true);
-                visStart = (int)mdlVis._rebuildOffset;
-                _lookupOffsets.AddRange(mdlVis._lookupOffsets);
-                addr += mdlVis._calcSize;
+                _mdlVis.Rebuild(addr, _mdlVis._calcSize, true);
+                visStart = (int)_mdlVis.RebuildOffset;
+                _lookupOffsets.AddRange(_mdlVis._lookupOffsets);
+                addr += _mdlVis._calcSize;
             }
 
-            if (data1 != null)
+            if (_data1 != null)
             {
-                if (!data1.External)
+                if (!_data1.External)
                 {
-                    data1.Rebuild(addr, data1._calcSize, true);
-                    _lookupOffsets.AddRange(data1._lookupOffsets);
-                    addr += data1._calcSize;
+                    _data1.Rebuild(addr, _data1._calcSize, true);
+                    _lookupOffsets.AddRange(_data1._lookupOffsets);
+                    addr += _data1._calcSize;
                 }
-                off1 = (int)data1._entryOffset - (int)_rebuildBase;
+                off1 = (int)_data1._rebuildAddr - (int)RebuildBase;
             }
 
-            if (data2 != null)
+            if (_data2 != null)
             {
-                if (!data2.External)
+                if (!_data2.External)
                 {
-                    data2.Rebuild(addr, data2._calcSize, true);
-                    _lookupOffsets.AddRange(data2._lookupOffsets);
-                    addr += data2._calcSize;
+                    _data2.Rebuild(addr, _data2._calcSize, true);
+                    _lookupOffsets.AddRange(_data2._lookupOffsets);
+                    addr += _data2._calcSize;
                 }
-                off2 = (int)data2._entryOffset - (int)_rebuildBase;
+                off2 = (int)_data2._rebuildAddr - (int)RebuildBase;
             }
 
-            if (data3 != null)
+            if (_data3 != null)
             {
-                if (data3.External)
-                    off3 = (int)data3._entryOffset - (int)_rebuildBase;
+                if (_data3.External)
+                    off3 = (int)_data3._rebuildAddr - (int)RebuildBase;
                 else
                 {
-                    off3 = (int)addr - (int)_rebuildBase;
-                    data3.Rebuild(addr, data3._calcSize, true);
-                    addr += data3._calcSize;
+                    off3 = (int)addr - (int)RebuildBase;
+                    _data3.Rebuild(addr, _data3._calcSize, true);
+                    addr += _data3._calcSize;
                 }
             }
 
-            if (subActions != null && subActions.Children.Count > 0)
+            if (_subActions != null && _subActions.Children.Count > 0)
             {
                 bint* lastOffsets = null, mainOffsets, GFXOffsets, SFXOffsets;
                 FDefSubActionFlag* subActionFlagsAddr = null;
                 bool mainNull = true, gfxNull = true, sfxNull = true;
-                MoveDefEntryNode e = subActions;
+                MoveDefEntryNode e = _subActions;
                 int populateCount = 1;
                 bool children = false;
-                if (subActions.Children[0] is MoveDefActionListNode)
+                if (_subActions.Children[0] is MoveDefActionListNode)
                 {
-                    populateCount = subActions.Children.Count;
+                    populateCount = _subActions.Children.Count;
                     children = true;
                     mainStarts = new List<int>();
                     gfxStarts = new List<int>();
@@ -800,7 +804,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 for (int i = 0; i < populateCount; i++)
                 {
                     if (children)
-                        e = subActions.Children[i] as MoveDefEntryNode;
+                        e = _subActions.Children[i] as MoveDefEntryNode;
 
                     foreach (MoveDefSubActionGroupNode g in e.Children)
                     {
@@ -817,7 +821,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (i == 0)
                     {
                         subActionFlagsAddr = (FDefSubActionFlag*)addr;
-                        sFlags = (int)subActionFlagsAddr - (int)_rebuildBase;
+                        sFlags = (int)subActionFlagsAddr - (int)RebuildBase;
                         lastOffsets = (bint*)((VoidPtr)subActionFlagsAddr + e.Children.Count * 8);
                     }
 
@@ -826,18 +830,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (!(mainNull && Static))
                     {
                         if (!children)
-                            sMStart = (int)mainOffsets - (int)_rebuildBase;
+                            sMStart = (int)mainOffsets - (int)RebuildBase;
                         else
-                            mainStarts.Add((int)mainOffsets - (int)_rebuildBase);
+                            mainStarts.Add((int)mainOffsets - (int)RebuildBase);
                         GFXOffsets = (bint*)((VoidPtr)mainOffsets + e.Children.Count * 4);
                     }
                     else GFXOffsets = mainOffsets;
                     if (!(gfxNull && Static))
                     {
                         if (!children)
-                            sGStart = (int)GFXOffsets - (int)_rebuildBase;
+                            sGStart = (int)GFXOffsets - (int)RebuildBase;
                         else
-                            gfxStarts.Add((int)GFXOffsets - (int)_rebuildBase);
+                            gfxStarts.Add((int)GFXOffsets - (int)RebuildBase);
                         SFXOffsets = (bint*)((VoidPtr)GFXOffsets + e.Children.Count * 4);
                     }
                     else SFXOffsets = GFXOffsets;
@@ -845,9 +849,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (!(sfxNull && Static))
                     {
                         if (!children)
-                            sSStart = (int)SFXOffsets - (int)_rebuildBase;
+                            sSStart = (int)SFXOffsets - (int)RebuildBase;
                         else
-                            sfxStarts.Add((int)SFXOffsets - (int)_rebuildBase);
+                            sfxStarts.Add((int)SFXOffsets - (int)RebuildBase);
                         addr = ((VoidPtr)SFXOffsets + e.Children.Count * 4);
                     }
                     else addr = (VoidPtr)SFXOffsets;
@@ -859,10 +863,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                     {
                         if (i == 0)
                         {
-                            *subActionFlagsAddr = new FDefSubActionFlag() { _Flags = grp._flags, _InTranslationTime = grp._inTransTime, _stringOffset = (int)subActionStrings[grp.Name] - (int)_rebuildBase };
+                            *subActionFlagsAddr = new FDefSubActionFlag() { _Flags = grp._flags, _InTranslationTime = grp._inTransTime, _stringOffset = (int)subActionStrings[grp.Name] - (int)RebuildBase };
 
                             if (subActionFlagsAddr->_stringOffset > 0)
-                                _lookupOffsets.Add((int)subActionFlagsAddr->_stringOffset.Address - (int)_rebuildBase);
+                                _lookupOffsets.Add(subActionFlagsAddr->_stringOffset.Address);
 
                             subActionFlagsAddr++;
                         }
@@ -877,22 +881,22 @@ namespace BrawlLib.SSBB.ResourceNodes
                         //if ((Static && grp.Children[0].Children.Count > 0) || (!Static && write))
                         if (grp.Children[0].Children.Count > 0 || (grp.Children[0] as MoveDefActionNode)._actionRefs.Count > 0 || (grp.Children[0] as MoveDefActionNode)._build)
                         {
-                            mainOffsets[x] = (int)(grp.Children[0] as MoveDefActionNode)._entryOffset - (int)_rebuildBase;
-                            _lookupOffsets.Add((int)&mainOffsets[x] - (int)_rebuildBase);
+                            mainOffsets[x] = (int)(grp.Children[0] as MoveDefActionNode)._rebuildAddr - (int)RebuildBase;
+                            _lookupOffsets.Add(&mainOffsets[x]);
                         }
 
                         //if ((Static && grp.Children[1].Children.Count > 0) || (!Static && write))
                         if (grp.Children[1].Children.Count > 0 || (grp.Children[1] as MoveDefActionNode)._actionRefs.Count > 0 || (grp.Children[1] as MoveDefActionNode)._build)
                         {
-                            GFXOffsets[x] = (int)(grp.Children[1] as MoveDefActionNode)._entryOffset - (int)_rebuildBase;
-                            _lookupOffsets.Add((int)&GFXOffsets[x] - (int)_rebuildBase);
+                            GFXOffsets[x] = (int)(grp.Children[1] as MoveDefActionNode)._rebuildAddr - (int)RebuildBase;
+                            _lookupOffsets.Add(&GFXOffsets[x]);
                         }
 
                         //if ((Static && grp.Children[2].Children.Count > 0) || (!Static && write))
                         if (grp.Children[2].Children.Count > 0 || (grp.Children[2] as MoveDefActionNode)._actionRefs.Count > 0 || (grp.Children[2] as MoveDefActionNode)._build)
                         {
-                            SFXOffsets[x] = (int)(grp.Children[2] as MoveDefActionNode)._entryOffset - (int)_rebuildBase;
-                            _lookupOffsets.Add((int)&SFXOffsets[x] - (int)_rebuildBase);
+                            SFXOffsets[x] = (int)(grp.Children[2] as MoveDefActionNode)._rebuildAddr - (int)RebuildBase;
+                            _lookupOffsets.Add(&SFXOffsets[x]);
                         }
 
                         x++;
@@ -918,7 +922,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (_buildHeader)
             {
-                _entryOffset = addr;
+                _rebuildAddr = addr;
 
                 Article* article = (Article*)addr;
 
@@ -945,11 +949,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                     MoveDefEntryNode e = _extraEntries[index];
                     if (e != null)
                     {
-                        ext[index] = (int)e._entryOffset - (int)_rebuildBase;
-                        _lookupOffsets.Add((int)&ext[index] - (int)_rebuildBase);
+                        ext[index] = (int)e._rebuildAddr - (int)RebuildBase;
+                        _lookupOffsets.Add(&ext[index]);
                     }
                     else if (index == 0 && Static)
-                        ext[index] = (subActions == null ? 0 : subActions.Children.Count);
+                        ext[index] = (_subActions == null ? 0 : _subActions.Children.Count);
                     else
                         ext[index] = i;
                     index++;
@@ -960,7 +964,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (pikmin)
                 {
                     ext[0] = a2Start;
-                    _lookupOffsets.Add((int)&ext[0] - (int)_rebuildBase);
+                    _lookupOffsets.Add(&ext[0]);
                 }
 
                 int bias = (pikmin ? 1 : 0);
@@ -968,21 +972,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                     foreach (int i in mainStarts)
                     {
                         ext[index + bias] = i;
-                        _lookupOffsets.Add((int)&ext[index + bias] - (int)_rebuildBase);
+                        _lookupOffsets.Add(&ext[index + bias]);
                         index++;
                     }
                 if (gfxStarts != null)
                     foreach (int i in gfxStarts)
                     {
                         ext[index + bias] = i;
-                        _lookupOffsets.Add((int)&ext[index + bias] - (int)_rebuildBase);
+                        _lookupOffsets.Add(&ext[index + bias]);
                         index++;
                     }
                 if (sfxStarts != null)
                     foreach (int i in sfxStarts)
                     {
                         ext[index + bias] = i;
-                        _lookupOffsets.Add((int)&ext[index + bias] - (int)_rebuildBase);
+                        _lookupOffsets.Add(&ext[index + bias]);
                         index++;
                     }
 
@@ -993,7 +997,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 bint* off = (bint*)((VoidPtr)article + 12);
                 for (int i = 0; i < 10; i++)
                     if (off[i] > 1480 && off[i] < Root.dataSize)
-                        _lookupOffsets.Add((int)&off[i] - (int)_rebuildBase);
+                        _lookupOffsets.Add(&off[i]);
                 
                 if (_lookupOffsets.Count != _lookupCount)
                     Console.WriteLine(_lookupCount - _lookupOffsets.Count);
@@ -1033,18 +1037,19 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void Render(TKContext ctx, ModelPanel mainWindow)
         {
-            if (Model != null)
+            //MDL0Node targetModel = Root._model;
+            if (BoneNode != null)
             {
-                Model.Render(ctx, mainWindow);
-                if (Model._linker.BoneCache.Length > 0 && BoneNode != null)
-                {
-                    MDL0BoneNode b = Model._linker.BoneCache[0] as MDL0BoneNode;
-                    b._frameMatrix = BoneNode._frameMatrix * b._frameState._transform;
-                    b._inverseFrameMatrix = b._frameState._iTransform * BoneNode._inverseFrameMatrix;
-                    foreach (MDL0BoneNode bone in b.Children)
-                        bone.RecalcFrameState();
-                }
+                Matrix m = BoneNode.Matrix;
+                GL.PushMatrix();
+                GL.LoadMatrix((float*)&m);
             }
+
+            if (Model != null)
+                Model.Render(ctx, mainWindow);
+
+            if (BoneNode != null)
+                GL.PopMatrix();
         }
     }
 
@@ -1099,10 +1104,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             bint* addr = (bint*)address;
             foreach (MoveDefBoneIndexNode b in Children)
             {
-                b._entryOffset = addr;
+                b._rebuildAddr = addr;
                 *addr++ = b.boneIndex;
             }
-            _entryOffset = addr;
+            _rebuildAddr = addr;
             collData0* data = (collData0*)addr;
             data->type = 0;
             data->unk1 = unk1;
@@ -1110,8 +1115,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             data->unk3 = unk3;
             if (Children.Count > 0)
             {
-                data->_list._startOffset = (int)address - (int)_rebuildBase;
-                _lookupOffsets.Add((int)data->_list._startOffset.Address - (int)_rebuildBase);
+                data->_list._startOffset = (int)address - (int)RebuildBase;
+                _lookupOffsets.Add(data->_list._startOffset.Address);
             }
             data->_list._listCount = Children.Count;
         }
@@ -1145,7 +1150,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             case 2: new CollDataType2() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0); break;
                             default:
                                 Console.WriteLine(value);
-                                new MoveDefSectionParamNode() { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0);
+                                new MoveDefSectionParamNode(0) { _name = "Data" }.Initialize(o, BaseAddress + o.DataOffset, 0);
                                 break;
                         }
                     }
@@ -1176,21 +1181,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     if (o.Children.Count > 0)
                     {
-                        *offsets = (int)(o.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase;
-                        _lookupOffsets.Add((int)offsets - (int)_rebuildBase); //offset to child
+                        *offsets = (int)(o.Children[0] as MoveDefEntryNode)._rebuildAddr - (int)RebuildBase;
+                        _lookupOffsets.Add(offsets); //offset to child
                     }
                     offsets++;
                 }
             }
 
-            _entryOffset = offsets;
+            _rebuildAddr = offsets;
             FDefListOffset* header = (FDefListOffset*)offsets;
 
             header->_listCount = Children.Count;
             if (Children.Count > 0)
             {
-                header->_startOffset = (int)dataAddr - (int)_rebuildBase;
-                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+                header->_startOffset = (int)dataAddr - (int)RebuildBase;
+                _lookupOffsets.Add(header->_startOffset.Address);
             }
         }
         public override int OnCalculateSize(bool force)
@@ -1254,7 +1259,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             collData1* data = (collData1*)address;
             data->type = 1;
             data->unk1 = unk1;
@@ -1310,7 +1315,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             collData2* data = (collData2*)address;
             data->type = 2;
             data->flags = flags;

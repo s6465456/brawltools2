@@ -13,54 +13,6 @@ namespace BrawlLib.Wii.Graphics
     public class ShaderGenerator
     {
         private static string tempShader;
-        public static string GeneratePixelShader(MDL0ObjectNode obj)
-        {
-            Reset();
-
-            MDL0MaterialNode mat = obj.UsableMaterialNode;
-            MDL0ShaderNode shader = mat.ShaderNode;
-
-            foreach (MDL0MaterialRefNode r in mat.Children)
-                w("uniform sampler2D Texture{0};\n", r.Index);
-
-            for (int i = 0; i < obj._uvSet.Length; i++)
-                if (obj._uvSet[i] != null)
-                    w("in vec2 UVSet{0};\n", i);
-            
-            //w("uniform vec4 C1Amb;\n");
-            //w("uniform vec4 C2Amb;\n");
-            //w("uniform vec4 C1Mat;\n");
-            //w("uniform vec4 C2Mat;\n");
-
-            Start();
-
-            //foreach (MDL0MaterialRefNode r in mat.Children)
-            //    if (r.TextureCoordId >= 0)
-            //        w("vec4 tex{0}col = texture2D(Texture{0}, UV{1}.st);\n", r.Index, r.TextureCoordId);
-
-            w("vec4 creg0 = vec4(0.0, 0.0, 0.0, 0.0);\n");
-            w("vec4 creg1 = vec4(0.0, 0.0, 0.0, 0.0);\n");
-            w("vec4 creg2 = vec4(0.0, 0.0, 0.0, 0.0);\n");
-            w("vec4 prev = vec4(0.0, 0.0, 0.0, 0.0);\n");
-
-            foreach (TEVStage stage in shader.Children)
-                if (stage.Index < mat.ActiveShaderStages)
-                    w(stage.Write(mat, obj));
-                else break;
-
-            //if (shader._stages > 0)
-            //{
-            //    w("prev.rgb = {0};\n", tevCOutputTable[(int)((TEVStage)shader.Children[shader.Children.Count - 1]).ColorRegister]);
-            //    w("prev.a = {0};\n", tevAOutputTable[(int)((TEVStage)shader.Children[shader.Children.Count - 1]).AlphaRegister]);
-            //}
-
-            w("gl_FragColor = tex0col;");
-            
-            Finish();
-
-            return tempShader;
-        }
-
         public static string GenerateVertexShader(MDL0ObjectNode obj)
         {
             Reset();
@@ -68,36 +20,99 @@ namespace BrawlLib.Wii.Graphics
             MDL0MaterialNode mat = obj.UsableMaterialNode;
             MDL0ShaderNode shader = mat.ShaderNode;
 
+            //w("#version 330\n");
+
             bool[] data = new bool[12];
             for (int i = 0; i < 12; i++)
                 data[i] = obj._manager._faceData[i] != null;
 
             if (data[0])
-                w("in vec3 Position;\n");
+                w("in vec3 Position;");
             if (data[1])
-                w("in vec3 Normal;\n");
+                w("in vec3 Normal;");
             for (int i = 0; i < 2; i++)
                 if (data[i + 2])
-                    w("in vec4 Color{0};\n", i);
+                    w("in vec4 Color{0};", i);
             for (int i = 0; i < 8; i++)
                 if (data[i + 4])
-                    w("in vec2 UV{0};\n", i);
+                    w("in vec2 UV{0};", i);
 
-            w("uniform mat4x4 modelview;\n");
-            w("uniform mat4x4 projection;\n");
+            w("uniform mat4 projection_matrix;");
+            w("uniform mat4 modelview_matrix;");
 
             for (int i = 0; i < obj._uvSet.Length; i++)
                 if (obj._uvSet[i] != null)
-                    w("varying vec2 UVSet{0};\n", i);
+                    w("out vec2 UVSet{0};", i);
+            for (int i = 0; i < obj._colorSet.Length; i++)
+                if (obj._colorSet[i] != null)
+                    w("out vec4 ColorSet{0};", i);
 
             Start();
 
-            //w("gl_TexCoord[0].st = UV0.st;\n");
-            w("gl_Position = Position;");
-            //w("gl_Normal = Normal;\n");
-            //if (data[2])
-            //    w("gl_FrontColor = Color0;");
+            w("gl_Position = projection_matrix * modelview_matrix * vec4(Position, 1.0);");
+            //w("gl_Normal = vec4(Normal, 1.0);\n");
+            for (int i = 0; i < obj._uvSet.Length; i++)
+                if (obj._uvSet[i] != null)
+                    w("UVSet{0} = UV{0};", i);
+            for (int i = 0; i < obj._colorSet.Length; i++)
+                if (obj._colorSet[i] != null)
+                    w("ColorSet{0} = Color{0};", i);
 
+            Finish();
+
+            return tempShader;
+        }
+
+        public static string GeneratePixelShader(MDL0ObjectNode obj)
+        {
+            Reset();
+
+            MDL0MaterialNode mat = obj.UsableMaterialNode;
+            MDL0ShaderNode shader = mat.ShaderNode;
+
+            //w("#version 330\n");
+
+            foreach (MDL0MaterialRefNode r in mat.Children)
+                w("uniform sampler2D Texture{0};", r.Index);
+
+            for (int i = 0; i < obj._uvSet.Length; i++)
+                if (obj._uvSet[i] != null)
+                    w("in vec2 UVSet{0};", i);
+            for (int i = 0; i < obj._colorSet.Length; i++)
+                if (obj._colorSet[i] != null)
+                    w("in vec2 ColorSet{0};", i);
+
+            w("out vec4 out_color;\n");
+
+            //w("uniform vec4 C1Amb;\n");
+            //w("uniform vec4 C2Amb;\n");
+            //w("uniform vec4 C1Mat;\n");
+            //w("uniform vec4 C2Mat;\n");
+
+            Start();
+
+            foreach (MDL0MaterialRefNode r in mat.Children)
+                if (r.TextureCoordId >= 0)
+                    w("vec4 tex{0}col = texture2D(Texture{0}, UVSet{1}.st);\n", r.Index, r.TextureCoordId);
+
+            //w("vec4 creg0 = vec4(0.0, 0.0, 0.0, 0.0);\n");
+            //w("vec4 creg1 = vec4(0.0, 0.0, 0.0, 0.0);\n");
+            //w("vec4 creg2 = vec4(0.0, 0.0, 0.0, 0.0);\n");
+            //w("vec4 prev = vec4(0.0, 0.0, 0.0, 0.0);\n");
+
+            //foreach (TEVStage stage in shader.Children)
+            //    if (stage.Index < mat.ActiveShaderStages)
+            //        w(stage.Write(mat, obj));
+            //    else break;
+
+            //if (shader._stages > 0)
+            //{
+            //    w("prev.rgb = {0};\n", tevCOutputTable[(int)((TEVStage)shader.Children[shader.Children.Count - 1]).ColorRegister]);
+            //    w("prev.a = {0};\n", tevAOutputTable[(int)((TEVStage)shader.Children[shader.Children.Count - 1]).AlphaRegister]);
+            //}
+
+            w("out_color = tex0col;");
+            
             Finish();
 
             return tempShader;
@@ -116,6 +131,8 @@ namespace BrawlLib.Wii.Graphics
         private static string Tabs { get { string t = ""; for (int i = 0; i < tabs; i++) t += "\t"; return t; } }
         private static void w(string str, params object[] args)
         {
+            str += "\n";
+
             if (args.Length == 0)
                 tabs -= Helpers.FindCount(str, 0, '}');
 

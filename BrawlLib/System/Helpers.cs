@@ -315,7 +315,7 @@ namespace System
         public enum HitboxSFX { None, SFX1, Unique, SFX3, SFX4, SFX5, SFX6, SFX7, WeakPunch, MediumPunch, StrongPunch, SFX11, WeakPunch2, MediumPunch2, StrongPunch2, SFX15, WeakKick, MediumKick, StrongKick, SFX19, WeakKick2, MediumKick2, StrongKick2, SFX23, WeakSlash, MediumSlash, StrongSlash, SFX27, WeakSlash2, MediumSlash2, StrongSlash2, SFX31, Coin1, Coin2, Coin3, Coin4, Coin5, Coin6, Coin7, Coin8, MediumClonk, StrongClonk, Ping, SFX43, WeakClonk2, MediumClock2, Ping2, SFX47, WeakPaperHit, MediumPaperHit, StrongPaperHit, SFX51, SFX52, SFX53, SFX54, SFX55, WeakShock, MediumShock, StrongShock, SFX59, SFX60, SFX61, SFX62, SFX63, WeakBurn, MediumBurn, StrongBurn, SFX67, SFX68, SFX69, SFX70, SFX71, WeakSplash, MediumSplash, StrongSplash, SFX75, SFX76, SFX77, SFX78, SFX79, SFX80, SFX81, SFX82, SFX83, SFX84, SFX85, SFX86, SFX87, SmallExplosion, MediumExplosion, LargeExplosion, HugeExplosion, SFX92, SFX93, SFX94, SFX95, SFX96, SFX97, SFX98, SFX99, SFX100, SFX101, SFX102, SFX103, WeakThud, MediumThud, StrongThud, HugeThud, SFX108, SFX109, SFX110, SFX111, WeakSlam, MediumSlam, StrongSlam, HugeSlam, SFX116, SFX117, SFX118, SFX119, WeakThwomp, MediumThwomp, StrongThwomp, HugeThwomp, SFX124, SFX125, SFX126, SFX127, WeakMagicZap, MediumMagicZap, StrongMagicZap, HugeMagicZap, SFX132, SFX133, SFX134, SFX135, WeakShell, MediumShell, StrongShell, SFX139, SFX140, SFX141, SFX142, SFX143, WeakSlap, SFX145, StrongSlap, SFX147, SFX148, SFX149, SFX150, SFX151, FryingPan, SFX153, SFX154, SFX155, SFX156, SFX157, SFX158, SFX159, SFX160, WeakGolfClub, StrongGolfClub, SFX163, SFX164, SFX165, SFX166, SFX167, WeakRacket, SFX169, StrongRacket, SFX171, SFX172, SFX173, SFX174, SFX175, WeakAura, MediumAura, StrongAura, SFX179, SFX180, SFX181, SFX182, SFX183, SFX184, SFX185, SFX186, SFX187, SFX188, SFX189, SFX190, SFX191, SFX192, SFX193, SFX194, SFX195, SFX196, SFX197, SFX198, SFX199, SFX200, SFX201, SFX202, SFX203, SFX204, SFX205, SFX206, SFX207, SFX208, SFX209, SFX210, SFX211, SFX212, SFX213, SFX214, SFX215, SFX216, SFX217, BatCrack, SFX219, SFX220, SFX221, SFX222, SFX223, SFX224, SFX225, SFX226, SFX227, SFX228, SFX229, SFX230, SFX231, SFX232, SFX233, SFX234, SFX235, SFX236, SFX237, SFX238, SFX239, SFX240, SFX241, SFX242, SFX243, SFX244, SFX245, SFX246, SFX247, SFX248, SFX249, SFX250, SFX251, SFX252, SFX253, SFX254, SFX255 };
         public enum DrawStyle { SSB64, Melee, Brawl }
 
-        public static Vector3 getTypeColour(HitboxType t)
+        public static Vector3 GetTypeColor(HitboxType t)
         {
             switch (t)
             {
@@ -347,7 +347,7 @@ namespace System
                 default: return new Vector3(0x7f, 0x7f, 0x7f);
             }
         }
-        public static Vector3 getEffectColour(HitboxEffect t)
+        public static Vector3 GetEffectColor(HitboxEffect t)
         {
             switch (t)
             {
@@ -375,133 +375,6 @@ namespace System
                 default: return new Vector3(0x7f, 0x7f, 0x7f);
             }
         }
-        public static T DeepClone<T>(T obj)
-        {
-            using (var ms = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(ms, obj);
-                ms.Position = 0;
-
-                return (T)formatter.Deserialize(ms);
-            }
-        }
-        private static readonly MethodInfo CloneMethod = typeof(Object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
-
-        public static Object CreateInstance(Type type)
-        {
-            var instance = FormatterServices.GetUninitializedObject(type);
-            return instance;
-        }
-
-        public static T Clone<T>(this T obj)
-        {
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                BinaryFormatter serializer = new BinaryFormatter();
-                serializer.Serialize(memoryStream, obj);
-                memoryStream.Position = 0;
-                var copy = serializer.Deserialize(memoryStream);
-                return (T)copy;
-            }
-        }
-
-        public static bool IsPrimitive(this Type type)
-        {
-            if (type == typeof(String)) return true;
-            return (type.IsValueType & type.IsPrimitive);
-        }
-
-        public static Object Copy(this Object originalObject)
-        {
-            return InternalCopy(originalObject, new Dictionary<Object, Object>(new ReferenceEqualityComparer()));
-        }
-        private static Object InternalCopy(Object originalObject, IDictionary<Object, Object> visited)
-        {
-            if (originalObject == null) return null;
-            var typeToReflect = originalObject.GetType();
-            if (IsPrimitive(typeToReflect)) return originalObject;
-            if (visited.ContainsKey(originalObject)) return visited[originalObject];
-            var cloneObject = CloneMethod.Invoke(originalObject, null);
-            visited.Add(originalObject, cloneObject);
-            CopyFields(originalObject, visited, cloneObject, typeToReflect);
-            RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
-            return cloneObject;
-        }
-
-        private static void RecursiveCopyBaseTypePrivateFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect)
-        {
-            if (typeToReflect.BaseType != null)
-            {
-                RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect.BaseType);
-                CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType, BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
-            }
-        }
-
-        private static void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
-        {
-            foreach (FieldInfo fieldInfo in typeToReflect.GetFields(bindingFlags))
-            {
-                if (filter != null && filter(fieldInfo) == false) continue;
-                if (IsPrimitive(fieldInfo.FieldType)) continue;
-                var originalFieldValue = fieldInfo.GetValue(originalObject);
-                var clonedFieldValue = originalFieldValue == null ? null : InternalCopy(originalFieldValue, visited);
-                fieldInfo.SetValue(cloneObject, clonedFieldValue);
-                if (clonedFieldValue == null) continue;
-                if (fieldInfo.FieldType.IsArray)
-                {
-                    var arrayType = fieldInfo.FieldType.GetElementType();
-                    if (IsPrimitive(arrayType)) continue;
-                    Array clonedArray = (Array)clonedFieldValue;
-                    for (long i = 0; i < clonedArray.LongLength; i++)
-                        clonedArray.SetValue(InternalCopy(clonedArray.GetValue(i), visited), i);
-                }
-            }
-        }
-        public static T Copy<T>(this T original)
-        {
-            return (T)Copy((Object)original);
-        }
-        public static object DeepCopy(object obj)
-        {
-            if (obj == null)
-                return null;
-            Type type = obj.GetType();
-
-            if (type.IsValueType || type == typeof(string))
-            {
-                return obj;
-            }
-            else if (type.IsArray)
-            {
-                Type elementType = Type.GetType(
-                     type.FullName.Replace("[]", string.Empty));
-                var array = obj as Array;
-                Array copied = Array.CreateInstance(elementType, array.Length);
-                for (int i = 0; i < array.Length; i++)
-                {
-                    copied.SetValue(DeepCopy(array.GetValue(i)), i);
-                }
-                return Convert.ChangeType(copied, obj.GetType());
-            }
-            else if (type.IsClass)
-            {
-
-                object toret = Activator.CreateInstance(obj.GetType());
-                FieldInfo[] fields = type.GetFields(BindingFlags.Public |
-                            BindingFlags.NonPublic | BindingFlags.Instance);
-                foreach (FieldInfo field in fields)
-                {
-                    object fieldValue = field.GetValue(obj);
-                    if (fieldValue == null)
-                        continue;
-                    field.SetValue(toret, DeepCopy(fieldValue));
-                }
-                return toret;
-            }
-            else
-                throw new ArgumentException("Unknown type");
-        }
     }
 
     public class ReferenceEqualityComparer : EqualityComparer<Object>
@@ -519,8 +392,8 @@ namespace System
     }
     public class SectionParamInfo
     {
-        public string NewName;
-        public List<AttributeInfo> Attributes;
+        public string _newName;
+        public List<AttributeInfo> _attributes;
     }
 
     public class AttributeInfo
@@ -536,27 +409,27 @@ namespace System
 
     public class ActionEventInfo
     {
-        public ActionEventInfo() { defaultParams = new long[0]; _syntax = ""; }
+        public ActionEventInfo() { _defaultParams = new long[0]; _syntax = ""; }
         public ActionEventInfo(long id, string name, string description, string[] paramNames, string[] paramDesc)
         {
-            idNumber = id;
+            _idNumber = id;
             _name = name;
             _description = description;
             _syntax = "";
-            Params = paramNames;
-            pDescs = paramDesc;
-            defaultParams = new long[0];
+            _parameters = paramNames;
+            _paramDescs = paramDesc;
+            _defaultParams = new long[0];
             Enums = new Dictionary<int, List<string>>();
         }
         public ActionEventInfo(long id, string name, string description, string[] paramNames, string[] paramDesc, string syntax, long[] dfltParams)
         {
-            idNumber = id;
+            _idNumber = id;
             _name = name;
             _description = description;
             _syntax = syntax;
-            Params = paramNames;
-            pDescs = paramDesc;
-            defaultParams = dfltParams;
+            _parameters = paramNames;
+            _paramDescs = paramDesc;
+            _defaultParams = dfltParams;
             Enums = new Dictionary<int, List<string>>();
         }
 
@@ -564,19 +437,19 @@ namespace System
         {
             if (s == null) return;
 
-            Array.Resize<long>(ref defaultParams, s.Length);
+            Array.Resize<long>(ref _defaultParams, s.Length);
             for (int i = 0; i < s.Length; i++)
             {
-                try { defaultParams[i] = long.Parse(s.Substring(i, 1)); }
-                catch { defaultParams[i] = 0; }
+                try { _defaultParams[i] = long.Parse(s.Substring(i, 1)); }
+                catch { _defaultParams[i] = 0; }
             }
         }
 
         public long GetDfltParameter(int i)
         {
-            if (i >= defaultParams.Length) return 0;
-            if (defaultParams[i] > 6) return 0;
-            return defaultParams[i];
+            if (i >= _defaultParams.Length) return 0;
+            if (_defaultParams[i] > 6) return 0;
+            return _defaultParams[i];
         }
 
         public override string ToString()
@@ -584,15 +457,15 @@ namespace System
             return _name;
         }
 
-        public long idNumber;
+        public long _idNumber;
         public string _name;
         public string _description;
         public string _syntax;
 
-        public string[] Params;
-        public string[] pDescs;
+        public string[] _parameters;
+        public string[] _paramDescs;
 
-        public long[] defaultParams;
+        public long[] _defaultParams;
 
         public Dictionary<int, List<string>> Enums;
     }

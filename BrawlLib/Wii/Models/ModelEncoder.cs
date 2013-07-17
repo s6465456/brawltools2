@@ -889,7 +889,7 @@ namespace BrawlLib.Wii.Models
             for (int i = 0; i < linker.Model._objList.Count; i++)
             {
                 MDL0ObjectNode poly = (MDL0ObjectNode)linker.Model._objList[i];
-                poly._fmtList = poly._manager.setFmtList(poly, linker);
+                poly._fmtList = poly._manager.SetFormatList(poly, linker);
             }
         }
     }

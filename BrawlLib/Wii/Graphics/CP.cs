@@ -241,12 +241,20 @@ namespace BrawlLib.Wii.Graphics
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct GXVtxAttrFmtList
+    public struct VertexAttributeFormat
     {
-        public GXAttr attr;
-        public GXCompCnt cnt;
-        public GXCompType type;
-        public byte frac; //scale/divisor
+        public VertexAttributeFormat(GXAttribute attr, GXCompType type, GXCompCnt cnt, byte frac)
+        {
+            _attr = attr;
+            _cnt = cnt;
+            _type = type;
+            _frac = frac;
+        }
+
+        public GXAttribute _attr;
+        public GXCompCnt _cnt;
+        public GXCompType _type;
+        public byte _frac; //scale/divisor
     }
 
     public enum GXVtxFmt
@@ -264,15 +272,15 @@ namespace BrawlLib.Wii.Graphics
 
     public enum GXCompCnt
     {
-        GX_POS_XY = 0,
-        GX_POS_XYZ = 1,
-        GX_NRM_XYZ = 0,
-        GX_NRM_NBT = 1, // one index per NBT
-        GX_NRM_NBT3 = 2, // one index per each of N/B/T
-        GX_CLR_RGB = 0,
-        GX_CLR_RGBA = 1,
-        GX_TEX_S = 0,
-        GX_TEX_ST = 1
+        PosXY = 0,
+        PosXYZ = 1,
+        NrmXYZ = 0,
+        NrmNBT = 1, // one index per NBT
+        NrmNBT3 = 2, // one index per each of N/B/T
+        ClrRGB = 0,
+        ClrRGBA = 1,
+        TexS = 0,
+        TexST = 1
     }
 
     public enum GXCompType

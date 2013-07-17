@@ -5,6 +5,7 @@ using BrawlLib.SSBB.ResourceNodes;
 using System.Collections.Generic;
 using System.Linq;
 using BrawlLib.SSBBTypes;
+using BrawlLib.Wii.Compression;
 
 namespace System
 {
@@ -376,4 +377,16 @@ namespace System
         }
     }
     #endregion
+
+    public class DropDownListCompression : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            List<string> values = new List<string>();
+            foreach (int i in Compressor._supportedCompressionTypes)
+                values.Add(((CompressionType)i).ToString());
+            return new StandardValuesCollection(values);
+        }
+    }
 }

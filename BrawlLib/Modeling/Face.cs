@@ -13,7 +13,7 @@ namespace BrawlLib.Modeling
         public Vertex3 _vertex;
 
         private IMatrixNode Node { get { return _vertex != null ? _vertex.MatrixNode : null; } }
-        public int NodeID { get { if (Node != null) return Node.NodeIndex; return -1; } }
+        public ushort NodeID { get { if (Node != null) return (ushort)Node.NodeIndex; return ushort.MaxValue; } }
 
         public int _vertexIndex = -1;
         public int _normalIndex = -1;
@@ -90,23 +90,56 @@ namespace BrawlLib.Modeling
                 *(bushort*)(grpAddr + _nodeOffsets[i]._offset) = (ushort)_nodeOffsets[i]._node.NodeIndex;
         }
 
-        public void AddTriangle(Triangle t)
+        private void AddTriangle(Triangle t)
         {
             _triangles.Add(t);
-            if (!_nodes.Contains((ushort)t._x.NodeID)) _nodes.Add((ushort)t._x.NodeID);
-            if (!_nodes.Contains((ushort)t._y.NodeID)) _nodes.Add((ushort)t._y.NodeID);
-            if (!_nodes.Contains((ushort)t._z.NodeID)) _nodes.Add((ushort)t._z.NodeID);
+            if (!_nodes.Contains(t._x.NodeID)) _nodes.Add(t._x.NodeID);
+            if (!_nodes.Contains(t._y.NodeID)) _nodes.Add(t._y.NodeID);
+            if (!_nodes.Contains(t._z.NodeID)) _nodes.Add(t._z.NodeID);
         }
 
-        public bool CanAdd(Triangle t)
+        public bool TryAdd(Triangle t)
         {
-            int count = 0;
-            if (!_nodes.Contains((ushort)t._x.NodeID)) count++;
-            if (!_nodes.Contains((ushort)t._y.NodeID)) count++;
-            if (!_nodes.Contains((ushort)t._z.NodeID)) count++;
-            if (count + _nodes.Count <= 10)
+            List<ushort> ids = new List<ushort>();
+
+            ushort x = t._x.NodeID;
+            ushort y = t._y.NodeID;
+            ushort z = t._z.NodeID;
+
+            if (!_nodes.Contains(x) && !ids.Contains(x)) ids.Add(x);
+            if (!_nodes.Contains(y) && !ids.Contains(y)) ids.Add(y);
+            if (!_nodes.Contains(z) && !ids.Contains(z)) ids.Add(z);
+
+            //There's a limit of 10 matrices per group...
+            if (ids.Count + _nodes.Count <= 10)
             {
                 AddTriangle(t);
+                return true;
+            }
+            return false;
+        }
+
+        private void AddTristrip(Tristrip t)
+        {
+            _tristrips.Add(t);
+            foreach (Facepoint p in t._points)
+                if (!_nodes.Contains(p.NodeID))
+                    _nodes.Add(p.NodeID);
+        }
+
+        public bool TryAdd(Tristrip t)
+        {
+            List<ushort> ids = new List<ushort>();
+            foreach (Facepoint p in t._points)
+            {
+                ushort id = p.NodeID;
+                if (!_nodes.Contains(id) && !ids.Contains(id))
+                    ids.Add(id);
+            }
+
+            if (ids.Count + _nodes.Count <= 10)
+            {
+                AddTristrip(t);
                 return true;
             }
             return false;
@@ -154,8 +187,45 @@ namespace BrawlLib.Modeling
     public class Tristrip
     {
         public List<Facepoint> _points = new List<Facepoint>();
-        
-        public List<Triangle> _temp = new List<Triangle>();
+        public List<Triangle> _triangles = new List<Triangle>();
+        public List<ushort> _nodeIds = new List<ushort>();
+
+        public void Initialize(Triangle first)
+        {
+            _points = new List<Facepoint>();
+            _nodeIds = new List<ushort>();
+
+            _points.Add(first._x);
+            _points.Add(first._y);
+            _points.Add(first._z);
+            _triangles.Add(first);
+
+            if (!_nodeIds.Contains(first._x.NodeID))
+                _nodeIds.Add(first._x.NodeID);
+            if (!_nodeIds.Contains(first._y.NodeID))
+                _nodeIds.Add(first._y.NodeID);
+            if (!_nodeIds.Contains(first._z.NodeID))
+                _nodeIds.Add(first._z.NodeID);
+        }
+
+        public bool CanAdd(Triangle t)
+        {
+            ushort id = t._z.NodeID;
+            int count = 0;
+            if (!_nodeIds.Contains(id)) count++;
+            if (count + _nodeIds.Count <= 10)
+                return true;
+            return false;
+        }
+
+        public void Add(Triangle t)
+        {
+            ushort id = t._z.NodeID;
+            _points.Add(t._z);
+            _triangles.Add(t);
+            if (!_nodeIds.Contains(id))
+                _nodeIds.Add(id);
+        }
     }
 
     public class Trifan

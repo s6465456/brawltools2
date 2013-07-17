@@ -24,11 +24,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Global IC-Basics
         //Unknown23
         //IC-Basics
-        //Params24
+        //Params24 
         //Params12
         //Params13
         //Params14
-        //Params15        
+        //Params15
         //SSE Global IC-Basics
         //SSE IC-Basics
         //Flash Overlay Actions
@@ -44,7 +44,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Leg bones
         //Unknown22 header
         //patternPowerMul header
-        //patternPowerMul events
+        //patternPowerMul events  
         //Sections data
         //dataCommon header
 

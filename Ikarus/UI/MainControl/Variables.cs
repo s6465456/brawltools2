@@ -101,8 +101,17 @@ namespace Ikarus.UI
         public VIS0EntryNode _targetVisEntry;
         public bool _enableTransform = true;
 
-        public bool _renderFloor, _renderBones = true, _renderBox, _dontRenderOffscreen = true, _renderVertices, _renderNormals, _renderHurtboxes, _renderHitboxes;
-        public CheckState _renderPolygons = CheckState.Checked;
+        public bool 
+            _renderFloor, 
+            _renderBones = true, 
+            _renderPolygons = true, 
+            _renderBox, 
+            _dontRenderOffscreen = true, 
+            _renderVertices, 
+            _renderNormals, 
+            _renderHurtboxes, 
+            _renderHitboxes, 
+            _renderWireframe;
 
         public AnimationNode TargetAnimation
         {
@@ -119,7 +128,6 @@ namespace Ikarus.UI
                 case AnimType.SHP: return SelectedSHP0;
                 case AnimType.PAT: return SelectedPAT0;
                 case AnimType.VIS: return SelectedVIS0;
-                case AnimType.SCN: return SelectedSCN0;
                 case AnimType.CLR: return SelectedCLR0;
                 default: return null;
             }
@@ -133,7 +141,6 @@ namespace Ikarus.UI
                 case AnimType.SHP: SelectedSHP0 = value as SHP0Node; break;
                 case AnimType.PAT: SelectedPAT0 = value as PAT0Node; break;
                 case AnimType.VIS: SelectedVIS0 = value as VIS0Node; break;
-                case AnimType.SCN: SelectedSCN0 = value as SCN0Node; break;
                 case AnimType.CLR: SelectedCLR0 = value as CLR0Node; break;
             }
         }
@@ -290,11 +297,11 @@ namespace Ikarus.UI
                             _resetCam = false;
                         }
 
-                //pnlKeyframes.lstBones.SelectedItem = _selectedBone;
+                rightPanel.pnlBones.lstBones.SelectedItem = _selectedBone;
                 chr0Editor.UpdatePropDisplay();
 
-                //if (_chr0 != null && _selectedBone != null && leftPanel.fileType.SelectedIndex == 0)
-                //    pnlKeyframes.TargetSequence = _chr0.FindChild(_selectedBone.Name, false);
+                if (_chr0 != null && _selectedBone != null && TargetAnimType == AnimType.CHR)
+                    KeyframePanel.TargetSequence = _chr0.FindChild(_selectedBone.Name, false);
             }
         }
 
@@ -315,7 +322,7 @@ namespace Ikarus.UI
         }
         
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int CurrentFrame { get { return _animFrame; } set { _animFrame = value; UpdateModel(); UpdatePropDisplay(); } }
+        public int CurrentFrame { get { return _animFrame; } set { MovesetPanel._animFrame = value - 1; _animFrame = value; UpdateModel(); UpdatePropDisplay(); } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
         {
@@ -368,26 +375,20 @@ namespace Ikarus.UI
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public CheckState RenderPolygons
+        public bool RenderPolygons
         {
             get { return _renderPolygons; }
             set
             {
-                //if (_editingAll)
-                //    foreach (MDL0Node m in _targetModels)
-                //    {
-                //        m._renderPolygons = value;// == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
-                //        //m._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
-                //    }
-                //else if (TargetModel != null)
-                //{
-                //    TargetModel._renderPolygons = value;// == CheckState.Checked || value == CheckState.Indeterminate ? true : false;
-                //    //TargetModel._renderPolygonsWireframe = value == CheckState.Indeterminate ? true : false;
-                //}
+                if (_editingAll)
+                    foreach (MDL0Node m in _targetModels)
+                        m._renderPolygons = value;
+                else if (TargetModel != null)
+                    TargetModel._renderPolygons = value;
 
                 _renderPolygons = value;
                 _updating = true;
-                chkPolygons.CheckState = togglePolygons.CheckState = _renderPolygons;
+                chkPolygons.Checked = togglePolygons.Checked = _renderPolygons;
                 _updating = false;
                 modelPanel.Invalidate();
             }
@@ -451,14 +452,22 @@ namespace Ikarus.UI
         public MoveDefSubActionGroupNode SelectedSubActionGrp
         {
             get { return _selectedSubActionGrp; }
-            set { _selectedSubActionGrp = value; }
+            set 
+            {
+                _selectedSubActionGrp = value;
+                MovesetPanel.SubactionGroupChanged();
+            }
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MoveDefActionGroupNode SelectedActionGrp
         {
             get { return _selectedActionGrp; }
-            set { _selectedActionGrp = value; }
+            set 
+            { 
+                _selectedActionGrp = value;
+                MovesetPanel.ActionGroupChanged();
+            }
         }
     }
 }

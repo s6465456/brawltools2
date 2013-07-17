@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using BrawlLib.SSBBTypes;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -114,7 +115,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _lookupOffsets = new List<int>();
+            _lookupOffsets = new List<VoidPtr>();
 
             int mainOff = 0, defOff = 0, offOff = 0, swtchOff = 0, grpOff = 0;
             foreach (MoveDefModelVisRefNode r in Children)
@@ -147,27 +148,27 @@ namespace BrawlLib.SSBB.ResourceNodes
             FDefModelDisplayDefaults* defaults = (FDefModelDisplayDefaults*)((VoidPtr)offsets + defOff);
             FDefModelDisplay* header = (FDefModelDisplay*)((VoidPtr)defaults + mainOff);
 
-            _entryOffset = header;
+            _rebuildAddr = header;
 
-            header->_entryOffset = (int)offsets - (int)_rebuildBase;
+            header->_entryOffset = (int)offsets - (int)RebuildBase;
 
-            _lookupOffsets.Add((int)header->_entryOffset.Address - (int)_rebuildBase);
+            _lookupOffsets.Add(header->_entryOffset.Address);
 
             header->_entryCount = Children[0].Children.Count; //Children 1 child count will be the same
 
             int defCount = 0;
             foreach (MoveDefModelVisRefNode r in Children)
             {
-                r._entryOffset = offsets;
+                r._rebuildAddr = offsets;
                 if (r.Children.Count > 0)
                 {
-                    *offsets = (int)switchLists - (int)_rebuildBase;
-                    _lookupOffsets.Add((int)offsets - (int)_rebuildBase);
+                    *offsets = (int)switchLists - (int)RebuildBase;
+                    _lookupOffsets.Add(offsets);
                 }
                 offsets++;
                 foreach (MoveDefBoneSwitchNode b in r.Children)
                 {
-                    b._entryOffset = switchLists;
+                    b._rebuildAddr = switchLists;
                     if (b.defaultGroup >= 0)
                     {
                         defCount++;
@@ -177,27 +178,27 @@ namespace BrawlLib.SSBB.ResourceNodes
                     switchLists->_listCount = b.Children.Count;
                     if (b.Children.Count > 0)
                     {
-                        switchLists->_startOffset = (int)groupLists - (int)_rebuildBase;
-                        _lookupOffsets.Add((int)switchLists->_startOffset.Address - (int)_rebuildBase);
+                        switchLists->_startOffset = (int)groupLists - (int)RebuildBase;
+                        _lookupOffsets.Add(switchLists->_startOffset.Address);
                     }
                     else
                         switchLists->_startOffset = 0;
                     switchLists++;
                     foreach (MoveDefModelVisGroupNode o in b.Children)
                     {
-                        o._entryOffset = groupLists;
+                        o._rebuildAddr = groupLists;
                         groupLists->_listCount = o.Children.Count;
                         if (o.Children.Count > 0)
                         {
-                            groupLists->_startOffset = (int)boneAddr - (int)_rebuildBase;
-                            _lookupOffsets.Add((int)groupLists->_startOffset.Address - (int)_rebuildBase);
+                            groupLists->_startOffset = (int)boneAddr - (int)RebuildBase;
+                            _lookupOffsets.Add(groupLists->_startOffset.Address);
                         }
                         else
                             groupLists->_startOffset = 0;
                         groupLists++;
                         foreach (MoveDefBoneIndexNode bone in o.Children)
                         {
-                            bone._entryOffset = boneAddr;
+                            bone._rebuildAddr = boneAddr;
                             *boneAddr++ = bone.boneIndex;
                         }
                     }
@@ -206,8 +207,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (defCount > 0)
             {
-                header->_defaultsOffset = (int)offsets - (int)_rebuildBase;
-                _lookupOffsets.Add((int)header->_defaultsOffset.Address - (int)_rebuildBase);
+                header->_defaultsOffset = (int)offsets - (int)RebuildBase;
+                _lookupOffsets.Add(header->_defaultsOffset.Address);
             }
             else
                 header->_defaultsOffset = 0;

@@ -9,6 +9,7 @@ using BrawlLib.IO;
 using BrawlLib.Wii.Animations;
 using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.OpenGL;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -121,7 +122,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     {
                         string name = "Params" + r;
                         if (r < 4) name = (r == 0 || r == 2 ? "" : "SSE ") + (r < 2 ? "Global " : "") + "IC-Basics";
-                        new MoveDefSectionParamNode() { _name = name, offsetID = r }.Initialize(this, BaseAddress + s.Offset, 0);
+                        new MoveDefSectionParamNode(r) { _name = name }.Initialize(this, BaseAddress + s.Offset, 0);
                     }
                     r++;
                 }
@@ -292,13 +293,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     addr += p._calcSize;
                 }
             }
-            _entryOffset = addr;
+            _rebuildAddr = addr;
             FDefListOffset* header = (FDefListOffset*)addr;
             foreach (MoveDefHitDataListNode d in Children)
             {
                 (&header[d.offsetID])->_listCount = d.Children.Count;
-                (&header[d.offsetID])->_startOffset = (int)d._entryOffset - (int)_rebuildBase;
-                _lookupOffsets.Add((&header[d.offsetID])->_startOffset.Address - (int)_rebuildBase);
+                (&header[d.offsetID])->_startOffset = (int)d._rebuildAddr - (int)RebuildBase;
+                _lookupOffsets.Add((&header[d.offsetID])->_startOffset.Address);
             }
         }
     }
@@ -327,7 +328,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefCommonUnk7Entry* data = (FDefCommonUnk7Entry*)address;
             foreach (MoveDefCommonUnk7EntryNode h in Children)
                 h.Rebuild(data++, 12, true);
@@ -379,7 +380,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefCommonUnk7Entry* data = (FDefCommonUnk7Entry*)address;
             data->_list._startOffset = unk1;
             data->_list._listCount = Children.Count;
@@ -420,7 +421,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefCommonUnk7EntryListEntry* data = (FDefCommonUnk7EntryListEntry*)address;
             data->_unk1 = unk1;
             data->_unk2 = unk2;
@@ -467,12 +468,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 p.Rebuild(addr, p._calcSize, true);
                 addr += p._calcSize;
             }
-            _entryOffset = addr;
+            _rebuildAddr = addr;
             FDefListOffset* header = (FDefListOffset*)addr;
             if (Children.Count > 0)
             {
-                header->_startOffset = (int)address - (int)_rebuildBase;
-                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+                header->_startOffset = (int)address - (int)RebuildBase;
+                _lookupOffsets.Add(header->_startOffset.Address);
             }
             header->_listCount = Children.Count;
         }
@@ -555,7 +556,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnPopulate()
         {
-            new MoveDefSectionParamNode() { _name = "Data" }.Initialize(this, BaseAddress + DataOffset, 168);
+            new MoveDefSectionParamNode(0) { _name = "Data" }.Initialize(this, BaseAddress + DataOffset, 168);
         }
     }
 

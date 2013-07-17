@@ -42,7 +42,6 @@ namespace Ikarus.UI
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem removeAllToolStripMenuItem;
         private ToolStripMenuItem addCustomAmountToolStripMenuItem;
-        private Panel ControlPanel;
         public ScriptEditor scriptEditor1;
         private Panel ActionEditor;
         private Panel SubActionFlagsPanel;
@@ -58,10 +57,10 @@ namespace Ikarus.UI
         private CheckBox chkFixedRot;
         private CheckBox chkFixedScale;
         private Panel panel2;
-        private Button button1;
+        private Button btnRunScript;
         public ComboBox comboBox1;
         private Panel ActionFlagsPanel;
-        public EventModifier eventModifier1;
+        public EventModifier eventModifier;
         private ToolStripMenuItem renameToolStripMenuItem;
         private Splitter splitter1;
 
@@ -89,8 +88,9 @@ namespace Ikarus.UI
             this.addCustomAmountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
-            this.ControlPanel = new System.Windows.Forms.Panel();
+            this.eventModifier = new System.Windows.Forms.EventModifier();
             this.ActionEditor = new System.Windows.Forms.Panel();
+            this.scriptEditor1 = new Ikarus.UI.ScriptEditor();
             this.ActionFlagsPanel = new System.Windows.Forms.Panel();
             this.SubActionFlagsPanel = new System.Windows.Forms.Panel();
             this.chkUnk = new System.Windows.Forms.CheckBox();
@@ -100,18 +100,15 @@ namespace Ikarus.UI
             this.chkFixedScale = new System.Windows.Forms.CheckBox();
             this.chkMovesChar = new System.Windows.Forms.CheckBox();
             this.chkTransOutStart = new System.Windows.Forms.CheckBox();
+            this.inTransTime = new System.Windows.Forms.NumericInputBox();
             this.chkNoOutTrans = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnRunScript = new System.Windows.Forms.Button();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.flagsToggle = new System.Windows.Forms.Button();
             this.splitter1 = new System.Windows.Forms.Splitter();
-            this.inTransTime = new System.Windows.Forms.NumericInputBox();
-            this.scriptEditor1 = new Ikarus.UI.ScriptEditor();
-            this.eventModifier1 = new System.Windows.Forms.EventModifier();
             this.ctxSubActions.SuspendLayout();
-            this.ControlPanel.SuspendLayout();
             this.ActionEditor.SuspendLayout();
             this.SubActionFlagsPanel.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -217,15 +214,15 @@ namespace Ikarus.UI
             this.addCustomAmountToolStripMenuItem.Name = "addCustomAmountToolStripMenuItem";
             this.addCustomAmountToolStripMenuItem.Size = new System.Drawing.Size(32, 19);
             // 
-            // ControlPanel
+            // eventModifier
             // 
-            this.ControlPanel.Controls.Add(this.eventModifier1);
-            this.ControlPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.ControlPanel.Location = new System.Drawing.Point(0, 358);
-            this.ControlPanel.Name = "ControlPanel";
-            this.ControlPanel.Size = new System.Drawing.Size(229, 257);
-            this.ControlPanel.TabIndex = 26;
-            this.ControlPanel.Visible = false;
+            this.eventModifier.AutoSize = true;
+            this.eventModifier.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.eventModifier.Location = new System.Drawing.Point(0, 358);
+            this.eventModifier.Name = "eventModifier";
+            this.eventModifier.Size = new System.Drawing.Size(229, 257);
+            this.eventModifier.TabIndex = 37;
+            this.eventModifier.Visible = false;
             // 
             // ActionEditor
             // 
@@ -238,6 +235,15 @@ namespace Ikarus.UI
             this.ActionEditor.Name = "ActionEditor";
             this.ActionEditor.Size = new System.Drawing.Size(229, 355);
             this.ActionEditor.TabIndex = 26;
+            // 
+            // scriptEditor1
+            // 
+            this.scriptEditor1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.scriptEditor1.Location = new System.Drawing.Point(0, 21);
+            this.scriptEditor1.Name = "scriptEditor1";
+            this.scriptEditor1.Padding = new System.Windows.Forms.Padding(1);
+            this.scriptEditor1.Size = new System.Drawing.Size(229, 334);
+            this.scriptEditor1.TabIndex = 26;
             // 
             // ActionFlagsPanel
             // 
@@ -344,6 +350,17 @@ namespace Ikarus.UI
             this.chkTransOutStart.UseVisualStyleBackColor = true;
             this.chkTransOutStart.CheckedChanged += new System.EventHandler(this.chkTransOutStart_CheckedChanged);
             // 
+            // inTransTime
+            // 
+            this.inTransTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.inTransTime.Location = new System.Drawing.Point(107, 4);
+            this.inTransTime.Name = "inTransTime";
+            this.inTransTime.Size = new System.Drawing.Size(89, 20);
+            this.inTransTime.TabIndex = 29;
+            this.inTransTime.Text = "0";
+            this.inTransTime.ValueChanged += new System.EventHandler(this.inTransTime_ValueChanged);
+            // 
             // chkNoOutTrans
             // 
             this.chkNoOutTrans.AutoSize = true;
@@ -366,7 +383,7 @@ namespace Ikarus.UI
             // 
             // panel2
             // 
-            this.panel2.Controls.Add(this.button1);
+            this.panel2.Controls.Add(this.btnRunScript);
             this.panel2.Controls.Add(this.comboBox1);
             this.panel2.Controls.Add(this.flagsToggle);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
@@ -376,17 +393,17 @@ namespace Ikarus.UI
             this.panel2.Size = new System.Drawing.Size(229, 21);
             this.panel2.TabIndex = 37;
             // 
-            // button1
+            // btnRunScript
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.btnRunScript.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(101, -1);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(128, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Run Script";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            this.btnRunScript.Location = new System.Drawing.Point(101, -1);
+            this.btnRunScript.Name = "btnRunScript";
+            this.btnRunScript.Size = new System.Drawing.Size(128, 23);
+            this.btnRunScript.TabIndex = 2;
+            this.btnRunScript.Text = "Run Script";
+            this.btnRunScript.UseVisualStyleBackColor = true;
+            this.btnRunScript.Click += new System.EventHandler(this.btnRunScript_Click);
             // 
             // comboBox1
             // 
@@ -424,79 +441,26 @@ namespace Ikarus.UI
             this.splitter1.TabStop = false;
             this.splitter1.Visible = false;
             // 
-            // inTransTime
-            // 
-            this.inTransTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.inTransTime.Location = new System.Drawing.Point(107, 4);
-            this.inTransTime.Name = "inTransTime";
-            this.inTransTime.Size = new System.Drawing.Size(89, 20);
-            this.inTransTime.TabIndex = 29;
-            this.inTransTime.Text = "0";
-            this.inTransTime.ValueChanged += new System.EventHandler(this.inTransTime_ValueChanged);
-            // 
-            // scriptEditor1
-            // 
-            this.scriptEditor1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.scriptEditor1.Location = new System.Drawing.Point(0, 21);
-            this.scriptEditor1.Name = "scriptEditor1";
-            this.scriptEditor1.Padding = new System.Windows.Forms.Padding(1);
-            this.scriptEditor1.Size = new System.Drawing.Size(229, 334);
-            this.scriptEditor1.TabIndex = 26;
-            // 
-            // eventModifier1
-            // 
-            this.eventModifier1.AutoSize = true;
-            this.eventModifier1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.eventModifier1.Location = new System.Drawing.Point(0, 0);
-            this.eventModifier1.Name = "eventModifier1";
-            this.eventModifier1.Size = new System.Drawing.Size(229, 257);
-            this.eventModifier1.TabIndex = 37;
-            this.eventModifier1.Visible = false;
-            // 
             // ScriptPanel
             // 
             this.Controls.Add(this.ActionEditor);
             this.Controls.Add(this.splitter1);
-            this.Controls.Add(this.ControlPanel);
+            this.Controls.Add(this.eventModifier);
+            this.MinimumSize = new System.Drawing.Size(185, 0);
             this.Name = "ScriptPanel";
             this.Size = new System.Drawing.Size(229, 615);
             this.ctxSubActions.ResumeLayout(false);
-            this.ControlPanel.ResumeLayout(false);
-            this.ControlPanel.PerformLayout();
             this.ActionEditor.ResumeLayout(false);
             this.SubActionFlagsPanel.ResumeLayout(false);
             this.SubActionFlagsPanel.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
         #endregion
 
         public MainControl _mainWindow;
-
-        //Variable storage. Order: RA, LA, IC
-        public int[][] BasicVars = new int[3][];
-        public float[][] FloatVars = new float[3][];
-        public bool[][] BitVars = new bool[3][];
-       
-        public event EventHandler FileChanged;
-        public event ReferenceEventHandler ReferenceLoaded;
-        public event ReferenceEventHandler ReferenceClosed;
-
-        private object _selectedObject = null;
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public object SelectedObject
-        {
-            get { return _selectedObject; }
-            set { _selectedObject = value; UpdateCurrentControl(); }
-        }
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0Node TargetModel
-        {
-            get { return _mainWindow.TargetModel; }
-            set { _mainWindow.TargetModel = value; UpdateModel(); }
-        }
 
         internal NumericInputBox[] _hurtboxBoxes = new NumericInputBox[8];
 
@@ -509,278 +473,89 @@ namespace Ikarus.UI
             //scriptEditor1.Offset.Visible = false;
             _timer = new CoolTimer();
             _timer.RenderFrame += _timer_RenderFrame;
+            eventModifier.Completed += eventModifier_Completed;
         }
 
-        void _timer_RenderFrame(object sender, FrameEventArgs e)
+        void eventModifier_Completed(object sender, EventArgs e)
         {
-            if (ActionsIdling && subactions && _animFrame >= _mainWindow.MaxFrame - 1 && _mainWindow._selectedSubActionGrp != null)
+            if (eventModifier._status == DialogResult.OK)
             {
-                if (_mainWindow.CurrentFrame < _mainWindow.MaxFrame)
-                    _mainWindow.SetFrame(_mainWindow.CurrentFrame + 1);
-                else
-                {
-                    _animFrame = -1;
-                    if (_mainWindow.Loop)
-                        SetFrame(0);
-                    else
-                        StopScript();
-                }
+                scriptEditor1.MakeScript();
+                SetFrame(_animFrame);
             }
-            else
-                SetFrame(_animFrame + 1);
+
+            eventModifier.Visible = false;
         }
 
         public bool CloseReferences()
         {
-            return true;//CloseMoveset();
+            return true;
         }
 
-        private void UpdateModel()
+        public void ActionGroupChanged()
         {
-            if (TargetModel == null)
-                return;
 
-            UpdateCurrentControl();
-
-            _mainWindow.ModelPanel.Invalidate();
         }
-        
-        Control currentControl = null;
-        private void UpdateCurrentControl()
+
+        public void SubactionGroupChanged()
         {
-            Control newControl = null;
-
-            if (_selectedObject is MoveDefActionGroupNode && level1Index == 0)
-            {
-                newControl = ActionEditor;
-            }
-            else if (_selectedObject is MoveDefSubActionGroupNode && level1Index == 1)
-            {
-                MoveDefSubActionGroupNode grp = _selectedObject as MoveDefSubActionGroupNode;
-                newControl = ActionEditor;
-                inTransTime.Value = grp._inTransTime;
-                chkNoOutTrans.Checked = grp._flags.HasFlag(AnimationFlags.NoOutTransition);
-                chkTransOutStart.Checked = grp._flags.HasFlag(AnimationFlags.TransitionOutFromStart);
-                chkMovesChar.Checked = grp._flags.HasFlag(AnimationFlags.MovesCharacter);
-                chkLoop.Checked = _mainWindow.Loop = grp._flags.HasFlag(AnimationFlags.Loop);
-                chkUnk.Checked = grp._flags.HasFlag(AnimationFlags.Unknown);
-                chkFixedScale.Checked = grp._flags.HasFlag(AnimationFlags.FixedScale);
-                chkFixedRot.Checked = grp._flags.HasFlag(AnimationFlags.FixedRotation);
-                chkFixedTrans.Checked = grp._flags.HasFlag(AnimationFlags.FixedTranslation);
-            }
-            else if (_selectedObject is MoveDefEventNode && level1Index < 2)
-            {
-                newControl = eventModifier1;
-                eventModifier1.origEvent = _selectedObject as MoveDefEventNode;
-                eventModifier1.Setup(this);
-            }
-
-            if (currentControl != newControl)
-            {
-                if (currentControl != null)
-                    currentControl.Visible = false;
-                currentControl = newControl;
-                if (currentControl != null)
-                    currentControl.Visible = true;
-            }
-
-            if (ControlPanel.Visible != (currentControl != null))
-                ControlPanel.Visible = (currentControl != null);
+            MoveDefSubActionGroupNode grp = _mainWindow.SelectedSubActionGrp;
+            inTransTime.Value = grp._inTransTime;
+            chkNoOutTrans.Checked = grp._flags.HasFlag(AnimationFlags.NoOutTransition);
+            chkTransOutStart.Checked = grp._flags.HasFlag(AnimationFlags.TransitionOutFromStart);
+            chkMovesChar.Checked = grp._flags.HasFlag(AnimationFlags.MovesCharacter);
+            chkLoop.Checked = _mainWindow.Loop = grp._flags.HasFlag(AnimationFlags.Loop);
+            chkUnk.Checked = grp._flags.HasFlag(AnimationFlags.Unknown);
+            chkFixedScale.Checked = grp._flags.HasFlag(AnimationFlags.FixedScale);
+            chkFixedRot.Checked = grp._flags.HasFlag(AnimationFlags.FixedRotation);
+            chkFixedTrans.Checked = grp._flags.HasFlag(AnimationFlags.FixedTranslation);
         }
 
-        internal unsafe void BoxChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Opens the event editor for the currently selected event.
+        /// </summary>
+        public void ModifyEvent()
         {
-            
+            eventModifier.Setup(_selectedEvent);
+            eventModifier.Visible = true;
         }
-
-        public unsafe void ResetBox(int index)
-        {
-            
-        }
-
-        //public bool LoadMoveset()
-        //{
-        //    dlgOpen.Filter = "Moveset File (*.pac)|*.pac";
-        //    if (dlgOpen.ShowDialog() == DialogResult.OK)
-        //    {
-        //        ResourceNode node = null;
-        //        try
-        //        {
-        //            if ((node = NodeFactory.FromFile(null, dlgOpen.FileName)) != null)
-        //            {
-        //                if (!CloseMoveset())
-        //                    return false;
-
-        //                if (node.Children[0] is MoveDefNode)
-        //                    (_mainMoveset = (MoveDefNode)node.Children[0])._model = TargetModel;
-        //                else
-        //                {
-        //                    MessageBox.Show(this, "Input file does not contain a moveset.");
-        //                    return false;
-        //                }
-
-        //                _updating = true;
-
-        //                node = null;
-
-        //                _mainMoveset.Populate(0);
-
-        //                if (_mainMoveset.data.misc.hurtBoxes != null)
-        //                {
-        //                    lstHurtboxes.BeginUpdate();
-        //                    lstHurtboxes.Items.Clear();
-
-        //                    foreach (ResourceNode n in _mainMoveset.data.misc.hurtBoxes.Children)
-        //                        lstHurtboxes.Items.Add(n, true);
-
-        //                    lstHurtboxes.EndUpdate();
-
-        //                    SelectedBone.Items.AddRange(TargetModel._linker.BoneCache);
-        //                    SelectedZone.Items.AddRange(Enum.GetNames(typeof(HurtBoxZone)));
-        //                }
-
-        //                PopulateActions();
-        //                PopulateSubActions();
-
-        //                if (_mainMoveset.data.attributes != null)
-        //                    attributeGridMain.TargetNode = _mainMoveset.data.attributes;
-        //                if (_mainMoveset.data.sseAttributes != null)
-        //                    attributeGridSSE.TargetNode = _mainMoveset.data.sseAttributes;
-
-        //                comboBox1.SelectedIndex = 0;
-
-        //                _updating = false;
-
-        //                ItemSwitcher.Enabled = true;
-
-        //                if (FileChanged != null)
-        //                    FileChanged(this, null);
-
-        //                return true;
-        //            }
-        //            else
-        //                MessageBox.Show(this, "Unable to recognize input file.");
-        //        }
-        //        //catch (Exception x) { MessageBox.Show(this, x.ToString()); _updating = false; }
-        //        finally
-        //        {
-        //            if (node != null)
-        //                node.Dispose();
-
-        //            _updating = false;
-        //        }
-        //    }
-        //    return false;
-        //}
-        //public bool CloseMoveset()
-        //{
-        //    if (_mainMoveset != null)
-        //    {
-        //        if (_mainMoveset.IsDirty)
-        //        {
-        //            DialogResult res = MessageBox.Show(this, "You have made changes to an external moveset file. Would you like to save those changes?", "Closing external moveset file.", MessageBoxButtons.YesNoCancel);
-        //            if (((res == DialogResult.Yes) && (!SaveMoveset())) || (res == DialogResult.Cancel))
-        //                return false;
-        //        }
-        //        if (ReferenceClosed != null)
-        //            ReferenceClosed(_mainMoveset);
-
-        //        _mainMoveset.Dispose();
-        //        _mainMoveset = null;
-
-        //        if (FileChanged != null)
-        //            FileChanged(this, null);
-
-        //        //UpdateReferences();
-        //    }
-
-        //    ItemSwitcher.SelectedIndex = 0;
-        //    ItemSwitcher.Enabled = false;
-        //    return true;
-        //}
-        //public bool SaveMoveset()
-        //{
-        //    if ((_mainMoveset == null) || (!_mainMoveset.IsDirty))
-        //        return true;
-
-        //    try
-        //    {
-        //        _mainMoveset.RootNode.Merge();
-        //        _mainMoveset.RootNode.Export(_mainMoveset.RootNode._origPath);
-        //        return true;
-        //    }
-        //    catch (Exception x) { MessageBox.Show(this, x.ToString()); }
-        //    return false;
-        //}
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefHurtBoxNode SelectedHurtbox
+        public MDL0Node TargetModel
         {
-            get { return _mainWindow._selectedHurtbox; }
-            set { _mainWindow._selectedHurtbox = value; }
+            get { return _mainWindow.TargetModel; }
+            set { _mainWindow.TargetModel = value; }
         }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public MoveDefEventNode SelectedEvent
+        {
+            get { return _selectedEvent; }
+            set { _selectedEvent = value; }
+        }
+        private MoveDefEventNode _selectedEvent;
 
         public bool _updating = false;
 
-        int level1Index = 0;
-        int level2Index = 0;
-        int level3Index = 0;
-
-        private void ItemSwitcher_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //level1Index = ItemSwitcher.SelectedIndex;
-            //if (level1Index == 0)
-            //{
-            //    comboBox1.Items.Clear();
-            //    comboBox1.Items.Add("Entry");
-            //    comboBox1.Items.Add("Exit");
-            //    SubActionFlagsPanel.Visible = false;
-            //    comboBox1.SelectedIndex = 0;
-            //    subactions = false;
-            //}
-            //else if (level1Index == 1)
-            //{
-            //    comboBox1.Items.Clear();
-            //    comboBox1.Items.Add("Main");
-            //    comboBox1.Items.Add("GFX");
-            //    comboBox1.Items.Add("SFX");
-            //    comboBox1.Items.Add("Other");
-            //    ActionFlagsPanel.Visible = false;
-            //    comboBox1.SelectedIndex = 0;
-            //    subactions = true;
-            //}
-            //UpdateCurrentControl();
-        }
-        private void AttributesTabGroup_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //level2Index = AttributesTabGroup.SelectedIndex;
-            //UpdateCurrentControl();
-        }
-        private void CombatTabGroup_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //level3Index = CombatTabGroup.SelectedIndex;
-            //UpdateCurrentControl();
-        }
-
-        public bool subactions { get { return _mainWindow.leftPanel.movesetEditor.SelectedIndex == 1; } }
+        public bool EditingSubactions { get { return _mainWindow.leftPanel.movesetEditor.SelectedIndex == 1; } }
         private void flagsToggle_Click(object sender, EventArgs e)
         {
-            if (subactions)
+            if (EditingSubactions)
                 if (SubActionFlagsPanel.Visible)
                     SubActionFlagsPanel.Visible = false;
                 else
                     SubActionFlagsPanel.Visible = true;
-            //else
-            //if (ActionFlagsPanel.Visible && !subactions)
-            //    ActionFlagsPanel.Visible = false;
-            //else
-            //    ActionFlagsPanel.Visible = true;
+            else
+                if (ActionFlagsPanel.Visible)
+                    ActionFlagsPanel.Visible = false;
+                else
+                    ActionFlagsPanel.Visible = true;
         }
 
         public void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (comboBox1.SelectedIndex != -1)
-            if (subactions)
+            if (EditingSubactions)
                 if (_mainWindow._selectedSubActionGrp != null)
                     scriptEditor1.TargetNode = _mainWindow._selectedSubActionGrp.Children[comboBox1.SelectedIndex] as MoveDefActionNode;
                 else { }
@@ -791,7 +566,7 @@ namespace Ikarus.UI
         }
 
         public CoolTimer _timer;
-        private void button1_Click_1(object sender, EventArgs e)
+        private void btnRunScript_Click(object sender, EventArgs e)
         {
             if (_timer.IsRunning)
                 StopScript();
@@ -803,12 +578,12 @@ namespace Ikarus.UI
         {
             get
             {
-                //bool allEmpty = true;
-                //foreach (MoveDefActionNode a in MoveDefActionNode._runningActions)
-                //    if (a.Children.Count > 0)
-                //        allEmpty = false;
-                //if (allEmpty)
-                //    return false;
+                bool allEmpty = true;
+                foreach (MoveDefActionNode a in MoveDefActionNode._runningActions)
+                    if (a.Children.Count > 0)
+                        allEmpty = false;
+                if (allEmpty)
+                    return true;
                 foreach (MoveDefActionNode a in MoveDefActionNode._runningActions)
                     if (!a._idling)
                         return false;
@@ -821,31 +596,51 @@ namespace Ikarus.UI
         {
             _playing = true;
 
-            if (subactions)
+            if (EditingSubactions)
             {
                 _mainWindow.Playing = true;
-                if (ActionsIdling && _animFrame >= _mainWindow.MaxFrame - 1) //Reset scripts
+                if (ActionsIdling && _animFrame >= _mainWindow.MaxFrame) //Reset scripts
                     SetFrame(0);
             }
 
-            button1.Text = "Stop Script";
+            btnRunScript.Text = "Stop Script";
 
             _timer.Run(0, (double)_mainWindow.PlaybackPanel.numFPS.Value);
 
             _playing = false;
-            if (subactions)
+            if (EditingSubactions)
                 _mainWindow.Playing = false;
-            button1.Text = "Run Script";
+            btnRunScript.Text = "Run Script";
         }
         public void StopScript() { _timer.Stop(); }
-        public int _animFrame = -1;
+        public int _animFrame = 0;
+
+        void _timer_RenderFrame(object sender, FrameEventArgs e)
+        {
+            if (ActionsIdling && EditingSubactions && _animFrame >= _mainWindow.MaxFrame && _mainWindow._selectedSubActionGrp != null)
+            {
+                if (_mainWindow.CurrentFrame < _mainWindow.MaxFrame)
+                    _mainWindow.SetFrame(_mainWindow.CurrentFrame + 1);
+                else
+                {
+                    _animFrame = 0;
+                    if (_mainWindow.Loop)
+                        SetFrame(0);
+                    else
+                        StopScript();
+                }
+            }
+            else
+                SetFrame(_animFrame + 1);
+        }
+
         public void SetFrame(int index)
         {
-            if (index == 0)
+            if (index <= 1)
                 ResetModelVisEtc();
 
-            if (subactions)
-                _mainWindow.SetFrame(index + 1);
+            if (EditingSubactions)
+                _mainWindow.SetFrame(index);
 
             if (!_updating)
             {
@@ -860,7 +655,7 @@ namespace Ikarus.UI
                         //if (a._idling)
                         //    continue;
 
-                        a.SetFrame(index);
+                        a.SetFrame(index - 1);
                         if (a == scriptEditor1.TargetNode)
                         {
                             scriptEditor1.EventList.SelectedIndices.Clear();
@@ -871,7 +666,7 @@ namespace Ikarus.UI
                 }
                 else
                 {
-                    if (_animFrame == index - 1)
+                    if (_animFrame == index)
                         for (int i = 0; i < running.Count; i++)
                         {
                             MoveDefActionNode a = running[i];
@@ -921,36 +716,28 @@ namespace Ikarus.UI
 
             if (TargetModel != null && TargetModel._objList != null && FileManager.Moveset != null)
             {
-                MoveDefModelVisibilityNode node = FileManager.Moveset.data.mdlVisibility;
+                MoveDefModelVisibilityNode node = FileManager.Moveset._data.mdlVisibility;
                 if (node.Children.Count != 0)
                 {
                     MoveDefModelVisRefNode entry = node.Children[0] as MoveDefModelVisRefNode;
+                    
+                    //First, disable bones
                     foreach (MoveDefBoneSwitchNode Switch in entry.Children)
-                    {
                         foreach (MoveDefModelVisGroupNode Group in Switch.Children)
-                        {
                             if (Group.Index != Switch.defaultGroup)
-                            foreach (MoveDefBoneIndexNode b in Group.Children)
-                            {
-                                if (b.BoneNode != null)
-                                    foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
-                                        p._render = false;
-                            }
-                        }
-                    }
+                                foreach (MoveDefBoneIndexNode b in Group.Children)
+                                    if (b.BoneNode != null)
+                                        foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
+                                            p._render = false;
+
+                    //Now, enable bones
                     foreach (MoveDefBoneSwitchNode Switch in entry.Children)
-                    {
                         foreach (MoveDefModelVisGroupNode Group in Switch.Children)
-                        {
                             if (Group.Index == Switch.defaultGroup)
-                            foreach (MoveDefBoneIndexNode b in Group.Children)
-                            {
-                                if (b.BoneNode != null)
-                                    foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
-                                        p._render = true;
-                            }
-                        }
-                    }
+                                foreach (MoveDefBoneIndexNode b in Group.Children)
+                                    if (b.BoneNode != null)
+                                        foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
+                                            p._render = true;
                 }
             }
         }

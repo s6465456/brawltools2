@@ -383,13 +383,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             set { _type = value; }
         }
 
-        [Browsable(false)]
-        public override BrawlLib.Wii.Compression.CompressionType Compression
-        {
-            get { return base.Compression; }
-            set { base.Compression = value; }
-        }
-
         public BRESGroupNode() : base() { }
         public BRESGroupNode(string name) : base() { _name = name; }
         public BRESGroupNode(string name, BRESGroupType type) : base() { _name = name; Type = type; }

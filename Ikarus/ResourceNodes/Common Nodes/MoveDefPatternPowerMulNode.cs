@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -89,7 +90,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address;
-            _entryOffset = addr;
+            _rebuildAddr = addr;
             patternPowerMul* header = (patternPowerMul*)addr;
             _unk1 = Header->_unk1;
             _unk2 = Header->_unk2;
@@ -145,12 +146,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 p.Rebuild(addr, p._calcSize, true);
                 addr += p._calcSize;
             }
-            _entryOffset = addr;
+            _rebuildAddr = addr;
             FDefListOffset* header = (FDefListOffset*)addr;
             if (Children.Count > 0)
             {
-                header->_startOffset = (int)address - (int)_rebuildBase;
-                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+                header->_startOffset = (int)address - (int)RebuildBase;
+                _lookupOffsets.Add(header->_startOffset.Address);
             }
             header->_listCount = Children.Count;
         }

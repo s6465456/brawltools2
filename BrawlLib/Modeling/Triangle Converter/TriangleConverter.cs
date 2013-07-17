@@ -8,75 +8,130 @@ namespace BrawlLib.Modeling
 {
     class TriangleConverter
     {
-        public static PrimitiveGroup[] GroupPrimitives(Triangle[] triangles)
+        public static bool UseTristrips = false;
+        public static List<PrimitiveGroup> GroupPrimitives(List<Triangle> t)
         {
             List<PrimitiveGroup> groups = new List<PrimitiveGroup>();
 
+            List<Triangle> triangles = new List<Triangle>();
+            foreach (Triangle x in t)
+                triangles.Add(x);
+
             PrimitiveGroup group = new PrimitiveGroup();
-            Tristrip strip = new Tristrip();
-            
-            List<Tristrip> strips = new List<Tristrip>();
-            for (int x = 0; x < triangles.Length; x++)
+
+            bool NewGroup = true;
+            PrimitiveGroup grp = new PrimitiveGroup();
+            if (UseTristrips)
             {
-                Triangle current = triangles[x];
-                if (current._grouped) continue;
-                if (Recursive(ref strip, triangles, current, true))
+                List<Tristrip> strips = new List<Tristrip>();
+
+            Top:
+                Tristrip strip = new Tristrip();
+                for (int x = 0; x < triangles.Count; x++)
                 {
-                    //We have a complete tristrip.
-                    strips.Add(strip);
+                    Triangle current = triangles[x];
+                    if (Recursive(ref strip, ref triangles, current, true))
+                    {
+                        strips.Add(strip);
+                        goto Top;
+                    }
+                }
+
+                //Group strips first
+                for (int i = 0; i < strips.Count; i++)
+                {
+                Top1:
+                    if (NewGroup) //Create a new group of triangles and node ids
+                    {
+                        grp = new PrimitiveGroup();
+                        NewGroup = false;
+                    }
+                    if (!(grp.TryAdd(strips[i]))) //Will add automatically if true
+                    {
+                        bool added = false;
+                        foreach (PrimitiveGroup g in groups)
+                            if (grp.TryAdd(strips[i]))
+                            {
+                                added = true;
+                                break;
+                            }
+                        if (!added)
+                        {
+                            groups.Add(grp);
+                            NewGroup = true;
+                            goto Top1;
+                        }
+                    }
+                    if (i == strips.Count - 1) //Last strip
+                        groups.Add(grp);
                 }
             }
 
-            return groups.ToArray();
+            //Now group triangles
+            NewGroup = false;
+            if (groups.Count > 0)
+                grp = groups[0];
+            else
+                grp = new PrimitiveGroup();
+            for (int i = 0; i < triangles.Count; i++)
+            {
+            Top2:
+                if (NewGroup) //Create a new group of triangles and node ids
+                {
+                    grp = new PrimitiveGroup();
+                    NewGroup = false;
+                }
+                if (!(grp.TryAdd(triangles[i]))) //Will add automatically if true
+                {
+                    bool added = false;
+                    foreach (PrimitiveGroup g in groups)
+                        if (grp.TryAdd(triangles[i]))
+                        {
+                            added = true;
+                            break;
+                        }
+                    if (!added)
+                    {
+                        groups.Add(grp);
+                        NewGroup = true;
+                        goto Top2;
+                    }
+                }
+                if (i == triangles.Count - 1) //Last triangle
+                    groups.Add(grp);
+            }
+
+            return groups;
         }
 
-        //012 132 234
-        //012 321 234
-        public static bool Recursive(ref Tristrip strip, Triangle[] triangles, Triangle current, bool first)
+        public static bool Recursive(ref Tristrip strip, ref List<Triangle> triangles, Triangle current, bool first)
         {
             Facepoint one = current._y;
             Facepoint two = current._z;
-            bool found = false;
-            for (int x = 0; x < triangles.Length; x++)
+            for (int x = 0; x < triangles.Count; x++)
             {
                 Triangle compare = triangles[x];
-                if (compare._grouped || compare == current)
-                    continue;
-                else
+                for (int i = 0; i < 3; i++)
                 {
-                    for (int i = 0; i < 3; i++)
+                    if (compare._x._vertex.Equals(two._vertex) &&
+                        compare._y._vertex.Equals(one._vertex) && 
+                        strip.CanAdd(compare))
                     {
-                        if (compare._x._vertexIndex == two._vertexIndex && 
-                            compare._y._vertexIndex == one._vertexIndex &&
-                            compare._x.NodeID == two.NodeID &&
-                            compare._y.NodeID == one.NodeID)
+                        triangles.RemoveAt(x);
+                        if (first)
                         {
-                            if (first)
-                            {
-                                current._grouped = true;
-                                strip._temp.Add(current);
-                                strip._points.Add(current._x);
-                                strip._points.Add(current._y);
-                                strip._points.Add(current._z);
-                            }
-
-                            strip._temp.Add(compare);
-                            strip._points.Add(compare._z);
-                            compare._grouped = true;
-                            current = compare;
-                            found = true;
-                            break;
+                            triangles.Remove(current);
+                            strip.Initialize(current);
                         }
-                        else
-                            compare = compare.RotateUp();
+
+                        strip.Add(compare);
+
+                        Recursive(ref strip, ref triangles, compare, false);
+                        return true;
                     }
+                    else
+                        compare = compare.RotateUp();
                 }
-                if (found) break;
-            }
-            if (found)
-            {
-                Recursive(ref strip, triangles, current, false);
-                return true;
             }
             return false;
         }

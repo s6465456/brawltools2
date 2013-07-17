@@ -418,7 +418,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Console.WriteLine("p1");
 
             header->AttributeStart = Rebuild(RootNode, node.attributes, ref dataAddress, baseAddress);
-            MoveDefNode._lookupOffsets.Add((int)header->AttributeStart.Address - (int)baseAddress);
+            MoveDefNode._lookupOffsets.Add(header->AttributeStart.Address);
 
             header->SSEAttributeStart = Rebuild(RootNode, node.sseAttributes, ref dataAddress, baseAddress);
 
@@ -431,7 +431,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (((grp.Children[3].Children.Count > 0 || ((MoveDefActionNode)grp.Children[3])._actionRefs.Count > 0 || ((MoveDefActionNode)grp.Children[3])._build)))
                     {
                         otherOffsets[grp.Index] = Rebuild(RootNode, grp.Children[3] as MoveDefActionNode, ref dataAddress, baseAddress);
-                        MoveDefNode._lookupOffsets.Add((int)&otherOffsets[grp.Index] - (int)baseAddress);
+                        MoveDefNode._lookupOffsets.Add(&otherOffsets[grp.Index]);
                     }
                     else otherOffsets[grp.Index] = 0;
 
@@ -440,7 +440,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (((grp.Children[1].Children.Count > 0 || ((MoveDefActionNode)grp.Children[1])._actionRefs.Count > 0 || ((MoveDefActionNode)grp.Children[1])._build)))
                     {
                         GFXOffsets[grp.Index] = Rebuild(RootNode, grp.Children[1] as MoveDefActionNode, ref dataAddress, baseAddress);
-                        MoveDefNode._lookupOffsets.Add((int)&GFXOffsets[grp.Index] - (int)baseAddress);
+                        MoveDefNode._lookupOffsets.Add(&GFXOffsets[grp.Index]);
                     }
                     else GFXOffsets[grp.Index] = 0;
 
@@ -454,7 +454,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (((grp.Children[2].Children.Count > 0 || ((MoveDefActionNode)grp.Children[2])._actionRefs.Count > 0 || ((MoveDefActionNode)grp.Children[2])._build)))
                     {
                         SFXOffsets[grp.Index] = Rebuild(RootNode, grp.Children[2] as MoveDefActionNode, ref dataAddress, baseAddress);
-                        MoveDefNode._lookupOffsets.Add((int)&SFXOffsets[grp.Index] - (int)baseAddress);
+                        MoveDefNode._lookupOffsets.Add(&SFXOffsets[grp.Index]);
                     }
                     else SFXOffsets[grp.Index] = 0;
             

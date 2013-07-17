@@ -62,8 +62,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="File Manager\FileManagerClasses.cs" />
+    <Compile Include="File Manager\FileManagerTextData.cs" />
     <Compile Include="DropDownLists.cs" />
+    <Compile Include="FighterDefEnums.cs" />
     <Compile Include="Moveset Builder\CommonMovesetBuilder.cs" />
+    <Compile Include="Moveset Builder\NewMovesetBuilder.cs" />
+    <Compile Include="ResourceNodes\Actions\MoveDefActionNodeScripting.cs" />
+    <Compile Include="Structs\ExtraDataOffsets.cs" />
+    <Compile Include="Structs\FighterDefinition.cs" />
     <Compile Include="UI\Controls\ArticleAttributeGrid.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -97,7 +104,7 @@
     <Compile Include="UI\AboutForm.designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="FileManager.cs" />
+    <Compile Include="File Manager\FileManager.cs" />
     <Compile Include="UI\MiscPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -134,7 +141,7 @@
     <Compile Include="ResourceNodes\MoveDefLookupNode.cs" />
     <Compile Include="ResourceNodes\MoveDefNode.cs" />
     <Compile Include="Moveset Builder\MoveDefStringTables.cs" />
-    <Compile Include="Moveset Builder\MovesetBuilder.cs" />
+    <None Include="Moveset Builder\MovesetBuilder.cs" />
     <Compile Include="ResourceNodes\SectionParamsNode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

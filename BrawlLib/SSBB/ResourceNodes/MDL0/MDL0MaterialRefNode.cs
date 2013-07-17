@@ -20,11 +20,18 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MDL0MaterialRefNode : MDL0EntryNode
     {
         internal MDL0TextureRef* Header { get { return (MDL0TextureRef*)_origSource.Address; } set { _origSource.Address = value; } }
-
         public override bool AllowDuplicateNames { get { return true; } }
 
         [Browsable(false)]
         public MDL0MaterialNode Material { get { return Parent as MDL0MaterialNode; } }
+
+        public MDL0MaterialRefNode()
+        {
+            _uWrap = (int)WrapMode.Repeat;
+            _vWrap = (int)WrapMode.Repeat;
+            _texFlags = TextureSRT.Default;
+            _texMatrix = TexMtxEffect.Default;
+        }
 
         public TextureSRT _texFlags;
         public TexMtxEffect _texMatrix;
@@ -66,7 +73,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Texture Matrix Effect")]
         public MappingMethod MapMode { get { return (MappingMethod)_texMatrix.MapMode; } set { if (!CheckIfMetal()) _texMatrix.MapMode = (byte)value; } }
         [Category("Texture Matrix Effect")]
-        public bool IdentityMatrix { get { return _texMatrix.Identity == 1; } set { if (!CheckIfMetal()) _texMatrix.Identity = (byte)(value ? 1 : 0); } }
+        public bool IdentityMatrix { get { return _texMatrix.Identity != 0; } set { if (!CheckIfMetal()) _texMatrix.Identity = (byte)(value ? 1 : 0); } }
         [Category("Texture Matrix Effect"), TypeConverter(typeof(Matrix43StringConverter))]
         public Matrix43 EffectMatrix { get { return _texMatrix.TexMtx; } set { if (!CheckIfMetal()) _texMatrix.TexMtx = value; } }
         
@@ -80,7 +87,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal int _embossSource;
         internal int _embossLight;
 
-        public bool HasTextureMatrix 
+        public bool HasTextureMatrix
         {
             get
             {
@@ -102,7 +109,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 return true;
             }
-            set 
+            set
             {
                 foreach (MDL0ObjectNode n in ((MDL0MaterialNode)Parent).Objects)
                     if (n.Weighted)

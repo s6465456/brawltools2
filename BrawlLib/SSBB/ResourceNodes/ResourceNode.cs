@@ -194,7 +194,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //Can be any of the following: children have branched, children have changed, current has changed
         //Node needs to be rebuilt.
-        [Browsable(false)]
+        [Browsable(true)]
         public bool IsDirty
         {
             get
@@ -222,8 +222,26 @@ namespace BrawlLib.SSBB.ResourceNodes
         public virtual Type[] AllowedChildTypes { get { return _allowedChildTypes; } }
         private Type[] _allowedChildTypes = new Type[] { };
 
-        [Browsable(false)]
-        public virtual CompressionType Compression { get { return _compression; } set { _compression = value; _changed = true; } }
+        [Browsable(false), TypeConverter(typeof(DropDownListCompression))]
+        public virtual string Compression 
+        {
+            get { return _compression.ToString(); }
+            set 
+            {
+                CompressionType type;
+                if (Enum.TryParse(value, out type))
+                {
+                    if (type == _compression)
+                        return;
+
+                    if (Array.IndexOf(Compressor._supportedCompressionTypes, type) != -1)
+                    {
+                        _compression = type;
+                        _changed = true;
+                    }
+                }
+            }
+        }
 
         ~ResourceNode() { Dispose(); }
         public virtual void Dispose()
@@ -510,12 +528,16 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (Compressor.IsDataCompressed(map.Address, map.Length))
             {
                 CompressionHeader* cmpr = (CompressionHeader*)map.Address;
-                FileMap tMap = FileMap.FromTempFile(cmpr->ExpandedSize);
-                Compressor.Expand(cmpr, tMap.Address, tMap.Length);
-
                 _compression = cmpr->Algorithm;
-                _replSrc = new DataSource(map, cmpr->Algorithm);
-                _replUncompSrc = new DataSource(tMap);
+                if (Compressor.Supports(cmpr->Algorithm))
+                {
+                    FileMap uncompMap = FileMap.FromTempFile(cmpr->ExpandedSize);
+                    Compressor.Expand(cmpr, uncompMap.Address, uncompMap.Length);
+                    _replSrc = new DataSource(map, cmpr->Algorithm);
+                    _replUncompSrc = new DataSource(uncompMap);
+                }
+                else
+                    _replSrc = _replUncompSrc = new DataSource(map);
             }
             else
             {
@@ -536,12 +558,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public unsafe virtual void Export(string outPath)
         {
             Rebuild(); //Apply changes the user has made by rebuilding.
-
-            if (!Directory.Exists(Directory.GetParent(outPath).FullName))
-            {
-                outPath = Directory.GetParent(outPath).FullName;
-                Directory.CreateDirectory(Directory.GetParent(outPath).FullName);
-            }
             try
             {
                 using (FileStream stream = new FileStream(outPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 8, FileOptions.SequentialScan))

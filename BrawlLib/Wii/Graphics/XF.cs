@@ -281,43 +281,46 @@ namespace BrawlLib.Wii.Graphics
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public struct GXVtxDescList
+    public struct FacepointAttribute
     {
-        public GXAttr attr;
-        public XFDataFormat type;
+        public FacepointAttribute(GXAttribute attr, XFDataFormat fmt)
+        {
+            _attr = attr;
+            _type = fmt;
+        }
+
+        public GXAttribute _attr;
+        public XFDataFormat _type;
     }
 
-    public enum GXAttr
+    public enum GXAttribute
     {
-        GX_VA_PNMTXIDX = 0,    // position/normal matrix index
-        GX_VA_TEX0MTXIDX,      // texture 0 matrix index
-        GX_VA_TEX1MTXIDX,      // texture 1 matrix index
-        GX_VA_TEX2MTXIDX,      // texture 2 matrix index
-        GX_VA_TEX3MTXIDX,      // texture 3 matrix index
-        GX_VA_TEX4MTXIDX,      // texture 4 matrix index
-        GX_VA_TEX5MTXIDX,      // texture 5 matrix index
-        GX_VA_TEX6MTXIDX,      // texture 6 matrix index
-        GX_VA_TEX7MTXIDX,      // texture 7 matrix index
-        GX_VA_POS      = 9,    // position
-        GX_VA_NRM,             // normal
-        GX_VA_CLR0,            // color 0
-        GX_VA_CLR1,            // color 1
-        GX_VA_TEX0,            // input texture coordinate 0
-        GX_VA_TEX1,            // input texture coordinate 1
-        GX_VA_TEX2,            // input texture coordinate 2
-        GX_VA_TEX3,            // input texture coordinate 3
-        GX_VA_TEX4,            // input texture coordinate 4
-        GX_VA_TEX5,            // input texture coordinate 5
-        GX_VA_TEX6,            // input texture coordinate 6
-        GX_VA_TEX7,            // input texture coordinate 7
+        PosNrmMtxId = 0,
+        Tex0MtxId,
+        Tex1MtxId,
+        Tex2MtxId,
+        Tex3MtxId,
+        Tex4MtxId,
+        Tex5MtxId,
+        Tex6MtxId,
+        Tex7MtxId,
+        Position = 9,    
+        Normal,
+        Color0,
+        Color1,
+        Tex0,
+        Tex1,
+        Tex2,
+        Tex3,
+        Tex4,
+        Tex5,
+        Tex6,
+        Tex7,
 
-        GX_POS_MTX_ARRAY,      // position matrix array pointer
-        GX_NRM_MTX_ARRAY,      // normal matrix array pointer
-        GX_TEX_MTX_ARRAY,      // texture matrix array pointer
-        GX_LIGHT_ARRAY,        // light parameter array pointer
-        GX_VA_NBT,             // normal, bi-normal, tangent 
-        GX_VA_MAX_ATTR,        // maximum number of vertex attributes
-        
-        GX_VA_NULL     = 0xFF  // NULL attribute (to mark end of lists)
+        PosMtxArray,
+        NrmMtxArray,
+        TexMtxArray,
+        LightArray,
+        NBT // normal, bi-normal, tangent 
     }
 }

@@ -234,7 +234,7 @@ namespace Ikarus.UI
 
                                     Vector3 scale = (bone._frameState._transform * lPoint - bone._frameState._transform * _lastPointBone);
 
-                                    Vector3 scale2 = bone._frameState._transform *  (bone._inverseFrameMatrix * (point - _lastPointWorld));
+                                    //Vector3 scale2 = bone._frameState._transform *  (bone._inverseFrameMatrix * (point - _lastPointWorld));
 
                                     if (scale._x != 0.0f)
                                         ApplyScale2(0, scale._x);

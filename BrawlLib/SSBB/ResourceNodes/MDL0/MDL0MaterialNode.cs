@@ -20,8 +20,17 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe partial class MDL0MaterialNode : MDL0EntryNode
     {
         internal MDL0Material* Header { get { return (MDL0Material*)WorkingUncompressed.Address; } }
-
         public override ResourceType ResourceType { get { return ResourceType.MDL0Material; } }
+        public override bool AllowDuplicateNames { get { return true; } }
+
+        public MDL0MaterialNode()
+        {
+            _normMapRefLight1 =
+            _normMapRefLight2 =
+            _normMapRefLight3 =
+            _normMapRefLight4 = -1;
+            _numLights = 1;
+        }
 
         #region Variables
 
@@ -971,17 +980,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     _lSet = 20;
                     _fSet = 4;
-                    _normMapRefLight1 =
-                    _normMapRefLight2 =
-                    _normMapRefLight3 =
-                    _normMapRefLight4 = -1;
                     _ssc = 3;
 
-                    _cull = CullMode.Cull_Inside;
-                    _numLights = 1;
-
-                    _chan1 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(255, 255, 255, 255), 0, 0);
-
+                    //_cull = CullMode.Cull_Inside;
+                    
                     C1ColorEnabled = true;
                     C1AlphaMaterialSource = GXColorSrc.Vertex;
                     C1ColorMaterialSource = GXColorSrc.Vertex;
@@ -990,8 +992,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     C1AlphaEnabled = true;
                     C1AlphaDiffuseFunction = GXDiffuseFn.Clamped;
                     C1AlphaAttenuation = GXAttnFn.Spotlight;
-
-                    _chan2 = new LightChannel(15, new RGBAPixel(0, 0, 0, 255), new RGBAPixel(), 0, 0);
 
                     C2ColorDiffuseFunction = GXDiffuseFn.Disabled;
                     C2ColorAttenuation = GXAttnFn.None;
@@ -1002,16 +1002,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     _lSet = 0;
                     _fSet = 0;
-                    _normMapRefLight1 =
-                    _normMapRefLight2 =
-                    _normMapRefLight3 =
-                    _normMapRefLight4 = -1;
                     _ssc = 1;
-                    _cull = CullMode.Cull_Inside;
-                    _numLights = 1;
 
-                    _chan1 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(255, 255, 255, 255), 1795, 1795);
-                    _chan2 = new LightChannel(15, new RGBAPixel(0, 0, 0, 255), new RGBAPixel(), 1795, 1795);
+                    //_cull = CullMode.Cull_Inside;
+
+                    _chan1.Color = new LightChannelControl(1795);
+                    _chan1.Alpha = new LightChannelControl(1795);
+                    _chan2.Color = new LightChannelControl(1795);
+                    _chan2.Alpha = new LightChannelControl(1795);
                 }
 
                 //Set default texgen flags
@@ -1195,7 +1193,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Rendering
 
         public bool _renderUpdate = false;
-        public void SignalPropertyChange()
+        public new void SignalPropertyChange()
         {
             _renderUpdate = true;
             base.SignalPropertyChange();
@@ -1207,10 +1205,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public SCN0LightSetNode _lightSet;
         public int _animFrame;
 
-        public void Render(TKContext ctx)
+        public void Render(TKContext ctx, ModelPanel mainWindow)
         {
             foreach (MDL0ObjectNode p in _polygons)
-                p.Render(ctx, false);
+                p.Render(ctx, false, mainWindow);
 
             #region Old
 

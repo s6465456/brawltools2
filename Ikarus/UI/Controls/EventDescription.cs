@@ -66,8 +66,8 @@ namespace System.Windows.Forms
                 description.Text = "No Description Available.";
             else if (index == -1)
                 description.Text = String.IsNullOrEmpty(TargetNode._description) ? "No Description Available." : TargetNode._description;
-            else if (TargetNode.pDescs != null && TargetNode.pDescs.Length != 0 && TargetNode.pDescs.Length > index)
-                description.Text = String.IsNullOrEmpty(TargetNode.pDescs[index]) ? "No Description Available." : TargetNode.pDescs[index];
+            else if (TargetNode._paramDescs != null && TargetNode._paramDescs.Length != 0 && TargetNode._paramDescs.Length > index)
+                description.Text = String.IsNullOrEmpty(TargetNode._paramDescs[index]) ? "No Description Available." : TargetNode._paramDescs[index];
             else
                 description.Text = "No Description Available.";
         }

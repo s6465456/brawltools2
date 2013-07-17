@@ -42,7 +42,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Browsable(false)]
-        public string Description { get { return (Parent as MoveDefEventNode).EventInfo != null && Index < (Parent as MoveDefEventNode).EventInfo.pDescs.Length ? (Parent as MoveDefEventNode).EventInfo.pDescs[Index] : "No Description Available."; } }
+        public string Description { get { return (Parent as MoveDefEventNode).EventInfo != null && Index < (Parent as MoveDefEventNode).EventInfo._paramDescs.Length ? (Parent as MoveDefEventNode).EventInfo._paramDescs[Index] : "No Description Available."; } }
 
         public MoveDefEventParameterNode() { }
 
@@ -54,7 +54,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefEventArgument* header = (FDefEventArgument*)address;
             header->_type = (int)_type;
             header->_data = _value;
@@ -379,18 +379,18 @@ namespace BrawlLib.SSBB.ResourceNodes
             return 8;
         }
 
-        public override void PostProcess()
+        public override void PostProcess(LookupManager lookupOffsets)
         {
-            FDefEventArgument* arg = (FDefEventArgument*)_entryOffset;
+            FDefEventArgument* arg = (FDefEventArgument*)_rebuildAddr;
             arg->_type = (int)_type;
             if (action != null)
             {
-                if (action._entryOffset == 0)
-                    Console.WriteLine("Action offset = 0");
+                //if (action._entryOffset == 0)
+                //    Console.WriteLine("Action offset = 0");
                 
-                arg->_data = (int)action._entryOffset - (int)action._rebuildBase;
+                arg->_data = (int)action._rebuildAddr - (int)action.RebuildBase;
                 if (arg->_data > 0)
-                    MoveDefNode._lookupOffsets.Add((int)arg->_data.Address - (int)_rebuildBase);
+                    lookupOffsets.Add(arg->_data.Address);
             }
             else
             {
@@ -398,16 +398,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (External)
                 {
                     if (_extNode is MoveDefReferenceEntryNode)
-                        _entryOffset += 4;
+                        _rebuildAddr += 4;
                 }
                 else
-                    foreach (MoveDefReferenceEntryNode e in Root.references.Children)
+                    foreach (MoveDefReferenceEntryNode e in Root._references.Children)
                         if (e.Name == this.Name)
                         {
                             _extNode = e;
                             //if (!e._refs.Contains(this))
                                 e._refs.Add(this);
-                            _entryOffset += 4;
+                            _rebuildAddr += 4;
                             break;
                         }
             }

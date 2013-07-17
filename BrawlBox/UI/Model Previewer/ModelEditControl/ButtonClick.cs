@@ -14,8 +14,6 @@ using System.Drawing.Imaging;
 using Gif.Components;
 using OpenTK.Graphics.OpenGL;
 using BrawlLib.Imaging;
-//using System.Windows.Media.Imaging;
-//using System.Windows.Threading;
 using System.Windows;
 using System.Threading;
 
@@ -919,8 +917,8 @@ namespace System.Windows.Forms
             modelPanel.Invalidate();
         }
         private void modifyLightingToolStripMenuItem_Click(object sender, EventArgs e) 
-        { 
-            using (ModelViewerSettingsDialog s = new ModelViewerSettingsDialog()) { s.Show(this); } 
+        {
+            new ModelViewerSettingsDialog().Show(this);
         }
         private void toggleFloor_Click(object sender, EventArgs e) { RenderFloor = !RenderFloor; }
         private void resetCameraToolStripMenuItem_Click_1(object sender, EventArgs e) { modelPanel.ResetCamera(); }

@@ -990,7 +990,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MDL0BoneNode _selectedBone;
         public ModelPanel _mainWindow;
 
-        public void RenderObject(MDL0ObjectNode p, TKContext ctx, ModelPanel mainWindow)
+        public void RenderObject(MDL0ObjectNode p, TKContext ctx, ModelPanel mainWindow, float maxDrawPriority)
         {
             if (p._render)
             {
@@ -1015,20 +1015,27 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 if (_renderPolygons)
                 {
+                    float polyOffset = 0.0f;
+                    //polyOffset -= p.DrawPriority;
+                    //polyOffset += maxDrawPriority;
                     if (_renderWireframe)
+                        polyOffset += 1.0f;
+                    if (polyOffset != 0)
                     {
                         GL.Enable(EnableCap.PolygonOffsetFill);
-                        GL.PolygonOffset(1.0f, 1.0f);
+                        GL.PolygonOffset(1.0f, polyOffset);
                     }
+                    else
+                        GL.Disable(EnableCap.PolygonOffsetFill);
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-                    p.Render(ctx, false);
-                    GL.Disable(EnableCap.PolygonOffsetFill);
+                    p.Render(ctx, false, mainWindow);
                 }
                 if (_renderWireframe)
                 {
+                    GL.Disable(EnableCap.PolygonOffsetFill);
                     GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
                     GL.LineWidth(0.5f);
-                    p.Render(ctx, true);
+                    p.Render(ctx, true, mainWindow);
                 }
             }
         }
@@ -1048,13 +1055,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.Enable(EnableCap.Lighting);
                 GL.Enable(EnableCap.DepthTest);
 
+                float maxDrawPriority = 0.0f;
+                if (_objList != null)
+                    foreach (MDL0ObjectNode p in _objList)
+                        maxDrawPriority = Math.Max(maxDrawPriority, p.DrawPriority);
+
                 //Draw objects in the prioritized order of materials.
                 List<MDL0ObjectNode> rendered = new List<MDL0ObjectNode>();
                 if (_matList != null)
                     foreach (MDL0MaterialNode m in _matList)
                         foreach (MDL0ObjectNode p in m._polygons)
                         {
-                            RenderObject(p, ctx, mainWindow);
+                            RenderObject(p, ctx, mainWindow, maxDrawPriority);
                             rendered.Add(p);
                         }
 
@@ -1062,7 +1074,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_objList != null)
                     foreach (MDL0ObjectNode p in _objList)
                         if (!rendered.Contains(p))
-                            RenderObject(p, ctx, mainWindow);
+                            RenderObject(p, ctx, mainWindow, maxDrawPriority);
 
                 if (_renderBox)
                 {

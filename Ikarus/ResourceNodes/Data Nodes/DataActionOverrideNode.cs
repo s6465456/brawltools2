@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -41,17 +42,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
 
             //Don't forget to add terminator entry (action id == -1, offset == 0)
             foreach (MoveDefActionOverrideEntryNode e in Children)
             {
-                e._entryOffset = address;
+                e._rebuildAddr = address;
                 ActionOverride* addr = (ActionOverride*)address;
                 addr->_actionID = e._actionId;
-                Root._postProcessNodes.Add(this);
+                MoveDefNode.Builder._postProcessNodes.Add(this);
                 if (e.Children.Count > 0)
-                    _lookupOffsets.Add((int)addr->_commandListOffset.Address - (int)_rebuildBase);
+                    _lookupOffsets.Add(addr->_commandListOffset.Address);
                 address += 8;
             }
 
@@ -60,11 +61,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             end->_commandListOffset = 0;
         }
 
-        public override void PostProcess()
+        public override void PostProcess(LookupManager lookupOffsets)
         {
             foreach (MoveDefActionOverrideEntryNode e in Children)
                 if (e.Children.Count > 0)
-                    ((ActionOverride*)e._entryOffset)->_commandListOffset = (int)(e.Children[0] as MoveDefActionNode)._entryOffset - (int)_rebuildBase;
+                    ((ActionOverride*)e._rebuildAddr)->_commandListOffset = (int)(e.Children[0] as MoveDefActionNode)._rebuildAddr - (int)RebuildBase;
         }
     }
 

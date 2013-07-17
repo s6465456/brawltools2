@@ -30,27 +30,28 @@ namespace Ikarus
         /// </summary>
         private void InitializeComponent()
         {
-            this.mainControl = new Ikarus.UI.MainControl();
+            this._mainControl = new Ikarus.UI.MainControl();
             this.SuspendLayout();
             // 
-            // mainControl
+            // _mainControl
             // 
-            this.mainControl.AllowDrop = true;
-            this.mainControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.mainControl.ImgExtIndex = 0;
-            this.mainControl.Location = new System.Drawing.Point(0, 0);
-            this.mainControl.Name = "mainControl";
-            this.mainControl.Size = new System.Drawing.Size(661, 437);
-            this.mainControl.TabIndex = 0;
-            this.mainControl.TargetAnimType = System.Windows.Forms.AnimType.CHR;
+            this._mainControl.AllowDrop = true;
+            this._mainControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._mainControl.ImgExtIndex = 0;
+            this._mainControl.Location = new System.Drawing.Point(0, 0);
+            this._mainControl.Name = "_mainControl";
+            this._mainControl.Size = new System.Drawing.Size(763, 515);
+            this._mainControl.TabIndex = 0;
+            this._mainControl.TargetAnimation = null;
+            this._mainControl.TargetAnimType = System.Windows.Forms.AnimType.CHR;
             // 
             // MainForm
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(661, 437);
-            this.Controls.Add(this.mainControl);
+            this.ClientSize = new System.Drawing.Size(763, 515);
+            this.Controls.Add(this._mainControl);
             this.Name = "MainForm";
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainForm_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainForm_DragEnter);
@@ -60,9 +61,7 @@ namespace Ikarus
 
         #endregion
 
-        private MainControl mainControl;
-
-
+        public MainControl _mainControl;
     }
 }
 

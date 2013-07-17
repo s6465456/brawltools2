@@ -108,15 +108,15 @@ namespace Ikarus.UI
                 {
                     if (a.catchCollisions != null && a.catchCollisions.Count > 0)
                         foreach (HitBox e in a.catchCollisions)
-                            e.RenderCatchCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+                            e.RenderCatchCollision(TargetModel, context, modelPanel._camera.GetPoint());
 
                     if (a.offensiveCollisions != null && a.offensiveCollisions.Count > 0)
                         foreach (HitBox e in a.offensiveCollisions)
-                            e.RenderOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+                            e.RenderOffensiveCollision(TargetModel, context, modelPanel._camera.GetPoint());
 
                     if (a.specialOffensiveCollisions != null && a.specialOffensiveCollisions.Count > 0)
                         foreach (HitBox e in a.specialOffensiveCollisions)
-                            e.RenderSpecialOffensiveCollision(TargetModel._linker.BoneCache, context, modelPanel._camera.GetPoint(), Helpers.DrawStyle.Brawl);
+                            e.RenderSpecialOffensiveCollision(TargetModel, context, modelPanel._camera.GetPoint());
                 }
             }
 

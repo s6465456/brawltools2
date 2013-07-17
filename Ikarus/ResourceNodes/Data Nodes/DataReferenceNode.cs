@@ -10,6 +10,7 @@ using BrawlLib.Wii.Animations;
 using BrawlLib.SSBB.ResourceNodes;
 using System.Windows.Forms;
 using System.Runtime.ExceptionServices;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {

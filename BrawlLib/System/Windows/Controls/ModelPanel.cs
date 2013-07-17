@@ -42,7 +42,7 @@ namespace System.Windows.Forms
 
         [TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 DefaultTranslate { get { return _defaultTranslate; } set { _defaultTranslate = value; } }
-        [TypeConverter(typeof(Vector3StringConverter))]
+        [TypeConverter(typeof(Vector2StringConverter))]
         public Vector2 DefaultRotate { get { return _defaultRotate; } set { _defaultRotate = value; } }
 
         public Vector3 _defaultTranslate;
@@ -618,64 +618,7 @@ namespace System.Windows.Forms
             if (PostRender != null)
                 PostRender(this, ctx);
         }
-        public ARGBPixel DoPicking(int x, int y)
-        {
-            DrawColorIds();
 
-            ARGBPixel pixel = new ARGBPixel();
-            int[] viewport = new int[4];
-            GL.GetInteger(GetPName.Viewport, viewport);
-            GL.ReadBuffer(ReadBufferMode.Back);
-            GL.ReadPixels(x, viewport[3] - y, 1, 1, OpenTK.Graphics.OpenGL.PixelFormat.ColorIndex, PixelType.UnsignedByte, (IntPtr)(&pixel));
-            
-            return pixel;
-            
-            //int index = (int)pixel[0] + (((int)pixel[1]) << 8) + ((((int)pixel[2]) << 16));
-            //int modelId = pixel[3];
-            //if (index > -1 && index < shapes.Count)
-            //{
-            //    selectedShape = shapes[index];
-            //}
-        }
-
-        private void DrawColorIds()
-        {
-            GL.PushAttrib(AttribMask.EnableBit | AttribMask.ColorBufferBit);
-            GL.Disable(EnableCap.Fog);
-            GL.Disable(EnableCap.Texture2D);
-            GL.Disable(EnableCap.Dither);
-            GL.Disable(EnableCap.Lighting);
-            GL.Disable(EnableCap.LineStipple);
-            GL.Disable(EnableCap.PolygonStipple);
-            GL.Disable(EnableCap.CullFace);
-            GL.Disable(EnableCap.Blend);
-            GL.Disable(EnableCap.AlphaTest);
-
-            GL.ClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            //Supports up to 65535 models with up to 65535 objects each.
-
-            byte i = 0;
-            foreach (IRenderedObject o in _renderList)
-                if (o is MDL0Node)
-                {
-                    MDL0Node m = o as MDL0Node;
-                    if (m._objList != null)
-                        foreach (MDL0ObjectNode n in m._objList)
-                        {
-                            byte r = (byte)(n.Index & 0xFF);
-                            byte g = (byte)((n.Index & 0xFF00) >> 8);
-                            byte b = (byte)(i & 0xFF);
-                            byte a = (byte)((i & 0xFF00) >> 8);
-                            GL.Color4(r, g, b, a);
-                            n.Render(_ctx, false);
-                        }
-                    i++;
-                }
-
-            GL.PopAttrib();
-        }
         private void ModelPanel_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left && !_forceNoSelection)

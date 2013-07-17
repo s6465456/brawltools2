@@ -11,6 +11,8 @@ using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.OpenGL;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
+using Ikarus;
+using BrawlLib.Modeling;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -180,7 +182,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _lookupOffsets = new List<int>();
+            _lookupOffsets = new List<VoidPtr>();
 
             int dataOff = 0, offOff = 0, mainOff = 0;
             foreach (MoveDefOffsetNode r in Children)
@@ -204,12 +206,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             bint* offsets = (bint*)((VoidPtr)data + offOff);
             FDefListOffset* header = (FDefListOffset*)((VoidPtr)offsets + mainOff);
 
-            _entryOffset = header;
+            _rebuildAddr = header;
 
             if (Children.Count > 0)
             {
-                header->_startOffset = (int)offsets - (int)_rebuildBase;
-                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase); //main offset
+                header->_startOffset = (int)offsets - (int)RebuildBase;
+                _lookupOffsets.Add(header->_startOffset.Address); //main offset
             }
 
             header->_listCount = Children.Count;
@@ -218,12 +220,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if (offset.Children.Count > 0)
                 {
-                    _lookupOffsets.Add((int)offsets - (int)_rebuildBase); //offset
+                    _lookupOffsets.Add(offsets); //offset
 
                     MoveDefUnkSection9DataNode dataNode = offset.Children[0] as MoveDefUnkSection9DataNode;
                     if (!dataNode.External)
                     {
-                        *offsets = (int)data - (int)_rebuildBase;
+                        *offsets = (int)data - (int)RebuildBase;
 
                         data->_unk1 = dataNode._unk1;
                         data->_unk2 = dataNode._unk2;
@@ -232,10 +234,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                         data->_list._listCount = dataNode.Children.Count;
                         //data->_list._startOffset = (dataNode.Children.Count > 0 ? (int)indices - (int)_rebuildBase : 0);
-                        data->_list._startOffset = (dataNode.Children.Count > 0 ? (int)(dataNode.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase : 0);
+                        data->_list._startOffset = (dataNode.Children.Count > 0 ? (int)(dataNode.Children[0] as MoveDefEntryNode)._rebuildAddr - (int)RebuildBase : 0);
 
                         if (data->_list._startOffset > 0)
-                            _lookupOffsets.Add((int)data->_list._startOffset.Address - (int)_rebuildBase);
+                            _lookupOffsets.Add(data->_list._startOffset.Address);
 
                         data++;
 
@@ -246,7 +248,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         //}
                     }
                     else
-                        *offsets = (int)dataNode._entryOffset - (int)_rebuildBase;
+                        *offsets = (int)dataNode._rebuildAddr - (int)RebuildBase;
 
                     offsets++;
                 }
@@ -293,13 +295,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             FDefListOffset* header = (FDefListOffset*)addr;
 
-            _entryOffset = header;
+            _rebuildAddr = header;
 
             header->_listCount = Children.Count;
-            header->_startOffset = (Children.Count > 0 ? (int)address - (int)_rebuildBase : 0);
+            header->_startOffset = (Children.Count > 0 ? (int)address - (int)RebuildBase : 0);
 
             if (header->_startOffset > 0)
-                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+                _lookupOffsets.Add(header->_startOffset.Address);
         }
     }
 
@@ -355,7 +357,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _lookupOffsets = new List<int>();
+            _lookupOffsets = new List<VoidPtr>();
 
             bint* addr = (bint*)address;
             foreach (MoveDefBoneIndexNode b in Children)
@@ -363,7 +365,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             FDefMiscSection9Data* header = (FDefMiscSection9Data*)addr;
 
-            _entryOffset = header;
+            _rebuildAddr = header;
 
             header->_unk1 = _unk1;
             header->_unk2 = _unk2;
@@ -371,10 +373,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_unk4 = _unk4;
 
             header->_list._listCount = Children.Count;
-            header->_list._startOffset = (Children.Count > 0 ? (int)address - (int)_rebuildBase : 0);
+            header->_list._startOffset = (Children.Count > 0 ? (int)address - (int)RebuildBase : 0);
             
             if (header->_list._startOffset > 0)
-                _lookupOffsets.Add((int)header->_list._startOffset.Address - (int)_rebuildBase);
+                _lookupOffsets.Add(header->_list._startOffset.Address);
         }
     }
 
@@ -413,7 +415,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefMiscSection5* header = (FDefMiscSection5*)address;
             header->_unk1 = _unk1;
             header->_unk2 = _unk2;
@@ -453,7 +455,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             for (int i = 0; i < _entries.Length; i++)
                 *(bint*)(address + i * 4) = _entries[i];
         }
@@ -492,7 +494,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             foreach (MiscData2Node d in Children)
                 d.Rebuild(address + d.Index * 32, 32, true);
         }
@@ -574,7 +576,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             UnkDataMiscOff2* data = (UnkDataMiscOff2*)address;
             *data = hdr;
         }
@@ -636,7 +638,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (UnknownSection3EntryNode e in Children)
                 e.Rebuild(data++, 16, true);
 
-            _entryOffset = data;
+            _rebuildAddr = data;
 
             FDefMiscUnk3* header = (FDefMiscUnk3*)data;
             header->_haveNBoneIndex1 = _haveNBoneIndex1;
@@ -647,10 +649,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             //Values are switched on purpose
             header->_list._startOffset = Children.Count;
-            header->_list._listCount = (Children.Count > 0 ? (int)address - (int)_rebuildBase : 0);
+            header->_list._listCount = (Children.Count > 0 ? (int)address - (int)RebuildBase : 0);
 
             if (header->_list._listCount > 0)
-                _lookupOffsets.Add((int)header->_list._listCount.Address - (int)_rebuildBase);
+                _lookupOffsets.Add(header->_list._listCount.Address);
         }
     }
 
@@ -691,7 +693,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefMiscUnk3Entry* header = (FDefMiscUnk3Entry*)address;
             header->_unk1 = _unk1;
             header->_unk2 = _unk2;
@@ -731,7 +733,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             for (int i = 0; i < Children.Count; i++)
                 Children[i].Rebuild(address + i * 0x20, 0x20, force);
         }
@@ -797,7 +799,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefHurtBox* header = (FDefHurtBox*)address;
             header->_offset = _offst;
             header->_stretch = _stretch;
@@ -810,9 +812,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             if (BoneNode == null)
                 return;
-
-            //Coded by Toomai
-            //Modified for release v0.67
 
             //Disable all things that could be enabled
             GL.Disable(EnableCap.CullFace);
@@ -866,17 +865,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                     break;
             }
 
-            Vector3 bonepos = BoneNode._frameMatrix.GetPoint();
-            Vector3 bonerot = BoneNode._frameMatrix.GetAngles();
-            Vector3 bonescl = BoneNode.RecursiveScale();
+            FrameState frame = BoneNode.Matrix.Derive();
+            Vector3 bonescl = frame._scale * _radius;
 
-            bonescl *= _radius;
-            Matrix m = Matrix.TransformMatrix(bonescl, bonerot, bonepos);
-
+            Matrix m = Matrix.TransformMatrix(bonescl, frame._rotate, frame._translate);
+            
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
 
-            Vector3 stretchfac = new Vector3(_stretch._x / bonescl._x, _stretch._y / bonescl._y, _stretch._z / bonescl._z);
+            Vector3 stretchfac = _stretch / bonescl;
             GL.Translate(_offst._x / bonescl._x, _offst._y / bonescl._y, _offst._z / bonescl._z);
 
             int res = 16;
@@ -1078,7 +1075,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.End();
             }
 
-            Vector3 scale = BoneNode.RecursiveScale();
+            Vector3 scale = frame._scale;
 
             // six faces
             GL.Begin(BeginMode.Quads);
@@ -1179,7 +1176,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             for (int i = 0; i < Children.Count; i++)
                 Children[i].Rebuild(address + i * 0x14, 0x14, force);
         }
@@ -1236,7 +1233,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefMiscUnkType1* header = (FDefMiscUnkType1*)address;
             header->_boneIndex = boneIndex;
             header->_height = height;
@@ -1275,7 +1272,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             for (int i = 0; i < Children.Count; i++)
                 Children[i].Rebuild(address + i * 16, 16, force);
         }
@@ -1316,7 +1313,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefLedgegrab* header = (FDefLedgegrab*)address;
             header->_height = height;
             header->_width = width;
@@ -1412,15 +1409,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                 off += unks.Count * 4;
 
             FDefMultiJump* header = (FDefMultiJump*)(address + off);
-            _entryOffset = header;
+            _rebuildAddr = header;
 
             bfloat* addr = (bfloat*)address;
 
             if (unks.Count > 1)
             {
-                header->_unkListOffset = (int)addr - (int)_rebuildBase;
+                header->_unkListOffset = (int)addr - (int)RebuildBase;
                 if (header->_unkListOffset > 0)
-                    _lookupOffsets.Add((int)header->_unkListOffset.Address - (int)_rebuildBase);
+                    _lookupOffsets.Add(header->_unkListOffset.Address);
 
                 foreach (float f in unks)
                     *addr++ = f;
@@ -1432,9 +1429,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (hops.Count > 1)
             {
-                header->_hopListOffset = (int)addr - (int)_rebuildBase;
+                header->_hopListOffset = (int)addr - (int)RebuildBase;
                 if (header->_hopListOffset > 0)
-                    _lookupOffsets.Add((int)header->_hopListOffset.Address - (int)_rebuildBase);
+                    _lookupOffsets.Add(header->_hopListOffset.Address);
                 
                 foreach (float f in hops)
                     *addr++ = f;
@@ -1497,7 +1494,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             for (int i = 0; i < 20; i++)
                 if (i < floatEntries.Length)
                     *(bfloat*)(address + i * 4) = floatEntries[i];
@@ -1536,7 +1533,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefCrawl* header = (FDefCrawl*)address;
             header->_forward = forward;
             header->_backward = backward;
@@ -1573,7 +1570,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            _entryOffset = address;
+            _rebuildAddr = address;
             FDefTether* header = (FDefTether*)address;
             header->_numHangFrame = numHangFrame;
             header->_unk1 = unk1;
@@ -1633,12 +1630,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             FDefListOffset* sndLists = (FDefListOffset*)(address + sndOff);
             FDefListOffset* header = (FDefListOffset*)((VoidPtr)sndLists + mainOff);
 
-            _entryOffset = header;
+            _rebuildAddr = header;
 
             if (Children.Count > 0)
             {
-                header->_startOffset = (int)sndLists - (int)_rebuildBase;
-               _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+                header->_startOffset = (int)sndLists - (int)RebuildBase;
+               _lookupOffsets.Add(header->_startOffset.Address);
             }
 
             header->_listCount = Children.Count;
@@ -1648,17 +1645,17 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (r.Children.Count > 0)
                 {
                     if (seperate)
-                        sndLists->_startOffset = (int)indices - (int)_rebuildBase;
+                        sndLists->_startOffset = (int)indices - (int)RebuildBase;
                     else
-                        sndLists->_startOffset = (int)(r.Children[0] as MoveDefEntryNode)._entryOffset - (int)_rebuildBase;
-                    _lookupOffsets.Add((int)sndLists->_startOffset.Address - (int)_rebuildBase);
+                        sndLists->_startOffset = (int)(r.Children[0] as MoveDefEntryNode)._rebuildAddr - (int)RebuildBase;
+                    _lookupOffsets.Add(sndLists->_startOffset.Address);
                 }
 
                 (sndLists++)->_listCount = r.Children.Count;
                 if (seperate)
                     foreach (MoveDefIndexNode b in r.Children)
                     {
-                        b._entryOffset = indices;
+                        b._rebuildAddr = indices;
                         *indices++ = b.ItemIndex;
                     }
             }

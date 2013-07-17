@@ -146,7 +146,7 @@ namespace BrawlBox
             this.DialogResult = DialogResult.Cancel;
             Close();
         }
-
+        
         #region Designer
 
         private GroupBox groupBox1;

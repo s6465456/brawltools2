@@ -169,7 +169,7 @@ namespace System.Windows.Forms
 
             _updating = true;
 
-            if (_targetNode.Root.dataCommon != null)
+            if (_targetNode.Root._dataCommon != null)
             {
                 listBox.Items.Clear();
                 listBox.Items.AddRange(new object[] {
@@ -261,12 +261,12 @@ namespace System.Windows.Forms
             if (listBox.SelectedIndex == 5)
             {
                 indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode.Root.dataCommon._screenTint.Children.ToArray());
+                indexBox.Items.AddRange(_targetNode.Root._dataCommon._screenTint.Children.ToArray());
             }
             if (listBox.SelectedIndex == 6)
             {
                 indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode.Root.dataCommon._flashOverlay.Children.ToArray());
+                indexBox.Items.AddRange(_targetNode.Root._dataCommon._flashOverlay.Children.ToArray());
             }
             if (!_updating)
                 UpdateText();

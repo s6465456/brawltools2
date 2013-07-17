@@ -2,6 +2,7 @@
 using BrawlLib.Imaging;
 using BrawlLib.SSBBTypes;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace System
 {
@@ -75,43 +76,5 @@ namespace System
         }
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
-    }
-
-    public unsafe class CompactStringTable
-    {
-        public SortedList<string, VoidPtr> _table = new SortedList<string, VoidPtr>(StringComparer.Ordinal);
-
-        public void Add(string s)
-        {
-            if ((!String.IsNullOrEmpty(s)) && (!_table.ContainsKey(s)))
-                _table.Add(s, 0);
-        }
-
-        public int TotalSize
-        {
-            get
-            {
-                int len = 0;
-                foreach (string s in _table.Keys)
-                    len += (s.Length + 1);
-                return len;
-            }
-        }
-
-        public void Clear() { _table.Clear(); }
-
-        public VoidPtr this[string s] { get { return _table[s]; } }
-
-        public void WriteTable(VoidPtr address)
-        {
-            FDefReferenceString* entry = (FDefReferenceString*)address;
-            for (int i = 0; i < _table.Count; i++)
-            {
-                string s = _table.Keys[i];
-                _table[s] = entry;
-                entry->Value = s;
-                entry = entry->Next;
-            }
-        }
     }
 }

@@ -232,12 +232,6 @@ namespace Ikarus.UI
         //    }
         //}
 
-        private void chkPolygons_CheckStateChanged(object sender, EventArgs e)
-        {
-            if (!_updating)
-                RenderPolygons = chkPolygons.CheckState;
-        }
-
         private void displayFrameCountDifferencesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (_updating)
@@ -345,6 +339,15 @@ namespace Ikarus.UI
         //    SetFrame(save.frameIndex);
         //    modelPanel1.Invalidate();
         //}
+
+        private void chkPolygons_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_updating)
+                return;
+
+            RenderPolygons = chkPolygons.Checked;
+        }
+
         public ScriptPanel MovesetPanel { get { return rightPanel.pnlMoveset; } }
         public void numFrameIndex_ValueChanged(object sender, EventArgs e)
         {
@@ -357,15 +360,17 @@ namespace Ikarus.UI
                     //Run frame value through the moveset panel.
                     if (val < _animFrame)
                     {
-                        if (MovesetPanel._animFrame + 1 > 0)
-                            MovesetPanel.SetFrame(MovesetPanel._animFrame + difference);
-                        else// if (MovesetPanel.subactions)
-                            MovesetPanel.SetFrame(_maxFrame - 2);
+                        if (_animFrame + difference >= 0)
+                            MovesetPanel.SetFrame(_animFrame + difference);
+                        else if (val == 0)
+                            MovesetPanel.SetFrame(0);
+                        else
+                            MovesetPanel.SetFrame(_maxFrame);
                     }
                     else if (val > _animFrame)
-                        if (MovesetPanel.ActionsIdling || (MovesetPanel.subactions && MovesetPanel._animFrame + 1 >= _maxFrame - 1))
+                        if (MovesetPanel.ActionsIdling || (MovesetPanel.EditingSubactions && _animFrame >= _maxFrame))
                         {
-                            if (MovesetPanel.subactions && SelectedSubActionGrp != null)
+                            if (MovesetPanel.EditingSubactions && SelectedSubActionGrp != null)
                                 if (_animFrame < _maxFrame)
                                 {
                                     SetFrame(_animFrame + difference);
@@ -375,12 +380,13 @@ namespace Ikarus.UI
                                     MovesetPanel.SetFrame(0);
                         }
                         else
-                            MovesetPanel.SetFrame(MovesetPanel._animFrame + difference);
+                            MovesetPanel.SetFrame(_animFrame + difference);
                 }
                 else 
                     if (GetSelectedBRRESFile(TargetAnimType) != null)
-                    SetFrame(_animFrame += difference);
-                //pnlKeyframes.numFrame_ValueChanged();
+                        SetFrame(_animFrame += difference);
+
+                KeyframePanel.numFrame_ValueChanged();
             }
         }
         public void numFPS_ValueChanged(object sender, EventArgs e) { _timer.TargetRenderFrequency = MovesetPanel._timer.TargetRenderFrequency = (double)pnlPlayback.numFPS.Value; }

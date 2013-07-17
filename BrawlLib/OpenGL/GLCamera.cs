@@ -10,50 +10,44 @@ namespace BrawlLib.OpenGL
         public Vector3 _rotation;
         public Vector3 _scale;
 
-        public GLCamera()
-        {
-            _matrix = _matrixInverse = Matrix.Identity;
-            _scale = new Vector3(1);
-        }
+        internal float _z;
+
+        public GLCamera() { Reset(); }
 
         public Vector3 GetPoint() { return _matrixInverse.Multiply(new Vector3()); }
-
-        public void Scale(float x, float y, float z)
+        
+        public void Scale(float x, float y, float z) { Scale(new Vector3(x, y, z)); }
+        public void Scale(Vector3 v)
         {
-            //Grab vertex from matrix
-            Vector3 point = _matrixInverse.Multiply(new Vector3());
+            _scale *= v;
 
-            //Multiply scale
-            _scale._x *= x;
-            _scale._y *= y;
-            _scale._z *= z;
-
-            //Reset matrices using new scale
-            _matrix = Matrix.ReverseTransformMatrix(_scale, _rotation, point);
-            _matrixInverse = Matrix.TransformMatrix(_scale, _rotation, point);
+            Apply();
         }
-        internal float _z = 0.0f;
+        
         public void Translate(float x, float y, float z)
         {
             _matrix = Matrix.TranslationMatrix(-x, -y, -z) * _matrix;
             _matrixInverse.Translate(x, y, z);
             _z += z;
         }
-
-        public void Rotate(float x, float y, float z)
+        public void Rotate(float x, float y, float z) { Rotate(new Vector3(x, y, z)); }
+        public void Rotate(Vector3 v)
         {
+            _rotation += v;
+
+            Apply();
+        }
+
+        private void Apply()
+        {         
             //Grab vertex from matrix
-            Vector3 point = _matrixInverse.Multiply(new Vector3());
+            Vector3 point = GetPoint();
 
-            //Increment rotations
-            _rotation._x += x;
-            _rotation._y += y;
-            _rotation._z += z;
-
-            //Reset matrices using new rotations
+            //Reset matrices
             _matrix = Matrix.ReverseTransformMatrix(_scale, _rotation, point);
             _matrixInverse = Matrix.TransformMatrix(_scale, _rotation, point);
         }
+
         public void Rotate(float x, float y) { Rotate(x, y, 0); }
         public void Pivot(float radius, float x, float y)
         {
@@ -66,7 +60,8 @@ namespace BrawlLib.OpenGL
         {
             _matrix = _matrixInverse = Matrix.Identity;
             _rotation = new Vector3();
-            _scale = new Vector3(1);
+            _scale = new Vector3(1.5f);
+            _z = 0.0f;
         }
     }
 }

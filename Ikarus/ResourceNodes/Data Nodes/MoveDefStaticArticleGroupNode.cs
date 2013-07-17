@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
+using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -58,7 +59,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr start = addr;
             foreach (MoveDefArticleNode b in Children)
             {
-                b._entryOffset = addr;
+                b._rebuildAddr = addr;
 
                 Article* article = (Article*)addr;
 
@@ -78,13 +79,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                 article->_unknownD3 = b.off3;
 
                 bint* ext = (bint*)((VoidPtr)article + 52);
-                ext[0] = (b.subActions == null ? 0 : b.subActions.Children.Count);
+                ext[0] = (b._subActions == null ? 0 : b._subActions.Children.Count);
 
                 //Add all header offsets
                 bint* off = (bint*)(addr + 12);
                 for (int i = 0; i < 10 + b._extraOffsets.Count; i++)
                     if (off[i] > 1480 && off[i] < Root.dataSize)
-                        b._lookupOffsets.Add((int)&off[i] - (int)_rebuildBase);
+                        b._lookupOffsets.Add(&off[i]);
 
                 _lookupOffsets.AddRange(b._lookupOffsets);
 
@@ -93,12 +94,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             FDefListOffset* header = (FDefListOffset*)addr;
 
-            _entryOffset = header;
+            _rebuildAddr = header;
 
             if (Children.Count > 0)
             {
-                header->_startOffset = (int)start - (int)_rebuildBase;
-                _lookupOffsets.Add((int)header->_startOffset.Address - (int)_rebuildBase);
+                header->_startOffset = (int)start - (int)RebuildBase;
+                _lookupOffsets.Add(header->_startOffset.Address);
             }
 
             header->_listCount = Children.Count;

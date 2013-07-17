@@ -203,7 +203,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Texture")]
         public int EnableEdgeLOD { get { return _enableEdgeLod; } set { _enableEdgeLod = value; SignalPropertyChange(); } }
         [Category("Texture")]
-        public int LevelOfDetail { get { return _lod.Clamp(1, 9); } }
+        public int LevelOfDetail { get { return _lod; } }
 
         public TPLPaletteNode GetPaletteNode() { return (_parent == null) ? null : _parent.FindChild("Palette", false) as TPLPaletteNode; }
 

@@ -58,7 +58,7 @@ namespace Ikarus.UI
         private Panel pnlHurtboxes;
         private Panel pnlTop;
         public ComboBox movesetEditor;
-        public ComboBox fileType;
+        private ComboBox fileType;
         private Panel listGroupPanel;
         private Panel pnlObjects;
 
@@ -73,13 +73,11 @@ namespace Ikarus.UI
             this.btnObjects = new System.Windows.Forms.Button();
             this.pnlLists = new System.Windows.Forms.Panel();
             this.listGroupPanel = new System.Windows.Forms.Panel();
-            this.SubActionsList = new System.Windows.Forms.ListBox();
-            this.ActionsList = new System.Windows.Forms.ListBox();
             this.pnlHurtboxes = new System.Windows.Forms.Panel();
             this.lstHurtboxes = new System.Windows.Forms.CheckedListBox();
             this.chkAllHurtboxes = new System.Windows.Forms.CheckBox();
-            this.attributeGridSSE = new System.Windows.Forms.AttributeGrid();
-            this.attributeGridMain = new System.Windows.Forms.AttributeGrid();
+            this.SubActionsList = new System.Windows.Forms.ListBox();
+            this.ActionsList = new System.Windows.Forms.ListBox();
             this.pnlTop = new System.Windows.Forms.Panel();
             this.movesetEditor = new System.Windows.Forms.ComboBox();
             this.fileType = new System.Windows.Forms.ComboBox();
@@ -109,6 +107,8 @@ namespace Ikarus.UI
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.createNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.attributeGridSSE = new System.Windows.Forms.AttributeGrid();
+            this.attributeGridMain = new System.Windows.Forms.AttributeGrid();
             this.pnlObjects.SuspendLayout();
             this.pnlLists.SuspendLayout();
             this.listGroupPanel.SuspendLayout();
@@ -212,9 +212,9 @@ namespace Ikarus.UI
             // 
             // listGroupPanel
             // 
+            this.listGroupPanel.Controls.Add(this.pnlHurtboxes);
             this.listGroupPanel.Controls.Add(this.SubActionsList);
             this.listGroupPanel.Controls.Add(this.ActionsList);
-            this.listGroupPanel.Controls.Add(this.pnlHurtboxes);
             this.listGroupPanel.Controls.Add(this.attributeGridSSE);
             this.listGroupPanel.Controls.Add(this.attributeGridMain);
             this.listGroupPanel.Controls.Add(this.pnlTop);
@@ -223,29 +223,6 @@ namespace Ikarus.UI
             this.listGroupPanel.Name = "listGroupPanel";
             this.listGroupPanel.Size = new System.Drawing.Size(200, 155);
             this.listGroupPanel.TabIndex = 2;
-            // 
-            // SubActionsList
-            // 
-            this.SubActionsList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.SubActionsList.FormattingEnabled = true;
-            this.SubActionsList.Location = new System.Drawing.Point(0, 21);
-            this.SubActionsList.Name = "SubActionsList";
-            this.SubActionsList.Size = new System.Drawing.Size(200, 134);
-            this.SubActionsList.TabIndex = 1;
-            this.SubActionsList.Visible = false;
-            this.SubActionsList.SelectedIndexChanged += new System.EventHandler(this.SubActionsList_SelectedIndexChanged_1);
-            this.SubActionsList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SubActionsList_KeyDown);
-            // 
-            // ActionsList
-            // 
-            this.ActionsList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ActionsList.FormattingEnabled = true;
-            this.ActionsList.Location = new System.Drawing.Point(0, 21);
-            this.ActionsList.Name = "ActionsList";
-            this.ActionsList.Size = new System.Drawing.Size(200, 134);
-            this.ActionsList.TabIndex = 0;
-            this.ActionsList.Visible = false;
-            this.ActionsList.SelectedIndexChanged += new System.EventHandler(this.ActionsList_SelectedIndexChanged);
             // 
             // pnlHurtboxes
             // 
@@ -261,6 +238,7 @@ namespace Ikarus.UI
             // lstHurtboxes
             // 
             this.lstHurtboxes.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lstHurtboxes.IntegralHeight = false;
             this.lstHurtboxes.Location = new System.Drawing.Point(0, 17);
             this.lstHurtboxes.Name = "lstHurtboxes";
             this.lstHurtboxes.Size = new System.Drawing.Size(200, 117);
@@ -286,24 +264,30 @@ namespace Ikarus.UI
             this.chkAllHurtboxes.UseVisualStyleBackColor = false;
             this.chkAllHurtboxes.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
-            // attributeGridSSE
+            // SubActionsList
             // 
-            this.attributeGridSSE.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.attributeGridSSE.Location = new System.Drawing.Point(0, 21);
-            this.attributeGridSSE.Name = "attributeGridSSE";
-            this.attributeGridSSE.Size = new System.Drawing.Size(200, 134);
-            this.attributeGridSSE.TabIndex = 0;
-            this.attributeGridSSE.Visible = false;
+            this.SubActionsList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SubActionsList.FormattingEnabled = true;
+            this.SubActionsList.IntegralHeight = false;
+            this.SubActionsList.Location = new System.Drawing.Point(0, 21);
+            this.SubActionsList.Name = "SubActionsList";
+            this.SubActionsList.Size = new System.Drawing.Size(200, 134);
+            this.SubActionsList.TabIndex = 1;
+            this.SubActionsList.Visible = false;
+            this.SubActionsList.SelectedIndexChanged += new System.EventHandler(this.SubActionsList_SelectedIndexChanged_1);
+            this.SubActionsList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SubActionsList_KeyDown);
             // 
-            // attributeGridMain
+            // ActionsList
             // 
-            this.attributeGridMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.attributeGridMain.Location = new System.Drawing.Point(0, 21);
-            this.attributeGridMain.Margin = new System.Windows.Forms.Padding(0);
-            this.attributeGridMain.Name = "attributeGridMain";
-            this.attributeGridMain.Size = new System.Drawing.Size(200, 134);
-            this.attributeGridMain.TabIndex = 0;
-            this.attributeGridMain.Visible = false;
+            this.ActionsList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ActionsList.FormattingEnabled = true;
+            this.ActionsList.IntegralHeight = false;
+            this.ActionsList.Location = new System.Drawing.Point(0, 21);
+            this.ActionsList.Name = "ActionsList";
+            this.ActionsList.Size = new System.Drawing.Size(200, 134);
+            this.ActionsList.TabIndex = 0;
+            this.ActionsList.Visible = false;
+            this.ActionsList.SelectedIndexChanged += new System.EventHandler(this.ActionsList_SelectedIndexChanged);
             // 
             // pnlTop
             // 
@@ -317,6 +301,8 @@ namespace Ikarus.UI
             // 
             // movesetEditor
             // 
+            this.movesetEditor.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.movesetEditor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.movesetEditor.FormattingEnabled = true;
             this.movesetEditor.Items.AddRange(new object[] {
@@ -327,12 +313,13 @@ namespace Ikarus.UI
             "Hurtboxes"});
             this.movesetEditor.Location = new System.Drawing.Point(0, 0);
             this.movesetEditor.Name = "movesetEditor";
-            this.movesetEditor.Size = new System.Drawing.Size(138, 21);
+            this.movesetEditor.Size = new System.Drawing.Size(151, 21);
             this.movesetEditor.TabIndex = 27;
             this.movesetEditor.SelectedIndexChanged += new System.EventHandler(this.movesetEditor_SelectedIndexChanged);
             // 
             // fileType
             // 
+            this.fileType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.fileType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.fileType.FormattingEnabled = true;
             this.fileType.Items.AddRange(new object[] {
@@ -341,11 +328,10 @@ namespace Ikarus.UI
             "SHP",
             "PAT",
             "VIS",
-            "SCN",
             "CLR"});
-            this.fileType.Location = new System.Drawing.Point(139, 0);
+            this.fileType.Location = new System.Drawing.Point(152, 0);
             this.fileType.Name = "fileType";
-            this.fileType.Size = new System.Drawing.Size(61, 21);
+            this.fileType.Size = new System.Drawing.Size(47, 21);
             this.fileType.TabIndex = 26;
             this.fileType.SelectedIndexChanged += new System.EventHandler(this.fileType_SelectedIndexChanged);
             // 
@@ -584,6 +570,25 @@ namespace Ikarus.UI
             this.createNewToolStripMenuItem.Text = "Create New Animation";
             this.createNewToolStripMenuItem.Click += new System.EventHandler(this.createNewToolStripMenuItem_Click);
             // 
+            // attributeGridSSE
+            // 
+            this.attributeGridSSE.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.attributeGridSSE.Location = new System.Drawing.Point(0, 21);
+            this.attributeGridSSE.Name = "attributeGridSSE";
+            this.attributeGridSSE.Size = new System.Drawing.Size(200, 134);
+            this.attributeGridSSE.TabIndex = 0;
+            this.attributeGridSSE.Visible = false;
+            // 
+            // attributeGridMain
+            // 
+            this.attributeGridMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.attributeGridMain.Location = new System.Drawing.Point(0, 21);
+            this.attributeGridMain.Margin = new System.Windows.Forms.Padding(0);
+            this.attributeGridMain.Name = "attributeGridMain";
+            this.attributeGridMain.Size = new System.Drawing.Size(200, 134);
+            this.attributeGridMain.TabIndex = 0;
+            this.attributeGridMain.Visible = false;
+            // 
             // LeftPanel
             // 
             this.Controls.Add(this.pnlObjects);
@@ -695,11 +700,20 @@ namespace Ikarus.UI
             get { return _mainWindow.SelectedVIS0; }
             set { _mainWindow.SelectedVIS0 = value; }
         }
-
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public AnimType TargetAnimType
         {
-            get { return (AnimType)fileType.SelectedIndex; }
-            set { fileType.SelectedIndex = (int)value; }
+            get 
+            {
+                return (AnimType)(fileType.SelectedIndex == 5 ? 6 : fileType.SelectedIndex);
+            }
+            set 
+            {
+                if (value == AnimType.None)
+                    return;
+
+                fileType.SelectedIndex = ((int)value).Clamp(0, 5); 
+            }
         }
 
         //Bone Name - Attached Polygon Indices
@@ -795,7 +809,6 @@ namespace Ikarus.UI
                 _mainWindow.SelectedSHP0 = null;
                 _mainWindow.SelectedPAT0 = null;
                 _mainWindow.SelectedVIS0 = null;
-                _mainWindow.SelectedSCN0 = null;
                 _mainWindow.SelectedCLR0 = null;
                 _mainWindow.UpdatePropDisplay();
                 _mainWindow.UpdateModel();
@@ -1531,19 +1544,19 @@ namespace Ikarus.UI
 
         private void lstHurtboxes_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectedHurtbox = lstHurtboxes.SelectedItem as MoveDefHurtBoxNode;
+            if (_updating)
+                return;
 
-            if (!_updating)
-                _mainWindow.ModelPanel.Invalidate();
+            SelectedHurtbox = lstHurtboxes.SelectedItem as MoveDefHurtBoxNode;
+            _mainWindow.ModelPanel.Invalidate();
         }
 
         private void lstHurtboxes_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            if (!_updating)
-            {
-                SelectedHurtbox = lstHurtboxes.Items[e.Index] as MoveDefHurtBoxNode;
-                _mainWindow.ModelPanel.Invalidate();
-            }
+            if (_updating)
+                return;
+            
+            _mainWindow.ModelPanel.Invalidate();
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -1616,11 +1629,14 @@ namespace Ikarus.UI
 
         public void UpdateMoveset(MoveDefNode moveset)
         {
-            attributeGridMain.TargetNode = moveset.data.attributes;
-            attributeGridSSE.TargetNode = moveset.data.sseAttributes;
-            lstHurtboxes.Items.AddRange(moveset.data.misc.hurtBoxes.Children.ToArray());
+            _updating = true;
+            attributeGridMain.TargetNode = moveset._data._attributes;
+            attributeGridSSE.TargetNode = moveset._data._sseAttributes;
+            foreach (MoveDefHurtBoxNode h in moveset._data._misc.hurtBoxes.Children)
+                lstHurtboxes.Items.Add(h, true);
             SubActionsList.Items.AddRange(moveset._subActions.Children.ToArray());
             ActionsList.Items.AddRange(moveset._actions.Children.ToArray());
+            _updating = false;
         }
 
         private void SubActionsList_SelectedIndexChanged_1(object sender, EventArgs e)
@@ -1671,9 +1687,6 @@ namespace Ikarus.UI
                             break;
                         case AnimType.VIS: _mainWindow.SelectedVIS0 = _animations[i] as VIS0Node;
                             createNewToolStripMenuItem.Text = "Create New VIS0";
-                            break;
-                        case AnimType.SCN: _mainWindow.SelectedSCN0 = _animations[i] as SCN0Node;
-                            createNewToolStripMenuItem.Text = "Create New SCN0";
                             break;
                         case AnimType.CLR: _mainWindow.SelectedCLR0 = _animations[i] as CLR0Node;
                             createNewToolStripMenuItem.Text = "Create New CLR0";

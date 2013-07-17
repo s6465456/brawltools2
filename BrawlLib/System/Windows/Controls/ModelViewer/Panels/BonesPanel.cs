@@ -83,9 +83,9 @@ namespace System.Windows.Forms
             this.lstBones.Name = "lstBones";
             this.lstBones.Size = new System.Drawing.Size(372, 374);
             this.lstBones.TabIndex = 8;
-            this.lstBones.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.lstBones_ItemCheck_1);
-            this.lstBones.SelectedValueChanged += new System.EventHandler(this.lstBones_SelectedValueChanged_1);
-            this.lstBones.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lstBones_KeyDown_1);
+            this.lstBones.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.lstBones_ItemCheck);
+            this.lstBones.SelectedValueChanged += new System.EventHandler(this.lstBones_SelectedValueChanged);
+            this.lstBones.KeyDown += new System.Windows.Forms.KeyEventHandler(this.lstBones_KeyDown);
             this.lstBones.MouseDown += new System.Windows.Forms.MouseEventHandler(this.lstBones_MouseDown);
             // 
             // ctxBones
@@ -123,7 +123,7 @@ namespace System.Windows.Forms
             this.chkAllBones.TabIndex = 28;
             this.chkAllBones.Text = "All";
             this.chkAllBones.UseVisualStyleBackColor = false;
-            this.chkAllBones.CheckStateChanged += new System.EventHandler(this.chkAllBones_CheckStateChanged_1);
+            this.chkAllBones.CheckStateChanged += new System.EventHandler(this.chkAllBones_CheckStateChanged);
             // 
             // imageList1
             // 
@@ -145,23 +145,10 @@ namespace System.Windows.Forms
 
         #endregion
 
+        public BonesPanel() { InitializeComponent(); }
+
         public IMainWindow _mainWindow;
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IMainWindow MainWindow
-        {
-            get { return _mainWindow; }
-            set { _mainWindow = value; }
-        }
 
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MDL0MaterialRefNode TargetTexRef { get { return _mainWindow.TargetTexRef; } set { _mainWindow.TargetTexRef = value; } }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int CurrentFrame
-        {
-            get { return _mainWindow.CurrentFrame; }
-            set { _mainWindow.CurrentFrame = value; }
-        }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0Node TargetModel
         {
@@ -170,17 +157,24 @@ namespace System.Windows.Forms
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public CHR0Node SelectedCHR0 { get { return _mainWindow.SelectedCHR0; } set { _mainWindow.SelectedCHR0 = value; } }
-        
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0BoneNode SelectedBone 
         {
             get { return _mainWindow.SelectedBone; } 
             set { _mainWindow.SelectedBone = value; } 
         }
 
-        public BonesPanel() { InitializeComponent(); }
-        //public bool CloseReferences() { return CloseExternal(); }
+        public bool _updating;
+        public void Reset()
+        {
+            lstBones.BeginUpdate();
+            lstBones.Items.Clear();
+
+            if (TargetModel != null && TargetModel._linker != null)
+                foreach (MDL0BoneNode bone in TargetModel._linker.BoneCache)
+                    lstBones.Items.Add(bone, bone._render);
+
+            lstBones.EndUpdate();
+        }
 
         private void lstBones_MouseDown(object sender, MouseEventArgs e)
         {
@@ -196,21 +190,7 @@ namespace System.Windows.Forms
             }
         }
 
-        public bool _updating;
-
-        internal void Reset()
-        {
-            lstBones.BeginUpdate();
-            lstBones.Items.Clear();
-            
-            if (TargetModel != null && TargetModel._linker != null)
-                foreach (MDL0BoneNode bone in TargetModel._linker.BoneCache)
-                    lstBones.Items.Add(bone, bone._render);
-
-            lstBones.EndUpdate();
-        }
-
-        private void lstBones_SelectedValueChanged_1(object sender, EventArgs e)
+        private void lstBones_SelectedValueChanged(object sender, EventArgs e)
         {
             if (SelectedBone != null)
                 SelectedBone._boneColor = SelectedBone._nodeColor = Color.Transparent;
@@ -220,13 +200,13 @@ namespace System.Windows.Forms
             _mainWindow.ModelPanel.Invalidate();
         }
 
-        private void lstBones_KeyDown_1(object sender, KeyEventArgs e)
+        private void lstBones_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
                 lstBones.SelectedItem = null;
         }
 
-        private void chkAllBones_CheckStateChanged_1(object sender, EventArgs e)
+        private void chkAllBones_CheckStateChanged(object sender, EventArgs e)
         {
             if (lstBones.Items.Count == 0)
                 return;
@@ -243,7 +223,7 @@ namespace System.Windows.Forms
             _mainWindow.ModelPanel.Invalidate();
         }
 
-        private void lstBones_ItemCheck_1(object sender, ItemCheckEventArgs e)
+        private void lstBones_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             MDL0BoneNode bone = lstBones.Items[e.Index] as MDL0BoneNode;
 
