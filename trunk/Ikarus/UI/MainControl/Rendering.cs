@@ -61,6 +61,8 @@ namespace Ikarus.UI
 
                 GL.Disable(EnableCap.Texture2D);
             }
+
+            leftPanel.ApplyAttributes(this);
         }
 
         #endregion
@@ -104,19 +106,19 @@ namespace Ikarus.UI
                 GLDisplayList c = context.GetRingList();
                 GLDisplayList s = context.GetSphereList();
 
-                foreach (MoveDefActionNode a in MoveDefActionNode._runningActions)
+                foreach (MoveDefActionNode a in RunTime._runningScripts)
                 {
                     if (a.catchCollisions != null && a.catchCollisions.Count > 0)
                         foreach (HitBox e in a.catchCollisions)
-                            e.RenderCatchCollision(TargetModel, context, modelPanel._camera.GetPoint());
+                            e.RenderCatchCollision(context, modelPanel._camera.GetPoint());
 
                     if (a.offensiveCollisions != null && a.offensiveCollisions.Count > 0)
                         foreach (HitBox e in a.offensiveCollisions)
-                            e.RenderOffensiveCollision(TargetModel, context, modelPanel._camera.GetPoint());
+                            e.RenderOffensiveCollision(context, modelPanel._camera.GetPoint());
 
                     if (a.specialOffensiveCollisions != null && a.specialOffensiveCollisions.Count > 0)
                         foreach (HitBox e in a.specialOffensiveCollisions)
-                            e.RenderSpecialOffensiveCollision(TargetModel, context, modelPanel._camera.GetPoint());
+                            e.RenderSpecialOffensiveCollision(context, modelPanel._camera.GetPoint());
                 }
             }
 

@@ -49,7 +49,7 @@ namespace BrawlBox
 
         public VIS0Wrapper() { ContextMenuStrip = _menu; }
 
-        public override string ExportFilter { get { return ExportFilters.VIS0; } }
+        public override string ExportFilter { get { return FileFilters.VIS0; } }
 
         public void NewBone()
         {

@@ -148,11 +148,11 @@ namespace BrawlBox
                             n.Initialize(node, d);
                             try
                             {
-                                i += (uint)n.CalculateSize(true);
+                                i += (uint)n.WorkingSource.Length;
                             }
                             catch
                             {
-                                //Nope
+                                
                             }
                         }
                     }

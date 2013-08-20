@@ -26,24 +26,25 @@ namespace System.Windows.Forms
             if ((_targetNode = value) == null) 
                 return;
 
-            _baseOffset = (int)(_targetNode._initAddr - _targetNode.BaseAddress);
+            //_baseOffset = _targetNode.ASMOffset;
+            _baseOffset = 0;
             Display();
         }
 
         public PPCDisassembler() { InitializeComponent(); }
 
-        public int _baseOffset;
+        public uint _baseOffset;
         
         void Display()
         {
             grdDisassembler.Rows.Clear();
-            if (_targetNode == null || _targetNode.HasNoCode) return;
+            if (_targetNode == null || !_targetNode.HasCode) return;
             for (int i = 0; i < _targetNode._relocations.Length; i++)
             {
                 DataGridViewRow row = grdDisassembler.Rows[grdDisassembler.Rows.Add()];
                 PPCOpCode opcode = _targetNode[i].Code;
 
-                row.Cells[0].Value = PPCFormat.Offset(_baseOffset + _targetNode[i]._index * 4);
+                row.Cells[0].Value = PPCFormat.Offset(_baseOffset + (uint)i * 4);
                 row.Cells[1].Value = opcode.FormName();
                 row.Cells[2].Value = opcode.FormOps();
                 row.Cells[3].Value = _targetNode[i].Description;

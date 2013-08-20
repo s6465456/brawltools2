@@ -55,7 +55,7 @@ namespace BrawlBox.NodeWrappers
 
         public SCN0Wrapper() { ContextMenuStrip = _menu; }
 
-        public override string ExportFilter { get { return ExportFilters.SCN0; } }
+        public override string ExportFilter { get { return FileFilters.SCN0; } }
 
         public void newLightSet()
         {

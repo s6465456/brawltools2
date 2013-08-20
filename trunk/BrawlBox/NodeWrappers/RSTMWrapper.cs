@@ -7,6 +7,6 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.RSTM)]
     class RSTMWrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.RSTM; } }
+        public override string ExportFilter { get { return FileFilters.RSTM; } }
     }
 }

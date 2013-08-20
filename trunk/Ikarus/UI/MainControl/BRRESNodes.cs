@@ -183,10 +183,10 @@ namespace Ikarus.UI
                 if (node != null)
                     if (node._entryCount != 0) //Node is animated
                     {
-                        bool VIS0val = node.GetEntry(_animFrame);
+                        bool VIS0val = node.GetEntry(_animFrame - 1);
 
                         if (VIS0val != ANIMval)
-                            node.SetEntry(_animFrame, ANIMval);
+                            node.SetEntry(_animFrame - 1, ANIMval);
                     }
                     else //Node is constant
                     {
@@ -251,7 +251,7 @@ namespace Ikarus.UI
                         if ((node = (VIS0EntryNode)_vis0.FindChild(((MDL0ObjectNode)leftPanel.lstObjects.Items[indices[i]])._bone.Name, true)) != null)
                         {
                             if (node._entryCount != 0 && _animFrame > 0)
-                                leftPanel.lstObjects.SetItemChecked(indices[i], node.GetEntry(_animFrame));
+                                leftPanel.lstObjects.SetItemChecked(indices[i], node.GetEntry(_animFrame - 1));
                             else
                                 leftPanel.lstObjects.SetItemChecked(indices[i], node._flags.HasFlag(VIS0Flags.Enabled));
                         }

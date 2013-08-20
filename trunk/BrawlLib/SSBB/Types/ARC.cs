@@ -20,7 +20,7 @@ namespace BrawlLib.SSBBTypes
         internal VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
         public string Name 
-        { 
+        {
             get { return new String((sbyte*)Address + 0x10); }
             set
             {
@@ -60,22 +60,22 @@ namespace BrawlLib.SSBBTypes
         internal bshort _index;
         internal bint _size;
         internal byte _groupIndex;
-        internal byte _unk1;
-        internal bshort _id;
+        internal byte _padding;
+        internal bshort _redirectIndex; //The index of a different file to read.
         internal bint _pad1;
         internal bint _pad2;
         internal bint _pad3;
         internal bint _pad4;
         internal bint _pad5;
 
-        public ARCFileHeader(ARCFileType type, int index, int size, byte groupIndex, byte unk1, short id)
+        public ARCFileHeader(ARCFileType type, int index, int size, byte groupIndex, short id)
         {
             _type = (short)type;
             _index = (short)index;
             _size = size;
             _groupIndex = groupIndex;
-            _unk1 = unk1;
-            _id = id;
+            _padding = 0;
+            _redirectIndex = id;
             _pad1 = _pad2 = _pad3 = _pad4 = _pad5 = 0;
         }
 
@@ -92,8 +92,8 @@ namespace BrawlLib.SSBBTypes
         public short Index { get { return _index; } set { _index = value; } }
         public int Length { get { return _size; } set { _size = value; } }
         public byte GroupIndex { get { return _groupIndex; } set { _groupIndex = value; } }
-        public byte Unknown { get { return _unk1; } set { _unk1 = value; } }
-        public short ID { get { return _id; } set { _id = value; } }
+        //public byte Unknown { get { return _padding; } set { _padding = value; } }
+        public short ID { get { return _redirectIndex; } set { _redirectIndex = value; } }
     }
 
     public enum ARCFileType : short
@@ -105,7 +105,7 @@ namespace BrawlLib.SSBBTypes
         AnimationData = 0x4,
         SceneData = 0x5,
         Type6 = 0x6,
-        Type7 = 0x7,
-        ARChive = 0x8
+        GroupedArchive = 0x7,
+        EffectData = 0x8
     }
 }

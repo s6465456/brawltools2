@@ -76,18 +76,25 @@ namespace Ikarus.UI
                         LoadModels(n, models);
                     break;
                 case ResourceType.MDL0:
-                    AppendTarget((MDL0Node)node);
+                    AddTarget((MDL0Node)node);
                     break;
             }
         }
 
-        public void AppendTarget(MDL0Node model)
+        public void AddTarget(MDL0Node model)
         {
             if (!_targetModels.Contains(model))
                 _targetModels.Add(model);
             modelPanel.AddTarget(model);
             model.ApplyCHR(null, 0);
             model._renderBones = true;
+        }
+
+        public void RemoveTarget(MDL0Node model)
+        {
+            if (_targetModels.Contains(model))
+                _targetModels.Remove(model);
+            modelPanel.RemoveTarget(model);
         }
 
         public bool CloseExternal()
@@ -105,50 +112,6 @@ namespace Ikarus.UI
                 return CloseExternal() && rightPanel.pnlMoveset.CloseReferences();
             }
             catch { return true; }
-        }
-
-        public bool _resetCam = true;
-        public bool _hide = false;
-        private void ModelChanged(MDL0Node model)
-        {
-            if (model != null && !_targetModels.Contains(model))
-                _targetModels.Add(model);
-
-            if (_targetModel != null)
-                _targetModel._isTargetModel = false;
-
-            if (model == null)
-                modelPanel.RemoveTarget(_targetModel);
-
-            if ((_targetModel = model) != null)
-            {
-                modelPanel.AddTarget(_targetModel);
-                leftPanel.VIS0Indices = _targetModel.VIS0Indices;
-                _targetModel._isTargetModel = true;
-                ResetVertexColors();
-            }
-
-            if (_resetCam)
-            {
-                modelPanel.ResetCamera();
-                SetFrame(0);
-            }
-            else
-                _resetCam = true;
-
-            leftPanel.Reset();
-            rightPanel.pnlBones.Reset();
-
-            if (TargetModelChanged != null)
-                TargetModelChanged(this, null);
-
-            _updating = true;
-            if (_targetModel != null && !_editingAll)
-                comboCharacters.SelectedItem = _targetModel;
-            _updating = false;
-
-            if (_targetModel != null)
-                RenderBones = _targetModel._renderBones;
         }
     }
 }

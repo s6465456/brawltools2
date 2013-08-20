@@ -18,7 +18,7 @@ namespace BrawlLib.OpenGL
     {
         IGraphicsContext _context;
         private IWindowInfo _winInfo = null;
-        private IWindowInfo WindowInfo { get { return _winInfo; } }
+        public IWindowInfo WindowInfo { get { return _winInfo; } }
 
         //These provide a way to manage which context is in use to avoid errors
         public static List<TKContext> _currentContexts;
@@ -87,9 +87,12 @@ namespace BrawlLib.OpenGL
             CurrentContexts.Add(this);
         }
 
+        public delegate void ContextChangedEventHandler(bool enabled);
+        public event ContextChangedEventHandler ContextChanged;
+
         public void Dispose()
         {
-            Release();
+            //Release();
             if (_context != null)
                 _context.Dispose();
             if (CurrentContexts.Contains(this))
@@ -110,11 +113,17 @@ namespace BrawlLib.OpenGL
         {
             try
             {
-                if (CurrentlyEnabled != this && CurrentlyEnabled != null && CurrentlyEnabled._context.IsCurrent)
+                bool notThis = CurrentlyEnabled != this && CurrentlyEnabled != null && CurrentlyEnabled._context.IsCurrent;
+                
+                if (notThis)
                     CurrentlyEnabled.Release();
+
                 CurrentlyEnabled = this;
                 if (!_context.IsCurrent)
                     _context.MakeCurrent(WindowInfo);
+
+                if (ContextChanged != null && notThis)
+                    ContextChanged(true);
             }
             catch //(Exception x)
             {
@@ -174,7 +183,13 @@ namespace BrawlLib.OpenGL
         public void Release()
         {
             if (CurrentlyEnabled == this && !CurrentlyEnabled._context.IsDisposed && _context.IsCurrent)
+            {
+                CurrentlyEnabled = null;
                 _context.MakeCurrent(null);
+
+                //if (ContextChanged != null)
+                //    ContextChanged(false);
+            }
         }
         public void Update()
         {

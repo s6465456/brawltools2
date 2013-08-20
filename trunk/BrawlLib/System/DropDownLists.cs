@@ -248,19 +248,19 @@ namespace System
             {
                 case AnimCurveType.ParticleByte:
                 case AnimCurveType.ParticleFloat:
-                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetByteFloat)));
+                    return new StandardValuesCollection(Enum.GetNames(typeof(v9AnimCurveTargetByteFloat)));
                 case AnimCurveType.ParticleRotate:
-                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetRotateFloat)));
+                    return new StandardValuesCollection(Enum.GetNames(typeof(v9AnimCurveTargetRotateFloat)));
                 case AnimCurveType.ParticleTexture:
-                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetPtclTex)));
+                    return new StandardValuesCollection(Enum.GetNames(typeof(v9AnimCurveTargetPtclTex)));
                 case AnimCurveType.Child:
-                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetChild)));
+                    return new StandardValuesCollection(Enum.GetNames(typeof(v9AnimCurveTargetChild)));
                 case AnimCurveType.Field:
-                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetField)));
+                    return new StandardValuesCollection(Enum.GetNames(typeof(v9AnimCurveTargetField)));
                 case AnimCurveType.PostField:
-                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetPostField)));
+                    return new StandardValuesCollection(Enum.GetNames(typeof(v9AnimCurveTargetPostField)));
                 case AnimCurveType.EmitterFloat:
-                    return new StandardValuesCollection(Enum.GetNames(typeof(AnimCurveTargetEmitterFloat)));
+                    return new StandardValuesCollection(Enum.GetNames(typeof(v9AnimCurveTargetEmitterFloat)));
             }
             return new StandardValuesCollection(null);
         }
@@ -387,6 +387,19 @@ namespace System
             foreach (int i in Compressor._supportedCompressionTypes)
                 values.Add(((CompressionType)i).ToString());
             return new StandardValuesCollection(values);
+        }
+    }
+
+    public class DropDownListARCEntry : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            ARCEntryNode entry = context.Instance as ARCEntryNode;
+            if (entry.Parent == null) return null;
+            List<ARCEntryNode> list = entry.Parent.Children.Select(x => x as ARCEntryNode).ToList();
+            list.Remove(entry);
+            return new StandardValuesCollection(list);
         }
     }
 }

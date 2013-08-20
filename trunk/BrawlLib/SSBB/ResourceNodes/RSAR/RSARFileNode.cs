@@ -11,8 +11,9 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class RSARFileNode : NW4RNode
     {
         internal VoidPtr Data { get { return (VoidPtr)WorkingUncompressed.Address; } }
+        
         internal DataSource _audioSource;
-
+        
         internal RSARNode RSARNode
         {
             get
@@ -139,6 +140,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             int lablLen, size;
             VoidPtr addr;
 
+            Rebuild();
+
             if (_audioSource != DataSource.Empty)
             {
                 //Get strings
@@ -156,9 +159,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                         //Write header
                         Memory.Move(addr, WorkingUncompressed.Address, (uint)WorkingUncompressed.Length);
+                        addr += WorkingUncompressed.Length;
 
                         //Write strings
-                        addr += WorkingUncompressed.Length;
                         if (lablLen > 0)
                             labl.Write(addr);
                         addr += lablLen;
@@ -170,6 +173,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             else
                 base.Export(outPath);
+        }
+
+        internal protected virtual void PostProcess(VoidPtr audioAddr, VoidPtr dataAddr)
+        {
+
         }
     }
 }

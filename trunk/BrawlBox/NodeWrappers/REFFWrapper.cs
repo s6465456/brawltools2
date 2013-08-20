@@ -12,6 +12,6 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.REFF)]
     class REFFWrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.REFF; } }
+        public override string ExportFilter { get { return FileFilters.REFF; } }
     }
 }

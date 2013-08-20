@@ -312,9 +312,9 @@ namespace Ikarus.UI
                 if (script[i] == "") script[i] = GetDefaultSyntax(node);
 
                 //Add tabs to the script in correspondence to the code Params.
-                tabs -= Helpers.TabDownEvents(node._event);
+                tabs -= DataHelpers.TabDownEvents(node._event);
                 for (int i2 = 0; i2 < tabs; i2++) script[i] = "\t" + script[i];
-                tabs += Helpers.TabUpEvents(node._event);
+                tabs += DataHelpers.TabUpEvents(node._event);
             }
             EventList.Items.Clear();
             EventList.Items.AddRange(script);
@@ -341,12 +341,12 @@ namespace Ikarus.UI
             //Search for a ',' or a ')' and return the preceeding string.
             do
             {
-                paramEnd = Helpers.FindFirstOfIgnoreNest(strParams, loc, new char[] { ',', ')' }, ref chrFound);
+                paramEnd = DataHelpers.FindFirstOfIgnoreNest(strParams, loc, new char[] { ',', ')' }, ref chrFound);
                 if (paramEnd == -1) paramEnd = strParams.Length;
 
                 Array.Resize<string>(ref parameters, index + 1);
                 parameters[index] = strParams.Substring(loc, paramEnd - loc);
-                parameters[index] = Helpers.ClearWhiteSpace(parameters[index]);
+                parameters[index] = DataHelpers.ClearWhiteSpace(parameters[index]);
 
                 loc = paramEnd + 1;
                 index++;
@@ -380,9 +380,9 @@ namespace Ikarus.UI
         //Return the collision status corresponding to the value passed.
         public string GetEnum(int paramIndex, long value, Event eventData)
         {
-            if (FileManager.EventDictionary.ContainsKey(eventData.eventEvent))
+            if (FileManager.EventDictionary.ContainsKey(eventData._eventEvent))
             {
-                Dictionary<int, List<string>> Params = FileManager.EventDictionary[eventData.eventEvent].Enums;
+                Dictionary<int, List<string>> Params = FileManager.EventDictionary[eventData._eventEvent].Enums;
                 if (Params.ContainsKey(paramIndex))
                 {
                     List<string> values = Params[paramIndex];
@@ -404,7 +404,7 @@ namespace Ikarus.UI
                         return ResolveParamTypes(Event)[int.Parse(Params[0])]; //}
                     //catch { return "Value-" + Params[0]; }
                 case "\\type":
-                    try { return eventData.parameters[int.Parse(Params[0])]._type.ToString(); }
+                    try { return eventData._parameters[int.Parse(Params[0])]._type.ToString(); }
                     catch { return "Type-" + Params[0]; }
                 case "\\if":
                     bool compare = false;
@@ -470,10 +470,10 @@ namespace Ikarus.UI
                     try { return GetEnum(int.Parse(Params[1]), int.Parse(Params[0]), eventData); }
                     catch { return "Undefined(" + Params[1] + ")"; }
                 case "\\cmpsign":
-                    try { return Helpers.GetComparisonSign(int.Parse(Params[0])); }
+                    try { return DataHelpers.GetComparisonSign(int.Parse(Params[0])); }
                     catch { return Params[0]; }
                 case "\\name":
-                    return GetEventInfo(eventData.eventEvent)._name;
+                    return GetEventInfo(eventData._eventEvent)._name;
                 case "\\white":
                     return " ";
                 default:
@@ -484,19 +484,19 @@ namespace Ikarus.UI
         public string[] ResolveParamTypes(MoveDefEventNode Event)
         {
             Event eventData = Event.EventData;
-            string[] p = new string[eventData.parameters.Length];
+            string[] p = new string[eventData._parameters.Length];
 
             for (int i = 0; i < p.Length; i++)
             {
-                switch ((int)eventData.parameters[i]._type)
+                switch ((int)eventData._parameters[i]._type)
                 {
-                    case 0: p[i] = GetValue(eventData.eventEvent, i, eventData.parameters[i]._data); break;
-                    case 1: p[i] = Helpers.UnScalar(eventData.parameters[i]._data).ToString(); break;
-                    case 2: p[i] = ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
-                    case 3: p[i] = (eventData.parameters[i]._data != 0 ? "true" : "false"); break;
-                    case 4: p[i] = Helpers.Hex(eventData.parameters[i]._data); break;
-                    case 5: p[i] = ResolveVariable(eventData.parameters[i]._data); break;
-                    case 6: p[i] = GetRequirement(eventData.parameters[i]._data); break;
+                    case 0: p[i] = GetValue(eventData._eventEvent, i, eventData._parameters[i]._data); break;
+                    case 1: p[i] = DataHelpers.UnScalar(eventData._parameters[i]._data).ToString(); break;
+                    case 2: p[i] = ResolvePointer(eventData._pParameters + i * 8 + 4, eventData._parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
+                    case 3: p[i] = (eventData._parameters[i]._data != 0 ? "true" : "false"); break;
+                    case 4: p[i] = DataHelpers.Hex(eventData._parameters[i]._data); break;
+                    case 5: p[i] = ResolveVariable(eventData._parameters[i]._data); break;
+                    case 6: p[i] = GetRequirement(eventData._parameters[i]._data); break;
                 }
             }
             return p;
@@ -513,7 +513,7 @@ namespace Ikarus.UI
                 return "External: " + node._extNode.Name;
 
             if (node.list == 4)
-                return "0x" + Helpers.Hex(parameter._data);
+                return "0x" + DataHelpers.Hex(parameter._data);
             else
             {
                 string name = "", t = "", grp = "";
@@ -619,7 +619,7 @@ namespace Ikarus.UI
             long requirement = value & 0xFF;
 
             if (requirement > FileManager.iRequirements.Length)
-                return Helpers.Hex(requirement);
+                return DataHelpers.Hex(requirement);
 
             if (not == true)
                 return "Not " + FileManager.iRequirements[requirement];
@@ -638,21 +638,21 @@ namespace Ikarus.UI
         public string GetDefaultSyntax(MoveDefEventNode Event)
         {
             Event eventData = Event.EventData;
-            string script = GetEventInfo(eventData.eventEvent)._name + (eventData.lParameters > 0 ? ": " : "");
-            for (int i = 0; i < eventData.lParameters; i++)
+            string script = GetEventInfo(eventData._eventEvent)._name + (eventData._paramCount > 0 ? ": " : "");
+            for (int i = 0; i < eventData._paramCount; i++)
             {
-                script += eventData.parameters[i]._type + "-";
-                switch ((int)eventData.parameters[i]._type)
+                script += eventData._parameters[i]._type + "-";
+                switch ((int)eventData._parameters[i]._type)
                 {
-                    case 0: script += GetValue(eventData.eventEvent, i, eventData.parameters[i]._data); break;
-                    case 1: script += Helpers.UnScalar(eventData.parameters[i]._data).ToString(); break;
-                    case 2: script += ResolvePointer(eventData.pParameters + i * 8 + 4, eventData.parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
-                    case 3: script += (eventData.parameters[i]._data != 0 ? "true" : "false"); break;
-                    case 4: script += eventData.parameters[i]._data; break;
-                    case 5: script += ResolveVariable(eventData.parameters[i]._data); break;
-                    case 6: script += GetRequirement(eventData.parameters[i]._data); break;
+                    case 0: script += GetValue(eventData._eventEvent, i, eventData._parameters[i]._data); break;
+                    case 1: script += DataHelpers.UnScalar(eventData._parameters[i]._data).ToString(); break;
+                    case 2: script += ResolvePointer(eventData._pParameters + i * 8 + 4, eventData._parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
+                    case 3: script += (eventData._parameters[i]._data != 0 ? "true" : "false"); break;
+                    case 4: script += eventData._parameters[i]._data; break;
+                    case 5: script += ResolveVariable(eventData._parameters[i]._data); break;
+                    case 6: script += GetRequirement(eventData._parameters[i]._data); break;
                 }
-                if (i != eventData.lParameters)
+                if (i != eventData._paramCount)
                     script += ", ";
             }
             return script;
@@ -669,15 +669,15 @@ namespace Ikarus.UI
                 string strParams = "";
                 string[] kParams;
 
-                int keyBegin = Helpers.FindFirst(syntax, 0, '\\');
+                int keyBegin = DataHelpers.FindFirst(syntax, 0, '\\');
                 if (keyBegin == -1) break;
 
-                int keyEnd = Helpers.FindFirst(syntax, keyBegin, '(');
+                int keyEnd = DataHelpers.FindFirst(syntax, keyBegin, '(');
                 if (keyEnd == -1) keyEnd = syntax.Length;
 
                 int paramsBegin = keyEnd + 1;
 
-                int paramsEnd = Helpers.FindFirstIgnoreNest(syntax, paramsBegin, ')');
+                int paramsEnd = DataHelpers.FindFirstIgnoreNest(syntax, paramsBegin, ')');
                 if (paramsEnd == -1) paramsEnd = syntax.Length;
 
                 keyword = syntax.Substring(keyBegin, keyEnd - keyBegin);
@@ -687,8 +687,8 @@ namespace Ikarus.UI
 
                 keyResult = ResolveKeyword(keyword, kParams, Event);
 
-                syntax = Helpers.DelSubstring(syntax, keyBegin, (paramsEnd + 1) - keyBegin);
-                syntax = Helpers.InsString(syntax, keyResult, keyBegin);
+                syntax = DataHelpers.DelSubstring(syntax, keyBegin, (paramsEnd + 1) - keyBegin);
+                syntax = DataHelpers.InsString(syntax, keyResult, keyBegin);
             }
 
             return syntax;
@@ -756,7 +756,7 @@ namespace Ikarus.UI
             if (lowest != -1 && lowest != 0)
             {
                 for (int i = 0; i < EventList.SelectedIndices.Count; i++)
-                    TargetNode.Children[EventList.SelectedIndices[i]].doMoveUp(false);
+                    TargetNode.Children[EventList.SelectedIndices[i]].DoMoveUp(false);
                 MakeScript();
                 if (TargetNode != null)
                     foreach (int i in indices)
@@ -774,7 +774,7 @@ namespace Ikarus.UI
             if (highest != -1 && highest != EventList.Items.Count - 1)
             {
                 for (int i = EventList.SelectedIndices.Count - 1; i >= 0; i--)
-                    TargetNode.Children[EventList.SelectedIndices[i]].doMoveDown(false);
+                    TargetNode.Children[EventList.SelectedIndices[i]].DoMoveDown(false);
                 MakeScript();
                 if (TargetNode != null)
                     foreach (int i in indices)

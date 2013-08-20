@@ -24,24 +24,25 @@ namespace BrawlLib.IO
                 _baseStream.Dispose();
                 _baseStream = null;
             }
-#if DEBUG
-            Console.WriteLine("Closing file map: {0}", _path);
-#endif
+//#if DEBUG
+//            Console.WriteLine("Closing file map: {0}", _path);
+//#endif
             GC.SuppressFinalize(this); 
         }
 
         public static FileMap FromFile(string path) { return FromFile(path, FileMapProtect.ReadWrite, 0, 0); }
         public static FileMap FromFile(string path, FileMapProtect prot) { return FromFile(path, prot, 0, 0); }
-        public static FileMap FromFile(string path, FileMapProtect prot, int offset, int length)
+        public static FileMap FromFile(string path, FileMapProtect prot, int offset, int length) { return FromFile(path, prot, 0, 0, FileOptions.RandomAccess); }
+        public static FileMap FromFile(string path, FileMapProtect prot, int offset, int length, FileOptions options)
         {
             FileStream stream;
             FileMap map;
-            try { stream = new FileStream(path, FileMode.Open, (prot == FileMapProtect.ReadWrite) ? FileAccess.ReadWrite : FileAccess.Read, FileShare.Read, 8, FileOptions.RandomAccess); }
+            try { stream = new FileStream(path, FileMode.Open, (prot == FileMapProtect.ReadWrite) ? FileAccess.ReadWrite : FileAccess.Read, FileShare.Read, 8, options); }
             catch //File is currently in use, but we can copy it to a temp location and read that
             {
                 string tempPath = Path.GetTempFileName();
                 File.Copy(path, tempPath, true);
-                stream = new FileStream(tempPath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read, 8, FileOptions.RandomAccess | FileOptions.DeleteOnClose);
+                stream = new FileStream(tempPath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read, 8, options | FileOptions.DeleteOnClose);
             }
             try { map = FromStreamInternal(stream, prot, offset, length); }
             catch (Exception x) { stream.Dispose(); throw x; }
@@ -66,9 +67,9 @@ namespace BrawlLib.IO
             if (length == 0)
                 length = (int)stream.Length;
 
-#if DEBUG
-            Console.WriteLine("Opening file map: {0}", stream.Name);
-#endif
+//#if DEBUG
+//            Console.WriteLine("Opening file map: {0}", stream.Name);
+//#endif
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.Win32NT:
@@ -84,9 +85,9 @@ namespace BrawlLib.IO
             if (length == 0)
                 length = (int)stream.Length;
             
-#if DEBUG
-            Console.WriteLine("Opening file map: {0}", stream.Name);
-#endif
+//#if DEBUG
+//            Console.WriteLine("Opening file map: {0}", stream.Name);
+//#endif
             switch (Environment.OSVersion.Platform)
             {
                 case PlatformID.Win32NT:

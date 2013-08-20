@@ -151,6 +151,8 @@ namespace System.Windows.Forms
         public ToolStripMenuItem enableTextOverlaysToolStripMenuItem;
         private RightPanel rightPanel;
         private ToolStripMenuItem wireframeToolStripMenuItem;
+        private ToolStripMenuItem interpolationEditorToolStripMenuItem;
+        private ToolStripMenuItem linearInterpolationToolStripMenuItem;
         public LeftPanel leftPanel;
 
         private void InitializeComponent()
@@ -243,6 +245,8 @@ namespace System.Windows.Forms
             this.displayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stPersonToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.firstPersonSCN0CamToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.linearInterpolationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.interpolationEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.targetModelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hideFromSceneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -370,7 +374,7 @@ namespace System.Windows.Forms
             this.kinectToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(243, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(387, 24);
             this.menuStrip1.TabIndex = 13;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -678,6 +682,7 @@ namespace System.Windows.Forms
             this.backColorToolStripMenuItem,
             this.modelToolStripMenuItem,
             this.fileTypesToolStripMenuItem,
+            this.interpolationEditorToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.kinectToolStripMenuItem1.Name = "kinectToolStripMenuItem1";
             this.kinectToolStripMenuItem1.Size = new System.Drawing.Size(44, 20);
@@ -692,7 +697,7 @@ namespace System.Windows.Forms
             this.showRight,
             this.detachViewerToolStripMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.editorsToolStripMenuItem.Text = "Panels";
             // 
             // showOptions
@@ -746,7 +751,7 @@ namespace System.Windows.Forms
             this.resetCameraToolStripMenuItem,
             this.showCameraCoordinatesToolStripMenuItem});
             this.backColorToolStripMenuItem.Name = "backColorToolStripMenuItem";
-            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.backColorToolStripMenuItem.Text = "Viewer";
             // 
             // backgroundToolStripMenuItem
@@ -911,7 +916,7 @@ namespace System.Windows.Forms
             this.toggleNormals,
             this.boundingBoxToolStripMenuItem});
             this.modelToolStripMenuItem.Name = "modelToolStripMenuItem";
-            this.modelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.modelToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.modelToolStripMenuItem.Text = "Model";
             // 
             // toggleBones
@@ -977,9 +982,10 @@ namespace System.Windows.Forms
             this.playVIS0ToolStripMenuItem,
             this.playCLR0ToolStripMenuItem,
             this.sCN0ToolStripMenuItem,
-            this.firstPersonSCN0CamToolStripMenuItem});
+            this.firstPersonSCN0CamToolStripMenuItem,
+            this.linearInterpolationToolStripMenuItem});
             this.fileTypesToolStripMenuItem.Name = "fileTypesToolStripMenuItem";
-            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.fileTypesToolStripMenuItem.Text = "Animations";
             // 
             // playCHR0ToolStripMenuItem
@@ -1096,10 +1102,26 @@ namespace System.Windows.Forms
             this.firstPersonSCN0CamToolStripMenuItem.Text = "First Person SCN0 Camera";
             this.firstPersonSCN0CamToolStripMenuItem.CheckedChanged += new System.EventHandler(this.stPersonToolStripMenuItem_CheckedChanged);
             // 
+            // linearInterpolationToolStripMenuItem
+            // 
+            this.linearInterpolationToolStripMenuItem.CheckOnClick = true;
+            this.linearInterpolationToolStripMenuItem.Name = "linearInterpolationToolStripMenuItem";
+            this.linearInterpolationToolStripMenuItem.Size = new System.Drawing.Size(211, 22);
+            this.linearInterpolationToolStripMenuItem.Text = "Linear Interpolation";
+            this.linearInterpolationToolStripMenuItem.CheckedChanged += new System.EventHandler(this.linearInterpolationToolStripMenuItem_CheckedChanged);
+            // 
+            // interpolationEditorToolStripMenuItem
+            // 
+            this.interpolationEditorToolStripMenuItem.CheckOnClick = true;
+            this.interpolationEditorToolStripMenuItem.Name = "interpolationEditorToolStripMenuItem";
+            this.interpolationEditorToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.interpolationEditorToolStripMenuItem.Text = "Interpolation Editor";
+            this.interpolationEditorToolStripMenuItem.Click += new System.EventHandler(this.interpolationEditorToolStripMenuItem_Click);
+            // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(176, 22);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
@@ -1118,35 +1140,35 @@ namespace System.Windows.Forms
             // hideFromSceneToolStripMenuItem
             // 
             this.hideFromSceneToolStripMenuItem.Name = "hideFromSceneToolStripMenuItem";
-            this.hideFromSceneToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.hideFromSceneToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.hideFromSceneToolStripMenuItem.Text = "Hide from scene";
             this.hideFromSceneToolStripMenuItem.Click += new System.EventHandler(this.hideFromSceneToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.deleteToolStripMenuItem.Text = "Delete from scene";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
             // hideAllOtherModelsToolStripMenuItem
             // 
             this.hideAllOtherModelsToolStripMenuItem.Name = "hideAllOtherModelsToolStripMenuItem";
-            this.hideAllOtherModelsToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.hideAllOtherModelsToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.hideAllOtherModelsToolStripMenuItem.Text = "Hide all other models";
             this.hideAllOtherModelsToolStripMenuItem.Click += new System.EventHandler(this.hideAllOtherModelsToolStripMenuItem_Click);
             // 
             // deleteAllOtherModelsToolStripMenuItem
             // 
             this.deleteAllOtherModelsToolStripMenuItem.Name = "deleteAllOtherModelsToolStripMenuItem";
-            this.deleteAllOtherModelsToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.deleteAllOtherModelsToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.deleteAllOtherModelsToolStripMenuItem.Text = "Delete all other models";
             this.deleteAllOtherModelsToolStripMenuItem.Click += new System.EventHandler(this.deleteAllOtherModelsToolStripMenuItem_Click);
             // 
             // displayBRRESRelativeAnimationsToolStripMenuItem
             // 
             this.displayBRRESRelativeAnimationsToolStripMenuItem.Name = "displayBRRESRelativeAnimationsToolStripMenuItem";
-            this.displayBRRESRelativeAnimationsToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.displayBRRESRelativeAnimationsToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.displayBRRESRelativeAnimationsToolStripMenuItem.Text = "Displaying all animations";
             this.displayBRRESRelativeAnimationsToolStripMenuItem.CheckStateChanged += new System.EventHandler(this.displayBRRESRelativeAnimationsToolStripMenuItem_CheckStateChanged);
             this.displayBRRESRelativeAnimationsToolStripMenuItem.Click += new System.EventHandler(this.displayBRRESRelativeAnimationsToolStripMenuItem_Click);
@@ -1678,6 +1700,33 @@ namespace System.Windows.Forms
                     _updating = false;
                     animEditors.HorizontalScroll.Visible = addedHeight = true;
                 }
+            }
+        }
+
+        private void interpolationEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_interpolationEditor == null || _interpolationEditor.IsDisposed)
+                _interpolationEditor = new InterpolationEditor(this);
+
+            if (!_interpolationEditor._open)
+            {
+                _interpolationEditor.Visible = true;
+                _interpolationEditor._open = true;
+                _interpolationEditor.TopMost = true;
+            }
+            else
+            {
+                _interpolationEditor.Visible = false;
+                _interpolationEditor._open = false;
+            }
+        }
+
+        private void linearInterpolationToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (TargetModel != null)
+            {
+                TargetModel._linearAnimation = linearInterpolationToolStripMenuItem.Checked;
+                UpdateModel();
             }
         }
     }

@@ -40,6 +40,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             int len = Header->_header._length;
             int total = WorkingUncompressed.Length;
 
+            SetSizeInternal(len);
+
             //Set data source
             if (total > len)
                 _audioSource = new DataSource((VoidPtr)Header + len, total - len);
@@ -70,7 +72,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (ResourceNode g in Children)
                     _headerLen += g.CalculateSize(true);
                 foreach (WAVESoundNode s in Children[1].Children)
-                    _audioLen += s._audioSource.Length;
+                    _audioLen += s._streamBuffer.Length;
             }
 
             return _headerLen + _audioLen;
@@ -97,14 +99,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_waveOffset = 0x20 + Children[0]._calcSize;
                 header->_waveLength = Children[1]._calcSize;
 
+                VoidPtr audio = addr;
                 if (RSARNode == null)
-                {
-                    VoidPtr audioAddr = addr;
-                    foreach (ResourceNode e in Children)
-                        audioAddr += e._calcSize;
-                    (Children[1] as RBNKSoundGroupNode)._audioAddr = audioAddr;
-                }
-                else (Children[1] as RBNKSoundGroupNode)._audioAddr = _rebuildAudioAddr;
+                    audio += Children[1]._calcSize;
+                else
+                    audio = _rebuildAudioAddr;
+
+                (Children[1] as RBNKSoundGroupNode)._audioAddr = audio;
+                _audioSource = new DataSource(audio, _audioLen);
 
                 Children[1].Rebuild(addr, Children[1]._calcSize, true);
                 addr += Children[1]._calcSize;
@@ -114,18 +116,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_waveOffset = 0;
                 header->_waveLength = 0;
 
-                VoidPtr a;
-                if (RSARNode == null)
-                {
-                    VoidPtr audioAddr = addr;
-                    foreach (ResourceNode e in Children)
-                        audioAddr += e._calcSize;
-                    a = audioAddr;
-                }
-                else a = _rebuildAudioAddr;
+                VoidPtr audio = addr;
+                if (RSARNode != null)
+                    audio = _rebuildAudioAddr;
 
-                Children[1].Rebuild(a, Children[1]._calcSize, true);
+                _audioSource = new DataSource(audio, _audioLen);
+                Children[1].Rebuild(audio, Children[1]._calcSize, true);
             }
+
+            SetSizeInternal(_headerLen);
         }
 
         public override void Remove()

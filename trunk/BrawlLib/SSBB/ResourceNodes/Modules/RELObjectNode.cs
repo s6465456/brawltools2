@@ -6,7 +6,7 @@ using System.Text;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public class RELObjectNode : ModuleEntryNode
+    public class RELObjectNode : RELEntryNode
     {
         private RELType _type = null;
 

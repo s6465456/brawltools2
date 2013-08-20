@@ -11,74 +11,81 @@ using System.PowerPcAssembly;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class RELSectionNode : ModuleDataNode
+    public unsafe class ModuleSectionNode : ModuleDataNode
     {
-        internal RELSection* Header { get { return (RELSection*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
+        internal VoidPtr Header { get { return WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.RELSection; } }
+        
+        [Browsable(false)]
+        public override uint ASMOffset { get { return (uint)_dataOffset; } }
 
-        private bool _isCodeSection;
-        private int _off;
-        private uint _size;
+        public bool _isCodeSection = false;
+        public bool _isBSSSection = false;
+        public int _dataOffset = 0;
+        public uint _dataSize;
 
+        [Category("REL Section"), Browsable(true)]
+        public override bool HasCode { get { return _isCodeSection; } }
         [Category("REL Section")]
-        public bool CodeSection { get { return _isCodeSection; } }
+        public bool IsBSS { get { return _isBSSSection; } }
         [Category("REL Section")]
-        public int Offset { get { return _off; } }
+        public int Offset { get { return _dataOffset; } }
         [Category("REL Section")]
-        public uint Size { get { return _size; } }
+        public uint Size { get { return _dataSize; } }
 
-        public VoidPtr _sectionAddr;
-        public bool _isDynamic = false;
+        public ModuleSectionNode() { }
+        public ModuleSectionNode(uint size) { InitBuffer(size); }
 
         public override bool OnInitialize()
         {
-            _isCodeSection = Header->IsCodeSection;
-            _off = Header->Offset;
-            _size = Header->_size;
+            if (_name == null)
+                _name = String.Format("Section[{0}] ", Index);
 
-            //if (Offset == 0 && Size == 0) { Remove(); return false; }
-
-            if (Offset == 0 && Size != 0)
+            if (_dataOffset == 0 && WorkingUncompressed.Length != 0)
             {
-                _sectionAddr = System.Memory.Alloc((int)Size);
-                _isDynamic = true;
+                _isBSSSection = true;
+                InitBuffer(_dataSize);
             }
             else
-                _sectionAddr = Root.WorkingUncompressed.Address + Offset;
-
-            _name = String.Format("[{0}] ", Index);
-            switch (Index)
             {
-                default: _name += "Section"; break;
-                case 1: _name += "Assembly"; break;
-                case 2: _name += "Constructors"; break;
-                case 3: _name += "Destructors"; break;
-                case 4: _name += "Constants"; break;
-                case 5: _name += "Objects"; break;
-                case 6: _name += "BSS"; break;
+                _isBSSSection = false;
+                InitBuffer(_dataSize, Header);
             }
 
-            Init(Size, CodeSection, _sectionAddr);
-
-            return Index > 1 && Index < 6;
+            return false;
         }
 
-        public override void OnPopulate()
+        public override int OnCalculateSize(bool force)
         {
-            switch (Index)
+            return _dataBuffer.Length;
+        }
+
+        public override void OnRebuild(VoidPtr address, int length, bool force)
+        {
+            buint* addr = (buint*)address;
+            foreach (Relocation r in _relocations)
+                *addr++ = r.RawValue;
+        }
+
+        public override void Dispose()
+        {
+            if (_dataBuffer != null)
+                _dataBuffer.Dispose();
+
+            base.Dispose();
+        }
+
+        public unsafe void ExportInitialized(string outPath)
+        {
+            using (FileStream stream = new FileStream(outPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 8, FileOptions.RandomAccess))
             {
-                case 2: //Parse Constructors
-                case 3: //Parse Destructors
-                    for (int i = 0; i < _relocations.Length; i++)
-                        if (_relocations[i].FormalValue > 0)
-                            new RELDeConStructorNode() { _destruct = Index == 3, _index = i }.Initialize(this, (VoidPtr)BaseAddress + _relocations[i].FormalValue, 0);
-                        break;
-                case 4: //Display Constants
-                    //new MoveDefSectionParamNode().Initialize(this, _dataBuffer.Address, _dataBuffer.Length);
-                    break;
-                case 5: //Parse Objects
-                    new ObjectParser().Parse(this);
-                    break;
+                stream.SetLength(_dataBuffer.Length);
+                using (FileMap map = FileMap.FromStream(stream))
+                {
+                    buint* addr = (buint*)map.Address;
+                    foreach (Relocation loc in _relocations)
+                        *addr++ = loc.SectionOffset;
+                }
             }
         }
 
@@ -88,15 +95,83 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 stream.SetLength(_dataBuffer.Length);
                 using (FileMap map = FileMap.FromStream(stream))
-                {
-                    VoidPtr addr = _dataBuffer.Address;
-
-                    byte* pIn = (byte*)addr;
-                    byte* pOut = (byte*)map.Address;
-                    for (int i = 0; i < _dataBuffer.Length; i++)
-                        *pOut++ = *pIn++;
-                }
+                    Memory.Move(map.Address, _dataBuffer.Address, (uint)_dataBuffer.Length);
             }
+        }
+    }
+
+    public class RELObjectSectionNode : ModuleSectionNode
+    {
+        ObjectParser _objectParser;
+
+        public void ParseObjects()
+        {
+            (_objectParser = new ObjectParser(this)).Parse();
+        }
+
+        public override bool OnInitialize()
+        {
+            base.OnInitialize();
+            return _objectParser._objects.Count > 0;
+        }
+
+        public override void OnPopulate()
+        {
+            _objectParser.Populate();
+        }
+    }
+
+    public unsafe class RELConstantsSectionNode : ModuleSectionNode
+    {
+        float[] _values;
+        public float[] Values { get { return _values; } set { _values = value; } }
+
+        public override bool OnInitialize()
+        {
+            base.OnInitialize();
+            _values = new float[_dataBuffer.Length / 4];
+            bfloat* values = (bfloat*)_dataBuffer.Address;
+            for (int i = 0; i < _values.Length; i++)
+                _values[i] = values[i];
+            return false;
+        }
+        public override void OnPopulate()
+        {
+            _values = new float[_dataBuffer.Length / 4];
+            bfloat* values = (bfloat*)_dataBuffer.Address;
+            for (int i = 0; i < _values.Length; i++)
+                _values[i] = values[i];
+        }
+
+        //public override int OnCalculateSize(bool force)
+        //{
+        //    return _values.Length * 4;
+        //}
+
+        //public override void OnRebuild(VoidPtr address, int length, bool force)
+        //{
+        //    bfloat* values = (bfloat*)address;
+        //    for (int i = 0; i < _values.Length; i++)
+        //        values[i] = _values[i];
+        //}
+    }
+
+    public class RELStructorSectionNode : ModuleSectionNode
+    {
+        public bool _destruct;
+        public override bool OnInitialize()
+        {
+            base.OnInitialize();
+            for (int i = 0; i < _relocations.Length; i++)
+                if (_relocations[i].RelOffset > 0)
+                    return true;
+            return false;
+        }
+        public override void OnPopulate()
+        {
+            for (int i = 0; i < _relocations.Length; i++)
+                if (_relocations[i].RelOffset > 0)
+                    new RELDeConStructorNode() { _destruct = _destruct, _index = i }.Initialize(this, (VoidPtr)BaseAddress + _relocations[i].RelOffset, 0);
         }
     }
 }

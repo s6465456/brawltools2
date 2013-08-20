@@ -24,6 +24,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _dataBuffer = new UnsafeBuffer(Header->_dataLength);
             Memory.Move(_dataBuffer.Address, Header->Data, (uint)Header->_dataLength);
+            SetSizeInternal(Header->_dataLength);
 
             _cmds = MMLParser.Parse(Header->Data + 12);
 

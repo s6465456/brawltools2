@@ -7,6 +7,6 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.RBNK)]
     class RBNKWrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.RBNK; } }
+        public override string ExportFilter { get { return FileFilters.RBNK; } }
     }
 }

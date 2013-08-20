@@ -200,6 +200,7 @@ namespace System
             p[15] = 1.0f;
             return m;
         }
+        public static Matrix TranslationMatrix(Vector3 v) { return TranslationMatrix(v._x, v._y, v._z); }
         public static Matrix TranslationMatrix(float x, float y, float z)
         {
             Matrix m = Identity;

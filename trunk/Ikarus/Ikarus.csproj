@@ -62,13 +62,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RunTimeData\InfoClasses.cs" />
+    <Compile Include="RunTimeData\RunTime.cs" />
     <Compile Include="File Manager\FileManagerClasses.cs" />
     <Compile Include="File Manager\FileManagerTextData.cs" />
     <Compile Include="DropDownLists.cs" />
     <Compile Include="FighterDefEnums.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="Moveset Builder\CommonMovesetBuilder.cs" />
     <Compile Include="Moveset Builder\NewMovesetBuilder.cs" />
-    <Compile Include="ResourceNodes\Actions\MoveDefActionNodeScripting.cs" />
+    <Compile Include="ResourceNodes\Actions\Scripting.cs" />
     <Compile Include="Structs\ExtraDataOffsets.cs" />
     <Compile Include="Structs\FighterDefinition.cs" />
     <Compile Include="UI\Controls\ArticleAttributeGrid.cs">
@@ -105,6 +108,18 @@
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
     <Compile Include="File Manager\FileManager.cs" />
+    <Compile Include="UI\Controls\HurtboxEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\Controls\HurtboxEditor.Designer.cs">
+      <DependentUpon>HurtboxEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\MiscPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -141,6 +156,10 @@
     <Compile Include="ResourceNodes\MoveDefLookupNode.cs" />
     <Compile Include="ResourceNodes\MoveDefNode.cs" />
     <Compile Include="Moveset Builder\MoveDefStringTables.cs" />
+    <Compile Include="WiimoteLib\DataTypes.cs" />
+    <Compile Include="WiimoteLib\Events.cs" />
+    <Compile Include="WiimoteLib\HIDImports.cs" />
+    <Compile Include="WiimoteLib\Wiimote.cs" />
     <None Include="Moveset Builder\MovesetBuilder.cs" />
     <Compile Include="ResourceNodes\SectionParamsNode.cs" />
     <Compile Include="Program.cs" />
@@ -211,6 +230,12 @@
     <EmbeddedResource Include="UI\Controls\ScriptEditor.resx">
       <DependentUpon>ScriptEditor.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\Controls\HurtboxEditor.resx">
+      <DependentUpon>HurtboxEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\MiscPanel.resx">
       <DependentUpon>MiscPanel.cs</DependentUpon>
     </EmbeddedResource>
@@ -255,6 +280,9 @@
       <Project>{462D0BBF-CE82-405B-8848-2F91E9E14C55}</Project>
       <Name>BrawlLib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="WiimoteLib.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -908,45 +908,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                         }
 
                         _primGroups = TriangleConverter.GroupPrimitives(Triangles);
-
-                        //foreach (Triangle t in Triangles)
-                        //{
-                        //    Console.WriteLine(t._x.ToString());
-                        //    Console.WriteLine(t._y.ToString());
-                        //    Console.WriteLine(t._z.ToString());
-                        //    Console.WriteLine();
-                        //}
-
-                        ////Groups as triangles
-                        //bool NewGroup = true;
-                        //PrimitiveGroup grp = new PrimitiveGroup();
-                        //for (int i = 0; i < Triangles.Count; i++)
-                        //{
-                        //Top:
-                        //    if (NewGroup) //Create a new group of triangles and node ids
-                        //    {
-                        //        grp = new PrimitiveGroup();
-                        //        NewGroup = false;
-                        //    }
-                        //    if (!(grp.TryAdd(Triangles[i]))) //Will add automatically if true
-                        //    {
-                        //        bool added = false;
-                        //        foreach (PrimitiveGroup g in _primGroups)
-                        //            if (grp.TryAdd(Triangles[i]))
-                        //            {
-                        //                added = true;
-                        //                break;
-                        //            }
-                        //        if (!added)
-                        //        {
-                        //            _primGroups.Add(grp);
-                        //            NewGroup = true;
-                        //            goto Top;
-                        //        }
-                        //    }
-                        //    if (i == Triangles.Count - 1) //Last triangle
-                        //        _primGroups.Add(grp);
-                        //}
                     }
                 }
 
@@ -1255,6 +1216,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.CullFace(CullFaceMode.Back);
                 _manager.PrepareStream();
                 _manager.ApplyTexture(null);
+                GL.Color4(Color.Black);
                 _manager.RenderMesh();
                 _manager.DetachStreams();
                 return;
@@ -1353,7 +1315,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             //Add bind transform
                             GL.Scale(mr.Scale._x, mr.Scale._y, 0);
                             GL.Rotate(mr.Rotation, 1, 0, 0);
-                            GL.Translate(-mr.Translation._x, mr.Translation._y, 0);
+                            GL.Translate(-mr.Translation._x, mr.Translation._y - ((mr.Scale._y - 1) / 2), 0);
 
                             //Now add frame transform
                             GL.Scale(mr._frameState._scale._x, mr._frameState._scale._y, 1);

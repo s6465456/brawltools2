@@ -396,18 +396,7 @@ namespace Ikarus.UI
         public void btnNextFrame_Click(object sender, EventArgs e) { pnlPlayback.numFrameIndex.Value++; }
         public void btnPlay_Click(object sender, EventArgs e)
         {
-            if (FileManager.Moveset != null && MoveDefActionNode._runningActions.Count > 0)
-                if (MovesetPanel._timer.IsRunning)
-                    MovesetPanel.StopScript();
-                else
-                    MovesetPanel.RunScript();
-            else
-            {
-                if (_timer.IsRunning)
-                    StopAnim();
-                else
-                    PlayAnim();
-            }
+            MovesetPanel.btnRunScript_Click(sender, e);
         }
 
         #endregion
@@ -428,7 +417,7 @@ namespace Ikarus.UI
                         pnlPlayback.btnLast_Click(this, null);
                     else
                         pnlPlayback.btnNextFrame_Click(this, null);
-                    return true;
+                    return true; 
                 }
                 else if (key == Keys.PageDown)
                 {

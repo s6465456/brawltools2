@@ -10,7 +10,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe class MoveDefActionFlagsNode : MoveDefEntryNode
     {
-        internal ActionFlags* First { get { return (ActionFlags*)WorkingUncompressed.Address; } }
+        internal FDefActionFlags* First { get { return (FDefActionFlags*)WorkingUncompressed.Address; } }
         int Count = 0;
         public MoveDefActionFlagsNode(string name, int count) { _name = name; Count = count; }
 
@@ -22,7 +22,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnPopulate()
         {
-            ActionFlags* addr = First;
+            FDefActionFlags* addr = First;
             for (int i = 0; i < Count; i++)
                 new MoveDefActionFlagsEntryNode().Initialize(this, addr++, 16);
         }
@@ -37,7 +37,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             _rebuildAddr = address;
 
-            ActionFlags* data = (ActionFlags*)address;
+            FDefActionFlags* data = (FDefActionFlags*)address;
             foreach (MoveDefActionFlagsEntryNode e in Children)
                 e.Rebuild(data++, 16, true);
         }
@@ -45,7 +45,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class MoveDefActionFlagsEntryNode : MoveDefEntryNode
     {
-        internal ActionFlags* Header { get { return (ActionFlags*)WorkingUncompressed.Address; } }
+        internal FDefActionFlags* Header { get { return (FDefActionFlags*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
         public int flags1, flags2, flags3;
@@ -89,7 +89,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             _rebuildAddr = address;
-            ActionFlags* header = (ActionFlags*)address;
+            FDefActionFlags* header = (FDefActionFlags*)address;
             header->_flags1 = flags1;
             header->_flags2 = flags2;
             header->_flags3 = flags3;

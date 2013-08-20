@@ -2,26 +2,36 @@
 
 namespace BrawlLib
 {
-    public static class ExportFilters
+    public static class FileFilters
     {
-        public static string TEX0 =
-            "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif,*.tex0)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif;*.tex0|" +
+        private static string i =
             "Portable Network Graphics (*.png)|*.png|" +
             "Truevision TARGA (*.tga)|*.tga|" +
             "Tagged Image File Format (*.tif, *.tiff)|*.tif;*.tiff|" +
             "Bitmap (*.bmp)|*.bmp|" +
             "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
-            "Gif (*.gif)|*.gif|" +
+            "Gif (*.gif)|*.gif|";
+
+        public static string TEX0 =
+            "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif,*.tex0)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif;*.tex0|" +
+            i +
             "TEX0 Raw Texture (*.tex0)|*.tex0";
 
-        public static string MDL0 =
+        public static string MDL0Import =
+            "All Model Formats (*.mdl0, *.pmd, *.dae)|*.mdl0;*.pmd;*.dae|" +
+            "Collada Scene (*.dae)|*.dae|" +
+            "MMD Model (*.pmd)|*.pmd|" +
+            "MDL0 Raw Model (*.mdl0)|*.mdl0";
+        
+        public static string MDL0Export =
             "All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             "Collada Scene (*.dae)|*.dae|" +
-            "Miku Miku Dance Model (*.pmd)|*.pmd|" +
             "MDL0 Raw Model (*.mdl0)|*.mdl0";
 
         public static string CHR0 =
-            "CHR0 Raw Animation (*.chr0)|*.chr0";
+            "All Formats (*.chr0, *.dae)|*.chr0;*.dae|" +
+            "CHR0 Raw Animation (*.chr0)|*.chr0|" +
+            "Collada Scene (*.dae)|*.dae";
 
         public static string PLT0 =
             "PLT0 Raw Palette (*.plt0)|*.plt0";
@@ -72,13 +82,7 @@ namespace BrawlLib
 
         public static string Images =
             "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif|" +
-            "Portable Network Graphics (*.png)|*.png|" +
-            "Truevision TARGA (*.tga)|*.tga|" +
-            "Tagged Image File Format (*.tif, *.tiff)|*.tif;*.tiff|" +
-            "Bitmap (*.bmp)|*.bmp|" +
-            "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
-            "Gif (*.gif)|*.gif|" + 
-            "Raw (*.*)|*.*";
+            i;
 
         public static string EFLS =
             "Effect List (*.efls)|*.efls";
@@ -89,16 +93,13 @@ namespace BrawlLib
         public static string REL =
             "REL (*.rel)|*.rel";
 
-        public static string Polygon =
+        public static string Object =
             "Object (*.obj)|*.obj|" +
             "Raw Data File (*.*)|*.*";
 
         public static string Raw =
             "Raw Data File (*.*)|*.*";
 
-        public static string MDef =
-            "Raw Fighter Moveset (*.moveset)|*.moveset";
-        
         public static string WAV =
             "Uncompressed PCM (*.wav)|*.wav";
 

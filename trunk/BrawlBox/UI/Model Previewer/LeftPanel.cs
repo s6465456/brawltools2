@@ -1146,7 +1146,7 @@ namespace System.Windows.Forms
                 using (SaveFileDialog dlgSave = new SaveFileDialog())
                 {
                     dlgSave.FileName = node.Name;
-                    dlgSave.Filter = ExportFilters.TEX0;
+                    dlgSave.Filter = FileFilters.TEX0;
                     if (dlgSave.ShowDialog(this) == DialogResult.OK)
                         node.Export(dlgSave.FileName);
                 }
@@ -1247,13 +1247,13 @@ namespace System.Windows.Forms
             dlgSave.FileName = node.Name;
             switch (TargetAnimType)
             {
-                case AnimType.CHR: dlgSave.Filter = ExportFilters.CHR0; break;
-                case AnimType.SRT: dlgSave.Filter = ExportFilters.SRT0; break;
-                case AnimType.SHP: dlgSave.Filter = ExportFilters.SHP0; break;
-                case AnimType.PAT: dlgSave.Filter = ExportFilters.PAT0; break;
-                case AnimType.VIS: dlgSave.Filter = ExportFilters.VIS0; break;
-                case AnimType.SCN: dlgSave.Filter = ExportFilters.SCN0; break;
-                case AnimType.CLR: dlgSave.Filter = ExportFilters.CLR0; break;
+                case AnimType.CHR: dlgSave.Filter = FileFilters.CHR0; break;
+                case AnimType.SRT: dlgSave.Filter = FileFilters.SRT0; break;
+                case AnimType.SHP: dlgSave.Filter = FileFilters.SHP0; break;
+                case AnimType.PAT: dlgSave.Filter = FileFilters.PAT0; break;
+                case AnimType.VIS: dlgSave.Filter = FileFilters.VIS0; break;
+                case AnimType.SCN: dlgSave.Filter = FileFilters.SCN0; break;
+                case AnimType.CLR: dlgSave.Filter = FileFilters.CLR0; break;
             }
             if (dlgSave.ShowDialog() == DialogResult.OK)
                 node.Export(dlgSave.FileName);
@@ -1267,13 +1267,13 @@ namespace System.Windows.Forms
 
             switch (TargetAnimType)
             {
-                case AnimType.CHR: dlgOpen.Filter = ExportFilters.CHR0; break;
-                case AnimType.SRT: dlgOpen.Filter = ExportFilters.SRT0; break;
-                case AnimType.SHP: dlgOpen.Filter = ExportFilters.SHP0; break;
-                case AnimType.PAT: dlgOpen.Filter = ExportFilters.PAT0; break;
-                case AnimType.VIS: dlgOpen.Filter = ExportFilters.VIS0; break;
-                case AnimType.SCN: dlgOpen.Filter = ExportFilters.SCN0; break;
-                case AnimType.CLR: dlgOpen.Filter = ExportFilters.CLR0; break;
+                case AnimType.CHR: dlgOpen.Filter = FileFilters.CHR0; break;
+                case AnimType.SRT: dlgOpen.Filter = FileFilters.SRT0; break;
+                case AnimType.SHP: dlgOpen.Filter = FileFilters.SHP0; break;
+                case AnimType.PAT: dlgOpen.Filter = FileFilters.PAT0; break;
+                case AnimType.VIS: dlgOpen.Filter = FileFilters.VIS0; break;
+                case AnimType.SCN: dlgOpen.Filter = FileFilters.SCN0; break;
+                case AnimType.CLR: dlgOpen.Filter = FileFilters.CLR0; break;
             }
 
             if (dlgOpen.ShowDialog() == DialogResult.OK)

@@ -54,6 +54,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _name = name;
             _isBlank = blank;
             _build = false;
+            if (parent != null && (parent as MoveDefEntryNode).ParentArticle != null)
+                _attachedArticleIndex = (parent as MoveDefEntryNode).ParentArticle.Index;
             if (_isBlank) //Initialize will not be called, because there is no data to read
             {
                 _parent = parent;
@@ -90,6 +92,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             _build = true;
             if (_offset > Root.dataSize)
                 return false;
+
+            if (_parent != null && (_parent as MoveDefEntryNode).ParentArticle != null)
+                _attachedArticleIndex = (_parent as MoveDefEntryNode).ParentArticle.Index;
+
             if (_name == null)
             {
                 if (Parent.Parent.Name == "Action Scripts")

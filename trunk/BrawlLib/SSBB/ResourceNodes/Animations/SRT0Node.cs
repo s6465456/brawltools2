@@ -468,7 +468,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if ((_indirect == true && ((SRT0TextureNode)Parent.Children[Index + 1])._indirect == false) ||
                 (_textureIndex > ((SRT0TextureNode)Parent.Children[Index + 1])._textureIndex && _indirect == ((SRT0TextureNode)Parent.Children[Index + 1])._indirect))
             {
-                doMoveDown();
+                DoMoveDown();
                 if (index != Index)
                     CheckNext();
             }
@@ -483,7 +483,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if ((_indirect == false && ((SRT0TextureNode)Parent.Children[Index - 1])._indirect == true) ||
                 (_textureIndex < ((SRT0TextureNode)Parent.Children[Index - 1])._textureIndex && _indirect == ((SRT0TextureNode)Parent.Children[Index - 1])._indirect))
             {
-                doMoveUp();
+                DoMoveUp();
                 if (index != Index)
                     CheckPrev();
             }

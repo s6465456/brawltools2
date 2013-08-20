@@ -56,7 +56,6 @@ namespace System.Windows.Forms
         private ToolStripMenuItem toolStripMenuItem8;
         private ToolStripMenuItem removeAllToolStripMenuItem;
         private ToolStripMenuItem addCustomAmountToolStripMenuItem;
-        private ToolStripMenuItem editRawTangentToolStripMenuItem;
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
@@ -102,7 +101,6 @@ namespace System.Windows.Forms
             this.toolStripMenuItem8 = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addCustomAmountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editRawTangentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.grpTransform.SuspendLayout();
             this.grpTransAll.SuspendLayout();
             this.ctxBox.SuspendLayout();
@@ -214,7 +212,7 @@ namespace System.Windows.Forms
             this.numScaleX.TabIndex = 18;
             this.numScaleX.Text = "0";
             this.numScaleX.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numScaleX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numScaleX_MouseDown);
+            this.numScaleX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numScaleY
             // 
@@ -225,7 +223,7 @@ namespace System.Windows.Forms
             this.numScaleY.TabIndex = 19;
             this.numScaleY.Text = "0";
             this.numScaleY.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numScaleY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numScaleY_MouseDown);
+            this.numScaleY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numScaleZ
             // 
@@ -236,7 +234,7 @@ namespace System.Windows.Forms
             this.numScaleZ.TabIndex = 20;
             this.numScaleZ.Text = "0";
             this.numScaleZ.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numScaleZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numScaleZ_MouseDown);
+            this.numScaleZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numRotX
             // 
@@ -247,7 +245,7 @@ namespace System.Windows.Forms
             this.numRotX.TabIndex = 15;
             this.numRotX.Text = "0";
             this.numRotX.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numRotX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numRotX_MouseDown);
+            this.numRotX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numRotY
             // 
@@ -258,7 +256,7 @@ namespace System.Windows.Forms
             this.numRotY.TabIndex = 16;
             this.numRotY.Text = "0";
             this.numRotY.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numRotY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numRotY_MouseDown);
+            this.numRotY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numRotZ
             // 
@@ -269,7 +267,7 @@ namespace System.Windows.Forms
             this.numRotZ.TabIndex = 17;
             this.numRotZ.Text = "0";
             this.numRotZ.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numRotZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numRotZ_MouseDown);
+            this.numRotZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numTransX
             // 
@@ -280,7 +278,7 @@ namespace System.Windows.Forms
             this.numTransX.TabIndex = 3;
             this.numTransX.Text = "0";
             this.numTransX.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numTransX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numTransX_MouseDown);
+            this.numTransX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numTransY
             // 
@@ -291,7 +289,7 @@ namespace System.Windows.Forms
             this.numTransY.TabIndex = 13;
             this.numTransY.Text = "0";
             this.numTransY.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numTransY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numTransY_MouseDown);
+            this.numTransY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numTransZ
             // 
@@ -302,7 +300,7 @@ namespace System.Windows.Forms
             this.numTransZ.TabIndex = 14;
             this.numTransZ.Text = "0";
             this.numTransZ.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numTransZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numTransZ_MouseDown);
+            this.numTransZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // lblTrans
             // 
@@ -460,8 +458,7 @@ namespace System.Windows.Forms
             this.add,
             this.subtract,
             this.removeAllToolStripMenuItem,
-            this.addCustomAmountToolStripMenuItem,
-            this.editRawTangentToolStripMenuItem});
+            this.addCustomAmountToolStripMenuItem});
             this.ctxBox.Name = "ctxBox";
             this.ctxBox.Size = new System.Drawing.Size(167, 142);
             // 
@@ -553,13 +550,6 @@ namespace System.Windows.Forms
             this.addCustomAmountToolStripMenuItem.Text = "Edit All...";
             this.addCustomAmountToolStripMenuItem.Click += new System.EventHandler(this.addCustomAmountToolStripMenuItem_Click);
             // 
-            // editRawTangentToolStripMenuItem
-            // 
-            this.editRawTangentToolStripMenuItem.Name = "editRawTangentToolStripMenuItem";
-            this.editRawTangentToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.editRawTangentToolStripMenuItem.Text = "Edit Raw Tangent";
-            this.editRawTangentToolStripMenuItem.Click += new System.EventHandler(this.editRawTangentToolStripMenuItem_Click);
-            // 
             // CHR0Editor
             // 
             this.Controls.Add(this.grpTransAll);
@@ -630,13 +620,30 @@ namespace System.Windows.Forms
             
             for (int i = 0; i < 9; i++)
                 ResetBox(i);
+
+            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor._open)
+                _mainWindow.InterpolationEditor.SetTarget(Entry);
         }
+
+        public CHR0EntryNode Entry
+        {
+            get
+            {
+                CHR0EntryNode entry;
+                if (TargetBone != null && SelectedAnimation != null && CurrentFrame > 0 && ((entry = SelectedAnimation.FindChild(TargetBone.Name, false) as CHR0EntryNode) != null))
+                    return entry;
+                else 
+                    return null;
+            }
+        }
+
         public unsafe void ResetBox(int index)
         {
             NumericInputBox box = _transBoxes[index];
             MDL0BoneNode bone = TargetBone;
             CHR0EntryNode entry;
             if (TargetBone != null)
+            {
                 if ((SelectedAnimation != null) && (CurrentFrame > 0) && ((entry = SelectedAnimation.FindChild(bone.Name, false) as CHR0EntryNode) != null))
                 {
                     KeyframeEntry e = entry.Keyframes.GetKeyframe((KeyFrameMode)index + 0x10, CurrentFrame - 1);
@@ -657,6 +664,7 @@ namespace System.Windows.Forms
                     box.Value = ((float*)&state)[index];
                     box.BackColor = Color.White;
                 }
+            }
             else
             {
                 box.Value = index < 3 ? 1 : 0;
@@ -742,56 +750,56 @@ namespace System.Windows.Forms
                 else //Set to existing CHR0 entry 
                     if (float.IsNaN(box.Value))
                     {
-                        //if (_mainWindow.TargetAnimType == AnimType.CHR)
-                        //{
-                        //    //Value removed, find keyframe and zero it out
-                        //    if (kfIndex >= 0)
-                        //    {
-                        //        kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
-                        //        kf.forKeyframeCHR = true;
-                        //        kf.SetBool(index + 0x10, false);
-                        //        pkf[index] = box.Value;
+                        if (_mainWindow.TargetAnimType == AnimType.CHR)
+                        {
+                            //Value removed, find keyframe and zero it out
+                            if (kfIndex >= 0)
+                            {
+                                kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
+                                kf.forKeyframeCHR = true;
+                                kf.SetBool(index + 0x10, false);
+                                pkf[index] = box.Value;
 
-                        //        for (x = 0; (x < 9) && (float.IsNaN(pkf[x]) || !kf.GetBool(x + 0x10)); x++) ;
-                        //        if (x == 9)
-                        //        {
-                        //            _mainWindow.KeyframePanel.listKeyframes.Items.RemoveAt(kfIndex);
-                        //            _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = -1;
-                        //        }
-                        //        else
-                        //            _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
-                        //    }
-                        //}
+                                for (x = 0; (x < 9) && (float.IsNaN(pkf[x]) || !kf.GetBool(x + 0x10)); x++) ;
+                                if (x == 9)
+                                {
+                                    _mainWindow.KeyframePanel.listKeyframes.Items.RemoveAt(kfIndex);
+                                    _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = -1;
+                                }
+                                else
+                                    _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
+                            }
+                        }
 
                         entry.RemoveKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1);
                     }
                     else
                     {
-                        //if (_mainWindow.TargetAnimType == AnimType.CHR)
-                        //{
-                        //    if (kfIndex >= 0)
-                        //    {
-                        //        kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
-                        //        kf.forKeyframeCHR = true;
-                        //        kf.SetBool(index + 0x10, true);
-                        //        pkf[index] = box.Value;
-                        //        _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
-                        //    }
-                        //    else
-                        //    {
-                        //        kf = AnimationFrame.Empty;
-                        //        kf.forKeyframeCHR = true;
-                        //        kf.SetBool(index + 0x10, true);
-                        //        kf.Index = CurrentFrame - 1;
-                        //        pkf[index] = box.Value;
+                        if (_mainWindow.TargetAnimType == AnimType.CHR)
+                        {
+                            if (kfIndex >= 0)
+                            {
+                                kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
+                                kf.forKeyframeCHR = true;
+                                kf.SetBool(index + 0x10, true);
+                                pkf[index] = box.Value;
+                                _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
+                            }
+                            else
+                            {
+                                kf = AnimationFrame.Empty;
+                                kf.forKeyframeCHR = true;
+                                kf.SetBool(index + 0x10, true);
+                                kf.Index = CurrentFrame - 1;
+                                pkf[index] = box.Value;
 
-                        //        int count = _mainWindow.KeyframePanel.listKeyframes.Items.Count;
-                        //        for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
+                                int count = _mainWindow.KeyframePanel.listKeyframes.Items.Count;
+                                for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
 
-                        //        _mainWindow.KeyframePanel.listKeyframes.Items.Insert(x, kf);
-                        //        _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = x;
-                        //    }
-                        //}
+                                _mainWindow.KeyframePanel.listKeyframes.Items.Insert(x, kf);
+                                _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = x;
+                            }
+                        }
                         entry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
                     }
             }
@@ -962,176 +970,43 @@ namespace System.Windows.Forms
             if (SelectedAnimation == null || numRotX.Enabled == false || numRotY.Enabled == false || numRotZ.Enabled == false)
                 e.Cancel = true;
         }
+
+        public void UpdateInterpolationEditor(NumericInputBox box)
+        {
+            if (_mainWindow.InterpolationEditor == null || !_mainWindow.InterpolationEditor._open)
+                return;
+
+            _mainWindow.InterpolationEditor.SelectedMode = (KeyFrameMode)type;
+
+            if (box.BackColor == Color.Yellow)
+            {
+                CHR0EntryNode entry = SelectedAnimation.FindChild(TargetBone.Name, false) as CHR0EntryNode;
+                KeyframeEntry kfe = entry.GetKeyframe((KeyFrameMode)type, CurrentFrame - 1);
+                if (kfe != null)
+                    _mainWindow.InterpolationEditor.SelectedKeyframe = kfe;
+                else
+                    _mainWindow.InterpolationEditor.SelectedKeyframe = null;
+            }
+            else
+                _mainWindow.InterpolationEditor.SelectedKeyframe = null;
+        }
+
         public int type = 0;
-        private void numScaleX_MouseDown(object sender, MouseEventArgs e)
+        private void box_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x10;
-                if (numScaleX.Enabled == true)
-                {
-                    if (_transBoxes[0].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numScaleX.ContextMenuStrip = ctxBox;
-                    Source.Text = numScaleX.Text;
-                }
-                else
-                    numScaleX.ContextMenuStrip = null;
-            }
-        }
+            NumericInputBox box = sender as NumericInputBox;
 
-        private void numScaleY_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x11;
-                if (numScaleY.Enabled == true)
-                {
-                    if (_transBoxes[1].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numScaleY.ContextMenuStrip = ctxBox;
-                    Source.Text = numScaleY.Text;
-                }
-                else
-                    numScaleY.ContextMenuStrip = null;
-            }
-        }
+            type = 0x10 + (int)box.Tag;
+            UpdateInterpolationEditor(box);
 
-        private void numScaleZ_MouseDown(object sender, MouseEventArgs e)
-        {
             if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x12;
-                if (numScaleZ.Enabled == true)
+                if (box.Enabled == true)
                 {
-                    if (_transBoxes[2].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numScaleZ.ContextMenuStrip = ctxBox;
-                    Source.Text = numScaleZ.Text;
+                    box.ContextMenuStrip = ctxBox;
+                    Source.Text = box.Text;
                 }
                 else
-                    numScaleZ.ContextMenuStrip = null;
-            }
-        }
-
-        private void numRotX_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x13;
-                if (numRotX.Enabled == true)
-                {
-                    if (_transBoxes[3].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numRotX.ContextMenuStrip = ctxBox;
-                    Source.Text = numRotX.Text;
-                }
-                else
-                    numRotX.ContextMenuStrip = null;
-            }
-        }
-
-        private void numRotY_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x14;
-                if (numRotY.Enabled == true)
-                {
-                    if (_transBoxes[4].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numRotY.ContextMenuStrip = ctxBox;
-                    Source.Text = numRotY.Text;
-                }
-                else
-                    numRotY.ContextMenuStrip = null;
-            }
-        }
-
-        private void numRotZ_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x15;
-                if (numRotZ.Enabled == true)
-                {
-                    if (_transBoxes[5].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numRotZ.ContextMenuStrip = ctxBox;
-                    Source.Text = numRotZ.Text;
-                }
-                else
-                    numRotZ.ContextMenuStrip = null;
-            }
-        }
-
-        private void numTransX_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x16;
-                if (numTransX.Enabled == true)
-                {
-                    if (_transBoxes[6].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numTransX.ContextMenuStrip = ctxBox;
-                    Source.Text = numTransX.Text;
-                }
-                else
-                    numTransX.ContextMenuStrip = null;
-            }
-        }
-
-        private void numTransY_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x17;
-                if (numTransY.Enabled == true)
-                {
-                    if (_transBoxes[7].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numTransY.ContextMenuStrip = ctxBox;
-                    Source.Text = numTransY.Text;
-                }
-                else
-                    numTransY.ContextMenuStrip = null;
-            }
-        }
-
-        private void numTransZ_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x18;
-                if (numTransZ.Enabled == true)
-                {
-                    if (_transBoxes[8].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numTransZ.ContextMenuStrip = ctxBox;
-                    Source.Text = numTransZ.Text;
-                }
-                else
-                    numTransZ.ContextMenuStrip = null;
-            }
+                    box.ContextMenuStrip = null;
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
@@ -1382,15 +1257,5 @@ namespace System.Windows.Forms
         //{
         //    SelectedAnimation.Loop = chkLoop.Checked ? true : false;
         //}
-
-        private void editRawTangentToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            TangentEditor t = new TangentEditor();
-            CHR0EntryNode entry = SelectedAnimation.FindChild(TargetBone.Name, false) as CHR0EntryNode;
-            KeyframeEntry kfe = entry.GetKeyframe((KeyFrameMode)type, CurrentFrame - 1);
-            if (kfe != null)
-            if (t.ShowDialog(this, kfe._tangent) == DialogResult.OK)
-                kfe._tangent = t.tan;
-        }
     }
 }

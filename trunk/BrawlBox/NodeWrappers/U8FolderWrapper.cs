@@ -227,7 +227,7 @@ namespace BrawlBox
         public void ImportBrres()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.BRES, out path) > 0)
+            if (Program.OpenFile(FileFilters.BRES, out path) > 0)
             {
                 BRESNode node = NodeFactory.FromFile(null, path) as BRESNode;
                 ((U8FolderNode)_resource).AddChild(node);

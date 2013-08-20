@@ -48,8 +48,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int LoopStartSample { get { return _loopStart; } }
         [Category("Audio Stream")]
         public int NumSamples { get { return _numSamples; } }
-        [Category("Audio Stream")]
-        public int DataOffset { get { return _dataOffset; } }
+        //[Category("Audio Stream")]
+        //public int DataOffset { get { return _dataOffset; } }
         [Category("Audio Stream")]
         public int NumBlocks { get { return _numBlocks; } }
         [Category("Audio Stream")]

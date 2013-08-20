@@ -7,6 +7,6 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.MSBin)]
     class MSBinWrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.MSBin; } }
+        public override string ExportFilter { get { return FileFilters.MSBin; } }
     }
 }

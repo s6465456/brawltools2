@@ -11,49 +11,56 @@ using OpenTK.Graphics.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefArticleNode : MoveDefEntryNode, IRenderedObject
+    public unsafe class MoveDefArticleNode : MoveDefEntryNode
     {
         internal Article* Header { get { return (Article*)WorkingUncompressed.Address; } }
 
         [Browsable(false)]
-        public MDL0BoneNode BoneNode
+        public MDL0BoneNode CharBoneNode
         {
-            get { if (Root._model == null) return null; if (bone > Root._model._linker.BoneCache.Length || bone < 0) return null; return (MDL0BoneNode)Root._model._linker.BoneCache[bone]; }
-            set { bone = value.BoneIndex; }
+            get { if (Root._model == null) return null; if (charBone > Root._model._linker.BoneCache.Length || charBone < 0) return null; return (MDL0BoneNode)Root._model._linker.BoneCache[charBone]; }
+            set { charBone = value.BoneIndex; }
         }
 
+        [Browsable(false)]
+        public MDL0BoneNode ArticleBoneNode
+        {
+            get { if (_info == null || _info._model == null) return null; if (articleBone > _info._model._linker.BoneCache.Length || articleBone < 0) return null; return (MDL0BoneNode)_info._model._linker.BoneCache[articleBone]; }
+            set { articleBone = value.BoneIndex; }
+        }
+        
         [Category("Article")]
         public int ID { get { return Index; } }
         [Category("Article")]
-        public int ArticleGroupID { get { return id; } set { id = value; SignalPropertyChange(); } }
-        [Category("Article")]
-        public int ARCEntryGroup { get { return group; } set { group = value; SignalPropertyChange(); } }
+        public int ARCGroupID { get { return id; } set { id = value; SignalPropertyChange(); } }
         [Category("Article"), Browsable(true), TypeConverter(typeof(DropDownListBonesMDef))]
-        public string Bone { get { return BoneNode == null ? bone.ToString() : BoneNode.Name; } set { if (Model == null) { bone = Convert.ToInt32(value); } else { BoneNode = String.IsNullOrEmpty(value) ? BoneNode : Model.FindBone(value); } SignalPropertyChange(); } }
-        [Category("Article")]
+        public string ArticleBone { get { return ArticleBoneNode == null ? articleBone.ToString() : ArticleBoneNode.Name; } set { if (Model == null) { articleBone = Convert.ToInt32(value); } else { ArticleBoneNode = String.IsNullOrEmpty(value) ? ArticleBoneNode : _info._model.FindBone(value); } SignalPropertyChange(); } }
+        [Category("Article"), Browsable(true), TypeConverter(typeof(DropDownListBonesMDef))]
+        public string CharacterBone { get { return CharBoneNode == null ? charBone.ToString() : CharBoneNode.Name; } set { if (Model == null) { charBone = Convert.ToInt32(value); } else { CharBoneNode = String.IsNullOrEmpty(value) ? CharBoneNode : Model.FindBone(value); } SignalPropertyChange(); } }
+        [Category("Article"), Browsable(false)]
         public int ActionFlagsStart { get { return aFlags; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int SubactionFlagsStart { get { return sFlags; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int ActionsStart { get { return aStart; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int SubactionMainStart { get { return sMStart; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int SubactionGFXStart { get { return sGStart; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int SubactionSFXStart { get { return sSStart; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int ModelVisibility { get { return visStart; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int CollisionData { get { return off1; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int DataOffset2 { get { return off2; } }
-        [Category("Article")]
+        [Category("Article"), Browsable(false)]
         public int DataOffset3 { get { return off3; } }
 
         public string ArticleStringID { get { return "ArticleType" + (Static ? "2_" : "1_") + (Name == "Entry Article" ? "Entry" : (Parent.Name == "Static Articles" ? "Static" + Index : offsetID.ToString())); } }
 
-        public int id, group, bone, aFlags, sFlags, aStart, sMStart, sGStart, sSStart, visStart, off1, off2, off3;
+        public int id, articleBone, charBone, aFlags, sFlags, aStart, sMStart, sGStart, sSStart, visStart, off1, off2, off3;
 
         [Browsable(false)]
         public bool pikmin { get { return ArticleStringID == "ArticleType1_10" && RootNode.Name == "FitPikmin"; } }
@@ -66,11 +73,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
 
-            return false;
+            //return false;
 
             id = Header->_id;
-            group = Header->_arcGroup;
-            bone = Header->_boneID;
+            articleBone = Header->_arcGroup;
+            charBone = Header->_boneID;
             aFlags = Header->_actionFlagsStart;
             sFlags = Header->_subactionFlagsStart;
             aStart = Header->_actionsStart;
@@ -341,7 +348,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     switch (index)
                     {
                         case 1:
-                            p = new MoveDefUnk17Node() { _name = "Bone Floats" };
+                            p = new MoveDefItemAnchorListNode() { _name = "Bone Floats" };
                             break;
                         case 2:
                             p = new HitDataListOffsetNode() { _name = "HitDataList" + index };
@@ -661,7 +668,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (_actionFlags != null)
             {
-                ActionFlags* actionFlagsAddr = (ActionFlags*)addr;
+                FDefActionFlags* actionFlagsAddr = (FDefActionFlags*)addr;
                 aFlags = (int)actionFlagsAddr - (int)RebuildBase;
 
                 foreach (MoveDefActionFlagsEntryNode a in _actionFlags.Children)
@@ -927,8 +934,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Article* article = (Article*)addr;
 
                 article->_id = id;
-                article->_boneID = bone;
-                article->_arcGroup = group;
+                article->_boneID = charBone;
+                article->_arcGroup = articleBone;
 
                 article->_actionsStart = aStart;
                 article->_actionFlagsStart = aFlags;
@@ -1010,47 +1017,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         public int currentSubAction = 0;
-        public MDL0Node Model = null;
-        public void Attach(TKContext ctx)
-        {
-            if (Model != null)
-                Model.Attach(ctx);
-        }
-
-        public void Detach()
-        {
-            if (Model != null)
-                Model.Detach();
-        }
-
-        public void Refesh()
-        {
-            if (Model != null)
-                Model.Refesh();
-        }
-
-        public void GetBox(out Vector3 min, out Vector3 max)
-        {
-            min = new Vector3();
-            max = new Vector3();
-        }
-
-        public void Render(TKContext ctx, ModelPanel mainWindow)
-        {
-            //MDL0Node targetModel = Root._model;
-            if (BoneNode != null)
-            {
-                Matrix m = BoneNode.Matrix;
-                GL.PushMatrix();
-                GL.LoadMatrix((float*)&m);
-            }
-
-            if (Model != null)
-                Model.Render(ctx, mainWindow);
-
-            if (BoneNode != null)
-                GL.PopMatrix();
-        }
+        public ArticleInfo _info;
     }
 
     public unsafe class CollDataType0 : MoveDefEntryNode
@@ -1235,11 +1202,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Collision Data Type 1")]
         public int Type { get { return type; } }
         [Category("Collision Data Type 1")]
-        public float Unknown1 { get { return unk1; } set { unk1 = value; SignalPropertyChange(); } }
+        public float Length { get { return unk1; } set { unk1 = value; SignalPropertyChange(); } }
         [Category("Collision Data Type 1")]
-        public float Unknown2 { get { return unk2; } set { unk2 = value; SignalPropertyChange(); } }
+        public float Width { get { return unk2; } set { unk2 = value; SignalPropertyChange(); } }
         [Category("Collision Data Type 1")]
-        public float Unknown3 { get { return unk3; } set { unk3 = value; SignalPropertyChange(); } }
+        public float Height { get { return unk3; } set { unk3 = value; SignalPropertyChange(); } }
         
         public override bool OnInitialize()
         {

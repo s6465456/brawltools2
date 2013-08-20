@@ -26,7 +26,7 @@ namespace System
 
         public static float CosLawGetAngle(float a, float b, float c)
         {
-            return (float)Math.Acos((a *a + b * b - c * c) / (2 * a * b));
+            return (float)Math.Acos((a * a + b * b - c * c) / (2 * a * b));
         }
 
         public static Vector3 PivotPoint(Vector3 center, Vector3 point, Vector3 angles)

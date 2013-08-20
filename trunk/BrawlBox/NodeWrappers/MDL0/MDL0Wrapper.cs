@@ -86,7 +86,8 @@ namespace BrawlBox.NodeWrappers
         }
         #endregion
 
-        public override string ExportFilter { get { return ExportFilters.MDL0; } }
+        public override string ExportFilter { get { return FileFilters.MDL0Export; } }
+        public override string ImportFilter { get { return FileFilters.MDL0Import; } }
 
         public MDL0Wrapper() { ContextMenuStrip = _menu; }
 

@@ -14,15 +14,20 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class RELMethodNode : ModuleDataNode
     {
         internal buint* Header { get { return (buint*)WorkingUncompressed.Address; } }
+
+        [Browsable(false)]
+        public RELObjectNode Object { get { return Parent.Parent as RELObjectNode; } }
+
+        [Browsable(false)]
+        public string FullName { get { return (Object != null ? Object.Type.FullName + "." : "") + _name; } }
+        
         public override bool OnInitialize()
         {
-            RELSectionNode section = Location;
+            ModuleSectionNode section = Location;
             if (section == null)
                 return false;
 
-            _initAddr = Header;
-
-            uint relative = (uint)Header - (uint)section._sectionAddr;
+            uint relative = (uint)Header - (uint)section.WorkingUncompressed.Address;
 
             int x = 0;
             while (!((PPCOpCode.Disassemble(&Header[x++])) is OpBlr)) ;
@@ -37,7 +42,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0; i < _dataBuffer.Length; i++)
                 *pOut++ = *pIn++;
 
-            _code = new ASM(_dataBuffer.Address, x);
+            if (_relocations != null && _relocations.Length != 0)
+            {
+                _relocations[0].Tags.Add(FullName + " Start");
+                _relocations[_relocations.Length - 1].Tags.Add(FullName + " End");
+            }
+
             return false;
         }
 

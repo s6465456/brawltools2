@@ -160,6 +160,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override bool OnInitialize()
         {
+            return false;
+
             base.OnInitialize();
 
             _name = Header.Name;
@@ -293,7 +295,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal byte* Header { get { return (byte*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
-        public List<AttributeInfo> _info;
+        //public List<AttributeInfo> _info;
 
         private UnsafeBuffer attributeBuffer;
 
@@ -312,26 +314,26 @@ namespace BrawlLib.SSBB.ResourceNodes
             byte* pOut = (byte*)attributeBuffer.Address;
             byte* pIn = (byte*)Header;
 
-            _info = new List<AttributeInfo>();
-            for (int i = 0; i < WorkingUncompressed.Length; i++)
-            {
-                if (i % 4 == 0)
-                {
-                    AttributeInfo info = new AttributeInfo();
+            //_info = new List<AttributeInfo>();
+            //for (int i = 0; i < WorkingUncompressed.Length; i++)
+            //{
+            //    if (i % 4 == 0)
+            //    {
+            //        AttributeInfo info = new AttributeInfo();
 
-                    //Guess
-                    if (((((uint)*((buint*)pIn)) >> 24) & 0xFF) != 0 && *((bint*)pIn) != -1 && !float.IsNaN(((float)*((bfloat*)pIn))))
-                        info._type = 0;
-                    else
-                        info._type = 1;
+            //        //Guess
+            //        if (((((uint)*((buint*)pIn)) >> 24) & 0xFF) != 0 && *((bint*)pIn) != -1 && !float.IsNaN(((float)*((bfloat*)pIn))))
+            //            info._type = 0;
+            //        else
+            //            info._type = 1;
 
-                    info._name = (info._type == 1 ? "*" : "" + (info._type > 3 ? "+" : "")) + "0x" + i.ToString("X");
-                    info._description = "No Description Available.";
+            //        info._name = (info._type == 1 ? "*" : "" + (info._type > 3 ? "+" : "")) + "0x" + i.ToString("X");
+            //        info._description = "No Description Available.";
                     
-                    _info.Add(info);
-                }
-                *pOut++ = *pIn++;
-            }
+            //        _info.Add(info);
+            //    }
+            //    *pOut++ = *pIn++;
+            //}
 
             return false;
         }

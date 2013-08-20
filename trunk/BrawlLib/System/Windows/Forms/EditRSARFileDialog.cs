@@ -391,7 +391,7 @@ namespace System.Windows.Forms
             ResourceNode r = dataListBox.Items[dataListBox.SelectedIndex] as ResourceNode;
             using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                dlg.Filter = ExportFilters.Raw;
+                dlg.Filter = FileFilters.Raw;
                 if (dlg.ShowDialog() == DialogResult.OK)
                     r.Replace(dlg.FileName);
             }
@@ -404,7 +404,7 @@ namespace System.Windows.Forms
             using (SaveFileDialog dlg = new SaveFileDialog())
             {
                 dlg.FileName = r.Name;
-                dlg.Filter = ExportFilters.Raw;
+                dlg.Filter = FileFilters.Raw;
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                     r.Export(dlg.FileName);
             }
@@ -439,7 +439,7 @@ namespace System.Windows.Forms
             using (SaveFileDialog dlg = new SaveFileDialog())
             {
                 dlg.FileName = r.Name;
-                dlg.Filter = ExportFilters.WAV + "|" + ExportFilters.Raw;
+                dlg.Filter = FileFilters.WAV + "|" + FileFilters.Raw;
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                     r.Export(dlg.FileName);
             }
@@ -451,7 +451,7 @@ namespace System.Windows.Forms
             ResourceNode r = soundsListBox.Items[soundsListBox.SelectedIndex] as ResourceNode;
             using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                dlg.Filter = ExportFilters.WAV + "|" + ExportFilters.Raw;
+                dlg.Filter = FileFilters.WAV + "|" + FileFilters.Raw;
                 if (dlg.ShowDialog() == DialogResult.OK)
                     r.Replace(dlg.FileName);
             }

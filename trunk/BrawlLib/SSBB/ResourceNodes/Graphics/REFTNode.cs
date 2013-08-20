@@ -38,7 +38,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             REFT* header = Header;
 
-            _name = header->IdString;
+            if (_name == null)
+                _name = header->IdString;
+
             _dataLen = header->_dataLength;
             _dataOff = header->_dataOffset;
             _unk1 = header->_linkPrev;

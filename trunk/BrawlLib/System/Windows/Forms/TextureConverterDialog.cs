@@ -63,7 +63,7 @@ namespace System.Windows.Forms
         {
             InitializeComponent();
 
-            dlgOpen.Filter = ExportFilters.Images;
+            dlgOpen.Filter = FileFilters.Images;
 
             foreach (WiiPixelFormat f in Enum.GetValues(typeof(WiiPixelFormat)))
                 cboFormat.Items.Add(f);

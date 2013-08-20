@@ -4,10 +4,11 @@ using BrawlLib.SSBB.ResourceNodes;
 using System.Data;
 using System.IO;
 using Ikarus;
+using Ikarus.UI;
 
 namespace System.Windows.Forms
 {
-    public class AttributeGrid : UserControl
+    public unsafe class AttributeGrid : UserControl
     {
         #region Designer
 
@@ -99,6 +100,8 @@ namespace System.Windows.Forms
 
         public AttributeInfo[] AttributeArray { get { return FileManager.AttributeArray; } }
 
+        LeftPanel _mainWindow;
+
         public AttributeGrid()
         {
             InitializeComponent();
@@ -154,6 +157,31 @@ namespace System.Windows.Forms
                     attributes.Rows[i][1] = (int)((bint*)buffer)[i];
                 else
                     attributes.Rows[i][1] = (float)((bfloat*)buffer)[i];
+        }
+
+        public void SetFloat(int index, float value)
+        {
+            if (((bfloat*)TargetNode.AttributeBuffer.Address)[index] != value)
+            {
+                ((bfloat*)TargetNode.AttributeBuffer.Address)[index] = value;
+                TargetNode.SignalPropertyChange();
+            }
+        }
+        public float GetFloat(int index)
+        {
+            return ((bfloat*)TargetNode.AttributeBuffer.Address)[index];
+        }
+        public void SetInt(int index, int value)
+        {
+            if (((bint*)TargetNode.AttributeBuffer.Address)[index] != value)
+            {
+                ((bint*)TargetNode.AttributeBuffer.Address)[index] = value;
+                TargetNode.SignalPropertyChange();
+            }
+        }
+        public int GetInt(int index)
+        {
+            return ((bint*)TargetNode.AttributeBuffer.Address)[index];
         }
 
         private unsafe void dtgrdAttributes_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -216,6 +244,7 @@ namespace System.Windows.Forms
             }
 
             attributes.Rows[index][1] = value;
+            MainForm.Invalidate();
         }
 
         private void dtgrdAttributes_CurrentCellChanged(object sender, EventArgs e)
@@ -242,5 +271,12 @@ namespace System.Windows.Forms
                 FileManager._dictionaryChanged = true;
             }
         }
+    }
+
+    public enum ValType
+    {
+        Float = 0,
+        Int = 1,
+        Degrees = 2
     }
 }

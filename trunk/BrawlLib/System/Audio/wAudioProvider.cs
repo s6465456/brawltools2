@@ -43,7 +43,7 @@ namespace System.Audio
             DS.DSBufferCapsFlags flags = DS.DSBufferCapsFlags.CtrlVolume | DS.DSBufferCapsFlags.LocDefer | DS.DSBufferCapsFlags.GlobalFocus | DS.DSBufferCapsFlags.GetCurrentPosition2;
             DS.DSBufferDesc desc = new DS.DSBufferDesc((uint)size, flags, &fmt, Guid.Empty);
 
-            return new wAudioBuffer(this, ref desc) { _source = target };
+            return new wAudioBuffer(this, ref desc) { _source = target, _owner = this };
         }
     }
 }

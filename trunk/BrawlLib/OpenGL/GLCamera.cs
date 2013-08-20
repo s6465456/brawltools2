@@ -23,7 +23,7 @@ namespace BrawlLib.OpenGL
 
             Apply();
         }
-        
+        public void Translate(Vector3 v) { Translate(v._x, v._y, v._z); }
         public void Translate(float x, float y, float z)
         {
             _matrix = Matrix.TranslationMatrix(-x, -y, -z) * _matrix;
@@ -39,7 +39,7 @@ namespace BrawlLib.OpenGL
         }
 
         private void Apply()
-        {         
+        {
             //Grab vertex from matrix
             Vector3 point = GetPoint();
 

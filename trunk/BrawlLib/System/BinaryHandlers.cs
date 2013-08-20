@@ -12,6 +12,8 @@ namespace System
 
         public static implicit operator uint(Bin32 val) { return val._data; }
         public static implicit operator Bin32(uint val) { return new Bin32(val); }
+        //public static implicit operator int(Bin32 val) { return (int)val._data; }
+        //public static implicit operator Bin32(int val) { return new Bin32((uint)val); }
 
         public override string ToString()
         {
@@ -71,6 +73,8 @@ namespace System
 
         public static implicit operator ushort(Bin16 val) { return val._data; }
         public static implicit operator Bin16(ushort val) { return new Bin16(val); }
+        //public static implicit operator short(Bin16 val) { return (short)val._data; }
+        //public static implicit operator Bin16(short val) { return new Bin16((ushort)val); }
 
         public override string ToString()
         {
@@ -130,6 +134,8 @@ namespace System
 
         public static implicit operator byte(Bin8 val) { return val._data; }
         public static implicit operator Bin8(byte val) { return new Bin8(val); }
+        //public static implicit operator sbyte(Bin8 val) { return (sbyte)val._data; }
+        //public static implicit operator Bin8(sbyte val) { return new Bin8((byte)val); }
 
         public override string ToString()
         {

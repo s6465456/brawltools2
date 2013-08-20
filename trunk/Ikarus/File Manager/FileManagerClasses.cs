@@ -27,7 +27,8 @@ namespace Ikarus
         public bool _parametersChanged = false;
         public Dictionary<string, SectionParamInfo> _parameters = null;
         public Dictionary<int, Dictionary<ARCFileType, List<ARCEntryNode>>> _characterEtcFiles;
-
+        public Dictionary<int, Dictionary<ARCFileType, List<ARCEntryNode>>> _characterFiles;
+        
         int _charId;
 
         public void Load(CharInfoFilePaths paths, int id)
@@ -50,13 +51,33 @@ namespace Ikarus
                 if (!String.IsNullOrEmpty(paths._models[i]) && _models[i] == null)
                     FileManager.AddFile(_models[i] = NodeFactory.FromFile(null, paths._models[i]) as ARCNode);
 
+            if (_models[0] != null)
+            {
+                _characterFiles = new Dictionary<int, Dictionary<ARCFileType, List<ARCEntryNode>>>();
+                ARCNode etc = _models[0];
+                foreach (ARCEntryNode e in etc.Children)
+                {
+                    int grp = e.GroupID;
+
+                    if (!_characterFiles.ContainsKey(grp))
+                        _characterFiles[grp] = new Dictionary<ARCFileType, List<ARCEntryNode>>();
+
+                    ARCFileType type = e.FileType;
+
+                    if (!_characterFiles[grp].ContainsKey(type))
+                        _characterFiles[grp].Add(type, new List<ARCEntryNode>());
+
+                    _characterFiles[grp][type].Add(e);
+                }
+            }
+
             if (_motionEtcArc != null)
             {
                 _characterEtcFiles = new Dictionary<int, Dictionary<ARCFileType, List<ARCEntryNode>>>();
                 ARCNode etc = _motionEtcArc.Children[0] as ARCNode;
                 foreach (ARCEntryNode e in etc.Children)
                 {
-                    int grp = e.FileGroup;
+                    int grp = e.GroupID;
 
                     if (!_characterEtcFiles.ContainsKey(grp))
                         _characterEtcFiles[grp] = new Dictionary<ARCFileType, List<ARCEntryNode>>();
@@ -141,7 +162,8 @@ namespace Ikarus
                 (_moveset = new MoveDefNode((CharName)_charId) { _name = "Fit" + ((CharFolder)_charId).ToString() }).Initialize(null, entry.WorkingUncompressed.Address, entry.WorkingUncompressed.Length);
                 if (_moveset != null)
                 {
-                    _moveset._model = _models[_selectedModelIndex].Children[0].Children[0].Children[0] as MDL0Node;
+                    if (_models[_selectedModelIndex] != null)
+                        _moveset._model = _models[_selectedModelIndex].Children[0].Children[0].Children[0] as MDL0Node;
                     _moveset.Populate(0);
                 }
                 return _moveset;

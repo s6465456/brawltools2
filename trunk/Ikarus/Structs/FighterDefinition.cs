@@ -106,13 +106,13 @@ namespace Ikarus
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct CommonMovesetHeader
     {
-        public bint Unknown0;
-        public bint Unknown1;
-        public bint Unknown2;
-        public bint Unknown3;
-        public bint ActionsStart;
-        public bint Actions2Start;
-        public bint Unknown6;
+        public bint GlobalICs;
+        public bint SSEGlobalICs;
+        public bint ICs;
+        public bint SSEICs;
+        public bint EntryActions;
+        public bint ExitActions;
+        public bint FlashOverlayArray;
         public bint Unknown7;
         public bint Unknown8;
         public bint Unknown9;
@@ -126,8 +126,8 @@ namespace Ikarus
         public bint Unknown17;
         public bint Unknown18;
         public bint Unknown19;
-        public bint Unknown20;
-        public bint Unknown21;
+        public bint ScreenTints;
+        public bint LegBones;
         public bint Unknown22;
         public bint Unknown23;
         public bint Unknown24;
@@ -555,13 +555,13 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct Unk17Entry
+    public unsafe struct FDefItemAnchor
     {
         public const int Size = 0x1C;
 
         public bint _boneIndex;
-        public BVec3 _unkVec1;
-        public BVec3 _unkVec2;
+        public BVec3 _translation;
+        public BVec3 _rotation;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -581,7 +581,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct ActionFlags
+    public unsafe struct FDefActionFlags
     {
         public bint _flags1; //Sometimes -1
         public bint _flags2; //Sometimes -1
@@ -600,11 +600,11 @@ namespace Ikarus
         public VoidPtr Address { get { fixed (void* ptr = &this) return ptr; } }
     }
 
-    public enum HurtBoxZone
+    public enum HurtBoxZone : byte
     {
         Low = 0,
-        Middle,
-        High
+        Middle = 1,
+        High = 2
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -615,10 +615,10 @@ namespace Ikarus
         //0000 0000 0001 1000   Zone
         //0000 0000 0110 0000   Region
         //1111 1111 1000 0000   Bone Index
-        
+
         byte dat0, dat1, pad0, pad1;
         
-        public int BoneIndex { get { return (int)((((dat1 >> 7) & 1) | (((int)dat0 << 1) & 0xFF)) & 0x1FF); } set { dat0 = (byte)(value >> 1); dat1 = (byte)((dat1 & 0x7F) | ((value & 1) << 7)); } }
+        public int BoneIndex { get { return (int)((((dat1 >> 7) & 1) | (int)dat0 << 1) & 0x1FF); } set { dat0 = (byte)(value >> 1); dat1 = (byte)((dat1 & 0x7F) | ((value & 1) << 7)); } }
         public HurtBoxZone Zone { get { return (HurtBoxZone)((dat1 >> 3) & 3); } set { dat1 = (byte)((dat1 & 0xE7) | (((byte)value & 3) << 3)); } }
         public bool Enabled { get { return (dat1 & 1) != 0; } set { dat1 = (byte)((dat1 & 0xFE) | ((byte)(value ? 1 : 0) & 1)); } }
         public int Region { get { return ((dat1 >> 5) & 3); } set { dat1 = (byte)((dat1 & 0x9F) | (((byte)value & 3) << 5)); } }

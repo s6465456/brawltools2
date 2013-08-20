@@ -8,25 +8,27 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public class ObjectParser
     {
-        private RELSectionNode ClassSection;
+        private ModuleSectionNode _objectSection;
 
-        Dictionary<Relocation, RELType> _types = new Dictionary<Relocation, RELType>();
-        List<RELObjectNode> _objects = new List<RELObjectNode>();
+        public Dictionary<Relocation, RELType> _types = new Dictionary<Relocation, RELType>();
+        public List<RELObjectNode> _objects = new List<RELObjectNode>();
 
-        public RELType[] Types { get { return _types.Values.ToArray(); } }
-        public RELObjectNode[] Objects { get { return _objects.ToArray(); } }
-
-        public ObjectParser() { }
-
-        public unsafe void Parse(RELSectionNode section)
+        public ObjectParser(ModuleSectionNode section)
         {
-            if ((ClassSection = section) == null)
+            _objects = new List<RELObjectNode>();
+            _types = new Dictionary<Relocation, RELType>();
+            _objectSection = section;
+        }
+
+        public unsafe void Parse()
+        {
+            if (_objectSection == null)
                 return;
 
-            for (Relocation rel = ClassSection[0]; rel != null; rel = rel.Next)
+            for (Relocation rel = _objectSection[0]; rel != null; rel = rel.Next)
                 ParseDeclaration(rel);
 
-            for (Relocation rel = ClassSection[0]; rel != null; rel = rel.Next)
+            for (Relocation rel = _objectSection[0]; rel != null; rel = rel.Next)
                 ParseObject(ref rel);
         }
 
@@ -36,10 +38,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_types.TryGetValue(rel, out type))
                 return type;
 
-            if (rel.Command == null || rel.Command._targetSection != ClassSection)
+            if (rel.Command == null || rel.Command._targetRelocation._section != _objectSection)
                 return null;
 
-            string name = new string((sbyte*)(rel._data.BaseAddress + rel.FormalValue));
+            string name = new string((sbyte*)(rel._section.BaseAddress + rel.RelOffset));
 
             if (String.IsNullOrEmpty(name))
                 return null;
@@ -48,11 +50,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             //Get inheritances, if any.
             if (rel.Next.Command != null)
-                for (Relocation r = rel.Next.Command.TargetRelocation;
+                for (Relocation r = rel.Next.Command._targetRelocation;
                      r != null && r.Command != null;
                      r = r.NextAt(2))
                 {
-                    RELType inheritance = ParseDeclaration(r.Command.TargetRelocation);
+                    RELType inheritance = ParseDeclaration(r.Command._targetRelocation);
                     if (inheritance != null)
                     {
                         type.Inheritance.Add(new InheritanceItemNode(inheritance, r.Next.RawValue));
@@ -65,12 +67,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             rel.Next.Tags.Add(type.FormalName + "->Inheritances");
 
             _types.Add(rel, type);
+
             return type;
         }
 
         private unsafe RELObjectNode ParseObject(ref Relocation rel)
         {
-            if (rel.Command == null || rel.Command._targetSection != ClassSection)
+            if (rel.Command == null || rel.Command._targetRelocation._section != _objectSection)
                 return null;
 
             RELType declaration = null;
@@ -78,12 +81,19 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_types.TryGetValue(rel.Command.TargetRelocation, out declaration) || declaration.Inherited)
                 return null;
 
-            RELObjectNode obj = ClassSection.FindChild(declaration.FullName, false) as RELObjectNode;
+            RELObjectNode obj = null;
+            foreach (RELObjectNode node in _objects)
+                if (node._name == declaration.FullName)
+                {
+                    obj = node;
+                    break;
+                }
 
             if (obj == null)
             {
                 obj = new RELObjectNode(declaration);
-                obj.Parent = ClassSection;
+                obj._parent = _objectSection;
+                _objectSection._children.Add(obj);
                 new RELGroupNode() { _name = "Inheritance" }.Parent = obj;
                 foreach (InheritanceItemNode n in declaration.Inheritance)
                     n.Parent = obj.Children[0];
@@ -96,9 +106,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             int setIndex = 0;
 
             // Read object methods.
-            while (rel.Command != null && (rel.Command._targetSection != ClassSection || rel.OffsetValue == baseRel.OffsetValue))
+            while (rel.Command != null && (rel.Command._targetRelocation._section != _objectSection || rel.SectionOffset == baseRel.SectionOffset))
             {
-                if (rel.OffsetValue != baseRel.OffsetValue)
+                if (rel.SectionOffset != baseRel.SectionOffset)
                 {
                     new RELMethodNode() { _name = String.Format("Function[{0}][{1}]", setIndex, methodIndex) }.Initialize(obj.Children[1], rel.Target.Address, 0);
                     methodIndex++;
@@ -118,6 +128,16 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _objects.Add(obj);
             return obj;
+        }
+
+        public void Populate()
+        {
+            foreach (RELObjectNode obj in _objects)
+            {
+                obj._parent = null;
+                _objectSection._children.Remove(obj);
+                obj.Parent = _objectSection;
+            }
         }
     }
 }

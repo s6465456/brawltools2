@@ -25,6 +25,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         REFT = 0x121C,
         REL = 0x1900,
         RELImport = 0x2900,
+        RELSection = 0x3900,
         MRG = 0x1501,
         AI = 0x0216,
         CE = 0x0A19,

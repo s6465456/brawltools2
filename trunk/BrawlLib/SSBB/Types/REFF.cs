@@ -165,13 +165,13 @@ namespace BrawlLib.SSBBTypes
     {
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public bushort mFlags;     // DrawFlag
+        public bushort mFlags; // DrawFlag
 
         public byte mACmpComp0;
         public byte mACmpComp1;
         public byte mACmpOp;
 
-        public byte mNumTevs;   // TEV uses stages 1 through 4
+        public byte mNumTevs;  // TEV uses stages 1 through 4
         public byte mFlagClamp; // Obsolete
 
         public byte mIndirectTargetStage;
@@ -719,7 +719,7 @@ namespace BrawlLib.SSBBTypes
         public bfloat lod_bias;
     }
 
-    public enum AnimCurveTargetByteFloat //curve flag = 0, 3
+    public enum v9AnimCurveTargetByteFloat //curve flag = 0, 3
     {
         //Updates: ParticleParam
         Color0Primary = 0,
@@ -760,31 +760,72 @@ namespace BrawlLib.SSBBTypes
         TexIndTrans = 96,
     }
 
-    public enum AnimCurveTargetRotateFloat //curve flag = 6, 3 when baking
+    public enum v7AnimCurveTargetByteFloat //curve flag = 0, 3
+    {
+        //Updates: ParticleParam
+        Color0Primary = 0,
+        Unknown1 = 1,
+        Unknown2 = 2,
+        Alpha0Primary = 3,
+        Color0Secondary = 4,
+        Unknown5 = 5,
+        Unknown6 = 6,
+        Alpha0Secondary = 7,
+        Color1Primary = 8,
+        Unknown9 = 9,
+        Unknown10 = 10,
+        Alpha1Primary = 11,
+        Color1Secondary = 12,
+        Unknown13 = 13,
+        Unknown14 = 14,
+        Alpha1Secondary = 15,
+        Size = 16,
+        Unknown17 = 17,
+        Unknown18 = 18,
+        Unknown19 = 19,
+        Unknown20 = 20,
+        Unknown21 = 21,
+        Unknown22 = 22,
+        Unknown23 = 23,
+        Scale = 24,
+        ACMPref0 = 119,
+        ACMPref1 = 120,
+        Tex1Scale = 44,
+        Tex1Rot = 68,
+        Tex1Trans = 80,
+        Tex2Scale = 52,
+        Tex2Rot = 72,
+        Tex2Trans = 88,
+        TexIndScale = 60,
+        TexIndRot = 76,
+        TexIndTrans = 96,
+    }
+
+    public enum v9AnimCurveTargetRotateFloat //curve flag = 6, 3 when baking
     {
         //Updates: ParticleParam
         Rotate = 32
     }
 
-    public enum AnimCurveTargetPtclTex //curve flag = 4
+    public enum v9AnimCurveTargetPtclTex //curve flag = 4
     {
         //Updates: ParticleParam
         Tex1 = 104,
         Tex2 = 108,
         TexInd = 112,
     }
-    public enum AnimCurveTargetChild //curve flag = 5
+    public enum v9AnimCurveTargetChild //curve flag = 5
     {
         //Updates: child
         Child = 0,
     }
-    public enum AnimCurveTargetChild2 //curve flag = 5
+    public enum v7AnimCurveTargetChild2 //curve flag = 5
     {
         //Updates: child
         Child = 26,
     }
 
-    public enum AnimCurveTargetField //curve flag = 7
+    public enum v9AnimCurveTargetField //curve flag = 7
     {
         //Updates: Field
         Gravity = 0,
@@ -797,14 +838,14 @@ namespace BrawlLib.SSBBTypes
         Tail = 8,
     }
 
-    public enum AnimCurveTargetPostField //curve flag = 2
+    public enum v9AnimCurveTargetPostField //curve flag = 2
     {
         //Updates: PostFieldInfo.AnimatableParams
         Size = 0,
         Rotate = 12,
         Translate = 24,
     }
-    public enum AnimCurveTargetEmitterFloat //curve flag = 11
+    public enum v9AnimCurveTargetEmitterFloat //curve flag = 11
     {
         //Updates: EmitterParam
         CommonParam = 44,

@@ -188,6 +188,11 @@ namespace Ikarus.UI
                 foreach (MDL0Node n in _targetModels)
                     UpdateModel(n);
 
+            if (RunTime._articles != null)
+                foreach (ArticleInfo a in RunTime._articles)
+                    if (a.Running)
+                        a.UpdateModel();
+
             if (!_playing) 
                 UpdatePropDisplay();
 
@@ -332,16 +337,46 @@ namespace Ikarus.UI
             }
         }
 
+        public void numFrameIndex_ValueChanged(object sender, EventArgs e)
+        {
+            int val = (int)pnlPlayback.numFrameIndex.Value;
+            if (val != _animFrame)
+            {
+                RunTime.SetFrame(val);
+
+                KeyframePanel.numFrame_ValueChanged();
+            }
+        }
+
         public bool _playing = false;
         public void SetFrame(int index)
         {
-            //if (_animFrame == index)
+            index = TargetModel == null ? 0 : index.Clamp(0, _maxFrame);
+
+            //if (index < 0)
             //    return;
 
-            if (index > _maxFrame || index < 0)
-                return;
-            
-            index = TargetModel == null ? 0 : index;
+            //if (index > _maxFrame)
+            //    if (Loop)
+            //    {
+            //        if (MaxFrame == 0)
+            //            return;
+
+            //        index = ((index - 1) % MaxFrame) + 1;
+
+            //        //if (RunTime.SelectedSubActionGrp != null && index == 1)
+            //        //{
+            //        //    if (RunTime.SelectedSubActionGrp.Flags.HasFlag(AnimationFlags.MovesCharacter))
+            //        //    {
+            //        //        MDL0BoneNode TopN = (FileManager.Moveset._data.boneRef1.Children[0] as MoveDefBoneIndexNode).BoneNode;
+            //        //        MDL0BoneNode TransN = (FileManager.Moveset._data._misc.boneRefs.Children[4] as MoveDefBoneIndexNode).BoneNode;
+            //        //        Vector3 v = TransN._frameMatrix.GetPoint();
+            //        //        TopN._overrideTranslate = v;
+            //        //    }
+            //        //}
+            //    }
+            //    else
+            //        return;
 
             CurrentFrame = index;
 
@@ -357,7 +392,6 @@ namespace Ikarus.UI
         private bool wasOff = false;
         public bool runningAction = false;
 
-        CoolTimer _timer;
         void _timer_RenderFrame(object sender, FrameEventArgs e)
         {
             if (TargetAnimation == null)
@@ -399,7 +433,7 @@ namespace Ikarus.UI
             if (_animFrame < _maxFrame)
             {
                 pnlPlayback.btnPlay.Text = "Stop";
-                _timer.Run(0, (double)pnlPlayback.numFPS.Value);
+                RunTime.Run();
             }
             else
             {
@@ -410,8 +444,6 @@ namespace Ikarus.UI
         }
         public void StopAnim()
         {
-            _timer.Stop();
-
             _playing = false;
 
             if (disableBonesWhenPlayingToolStripMenuItem.Checked)
@@ -425,8 +457,6 @@ namespace Ikarus.UI
             pnlPlayback.btnPlay.Text = "Play";
             EnableTransformEdit = true;
             UpdatePropDisplay();
-
-            MovesetPanel.StopScript();
 
             if (_capture)
             {

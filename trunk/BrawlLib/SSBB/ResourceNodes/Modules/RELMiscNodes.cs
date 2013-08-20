@@ -11,12 +11,12 @@ using System.PowerPcAssembly;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public class RELGroupNode : ModuleEntryNode
+    public class RELGroupNode : RELEntryNode
     {
         public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
     }
 
-    public unsafe class ModuleEntryNode : ResourceNode
+    public unsafe class RELEntryNode : ResourceNode
     {
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
         internal VoidPtr Data { get { return WorkingUncompressed.Address; } }
@@ -29,24 +29,24 @@ namespace BrawlLib.SSBB.ResourceNodes
         public VoidPtr BaseAddress { get { if (Root != null) return Root.WorkingUncompressed.Address; else return null; } }
 
         [Browsable(false)]
-        public ModuleNode Root
+        public ResourceNode Root
         {
             get
             {
                 ResourceNode n = _parent;
                 while (!(n is ModuleNode) && (n != null))
                     n = n._parent;
-                return n as ModuleNode;
+                return n;
             }
         }
 
         [Browsable(false)]
-        public RELSectionNode Location
+        public ModuleSectionNode Location
         {
             get
             {
                 if (Root is RELNode)
-                    foreach (RELSectionNode s in (Root as RELNode)._sections)
+                    foreach (ModuleSectionNode s in (Root as RELNode)._sections)
                         if (s.Offset <= _offset && s.Offset + s.Size > _offset)
                             return s;
                 return null;

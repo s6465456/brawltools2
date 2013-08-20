@@ -47,7 +47,7 @@ namespace BrawlBox
         }
         #endregion
 
-        public override string ExportFilter { get { return ExportFilters.CollisionDef; } }
+        public override string ExportFilter { get { return FileFilters.CollisionDef; } }
 
         public CollisionWrapper() { ContextMenuStrip = _menu; }
 

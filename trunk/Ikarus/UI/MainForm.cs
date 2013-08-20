@@ -22,6 +22,7 @@ namespace Ikarus
     {
         private static MainForm _instance;
         public static MainForm Instance { get { return _instance == null ? _instance = new MainForm() : _instance; } }
+        public static void Invalidate() { Instance._mainControl.ModelPanel.Invalidate(); }
 
         public MainForm()
         {

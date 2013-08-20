@@ -108,7 +108,9 @@ namespace BrawlBox
         }
 
         public virtual string ExportFilter { get { return "Raw Data File (*.*)|*.*"; } }
-        public virtual string ReplaceFilter { get { return ExportFilter; } }
+        public virtual string ImportFilter { get { return ExportFilter; } }
+        public virtual string ReplaceFilter { get { return ImportFilter; } }
+
         public static int CategorizeFilter(string path, string filter)
         {
             string ext = "*" + Path.GetExtension(path);
@@ -162,10 +164,11 @@ namespace BrawlBox
                     if ((node as MDL0Node)._reopen == true)
                     {
                         string tempPath = Path.GetTempFileName();
-                        using (FileStream stream = new FileStream(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 8, FileOptions.SequentialScan | FileOptions.DeleteOnClose))
-                            _resource.Export(stream);
-                        _resource.Replace(tempPath);
-                        _resource.Parent.SignalPropertyChange();
+
+                        _resource.Export(tempPath);
+                        _resource.Replace(tempPath, FileMapProtect.ReadWrite, FileOptions.SequentialScan | FileOptions.DeleteOnClose);
+
+                        _resource.SignalPropertyChange();
                     }
                     else
                     {

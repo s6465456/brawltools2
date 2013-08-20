@@ -58,20 +58,31 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return n as MoveDefNode;
             }
         }
+        [Browsable(false)]
+        public MoveDefArticleNode ParentArticle
+        {
+            get
+            {
+                ResourceNode n = _parent;
+                while (!(n is MoveDefArticleNode) && !(n is MoveDefNode) && (n != null))
+                    n = n._parent;
+                return n as MoveDefArticleNode;
+            }
+        }
         [Category("Moveset Entry"), Browsable(false)]
         public int IntOffset { get { return _offset; } }
         [Browsable(false)]
         public int _offset { get { if (Data != null) return (int)Data - (int)BaseAddress; else return 0; } }
-        [Category("Moveset Entry"), Browsable(true)]
+        [Category("Moveset Entry"), Browsable(false)]
         public string DataOffset { get { return _offset.ToString("X"); } }
-        [Category("Moveset Entry"), Browsable(true)]
+        [Category("Moveset Entry"), Browsable(false)]
         public int Size { get { return WorkingUncompressed.Length; } }
-        [Category("Moveset Entry"), Browsable(true)]
+        [Category("Moveset Entry"), Browsable(false)]
         public bool External { get { return _extNode != null; } }
 
         public MoveDefExternalNode _extNode = null;
         public bool _extOverride = false;
-
+        
         VoidPtr data = null;
         VoidPtr dAddr { get { return data == null ? data = Data : data; } }
 
