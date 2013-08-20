@@ -46,7 +46,7 @@ namespace BrawlBox
 
         #endregion
 
-        public override string ExportFilter { get { return ExportFilters.CLR0; } }
+        public override string ExportFilter { get { return FileFilters.CLR0; } }
 
         public CLR0Wrapper() { ContextMenuStrip = _menu; }
 

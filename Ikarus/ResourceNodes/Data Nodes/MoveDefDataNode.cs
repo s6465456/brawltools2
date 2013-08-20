@@ -113,9 +113,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MoveDefUnk7Node _unk7;
         public MoveDefActionPreNode _actionPre;
         public MoveDefUnk22Node _unk22;
-        public MoveDefUnk17Node boneFloats3;
         public MoveDefModelVisibilityNode mdlVisibility;
-        public MoveDefUnk17Node boneFloats1, boneFloats2;
+        public MoveDefItemAnchorListNode boneFloats1, boneFloats2, boneFloats3;
         public MoveDefArticleNode entryArticle;
         public MoveDefStaticArticleGroupNode staticArticles;
         public MoveDefActionInterruptsNode actionInterrupts;
@@ -354,11 +353,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (specialOffsets[8].Size != 0)
                 (actionInterrupts = new MoveDefActionInterruptsNode() { offsetID = 8 }).Initialize(this, BaseAddress + specialOffsets[8].Offset, 8);
             if (specialOffsets[16].Size != 0)
-                (boneFloats1 = new MoveDefUnk17Node() { _name = "Bone Floats 1", offsetID = 16 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[16].Offset, 0));
+                (boneFloats1 = new MoveDefItemAnchorListNode() { _name = "Anchored Item Placements", offsetID = 16 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[16].Offset, 0));
             if (specialOffsets[17].Size != 0)
-                (boneFloats2 = new MoveDefUnk17Node() { _name = "Bone Floats 2", offsetID = 17 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[17].Offset, 0));
+                (boneFloats2 = new MoveDefItemAnchorListNode() { _name = "Gooey Bomb Placements", offsetID = 17 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[17].Offset, 0));
             if (specialOffsets[23].Size != 0)
-                (boneFloats3 = new MoveDefUnk17Node() { _name = "Bone Floats 3", offsetID = 23 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[23].Offset, 0));
+                (boneFloats3 = new MoveDefItemAnchorListNode() { _name = "Bone Floats 3", offsetID = 23 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[23].Offset, 0));
             if (specialOffsets[18].Size != 0)
                 (boneRef1 = new MoveDefBoneIndicesNode("Bone References", (_misc.BoneRefOffset - specialOffsets[18].Offset) / 4) { offsetID = 18 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[18].Offset, 0));
             if (specialOffsets[20].Size != 0)
@@ -369,7 +368,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_articleGroup == null)
                 AddChild(_articleGroup = new MoveDefGroupNode() { _name = "Articles" });
 
-            //ExtraDataOffsets.GetOffsets((CharName)(int)character).Parse(this, Data + 124);
+            ExtraDataOffsets.GetOffsets((CharName)(int)character).Parse(this, Data + 124);
 
             ////These offsets follow no patterns
             //int y = 0;

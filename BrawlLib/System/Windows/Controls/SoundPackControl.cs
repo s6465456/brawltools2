@@ -4,6 +4,8 @@ using System.IO;
 using System.Diagnostics;
 using System.Collections;
 using BrawlLib;
+using System.ComponentModel;
+using System.Threading;
 
 namespace System.Windows.Forms
 {
@@ -159,7 +161,7 @@ namespace System.Windows.Forms
         public RSARNode TargetNode
         {
             get { return _targetNode; }
-            set { _targetNode = value; NodeChanged(); }
+            set { if (value == _targetNode) return; _targetNode = value; NodeChanged(); }
         }
 
         private SoundPackItem _selectedItem;
@@ -171,20 +173,45 @@ namespace System.Windows.Forms
 
             lvwColumnSorter = new ListViewColumnSorter();
             lstSets.ListViewItemSorter = lvwColumnSorter;
+
+            backgroundWorker1 = new BackgroundWorker();
+            backgroundWorker1.WorkerReportsProgress = false;
+            backgroundWorker1.WorkerSupportsCancellation = false;
+            backgroundWorker1.DoWork += backgroundWorker1_DoWork;
         }
 
-        private void NodeChanged()
+        private void Update(ListView list)
         {
-            lstSets.BeginUpdate();
-
-            lstSets.Items.Clear();
+            list.BeginUpdate();
+            list.Items.Clear();
             if (_targetNode != null)
                 foreach (RSARFileNode file in _targetNode.Files)
-                    lstSets.Items.Add(new SoundPackItem(file));
+                    list.Items.Add(new SoundPackItem(file));
 
-            lstSets.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            list.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
+            list.EndUpdate();
+        }
 
-            lstSets.EndUpdate();
+        delegate void delUpdate(ListView list);
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+
+            if (lstSets.InvokeRequired)
+            {
+                delUpdate callbackMethod = new delUpdate(Update);
+                this.Invoke(callbackMethod, lstSets);
+            }
+            else
+                Update(lstSets);
+        }
+
+        BackgroundWorker backgroundWorker1;
+        private void NodeChanged()
+        {
+            //if (backgroundWorker1.IsBusy != true && _targetNode != null)
+            //    backgroundWorker1.RunWorkerAsync();
+            Update(lstSets);
         }
 
         private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
@@ -233,9 +260,9 @@ namespace System.Windows.Forms
                 dlg.FileName = _selectedItem.SubItems[2].Text.Replace('/', '_');
                 switch (_selectedItem.SubItems[1].Text)
                 {
-                    case "RWSD": dlg.Filter = ExportFilters.RWSD; break;
-                    case "RBNK": dlg.Filter = ExportFilters.RBNK; break;
-                    case "RSEQ": dlg.Filter = ExportFilters.RSEQ; break;
+                    case "RWSD": dlg.Filter = FileFilters.RWSD; break;
+                    case "RBNK": dlg.Filter = FileFilters.RBNK; break;
+                    case "RSEQ": dlg.Filter = FileFilters.RSEQ; break;
                 }
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                     _selectedItem._node.Export(dlg.FileName);

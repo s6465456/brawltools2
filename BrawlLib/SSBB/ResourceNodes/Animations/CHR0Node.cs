@@ -8,6 +8,7 @@ using System.IO;
 using BrawlLib.IO;
 using BrawlLib.Wii.Animations;
 using System.Windows.Forms;
+using BrawlLib.Modeling;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -31,8 +32,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal int _stringoffset, _dataoffset, _loop;
         internal int _version = 4;
 
-        public int ConversionBias = 0;
-        public int startUpVersion = 4;
+        public int _conversionBias = 0;
+        public int _startUpVersion = 4;
 
         [Category("Animation Data")]
         public int Version
@@ -43,12 +44,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_version == value)
                     return;
 
-                if (value == startUpVersion)
-                    ConversionBias = 0;
-                else if (startUpVersion == 4 && value == 5)
-                    ConversionBias = 1;
-                else if (startUpVersion == 5 && value == 4)
-                    ConversionBias = -1;
+                if (value == _startUpVersion)
+                    _conversionBias = 0;
+                else if (_startUpVersion == 4 && value == 5)
+                    _conversionBias = 1;
+                else if (_startUpVersion == 5 && value == 4)
+                    _conversionBias = -1;
 
                 _version = value;
                 SignalPropertyChange();
@@ -57,10 +58,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Animation Data")]
         public override int FrameCount
         {
-            get { return _numFrames + (startUpVersion == 5 ? 1 : 0); }
+            get { return _numFrames + (_startUpVersion == 5 ? 1 : 0); }
             set
             {
-                int bias = (startUpVersion == 5 ? 1 : 0);
+                int bias = (_startUpVersion == 5 ? 1 : 0);
                 if ((_numFrames == value - bias) || (value - bias < (1 - bias)))
                     return;
 
@@ -111,7 +112,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             base.OnInitialize();
 
-            startUpVersion = _version = Header->_version;
+            _startUpVersion = _version = Header->_version;
 
             if (_version == 5)
             {
@@ -173,9 +174,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 KeyframeCollection newCollection = new KeyframeCollection(newFrameCount);
                 for (int x = 0; x < FrameCount; x++)
+                {
+                    int newFrame = (int)((float)x * ratio + 0.5f);
+                    float frameRatio = newFrame == 0 ? 0 : (float)x / (float)newFrame;
                     for (int i = 0x10; i < 0x19; i++)
                         if ((kfe = e.GetKeyframe((KeyFrameMode)i, x)) != null)
-                            newCollection.SetFrameValue((KeyFrameMode)i, (int)Math.Round(x * ratio), kfe._value)._tangent = kfe._tangent;
+                            newCollection.SetFrameValue((KeyFrameMode)i, newFrame, kfe._value)._tangent = kfe._tangent * (float.IsNaN(frameRatio) ? 1 : frameRatio);
+                }
                 e._keyframes = newCollection;
             }
             FrameCount = newFrameCount;
@@ -308,8 +313,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 extBone = (MDL0BoneNode)_extModel.FindChild(_target.Name, true); //Get external model bone
                 bone = (MDL0BoneNode)_targetModel.FindChild(_target.Name, true); //Get target model bone
 
-                for (int x = 0; x < _target.FrameCount; x++) //Loop thru each frame
-                    for (int i = 0x13; i < 0x19; i++) //Loop thru trans
+                for (int x = 0; x < _target.FrameCount; x++)
+                    for (int i = 0x13; i < 0x19; i++)
                         if ((kfe = _target.GetKeyframe((KeyFrameMode)i, x)) != null) //Check for a keyframe
                         {
                             if (bone != null && extBone != null)
@@ -341,25 +346,25 @@ namespace BrawlLib.SSBB.ResourceNodes
                                             kfe._value += bone._bindState.Translate._z - extBone._bindState.Translate._z;
                                         break;
 
-                                    ////Rotations
-                                    //case 0x13: //Rot X
-                                    //    difference = bone._bindState.Rotate._x - extBone._bindState.Rotate._x;
-                                    //    kfe._value += difference;
-                                    //    if (difference != 0)
-                                    //        FixChildren(bone, 0);
-                                    //    break;
-                                    //case 0x14: //Rot Y
-                                    //    difference = bone._bindState.Rotate._y - extBone._bindState.Rotate._y;
-                                    //    kfe._value += difference;
-                                    //    if (difference != 0)
-                                    //        FixChildren(bone, 1);
-                                    //    break;
-                                    //case 0x15: //Rot Z
-                                    //    difference = bone._bindState.Rotate._z - extBone._bindState.Rotate._z;
-                                    //    kfe._value += difference;
-                                    //    if (difference != 0)
-                                    //        FixChildren(bone, 2);
-                                    //    break;
+                                    //Rotations
+                                    case 0x13: //Rot X
+                                        difference = bone._bindState.Rotate._x - extBone._bindState.Rotate._x;
+                                        kfe._value += difference;
+                                        //if (difference != 0)
+                                        //    FixChildren(bone, 0);
+                                        break;
+                                    case 0x14: //Rot Y
+                                        difference = bone._bindState.Rotate._y - extBone._bindState.Rotate._y;
+                                        kfe._value += difference;
+                                        //if (difference != 0)
+                                        //    FixChildren(bone, 1);
+                                        break;
+                                    case 0x15: //Rot Z
+                                        difference = bone._bindState.Rotate._z - extBone._bindState.Rotate._z;
+                                        kfe._value += difference;
+                                        //if (difference != 0)
+                                        //    FixChildren(bone, 2);
+                                        break;
                                 }
                             if (kfe._value == float.NaN || kfe._value == float.PositiveInfinity || kfe._value == float.NegativeInfinity)
                             { 
@@ -379,30 +384,30 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 CHR0EntryNode _target = (CHR0EntryNode)FindChild(b.Name, true);
                 if (_target != null)
-                switch (axis)
-                {
-                    case 0: //X, correct Y and Z
-                        for (int l = 0; l < _target.FrameCount; l++)
-                            for (int g = 0x13; g < 0x16; g++)
-                                if (g != 0x13)
-                                    if ((kfe = _target.GetKeyframe((KeyFrameMode)g, l)) != null)
-                                        kfe._value *= -1;
-                        break;
-                    case 1: //Y, correct X and Z
-                        for (int l = 0; l < _target.FrameCount; l++)
-                            for (int g = 0x13; g < 0x16; g++)
-                                if (g != 0x14)
-                                    if ((kfe = _target.GetKeyframe((KeyFrameMode)g, l)) != null)
-                                        kfe._value *= -1;
-                        break;
-                    case 2: //Z, correct X and Y
-                        for (int l = 0; l < _target.FrameCount; l++)
-                            for (int g = 0x13; g < 0x16; g++)
-                                if (g != 0x15)
-                                    if ((kfe = _target.GetKeyframe((KeyFrameMode)g, l)) != null)
-                                        kfe._value *= -1;
-                        break;
-                }
+                    switch (axis)
+                    {
+                        case 0: //X, correct Y and Z
+                            for (int l = 0; l < _target.FrameCount; l++)
+                                for (int g = 0x13; g < 0x16; g++)
+                                    if (g != 0x13)
+                                        if ((kfe = _target.GetKeyframe((KeyFrameMode)g, l)) != null)
+                                            kfe._value *= -1;
+                            break;
+                        case 1: //Y, correct X and Z
+                            for (int l = 0; l < _target.FrameCount; l++)
+                                for (int g = 0x13; g < 0x16; g++)
+                                    if (g != 0x14)
+                                        if ((kfe = _target.GetKeyframe((KeyFrameMode)g, l)) != null)
+                                            kfe._value *= -1;
+                            break;
+                        case 2: //Z, correct X and Y
+                            for (int l = 0; l < _target.FrameCount; l++)
+                                for (int g = 0x13; g < 0x16; g++)
+                                    if (g != 0x15)
+                                        if ((kfe = _target.GetKeyframe((KeyFrameMode)g, l)) != null)
+                                            kfe._value *= -1;
+                            break;
+                    }
                 FixChildren(b, axis);
             }
         }
@@ -433,6 +438,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             return size;
         }
 
+        public override unsafe void Export(string outPath)
+        {
+            if (outPath.ToUpper().EndsWith(".DAE"))
+                Collada.Serialize(new CHR0Node[] { this }, 60.0f, false, outPath);
+            else
+                base.Export(outPath);
+        }
+
         public static CHR0Node FromFile(string path)
         {
             //string ext = Path.GetExtension(path);
@@ -454,13 +467,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_version == 5)
             {
                 CHR0v5* header = (CHR0v5*)address;
-                *header = new CHR0v5(_version, length, _numFrames - ConversionBias, Children.Count, _loop);
+                *header = new CHR0v5(_version, length, _numFrames - _conversionBias, Children.Count, _loop);
                 group = header->Group;
             }
             else
             {
                 CHR0v4_3* header = (CHR0v4_3*)address;
-                *header = new CHR0v4_3(_version, length, _numFrames - ConversionBias, Children.Count, _loop);
+                *header = new CHR0v4_3(_version, length, _numFrames - _conversionBias, Children.Count, _loop);
                 group = header->Group;
             }
 
@@ -719,6 +732,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public AnimationFrame GetAnimFrame(int index)
         {
             return Keyframes.GetFullFrame(index);
+        }
+        public AnimationFrame GetAnimFrame(int index, bool linear)
+        {
+            return Keyframes.GetFullFrame(index, linear);
         }
     }
 }

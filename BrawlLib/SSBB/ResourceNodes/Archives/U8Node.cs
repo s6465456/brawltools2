@@ -6,6 +6,7 @@ using System.IO;
 using BrawlLib.IO;
 using BrawlLib.Wii.Compression;
 using System.Windows;
+using System.Collections.Specialized;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -34,55 +35,53 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if (entry->isFolder)
                 {
-                    (e = new U8FolderNode() { index = i, _name = new String(table + (int)entry->_stringOffset) }).Initialize(this, entry, 12);
+                    e = new U8FolderNode() { _u8Index = i, _name = new String(table + (int)entry->_stringOffset) };
+                    
+                    e._name = new String(table + (int)entry->_stringOffset);
+                    e._u8Index = i;
+                    e._u8Parent = (int)entry->_dataOffset;
+                    e._u8FirstNotChild = (int)entry->_dataLength;
+                    e._u8Type = (int)entry->_type;
+                    
+                    e.Initialize(this, entry, 12);
+
                     nodes.Add(e);
                 }
                 else
                 {
                     DataSource source = new DataSource((VoidPtr)Header + entry->_dataOffset, (int)entry->_dataLength);
+
                     if ((entry->_dataLength == 0) || (e = NodeFactory.FromSource(this, source) as U8EntryNode) == null)
-                    {
-                        CompressionHeader* cmpr = (CompressionHeader*)source.Address;
-                        if (Compressor.IsDataCompressed(source))
-                        {
-                            source.Compression = cmpr->Algorithm;
-                            if (cmpr->ExpandedSize >= entry->_dataLength && Compressor.Supports(cmpr->Algorithm))
-                            {
-                                //Expand the whole resource and initialize
-                                FileMap uncompMap = FileMap.FromTempFile(cmpr->ExpandedSize);
-                                Compressor.Expand(cmpr, uncompMap.Address, uncompMap.Length);
-                                (e = new ARCEntryNode()).Initialize(this, source, new DataSource(uncompMap));
-                            }
-                            else
-                                (e = new ARCEntryNode()).Initialize(this, source);
-                        }
-                        else
-                            (e = new ARCEntryNode()).Initialize(this, source);
-                    }
+                        e = new ARCEntryNode();
+
                     e._name = new String(table + (int)entry->_stringOffset);
-                    e.index = i;
-                    e.parent = (int)entry->_dataOffset;
-                    e.firstChild = (int)entry->_dataLength;
+                    e._u8Index = i;
+                    e._u8Parent = (int)entry->_dataOffset;
+                    e._u8FirstNotChild = (int)entry->_dataLength;
+                    e._u8Type = (int)entry->_type;
+
+                    e.Initialize(this, source);
+
                     nodes.Add(e);
                 }
                 entry++;
             }
             foreach (U8EntryNode x in nodes)
             {
-                if (x.type == 1)
+                if (x._u8Type == 1)
                 {
-                    if (x.parent == 0)
+                    if (x._u8Parent == 0)
                         x.Parent = this;
-                    else if (x.parent < nodes.Count)
-                        x.Parent = nodes[x.parent - 1];
+                    else if (x._u8Parent < nodes.Count)
+                        x.Parent = nodes[x._u8Parent - 1];
                     U8EntryNode t = null;
-                    if (x.index + 1 < nodes.Count)
-                        t = nodes[x.index + 1];
+                    if (x._u8Index + 1 < nodes.Count)
+                        t = nodes[x._u8Index + 1];
                     while (t != null)
                     {
                         t.Parent = x;
-                        if (t.index + 1 < nodes.Count && t.ChildEndIndex != nodes[t.index + 1].index)
-                            t = nodes[t.index + 1];
+                        if (t._u8Index + 1 < nodes.Count && t.ChildEndIndex != nodes[t._u8Index + 1]._u8Index)
+                            t = nodes[t._u8Index + 1];
                         else
                             t = null;
                     }
@@ -96,55 +95,67 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        int entrySize = 0, id = 0;
-        CompactStringTable table;
-        public int GetSize(ResourceNode node, bool force)
+        int _entrySize;
+        OrderedStringTable _stringTable;
+        private int GetEntrySize(U8EntryNode node, bool force, ref int id)
         {
-            if (node is U8EntryNode)
-            {
-                (node as U8EntryNode).index = id++;
-                table.Add(node.Name);
-                int size = node is U8FolderNode ? 0 : node.CalculateSize(force).Align(0x20);
-                entrySize += 12;
-                table.Add(node.Name);
-                foreach (ResourceNode r in node.Children)
-                    size += GetSize(r, force);
-                return size;
-            }
-            return 0;
+            node._u8Index = id++;
+
+            _stringTable.Add(node.Name);
+            _entrySize += 12;
+
+            int size = node is U8FolderNode ? 0 : node.CalculateSize(force).Align(0x20);
+            foreach (ResourceNode r in node.Children)
+                if (r is U8EntryNode)
+                    size += GetEntrySize(r as U8EntryNode, force, ref id);
+
+            return size;
         }
 
         public override int OnCalculateSize(bool force)
         {
-            entrySize = 12;
-            id = 1;
-            table = new CompactStringTable();
-            table._table.Add("", 0);
+            _entrySize = 12; 
+            int id = 1;
+
+            _stringTable = new OrderedStringTable();
+            _stringTable.Add("");
+
             int childSize = 0;
             foreach (ResourceNode e in Children)
-                childSize += GetSize(e, force);
-            entryLength = (table.TotalSize + entrySize);
-            return 0x20 + childSize + entryLength.Align(0x20);
+                if (e is U8EntryNode)
+                    childSize += GetEntrySize(e as U8EntryNode, force, ref id);
+
+            return 0x20 + childSize + (entryLength = (_stringTable.TotalSize + _entrySize)).Align(0x20);
         }
 
-        public void RebuildNode(VoidPtr header, U8EntryNode node, ref U8Entry* entry, VoidPtr sTableStart, ref VoidPtr dataAddr, CompactStringTable sTable, bool force)
+        private void RebuildNode(VoidPtr header, U8EntryNode node, ref U8Entry* entry, VoidPtr sTableStart, ref VoidPtr dataAddr, bool force)
         {
             entry->_type = (byte)((node is U8FolderNode) ? 1 : 0);
-            entry->_stringOffset.Value = (uint)sTable[node.Name] - (uint)sTableStart;
+            entry->_stringOffset.Value = (uint)_stringTable[node.Name] - (uint)sTableStart;
             if (entry->_type == 1)
             {
+                int index = node.Index + 1, parentIndex = 0, endIndex = _entrySize / 12;
+
                 if (node.Parent != this && node.Parent != null)
-                    entry->_dataOffset = (uint)(node.Parent as U8EntryNode).index;
-                (entry++)->_dataLength = (uint)(node.index + node.Children.Count + 1);
+                    parentIndex = ((U8EntryNode)node.Parent)._u8Index;
+                if (index < node.Parent.Children.Count)
+                    endIndex = (node.Parent.Children[index] as U8EntryNode)._u8Index;
+
+                entry->_dataLength = (uint)endIndex;
+                entry->_dataOffset = (uint)parentIndex;
+                entry++;
+
                 foreach (ResourceNode b in node.Children)
                     if (b is U8EntryNode)
-                        RebuildNode(header, b as U8EntryNode, ref entry, sTableStart, ref dataAddr, table, force);
+                        RebuildNode(header, b as U8EntryNode, ref entry, sTableStart, ref dataAddr, force);
             }
             else
             {
-                node.Rebuild(dataAddr, node._calcSize, force);
                 entry->_dataOffset = (uint)dataAddr - (uint)header;
-                (entry++)->_dataLength = (uint)node._calcSize.Align(0x10);
+                entry->_dataLength = (uint)node._calcSize;
+                entry++;
+
+                node.Rebuild(dataAddr, node._calcSize, force);
                 dataAddr += node._calcSize.Align(0x20);
             }
         }
@@ -159,17 +170,17 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             VoidPtr dataAddress = address + 0x20 + entryLength.Align(0x20);
             U8Entry* entries = (U8Entry*)(address + 0x20);
-            VoidPtr tableAddr = address + 0x20 + entrySize;
-            table.WriteTable(tableAddr);
+            VoidPtr tableAddr = address + 0x20 + _entrySize;
+            _stringTable.WriteTable(tableAddr);
 
             header->_firstOffset = (uint)(dataAddress - address);
 
-            entries->_dataLength = (uint)(entrySize / 12);
+            entries->_dataLength = (uint)(_entrySize / 12);
             entries->_type = 1;
             entries++;
 
             foreach (U8EntryNode b in Children)
-                RebuildNode(address, b, ref entries, tableAddr, ref dataAddress, table, force);
+                RebuildNode(address, b, ref entries, tableAddr, ref dataAddress, force);
         }
 
         public override unsafe void Export(string outPath)
@@ -193,13 +204,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void ExportNonYaz0(string outPath)
         {
-            //Rebuild();
-            ExportUncompressed(outPath);
+            base.Export(outPath);
         }
         public void ExportCompressed(string outPath)
         {
-            //Rebuild();
-            if (_compression == CompressionType.RunLength)
+            if (_compression != CompressionType.None)
                 base.Export(outPath);
             else
             {
@@ -224,24 +233,21 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal U8Entry* U8EntryHeader { get { return (U8Entry*)WorkingSource.Address; } }
 
-        public int parent, firstChild, type, index;
+        public int _u8Parent, _u8FirstNotChild, _u8Type, _u8Index;
 
         [Browsable(false)]
-        public int ParentIndex { get { return parent; } }
+        public int ParentIndex { get { return _u8Parent; } }
         [Browsable(false)]
-        public int ChildEndIndex { get { return firstChild; } }
+        public int ChildEndIndex { get { return _u8FirstNotChild; } }
         [Browsable(false)]
-        public int Type { get { return type; } }
+        public int Type { get { return _u8Type; } }
         [Browsable(false)]
-        public int ID { get { return index; } }
+        public int ID { get { return _u8Index; } }
 
         public override bool OnInitialize()
         {
             base.OnInitialize();
-            type = U8EntryHeader->_type;
-            parent = (int)U8EntryHeader->_dataOffset;
-            firstChild = (int)U8EntryHeader->_dataLength;
-            return type == 1;
+            return this is U8FolderNode && _u8FirstNotChild - 1 > _u8Index;
         }
     }
     public unsafe class U8FolderNode : U8EntryNode
@@ -272,6 +278,52 @@ namespace BrawlLib.SSBB.ResourceNodes
             AddChild(n);
 
             return n;
+        }
+    }
+
+    public unsafe class OrderedStringTable
+    {
+        public List<string> _keys = new List<string>();
+        public List<VoidPtr> _values = new List<VoidPtr>();
+
+        public void Add(string s)
+        {
+            if (!_keys.Contains(s))
+            {
+                _keys.Add(s);
+                _values.Add(0);
+            }
+        }
+
+        public int TotalSize
+        {
+            get
+            {
+                int len = 0;
+                foreach (string s in _keys)
+                    len += (s.Length + 1);
+                return len;
+            }
+        }
+
+        public void Clear()
+        {
+            _keys.Clear();
+            _values.Clear();
+        }
+
+        public VoidPtr this[string s] { get { return _values[_keys.IndexOf(s)]; } }
+
+        public void WriteTable(VoidPtr address)
+        {
+            CompactStringEntry* entry = (CompactStringEntry*)address;
+            for (int i = 0; i < _keys.Count; i++)
+            {
+                string s = _keys[i];
+                _values[i] = entry;
+                entry->Value = s;
+                entry = entry->Next;
+            }
         }
     }
 }

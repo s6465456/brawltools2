@@ -73,15 +73,18 @@ namespace System.Audio
             data._sampleOffset = offset / _blockAlign;
             data._sampleLength = length / _blockAlign;
 
-            _dsb8.Lock((uint)offset, (uint)length, out addr1, out len1, out addr2, out len2, 0);
+            if (length != 0)
+            {
+                _dsb8.Lock((uint)offset, (uint)length, out addr1, out len1, out addr2, out len2, 0);
 
-            data._part1Address = addr1;
-            data._part1Length = (int)len1;
-            data._part1Samples = (int)len1 / _blockAlign;
+                data._part1Address = addr1;
+                data._part1Length = (int)len1;
+                data._part1Samples = (int)len1 / _blockAlign;
 
-            data._part2Address = addr2;
-            data._part2Length = (int)len2;
-            data._part2Samples = (int)len2 / _blockAlign;
+                data._part2Address = addr2;
+                data._part2Length = (int)len2;
+                data._part2Samples = (int)len2 / _blockAlign;
+            }
 
             return data;
         }

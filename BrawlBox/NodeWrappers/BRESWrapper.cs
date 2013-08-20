@@ -25,7 +25,7 @@ namespace BrawlBox
                 new ToolStripMenuItem("Texture Animation", null, NewSrtAction),
                 new ToolStripMenuItem("Texture Pattern", null, NewPatAction),
                 new ToolStripMenuItem("Visibility Sequence", null, NewVisAction),
-                new ToolStripMenuItem("Vertex Set Morph", null, NewShpAction),
+                new ToolStripMenuItem("Vertex Morph", null, NewShpAction),
                 new ToolStripMenuItem("Color Sequence", null, NewClrAction),
                 new ToolStripMenuItem("Scene Settings", null, NewScnAction)
                 ));
@@ -36,7 +36,7 @@ namespace BrawlBox
                 new ToolStripMenuItem("Texture Animation", null, ImportSrtAction),
                 new ToolStripMenuItem("Texture Pattern", null, ImportPatAction),
                 new ToolStripMenuItem("Visibility Sequence", null, ImportVisAction),
-                new ToolStripMenuItem("Vertex Set Morph", null, ImportShpAction),
+                new ToolStripMenuItem("Vertex Morph", null, ImportShpAction),
                 new ToolStripMenuItem("Color Sequence", null, ImportClrAction),
                 new ToolStripMenuItem("Scene Settings", null, ImportScnAction),
                 new ToolStripMenuItem("Folder", null, ImportFolderAction)
@@ -99,14 +99,14 @@ namespace BrawlBox
 
         #endregion
 
-        public override string ExportFilter { get { return ExportFilters.BRES; } }
+        public override string ExportFilter { get { return FileFilters.BRES; } }
 
         public BRESWrapper() { ContextMenuStrip = _menu; }
 
         public void ImportTexture()
         {
             string path;
-            int index = Program.OpenFile(ExportFilters.TEX0, out path);
+            int index = Program.OpenFile(FileFilters.TEX0, out path);
             if (index == 8)
             {
                 TEX0Node node = NodeFactory.FromFile(null, path) as TEX0Node;
@@ -139,7 +139,7 @@ namespace BrawlBox
         public void ImportModel()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.MDL0, out path) > 0)
+            if (Program.OpenFile(FileFilters.MDL0Import, out path) > 0)
             {
                 MDL0Node node = MDL0Node.FromFile(path);
                 if (node != null)
@@ -153,9 +153,10 @@ namespace BrawlBox
                     if ((node as MDL0Node)._reopen == true)
                     {
                         string tempPath = Path.GetTempFileName();
-                        using (FileStream stream = new FileStream(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 8, FileOptions.SequentialScan | FileOptions.DeleteOnClose))
-                            _resource.Export(stream);
-                        _resource.Replace(tempPath);
+                     
+                        _resource.Export(tempPath);
+                        _resource.Replace(tempPath, FileMapProtect.ReadWrite, FileOptions.SequentialScan | FileOptions.DeleteOnClose);
+                        
                         _resource.SignalPropertyChange();
                     }
                 }
@@ -165,7 +166,7 @@ namespace BrawlBox
         public void ImportChr()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.CHR0 + "|Raw Text (*.txt)|*.txt", out path) > 0)
+            if (Program.OpenFile(FileFilters.CHR0 + "|Raw Text (*.txt)|*.txt", out path) > 0)
             {
                 //CHR0Node node = NodeFactory.FromFile(null, path) as CHR0Node;
                 CHR0Node node = CHR0Node.FromFile(path);
@@ -180,7 +181,7 @@ namespace BrawlBox
         public void ImportVis()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.VIS0, out path) > 0)
+            if (Program.OpenFile(FileFilters.VIS0, out path) > 0)
             {
                 VIS0Node node = NodeFactory.FromFile(null, path) as VIS0Node;
                 ((BRESNode)_resource).GetOrCreateFolder<VIS0Node>().AddChild(node);
@@ -194,7 +195,7 @@ namespace BrawlBox
         public void ImportShp()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.SHP0, out path) > 0)
+            if (Program.OpenFile(FileFilters.SHP0, out path) > 0)
             {
                 SHP0Node node = NodeFactory.FromFile(null, path) as SHP0Node;
                 ((BRESNode)_resource).GetOrCreateFolder<SHP0Node>().AddChild(node);
@@ -208,7 +209,7 @@ namespace BrawlBox
         public void ImportSrt()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.SRT0, out path) > 0)
+            if (Program.OpenFile(FileFilters.SRT0, out path) > 0)
             {
                 SRT0Node node = NodeFactory.FromFile(null, path) as SRT0Node;
                 ((BRESNode)_resource).GetOrCreateFolder<SRT0Node>().AddChild(node);
@@ -222,7 +223,7 @@ namespace BrawlBox
         public void ImportPat()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.PAT0, out path) > 0)
+            if (Program.OpenFile(FileFilters.PAT0, out path) > 0)
             {
                 PAT0Node node = NodeFactory.FromFile(null, path) as PAT0Node;
                 ((BRESNode)_resource).GetOrCreateFolder<PAT0Node>().AddChild(node);
@@ -236,7 +237,7 @@ namespace BrawlBox
         public void ImportScn()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.SCN0, out path) > 0)
+            if (Program.OpenFile(FileFilters.SCN0, out path) > 0)
             {
                 SCN0Node node = NodeFactory.FromFile(null, path) as SCN0Node;
                 ((BRESNode)_resource).GetOrCreateFolder<SCN0Node>().AddChild(node);
@@ -250,7 +251,7 @@ namespace BrawlBox
         public void ImportClr()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.CLR0, out path) > 0)
+            if (Program.OpenFile(FileFilters.CLR0, out path) > 0)
             {
                 CLR0Node node = NodeFactory.FromFile(null, path) as CLR0Node;
                 ((BRESNode)_resource).GetOrCreateFolder<CLR0Node>().AddChild(node);

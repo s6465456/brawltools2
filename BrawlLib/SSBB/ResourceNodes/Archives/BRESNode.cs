@@ -149,8 +149,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                     ext = ".pat0";
                 else if (group.Type == BRESGroupNode.BRESGroupType.VIS0)
                     ext = ".vis0";
+                else if (group.Type == BRESGroupNode.BRESGroupType.SCN0)
+                    ext = ".scn0";
                 else if (group.Type == BRESGroupNode.BRESGroupType.Palettes)
-                    continue;
+                    ext = ".plt0";
                 foreach (BRESEntryNode entry in group.Children)
                     entry.Export(Path.Combine(outFolder, entry.Name + ext));
             }
@@ -181,14 +183,18 @@ namespace BrawlLib.SSBB.ResourceNodes
                     ext = ".pat0";
                 else if (group.Type == BRESGroupNode.BRESGroupType.VIS0)
                     ext = ".vis0";
+                else if (group.Type == BRESGroupNode.BRESGroupType.SCN0)
+                    ext = ".scn0";
                 foreach (BRESEntryNode entry in group.Children)
                 {
                     //Find file name for entry
                     foreach (FileInfo info in files)
                     {
-                        if (info.Extension.Equals(ext, StringComparison.OrdinalIgnoreCase) && info.Name.Equals(entry.Name, StringComparison.OrdinalIgnoreCase))
+                        if (info.Extension.Equals(ext, StringComparison.OrdinalIgnoreCase) && info.Name.Equals(entry.Name + ext, StringComparison.OrdinalIgnoreCase))
+                        {
                             entry.Replace(info.FullName);
-                        break;
+                            break;
+                        }
                     }
                 }
             }

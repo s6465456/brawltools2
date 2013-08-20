@@ -42,6 +42,7 @@ namespace System.Windows.Forms
         CLR0Editor CLR0Editor { get; }
         Panel AnimCtrlPnl { get; }
         Panel AnimEditors { get; }
+        InterpolationEditor InterpolationEditor { get; }
 
         CHR0Node SelectedCHR0 { get; set; }
         SRT0Node SelectedSRT0 { get; set; }
@@ -62,6 +63,8 @@ namespace System.Windows.Forms
         bool SyncVIS0 { get; set; }
         bool RenderLightDisplay { get; set; }
         uint AllowedUndos { get; set; }
+        bool LinearInterpolation { get; set; }
+        bool InterpolationEditorVisible { get; set; }
 
         MDL0Node TargetModel { get; set; }
         VIS0EntryNode TargetVisEntry { get; set; }

@@ -31,6 +31,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _vWrap = (int)WrapMode.Repeat;
             _texFlags = TextureSRT.Default;
             _texMatrix = TexMtxEffect.Default;
+            _minFltr = 1;
+            _magFltr = 1;
         }
 
         public TextureSRT _texFlags;

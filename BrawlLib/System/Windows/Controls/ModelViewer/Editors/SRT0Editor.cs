@@ -39,7 +39,6 @@ namespace System.Windows.Forms
             this.lblRot = new System.Windows.Forms.Label();
             this.ctxBox = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addCustomAmountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.editRawTangentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnDelete = new System.Windows.Forms.Button();
             this.grpTransform = new System.Windows.Forms.GroupBox();
             this.lblScaleX = new System.Windows.Forms.Label();
@@ -179,7 +178,7 @@ namespace System.Windows.Forms
             this.numScaleY.TabIndex = 18;
             this.numScaleY.Text = "0";
             this.numScaleY.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numScaleY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numScaleY_MouseDown);
+            this.numScaleY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // add
             // 
@@ -200,7 +199,7 @@ namespace System.Windows.Forms
             this.numRot.TabIndex = 15;
             this.numRot.Text = "0";
             this.numRot.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numRot.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numRotX_MouseDown);
+            this.numRot.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // toolStripSeparator1
             // 
@@ -223,7 +222,7 @@ namespace System.Windows.Forms
             this.numTransX.TabIndex = 3;
             this.numTransX.Text = "0";
             this.numTransX.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numTransX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numTransX_MouseDown);
+            this.numTransX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numTransY
             // 
@@ -234,7 +233,7 @@ namespace System.Windows.Forms
             this.numTransY.TabIndex = 13;
             this.numTransY.Text = "0";
             this.numTransY.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numTransY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numTransY_MouseDown);
+            this.numTransY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // lblTransX
             // 
@@ -270,10 +269,9 @@ namespace System.Windows.Forms
             this.add,
             this.subtract,
             this.removeAllToolStripMenuItem,
-            this.addCustomAmountToolStripMenuItem,
-            this.editRawTangentToolStripMenuItem});
+            this.addCustomAmountToolStripMenuItem});
             this.ctxBox.Name = "ctxBox";
-            this.ctxBox.Size = new System.Drawing.Size(167, 164);
+            this.ctxBox.Size = new System.Drawing.Size(167, 142);
             // 
             // addCustomAmountToolStripMenuItem
             // 
@@ -281,13 +279,6 @@ namespace System.Windows.Forms
             this.addCustomAmountToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.addCustomAmountToolStripMenuItem.Text = "Edit All...";
             this.addCustomAmountToolStripMenuItem.Click += new System.EventHandler(this.addCustomAmountToolStripMenuItem_Click_1);
-            // 
-            // editRawTangentToolStripMenuItem
-            // 
-            this.editRawTangentToolStripMenuItem.Name = "editRawTangentToolStripMenuItem";
-            this.editRawTangentToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.editRawTangentToolStripMenuItem.Text = "Edit Raw Tangent";
-            this.editRawTangentToolStripMenuItem.Click += new System.EventHandler(this.editRawTangentToolStripMenuItem_Click);
             // 
             // btnDelete
             // 
@@ -343,7 +334,7 @@ namespace System.Windows.Forms
             this.numScaleX.TabIndex = 36;
             this.numScaleX.Text = "0";
             this.numScaleX.ValueChanged += new System.EventHandler(this.BoxChangedCreateUndo);
-            this.numScaleX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.numScaleX_MouseDown);
+            this.numScaleX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // AllScale
             // 
@@ -513,7 +504,6 @@ namespace System.Windows.Forms
         public event EventHandler CreateUndo;
 
         internal NumericInputBox[] _transBoxes = new NumericInputBox[9];
-        private ToolStripMenuItem editRawTangentToolStripMenuItem;
         private AnimationFrame _tempFrame = AnimationFrame.Identity;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -570,8 +560,15 @@ namespace System.Windows.Forms
             grpTransAll.Enabled = SelectedAnimation != null;
             btnInsert.Enabled = btnDelete.Enabled = btnClear.Enabled = CurrentFrame != 0 && SelectedAnimation != null;
             grpTransform.Enabled = TargetTexRef != null;
+
             for (int i = 0; i < 9; i++)
                 ResetBox(i);
+
+            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor._open)
+                if (TargetTexRef != null && (SelectedAnimation != null) && (CurrentFrame > 0) && TexEntry != null)
+                    _mainWindow.InterpolationEditor.SetTarget(TexEntry);
+                else
+                    _mainWindow.InterpolationEditor.SetTarget(null);
         }
         public unsafe void ResetBox(int index)
         {
@@ -865,98 +862,38 @@ namespace System.Windows.Forms
             if (SelectedAnimation == null)
                 e.Cancel = true;
         }
+
+        public void UpdateInterpolationEditor(NumericInputBox box)
+        {
+            if (_mainWindow.InterpolationEditor == null || !_mainWindow.InterpolationEditor._open)
+                return;
+
+            if (box.BackColor == Color.Yellow)
+            {
+                KeyframeEntry kfe = TexEntry.GetKeyframe((KeyFrameMode)type, CurrentFrame - 1);
+                if (kfe != null)
+                    _mainWindow.InterpolationEditor.SelectedKeyframe = kfe;
+            }
+            else
+                _mainWindow.InterpolationEditor.SelectedKeyframe = null;
+        }
+
         public int type = 0;
-        private void numScaleX_MouseDown(object sender, MouseEventArgs e)
+        private void box_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x10;
-                if (numScaleX.Enabled == true)
-                {
-                    if (_transBoxes[0].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numScaleX.ContextMenuStrip = ctxBox;
-                    Source.Text = numScaleX.Text;
-                }
-                else
-                    numScaleX.ContextMenuStrip = null;
-            }
-        }
+            NumericInputBox box = sender as NumericInputBox;
 
-        private void numScaleY_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x11;
-                if (numScaleY.Enabled == true)
-                {
-                    if (_transBoxes[1].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numScaleY.ContextMenuStrip = ctxBox;
-                    Source.Text = numScaleY.Text;
-                }
-                else
-                    numScaleY.ContextMenuStrip = null;
-            }
-        }
-        private void numRotX_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x13;
-                if (numRot.Enabled == true)
-                {
-                    if (_transBoxes[3].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numRot.ContextMenuStrip = ctxBox;
-                    Source.Text = numRot.Text;
-                }
-                else
-                    numRot.ContextMenuStrip = null;
-            }
-        }
-        private void numTransX_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x16;
-                if (numTransX.Enabled == true)
-                {
-                    if (_transBoxes[6].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numTransX.ContextMenuStrip = ctxBox;
-                    Source.Text = numTransX.Text;
-                }
-                else
-                    numTransX.ContextMenuStrip = null;
-            }
-        }
+            type = 0x10 + (int)box.Tag;
+            UpdateInterpolationEditor(box);
 
-        private void numTransY_MouseDown(object sender, MouseEventArgs e)
-        {
             if (e.Button == Forms.MouseButtons.Right)
-            {
-                type = 0x17;
-                if (numTransY.Enabled == true)
+                if (box.Enabled == true)
                 {
-                    if (_transBoxes[7].BackColor == Color.Yellow)
-                        editRawTangentToolStripMenuItem.Visible = true;
-                    else
-                        editRawTangentToolStripMenuItem.Visible = false;
-                    numTransY.ContextMenuStrip = ctxBox;
-                    Source.Text = numTransY.Text;
+                    box.ContextMenuStrip = ctxBox;
+                    Source.Text = box.Text;
                 }
                 else
-                    numTransY.ContextMenuStrip = null;
-            }
+                    box.ContextMenuStrip = null;
         }
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
@@ -1172,16 +1109,6 @@ namespace System.Windows.Forms
                 _transBoxes[i].Value = float.NaN;
                 BoxChanged(_transBoxes[i], null);
             }
-        }
-
-        private void editRawTangentToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (TexEntry == null) return;
-            TangentEditor t = new TangentEditor();
-            KeyframeEntry kfe = TexEntry.GetKeyframe((KeyFrameMode)type, CurrentFrame - 1);
-            if (kfe != null)
-                if (t.ShowDialog(this, kfe._tangent) == DialogResult.OK)
-                    kfe._tangent = t.tan;
         }
 
         private void addCustomAmountToolStripMenuItem_Click_1(object sender, EventArgs e)

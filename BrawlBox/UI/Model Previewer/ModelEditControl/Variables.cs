@@ -299,9 +299,7 @@ namespace System.Windows.Forms
                         }
 
                 rightPanel.pnlBones.lstBones.SelectedItem = _selectedBone;
-                weightEditor.BoneChanged();
-                //UpdatePropDisplay();
-                chr0Editor.UpdatePropDisplay();
+                //weightEditor.BoneChanged();
 
                 if (TargetModel != null)
                     TargetModel._selectedBone = _selectedBone;
@@ -332,7 +330,19 @@ namespace System.Windows.Forms
         }
         
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int CurrentFrame { get { return _animFrame; } set { _animFrame = value; UpdateModel(); UpdatePropDisplay(); } }
+        public int CurrentFrame 
+        { 
+            get { return _animFrame; } 
+            set 
+            { 
+                _animFrame = value;
+                UpdateModel(); 
+                UpdatePropDisplay();
+
+                if (_interpolationEditor != null)
+                    _interpolationEditor.Frame = CurrentFrame;
+            } 
+        }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
         {
@@ -506,5 +516,44 @@ namespace System.Windows.Forms
         public bool RenderLightDisplay { get { return _renderLightDisplay; } set { _renderLightDisplay = value; modelPanel.Invalidate(); } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public uint AllowedUndos { get { return _allowedUndos; } set { _allowedUndos = value; } }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public InterpolationEditor InterpolationEditor { get { return _interpolationEditor; } }
+        private InterpolationEditor _interpolationEditor;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool InterpolationEditorVisible
+        {
+            get 
+            {
+                if (_interpolationEditor == null || _interpolationEditor.IsDisposed || !_interpolationEditor._open || !_interpolationEditor.Visible)
+                    return false;
+                else
+                    return true;
+            }
+            set 
+            {
+                if (value)
+                {
+                    if (_interpolationEditor == null || _interpolationEditor.IsDisposed || !_interpolationEditor._open || !_interpolationEditor.Visible)
+                    {
+                        _interpolationEditor = new InterpolationEditor(this);
+                        _interpolationEditor.Visible = true;
+                        _interpolationEditor._open = true;
+                        _interpolationEditor.TopMost = true;
+                    }
+
+                }
+                else if (_interpolationEditor != null && (_interpolationEditor._open || _interpolationEditor.Visible))
+                {
+                    _interpolationEditor.Visible = false;
+                    _interpolationEditor._open = false;
+                }
+                interpolationEditorToolStripMenuItem.Checked = value;
+            }
+        }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool LinearInterpolation { get { return linearInterpolationToolStripMenuItem.Checked; } set { linearInterpolationToolStripMenuItem.Checked = value; } }
     }
 }

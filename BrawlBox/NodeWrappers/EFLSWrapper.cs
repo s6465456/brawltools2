@@ -55,7 +55,7 @@ namespace BrawlBox
 
         public EFLSWrapper() { ContextMenuStrip = _menu; }
 
-        public override string ExportFilter { get { return ExportFilters.EFLS; } }
+        public override string ExportFilter { get { return FileFilters.EFLS; } }
     }
 
     [NodeWrapper(ResourceType.EFLSEntry)]
@@ -104,6 +104,6 @@ namespace BrawlBox
 
         public EFLSEntryWrapper() { ContextMenuStrip = _menu; }
 
-        public override string ExportFilter { get { return ExportFilters.Raw; } }
+        public override string ExportFilter { get { return FileFilters.Raw; } }
     }
 }

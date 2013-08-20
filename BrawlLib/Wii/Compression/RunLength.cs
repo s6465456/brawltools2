@@ -206,36 +206,16 @@ namespace BrawlLib.Wii.Compression
                 return new RunLength().Compress(srcAddr, srcLen, outStream, prog, false);
         }
 
-        //Credit goes to Wiimm for this decompressor included in Wiimms SZS Tools.
-        //http://wiki.tockdom.com/wiki/User:Wiimm
         public static void ExpandYAZ0(YAZ0* header, VoidPtr dstAddress, int dstLen) { Expand(header->Data, dstAddress, dstLen); }
         public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen) { Expand(header->Data, dstAddress, dstLen); }
         public static void Expand(VoidPtr srcAddress, VoidPtr dstAddress, int dstLen)
         {
-            byte control = 0, bit = 0;
-            byte* srcPtr = (byte*)srcAddress, dstPtr = (byte*)dstAddress, ceiling = dstPtr + dstLen;
-            while (dstPtr < ceiling)
-            {
-                if (bit == 0)
-                {
-                    control = *srcPtr++;
-                    bit = 8;
-                }
-                bit--;
-                if ((control & 0x80) != 0)
-                    *dstPtr++ = *srcPtr++;
-                else
-                {
-                    byte b1 = *srcPtr++, b2 = *srcPtr++;
-                    byte* cpyPtr = (byte*)((VoidPtr)dstPtr - ((b1 & 0x0f) << 8 | b2) - 1);
-                    int n = b1 >> 4;
-                    if (n == 0) n = *srcPtr++ + 0x12;
-                    else n += 2;
-                    //if (!(n >= 3 && n <= 0x111)) return;
-                    while (n-- > 0) *dstPtr++ = *cpyPtr++;
-                }
-                control <<= 1;
-            }
+            for (byte* srcPtr = (byte*)srcAddress, dstPtr = (byte*)dstAddress, ceiling = dstPtr + dstLen; dstPtr < ceiling; )
+                for (byte control = *srcPtr++, bit = 8; (bit-- != 0) && (dstPtr != ceiling); )
+                    if ((control & (1 << bit)) != 0)
+                        *dstPtr++ = *srcPtr++;
+                    else
+                        for (int b1 = *srcPtr++, b2 = *srcPtr++, offset = ((b1 & 0xF) << 8 | b2) + 2, temp = (b1 >> 4) & 0xF, num = temp == 0 ? *srcPtr++ + 0x12 : temp + 2; num-- > 0 && dstPtr != ceiling; *dstPtr++ = dstPtr[-offset]) ;
         }
     }
 }

@@ -64,8 +64,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Article* article = (Article*)addr;
 
                 article->_id = b.id;
-                article->_boneID = b.bone;
-                article->_arcGroup = b.group;
+                article->_boneID = b.charBone;
+                article->_arcGroup = b.articleBone;
 
                 article->_actionsStart = b.aStart;
                 article->_actionFlagsStart = b.aFlags;

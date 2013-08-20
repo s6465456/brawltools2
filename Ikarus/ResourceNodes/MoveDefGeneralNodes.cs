@@ -146,8 +146,27 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public MDL0BoneNode BoneNode
         {
-            get { if (Model == null) return null; if (boneIndex >= Model._linker.BoneCache.Length || boneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[boneIndex]; }
-            set { boneIndex = value.BoneIndex; Name = value.Name; }
+            get 
+            { 
+                if (ParentArticle == null && Model == null) 
+                    return null;
+
+                MDL0Node model;
+                if (ParentArticle != null && ParentArticle._info != null)
+                    model = ParentArticle._info._model;
+                else
+                    model = Model;
+
+                if (boneIndex >= model._linker.BoneCache.Length || boneIndex < 0) 
+                    return null;
+
+                return (MDL0BoneNode)model._linker.BoneCache[boneIndex];
+            }
+            set
+            {
+                boneIndex = value.BoneIndex; 
+                Name = value.Name; 
+            }
         }
 
         [Category("Bone Index Entry"), Browsable(true), TypeConverter(typeof(DropDownListBonesMDef))]

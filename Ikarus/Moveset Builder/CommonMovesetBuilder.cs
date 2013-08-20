@@ -12,19 +12,20 @@ using BrawlLib.OpenGL;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe partial class MovesetConverter
+    public unsafe partial class NewMovesetBuilder
     {
+        //Subroutines are written just before the first action are called by.
+
         //dataCommon:
 
-        //Unknown7 entries
+        //Unknown23 Parameters
+        //Unknown7's Children's Entries
         //Params8
         //Params10
         //Params16
         //Params18
-        //Global IC-Basics
-        //Unknown23
-        //IC-Basics
-        //Params24 
+        //Global IC-Basics // Unknown23 Offset
+        //IC-Basics // Params24 Value
         //Params12
         //Params13
         //Params14
@@ -38,7 +39,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Screen Tint Action Offsets
         //Unknown22 entries
         //Entry/Exit actions alternating
-        //Subroutines
         //Unknown7 Data entries
         //Unknown11
         //Leg bones
@@ -50,6 +50,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public static int CalcDataCommonSize(MoveDefDataCommonNode node)
         {
+            int size = 0;
+            
             return 0;
         }
 

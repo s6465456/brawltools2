@@ -53,7 +53,7 @@ namespace BrawlBox.NodeWrappers
         {
             get
             {
-                return ExportFilters.PAT0;
+                return FileFilters.PAT0;
             }
         }
 

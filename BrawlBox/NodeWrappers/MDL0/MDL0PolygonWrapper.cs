@@ -41,7 +41,7 @@ namespace BrawlBox.NodeWrappers
         protected static void DuplicateAction(object sender, EventArgs e) { GetInstance<MDL0PolygonWrapper>().Duplicate(); }
         #endregion
 
-        public override string ExportFilter { get { return ExportFilters.Polygon; } }
+        public override string ExportFilter { get { return FileFilters.Object; } }
 
         public MDL0PolygonWrapper() { ContextMenuStrip = _menu; }
 

@@ -349,47 +349,12 @@ namespace Ikarus.UI
         }
 
         public ScriptPanel MovesetPanel { get { return rightPanel.pnlMoveset; } }
-        public void numFrameIndex_ValueChanged(object sender, EventArgs e)
+        public void numFPS_ValueChanged(object sender, EventArgs e) 
         {
-            int val = (int)pnlPlayback.numFrameIndex.Value;
-            if (val != _animFrame)
-            {
-                int difference = val - _animFrame;
-                if (FileManager.Moveset != null && MoveDefActionNode._runningActions.Count > 0)
-                {
-                    //Run frame value through the moveset panel.
-                    if (val < _animFrame)
-                    {
-                        if (_animFrame + difference >= 0)
-                            MovesetPanel.SetFrame(_animFrame + difference);
-                        else if (val == 0)
-                            MovesetPanel.SetFrame(0);
-                        else
-                            MovesetPanel.SetFrame(_maxFrame);
-                    }
-                    else if (val > _animFrame)
-                        if (MovesetPanel.ActionsIdling || (MovesetPanel.EditingSubactions && _animFrame >= _maxFrame))
-                        {
-                            if (MovesetPanel.EditingSubactions && SelectedSubActionGrp != null)
-                                if (_animFrame < _maxFrame)
-                                {
-                                    SetFrame(_animFrame + difference);
-                                    MovesetPanel._animFrame += difference;
-                                }
-                                else
-                                    MovesetPanel.SetFrame(0);
-                        }
-                        else
-                            MovesetPanel.SetFrame(_animFrame + difference);
-                }
-                else 
-                    if (GetSelectedBRRESFile(TargetAnimType) != null)
-                        SetFrame(_animFrame += difference);
-
-                KeyframePanel.numFrame_ValueChanged();
-            }
+            RunTime._timer.TargetRenderFrequency = 
+            //RunTime._timer.TargetUpdateFrequency = 
+            (double)pnlPlayback.numFPS.Value; 
         }
-        public void numFPS_ValueChanged(object sender, EventArgs e) { _timer.TargetRenderFrequency = MovesetPanel._timer.TargetRenderFrequency = (double)pnlPlayback.numFPS.Value; }
         public void chkLoop_CheckedChanged(object sender, EventArgs e) 
         {
             _loop = pnlPlayback.chkLoop.Checked;

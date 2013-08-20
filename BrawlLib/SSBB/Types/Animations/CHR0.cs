@@ -119,7 +119,7 @@ namespace BrawlLib.SSBBTypes
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public AnimationCode Code { get { return new AnimationCode() { _data = _code }; } set { _code = value._data; } }
+        public AnimationCode Code { get { return new AnimationCode() { _data = (uint)_code }; } set { _code = (uint)value._data; } }
 
         public VoidPtr Data { get { return Address + 8; } }
 

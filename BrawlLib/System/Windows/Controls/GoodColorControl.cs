@@ -704,10 +704,24 @@ namespace System.Windows.Forms
                 if (editorService != null)
                 {
                     GoodColorControl selectionControl = new GoodColorControl();
-                    selectionControl.Color = (Color)(ARGBPixel)(RGBAPixel)value;
+
+                    Type t = value.GetType();
+
+                    if (t == typeof(ARGBPixel))
+                        selectionControl.Color = (Color)(ARGBPixel)value;
+                    else if (t == typeof(RGBAPixel))
+                        selectionControl.Color = (Color)(RGBAPixel)value;
+                    else if (t == typeof(GXColorS10))
+                        selectionControl.Color = (Color)(GXColorS10)value;
+                    
                     editorService.DropDownControl(selectionControl);
 
-                    value = (RGBAPixel)(ARGBPixel)selectionControl.Color;
+                    if (t == typeof(ARGBPixel))
+                        value = (ARGBPixel)selectionControl.Color;
+                    else if (t == typeof(RGBAPixel))
+                        value = (RGBAPixel)(ARGBPixel)selectionControl.Color;
+                    else if (t == typeof(GXColorS10))
+                        value = (GXColorS10)(ARGBPixel)selectionControl.Color;
                 }
 
                 return value;

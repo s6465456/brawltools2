@@ -65,8 +65,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int NumFacepoints { get { return _numFacepoints; } }
         [Category("MDL0 Definition")]
         public int NumVertices
-        { 
-            get 
+        {
+            get
             {
                 if (_objList == null)
                     return 0;
@@ -304,7 +304,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     }
                                 }
 
-                                node._chan1 = new LightChannel(63, new RGBAPixel(128, 128, 128, 255), new RGBAPixel(255, 255, 255, 255), 0, 0);
+                                node._chan1 = new LightChannel(63, new RGBAPixel(128, 128, 128, 255), new RGBAPixel(255, 255, 255, 255), 0, 0, node);
                                 node.C1ColorEnabled = true;
                                 node.C1ColorDiffuseFunction = GXDiffuseFn.Clamped;
                                 node.C1ColorAttenuation = GXAttnFn.Spotlight;
@@ -312,7 +312,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 node.C1AlphaDiffuseFunction = GXDiffuseFn.Clamped;
                                 node.C1AlphaAttenuation = GXAttnFn.Spotlight;
 
-                                node._chan2 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(), 0, 0);
+                                node._chan2 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(), 0, 0, node);
                                 node.C2ColorEnabled = true;
                                 node.C2ColorDiffuseFunction = GXDiffuseFn.Disabled;
                                 node.C2ColorAttenuation = GXAttnFn.Specular;
@@ -1040,6 +1040,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        public Matrix _matrixOffset = Matrix.Identity;
         public void Render(TKContext ctx, ModelPanel mainWindow)
         {
             if (!_visible)
@@ -1049,6 +1050,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             _mainWindow = mainWindow;
+
+            if (_matrixOffset != Matrix.Identity && _matrixOffset != new Matrix())
+            {
+                GL.PushMatrix();
+                Matrix m = _matrixOffset;
+                GL.MultMatrix((float*)&m);
+            }
 
             if (_renderPolygons || _renderWireframe)
             {
@@ -1129,6 +1137,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             //    //Morph vertices to currently selected SHP
             //    ApplySHP(_currentSHP, _currentSHPIndex);
             //}
+
+            if (_matrixOffset != Matrix.Identity && _matrixOffset != new Matrix())
+                GL.PopMatrix();
         }
 
         public void RenderVertices(TKContext ctx, bool pass2)
@@ -1215,13 +1226,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             GL.End();
         }
 
+        public bool _linearAnimation;
         public void ApplyCHR(CHR0Node node, int index)
         {
             //Transform bones
             if (_boneList != null)
             {
                 foreach (MDL0BoneNode b in _boneList)
-                    b.ApplyCHR0(node, index);
+                    b.ApplyCHR0(node, index, _linearAnimation);
                 foreach (MDL0BoneNode b in _boneList)
                     b.RecalcFrameState();
             }

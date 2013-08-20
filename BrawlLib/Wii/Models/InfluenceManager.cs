@@ -80,7 +80,7 @@ namespace BrawlLib.Wii.Models
         internal int _refCount;
         internal int _index;
         internal Matrix _matrix;
-        internal Matrix _invMatrix;
+        internal Matrix? _invMatrix;
         public List<BoneWeight> _weights;
 
         public List<BoneWeight> Weights { get { return _weights; } }
@@ -117,7 +117,25 @@ namespace BrawlLib.Wii.Models
         public int NodeIndex { get { return _index; } }
 
         public Matrix Matrix { get { return _matrix; } }
-        public Matrix InverseMatrix { get { return _invMatrix; } }
+        public Matrix InverseMatrix 
+        {
+            get
+            {
+                if (_invMatrix == null)
+                {
+                    try
+                    {
+                        _invMatrix = Matrix.Invert(_matrix);
+                    }
+                    catch
+                    {
+                        _invMatrix = Matrix.Identity;
+                    }
+                }
+
+                return (Matrix)_invMatrix;
+            }
+        }
         
         public bool IsPrimaryNode { get { return false; } }
 
@@ -136,7 +154,9 @@ namespace BrawlLib.Wii.Models
                 foreach (BoneWeight w in _weights)
                     if (w.Bone != null)
                         _matrix += (w.Bone.Matrix * w.Bone.InverseBindMatrix) * w.Weight;
-                _invMatrix = Matrix.Invert(_matrix);
+
+                //The inverse matrix is only used for unweighting vertices so we don't need to set it now
+                _invMatrix = null;
             }
             else if (_weights.Count == 1)
             {
@@ -147,7 +167,7 @@ namespace BrawlLib.Wii.Models
                 }
             }
             else
-                _matrix = _invMatrix = Matrix.Identity;
+                _invMatrix = _matrix = Matrix.Identity;
         }
         public static int Compare(Influence i1, Influence i2)
         {

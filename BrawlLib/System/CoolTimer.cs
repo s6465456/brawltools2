@@ -188,8 +188,8 @@ namespace System
         public void Run(double updatesPerSec, double framesPerSec)
         {
             _running = true;
-            try
-            {
+            //try
+            //{
                 TargetUpdateFrequency = updatesPerSec;
                 TargetRenderFrequency = framesPerSec;
 
@@ -205,8 +205,12 @@ namespace System
                     if (!_running) return;
                     UpdateAndRenderFrame();
                 }
-            }
-            catch { _running = false; return; }
+            //}
+            //catch
+            //{
+            //    _running = false; 
+            //    return; 
+            //}
         }
 
         void UpdateAndRenderFrame()

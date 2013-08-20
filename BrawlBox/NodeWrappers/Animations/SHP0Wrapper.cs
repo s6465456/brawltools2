@@ -47,7 +47,7 @@ namespace BrawlBox.NodeWrappers
 
         public SHP0Wrapper() { ContextMenuStrip = _menu; }
 
-        public override string ExportFilter { get { return ExportFilters.SHP0; } }
+        public override string ExportFilter { get { return FileFilters.SHP0; } }
 
         public void NewEntry()
         {

@@ -119,13 +119,13 @@ namespace Ikarus
                 new long[] { 6, 5, 0, 5 }));
             _eventDictionary.Add(0x000F0000, new ActionEventInfo(0x000F0000, "End If",
                 "End an If block.",
-                new string[] { },
+                new string[] { }, 
                 new string[] { },
                 "",
                 new long[] { }));
             _eventDictionary.Add(0x00100200, new ActionEventInfo(0x00100200, "Switch",
                 "Begin a multiple case Switch block.",
-                new string[] { "Undefined", "Undefined" },
+                new string[] { "IC-Basic Number", "Requirement Number" },
                 new string[] { "Any type? Has shown to be an IC-Basic \"disguised\" as a value. For example, set as Value 0x3E9 but really uses IC-Basic[1001] (the equivalent).", "Any Type? Has shown to be a Requirement \"disguised\" as a value. For example, set as Value 2B but really uses 2B (Roll A Die)." },
                 "\\name() (\\unhex(\\value(0)), \\value(1))",
                 new long[] { 0, 0 }));
@@ -355,7 +355,7 @@ namespace Ikarus
                 "Stops the specified sound effect immediately.",
                 new string[] { "Sound Effect" },
                 new string[] { "The ID number of the sound effect to be called." },
-                "",
+                "\\name(): \\value(0)",
                 new long[] { 0 }));
             _eventDictionary.Add(0x0C050000, new ActionEventInfo(0x0C050000, "Terminate Instance",
                 "Causes the acting instance to terminate (if possible). Will load secondary instance if available.",
@@ -1602,7 +1602,7 @@ namespace Ikarus
             _eventDictionary.Add(0x11170600, new ActionEventInfo(0x11170600, "Unlimited Screen Tint",
                 "Tint the screen to the specified color until terminated by 11180200 (End Screen Tint).",
                 new string[] { "ID", "Transition Time", "Red", "Green", "Blue", "Alpha" },
-                new string[] { "The ID of the screen tint.", "The time taken to transition from its current color to the specified color.", "The red value.", "The green value.", "The blue value.", "The transperency." },
+                new string[] { "The ID of the screen tint.", "The time taken to transition from its current color to the specified color.", "The red value.", "The green value.", "The blue value.", "The transparency." },
                 "\\name(): ID=\\value(0), TransitionTime=\\value(1), RGBA=(\\value(2), \\value(3), \\value(4), \\value(5))",
                 new long[] { 0, 0, 0, 0, 0, 0 }));
             _eventDictionary.Add(0x12100200, new ActionEventInfo(0x12100200, "Float Variable Divide",
@@ -2782,7 +2782,7 @@ namespace Ikarus
                 {
                     foreach (ActionEventInfo info in EventDictionary.Values)
                     {
-                        file.WriteLine(Helpers.Hex8(info._idNumber));
+                        file.WriteLine(DataHelpers.Hex8(info._idNumber));
                         file.WriteLine(info._name);
                         file.WriteLine(info._description);
                         string s = "";
@@ -2816,7 +2816,7 @@ namespace Ikarus
                     {
                         if (info._parameters != null && info._parameters.Length > 0)
                         {
-                            file.WriteLine(Helpers.Hex8(info._idNumber));
+                            file.WriteLine(DataHelpers.Hex8(info._idNumber));
                             for (int i = 0; i < info._parameters.Length; i++)
                             {
                                 file.WriteLine(info._parameters[i]);
@@ -2854,7 +2854,7 @@ namespace Ikarus
                         if (String.IsNullOrEmpty(info._syntax))
                             continue;
 
-                        file.WriteLine(Helpers.Hex8(info._idNumber));
+                        file.WriteLine(DataHelpers.Hex8(info._idNumber));
                         file.WriteLine(info._syntax);
                         file.WriteLine();
                     }
@@ -3034,7 +3034,7 @@ namespace Ikarus
                         Dictionary<long, List<int>> events = EnumIds[i];
                         foreach (var ev in events)
                         {
-                            file.WriteLine(Helpers.Hex8(ev.Key));
+                            file.WriteLine(DataHelpers.Hex8(ev.Key));
                             foreach (int v in ev.Value)
                                 file.WriteLine(v);
                             file.WriteLine();

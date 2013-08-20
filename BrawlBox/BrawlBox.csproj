@@ -42,6 +42,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -179,9 +180,6 @@
     <Compile Include="NodeWrappers\STPMWrapper.cs" />
     <Compile Include="NodeWrappers\TEVStageWrapper.cs" />
     <Compile Include="NodeWrappers\REFTImageWrapper.cs" />
-    <Compile Include="UI\VisEditor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <None Include="NodeWrappers\MDefUneditableWrapper.cs" />
     <None Include="NodeWrappers\MDefWrapper.cs" />
     <Compile Include="NodeWrappers\MDL0\MDL0MaterialWrapper.cs" />
@@ -279,12 +277,6 @@
     <None Include="UI\AudioPlaybackControl.designer.cs">
       <DependentUpon>AudioPlaybackControl.cs</DependentUpon>
     </None>
-    <None Include="UI\ConfigForm.cs">
-      <SubType>Form</SubType>
-    </None>
-    <None Include="UI\ConfigForm.designer.cs">
-      <DependentUpon>ConfigForm.cs</DependentUpon>
-    </None>
     <Compile Include="UI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -334,9 +326,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\SettingsDialog.resx">
       <DependentUpon>SettingsDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="UI\VisEditor.resx">
-      <DependentUpon>VisEditor.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

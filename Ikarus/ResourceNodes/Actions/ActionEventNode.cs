@@ -73,13 +73,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 Event e = new Event();
                 e.SetEventEvent(_event);
-                e.pParameters = ArgumentOffset;
+                e._pParameters = ArgumentOffset;
                 int i = 0;
                 foreach (ResourceNode r in Children)
                     if (r is MoveDefEventParameterNode)
                     {
-                        e.parameters[i]._type = (r as MoveDefEventParameterNode)._type;
-                        e.parameters[i++]._data = (r as MoveDefEventParameterNode)._value;
+                        e._parameters[i]._type = (r as MoveDefEventParameterNode)._type;
+                        e._parameters[i++]._data = (r as MoveDefEventParameterNode)._value;
                     }
                 return e;
             }
@@ -174,34 +174,51 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if ((ArgVarType)(int)type == ArgVarType.Value)
             {
-                if ((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && i == 12)
-                {
-                    child = (new HitboxFlagsNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value, val = new HitboxFlags() { data = value } });
-                    (child as HitboxFlagsNode).GetFlags();
-                }
-                else if (((_event == 0x06000D00 || _event == 0x06150F00 || _event == 0x062B0D00) && (i == 0 || i == 3 || i == 4)))
-                    child = (new MoveDefEventValue2HalfNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value });
-                else if (((_event == 0x11150300 || _event == 0x11001000 || _event == 0x11010A00 || _event == 0x11020A00) && i == 0))
-                    child = (new MoveDefEventValue2HalfGFXNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value });
-                else if (i == 14 && _event == 0x06150F00)
-                {
-                    child = (new SpecialHitboxFlagsNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value, val = new SpecialHitboxFlags() { data = value } });
-                    (child as SpecialHitboxFlagsNode).GetFlags();
-                }
+                string name = info != null && i < info._parameters.Length ? info._parameters[i] : "Value";
+
+                //Check for some specific node types
+
+                if //Hitbox Flags
+                    ((_event == 0x06000D00 
+                    || _event == 0x06150F00 
+                    || _event == 0x062B0D00) 
+                    && i == 12)
+                    child = (new HitboxFlagsNode(name) { _value = value, val = new HitboxFlags() { _data = (uint)value } });
+
+                else if (//Two Half Values
+                    ((_event == 0x06000D00 
+                    || _event == 0x06150F00 
+                    || _event == 0x062B0D00) 
+                    && (i == 0 || i == 3 || i == 4)))
+                    child = (new MoveDefEventValue2HalfNode(name) { _value = value });
+
+                else if //GFX Selector
+                    ((_event == 0x11150300 
+                    || _event == 0x11001000 
+                    || _event == 0x11010A00 
+                    || _event == 0x11020A00)
+                    && i == 0)
+                    child = (new MoveDefEventValue2HalfGFXNode(name) { _value = value });
+                
+                else if (
+                    i == 14 && 
+                    _event == 0x06150F00)
+                    child = (new SpecialHitboxFlagsNode(name) { _value = value, val = new SpecialHitboxFlags() { _data = (uint)value } });
+                
                 else //Not a special value
                 {
                     if (EventInfo != null && EventInfo.Enums != null && EventInfo.Enums.ContainsKey(i))
-                        child = new MoveDefEventValueEnumNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { Enums = EventInfo.Enums[i].ToArray() };
+                        child = new MoveDefEventValueEnumNode(name) { Enums = EventInfo.Enums[i].ToArray() };
                     else
-                        child = (new MoveDefEventValueNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Value") { _value = value });
+                        child = (new MoveDefEventValueNode(name) { _value = value });
                 }
             }
             else if ((ArgVarType)(int)type == ArgVarType.Scalar)
                 child = (new MoveDefEventScalarNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Scalar") { _value = value });
             else if ((ArgVarType)(int)type == ArgVarType.Boolean)
                 child = (new MoveDefEventBoolNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Boolean") { _value = value });
-            else if ((ArgVarType)(int)type == ArgVarType.Unknown)
-                child = (new MoveDefEventUnkNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Unknown") { _value = value });
+            else if ((ArgVarType)(int)type == ArgVarType.File)
+                child = (new MoveDefEventUnkNode(info != null && i < info._parameters.Length ? info._parameters[i] : "File") { _value = value });
             else if ((ArgVarType)(int)type == ArgVarType.Requirement)
             {
                 MoveDefEventRequirementNode r = new MoveDefEventRequirementNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Requirement") { _value = value };
@@ -224,6 +241,48 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 InsertChild(child, true, i);
             return child;
+        }
+
+        public enum NameSpaceEnum : byte
+        {
+            ExecutionFlow = 0x00,
+            LoopRest = 0x01,
+            Actions = 0x02,
+            SubActions = 0x04,
+            Posture = 0x05,
+            Collisions = 0x06,
+            Controller = 0x07,
+            EdgeInteraction = 0x08,
+            Unknown09 = 0x09,
+            Sounds = 0x0A,
+            Models = 0x0B,
+            CharacterSpecific = 0x0C,
+            ConcurrentExecution = 0x0D,
+            Movement = 0x0E,
+            Unknown15 = 0x0F,
+            Articles = 0x10,
+            Graphics = 0x11,
+            Variables = 0x12,
+            Unknown19 = 0x13,
+            AestheticWind = 0x14,
+            Unknown21 = 0x15,
+            Physics = 0x17,
+            TerrainInteraction = 0x18,
+            Unknown25 = 0x19,
+            Camera = 0x1A,
+            ProcedureCall = 0x1B,
+            ArmorDamage = 0x1E,
+            Items = 0x1F,
+            Unknown32 = 0x20,
+            FlashOverlays = 0x21,
+            TeamAssociation = 0x22,
+            Cancelling = 0x64,
+            Unknown101 = 0x65,
+            Unknown102 = 0x66,
+            Unknown105 = 0x69,
+            Unknown106 = 0x6A,
+            Unknown107 = 0x6B,
+            Unknown110 = 0x6E,
         }
 
         [Category("MoveDef Event")]
@@ -315,7 +374,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     else
                         new MoveDefEventValueNode(param).Initialize(this, header, 8);
                 }
-                else if ((ArgVarType)(int)e._type == ArgVarType.Unknown)
+                else if ((ArgVarType)(int)e._type == ArgVarType.File)
                     new MoveDefEventUnkNode(param).Initialize(this, header, 8);
                 else if ((ArgVarType)(int)e._type == ArgVarType.Scalar)
                     new MoveDefEventScalarNode(param).Initialize(this, header, 8);
@@ -397,7 +456,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         //A seperate class for rendering hitboxes.
         //This allows the values to be modified by other events.
-        public HitBox(MoveDefEventNode ev)
+        public HitBox(MoveDefEventNode ev, int articleIndex)
         {
             Root = ev.Root;
             _event = ev._event;
@@ -406,29 +465,36 @@ namespace BrawlLib.SSBB.ResourceNodes
                 flags = ev.Children[12] as HitboxFlagsNode;
             if (_event == 0x06150F00)
                 specialFlags = ev.Children[14] as SpecialHitboxFlagsNode;
+            if ((_articleIndex = articleIndex) < 0)
+                _model = RunTime.MainWindow.TargetModel;
+            else
+                _model = RunTime._articles[_articleIndex]._model;
         }
 
+        public int _articleIndex;
+        public MDL0Node _model;
         public MoveDefNode Root;
-        public int HitboxID = -1, HitboxSize = 0;
+        public int HitboxID = -1;
+        public int HitboxSize = 0;
         public uint _event = 0;
         public Event EventData = null;
         public HitboxFlagsNode flags;
         public SpecialHitboxFlagsNode specialFlags;
 
         #region Offensive Collision
-        public unsafe void RenderOffensiveCollision(MDL0Node model, TKContext c, Vector3 cam)
+        public unsafe void RenderOffensiveCollision(TKContext c, Vector3 cam)
         {
             if (_event != 0x06000D00) //Offensive Collision
                 return;
 
             MoveDefNode node = Root;
-            ResourceNode[] bl = model._linker.BoneCache;
+            ResourceNode[] bl = _model._linker.BoneCache;
 
             Event e = EventData;
 
-            int boneindex = (int)e.parameters[0]._data >> 16;
-            long size = HitboxSize;
-            long angle = e.parameters[2]._data;
+            int boneindex = (int)e._parameters[0]._data >> 16;
+            int size = HitboxSize;
+            int angle = e._parameters[2]._data;
 
             node.GetBoneIndex(ref boneindex);
 
@@ -459,18 +525,21 @@ namespace BrawlLib.SSBB.ResourceNodes
             Matrix r = b.Matrix.GetRotationMatrix();
             FrameState state = b.Matrix.Derive();
             Vector3 bonePos = state._translate;
-            Vector3 globalPos = r.Multiply(new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data)) / state._scale);
+            Vector3 globalPos = r.Multiply(new Vector3(DataHelpers.UnScalar(e._parameters[6]._data), DataHelpers.UnScalar(e._parameters[7]._data), DataHelpers.UnScalar(e._parameters[8]._data)) / state._scale);
 
             Matrix m = Matrix.TransformMatrix(new Vector3(1), state._rotate, globalPos + bonePos);
             Vector3 resultPos = m.GetPoint();
 
-            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultPos);
+            int id = (int)e._parameters[0]._data & 0xFFFF;
+            RunTime.MainWindow.ModelPanel.ScreenText[id.ToString()] = RunTime.MainWindow.ModelPanel.Project(resultPos);
+
+            m = Matrix.TransformMatrix(new Vector3(DataHelpers.UnScalar(size)), new Vector3(), resultPos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16;
             double drawAngle = 360.0 / res;
 
-            Vector3 color = Helpers.GetTypeColor(flags.Type);
+            Vector3 color = DataHelpers.GetTypeColor(flags.Type);
             GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.5f);
             
             GLDisplayList spheres = c.GetSphereList();
@@ -480,7 +549,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             double rangle = angle / 180.0 * Math.PI;
 
             //Apply color
-            color = Helpers.GetEffectColor(flags.Effect);
+            color = DataHelpers.GetEffectColor(flags.Effect);
             GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.75f);
             
             GL.PushMatrix();
@@ -572,17 +641,17 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Special Offensive Collision
-        public unsafe void RenderSpecialOffensiveCollision(MDL0Node model, TKContext c, Vector3 cam)
+        public unsafe void RenderSpecialOffensiveCollision(TKContext c, Vector3 cam)
         {
             if (_event != 0x06150F00) //Special Offensive Collision
                 return;
 
             Event e = EventData;
-            ResourceNode[] bl = model._linker.BoneCache;
+            ResourceNode[] bl = _model._linker.BoneCache;
 
-            int boneindex = (int)e.parameters[0]._data >> 16;
-            long size = HitboxSize;
-            long angle = e.parameters[2]._data;
+            int boneindex = (int)e._parameters[0]._data >> 16;
+            int size = HitboxSize;
+            int angle = e._parameters[2]._data;
 
             Root.GetBoneIndex(ref boneindex);
 
@@ -611,19 +680,22 @@ namespace BrawlLib.SSBB.ResourceNodes
             Matrix r = b.Matrix.GetRotationMatrix();
             FrameState state = b.Matrix.Derive();
             Vector3 bonePos = state._translate;
-            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data)) / state._scale;
+            Vector3 pos = new Vector3(DataHelpers.UnScalar(e._parameters[6]._data), DataHelpers.UnScalar(e._parameters[7]._data), DataHelpers.UnScalar(e._parameters[8]._data)) / state._scale;
             Vector3 globalPos = r.Multiply(pos);
 
             Matrix m = Matrix.TransformMatrix(new Vector3(1), state._rotate, globalPos + bonePos);
             Vector3 resultPos = m.GetPoint();
 
-            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultPos);
+            int id = (int)e._parameters[0]._data & 0xFFFF;
+            RunTime.MainWindow.ModelPanel.ScreenText[id.ToString()] = RunTime.MainWindow.ModelPanel.Project(resultPos);
+
+            m = Matrix.TransformMatrix(new Vector3(DataHelpers.UnScalar(size)), new Vector3(), resultPos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16, stretchres = 10;
             double drawangle = 360.0 / res;
-            
-            Vector3 color = Helpers.GetTypeColor(flags.Type);
+
+            Vector3 color = DataHelpers.GetTypeColor(flags.Type);
             GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.5f);
                 
             GLDisplayList spheres = c.GetSphereList();
@@ -633,9 +705,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.PushMatrix();
                 m = Matrix.TransformMatrix(new Vector3(1), state._rotate, new Vector3());
                 GL.MultMatrix((float*)&m);
-                Vector3 reversepos = new Vector3(-pos._x / Helpers.UnScalar(size), -pos._y / Helpers.UnScalar(size), -pos._z / Helpers.UnScalar(size));
+                Vector3 reversepos = new Vector3(-pos._x / DataHelpers.UnScalar(size), -pos._y / DataHelpers.UnScalar(size), -pos._z / DataHelpers.UnScalar(size));
 
-                color = Helpers.GetEffectColor(flags.Effect);
+                color = DataHelpers.GetEffectColor(flags.Effect);
                 GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.5f);
                 
                 GL.Translate(reversepos._x, reversepos._y, reversepos._z);
@@ -654,7 +726,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.Vertex3(0 - reversepos._x, 0 - reversepos._y, -1 - reversepos._z);
                 GL.End();
 
-                color = Helpers.GetTypeColor(flags.Type);
+                color = DataHelpers.GetTypeColor(flags.Type);
                 GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.25f);
                 
                 spheres.Call(); // root sphere
@@ -664,7 +736,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             // angle indicator
             double rangle = angle / 180.0 * Math.PI;
-            Vector3 effectcolour = Helpers.GetEffectColor(flags.Effect);
+            Vector3 effectcolour = DataHelpers.GetEffectColor(flags.Effect);
             GL.Color4((effectcolour._x / 255.0f), (effectcolour._y / 225.0f), (effectcolour._z / 255.0f), 0.75f);
             GL.PushMatrix();
             if (angle == 361)
@@ -755,16 +827,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region Catch Collision
-        public unsafe void RenderCatchCollision(MDL0Node model, TKContext c, Vector3 cam)
+        public unsafe void RenderCatchCollision(TKContext c, Vector3 cam)
         {
             if (_event != 0x060A0800 && _event != 0x060A0900 && _event != 0x060A0A00)
                 return;
 
             Event e = EventData;
-            ResourceNode[] bl = model._linker.BoneCache;
+            ResourceNode[] bl = _model._linker.BoneCache;
 
-            int boneindex = (int)e.parameters[1]._data;
-            long size = HitboxSize;
+            int boneindex = e._parameters[1]._data;
+            int size = HitboxSize;
 
             Root.GetBoneIndex(ref boneindex);
 
@@ -792,19 +864,19 @@ namespace BrawlLib.SSBB.ResourceNodes
             Matrix r = b.Matrix.GetRotationMatrix();
             FrameState state = b.Matrix.Derive();
             Vector3 bonePos = state._translate;
-            Vector3 pos = new Vector3(Helpers.UnScalar(e.parameters[6]._data), Helpers.UnScalar(e.parameters[7]._data), Helpers.UnScalar(e.parameters[8]._data)) / state._scale;
+            Vector3 pos = new Vector3(DataHelpers.UnScalar(e._parameters[3]._data), DataHelpers.UnScalar(e._parameters[4]._data), DataHelpers.UnScalar(e._parameters[5]._data)) / state._scale;
             Vector3 globalPos = r.Multiply(pos);
 
             Matrix m = Matrix.TransformMatrix(new Vector3(1), state._rotate, globalPos + bonePos);
             Vector3 resultPos = m.GetPoint();
 
-            m = Matrix.TransformMatrix(new Vector3(Helpers.UnScalar(size)), new Vector3(), resultPos);
+            m = Matrix.TransformMatrix(new Vector3(DataHelpers.UnScalar(size)), new Vector3(), resultPos);
             GL.PushMatrix();
             GL.MultMatrix((float*)&m);
             int res = 16;
             double drawangle = 360.0 / res;
 
-            Vector3 color = Helpers.GetTypeColor(Helpers.HitboxType.Throwing);
+            Vector3 color = DataHelpers.GetTypeColor(DataHelpers.HitboxType.Throwing);
             GL.Color4((color._x / 255.0f), (color._y / 225.0f), (color._z / 255.0f), 0.375f);
             GLDisplayList spheres = c.GetSphereList();
             spheres.Call();

@@ -15,6 +15,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public unsafe partial class NewMovesetBuilder
     {
+        //Subroutines are written just before the first action are called by.
+
         //Header
         //Attributes
         //SSE Attributes

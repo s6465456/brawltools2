@@ -8,6 +8,7 @@ using System.Windows.Forms.Design;
 
 namespace BrawlLib.Imaging
 {
+    [EditorAttribute(typeof(GoodColorControl.ColorEditor), typeof(UITypeEditor))]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct ARGBPixel
     {
@@ -180,6 +181,11 @@ namespace BrawlLib.Imaging
 
         public static explicit operator RGBAPixel(ARGBPixel p) { return new RGBAPixel() { A = p.A, B = p.B, G = p.G, R = p.R }; }
         public static explicit operator ARGBPixel(RGBAPixel p) { return new ARGBPixel() { A = p.A, B = p.B, G = p.G, R = p.R }; }
+        public static explicit operator Color(RGBAPixel p) 
+        {
+            ARGBPixel a = (ARGBPixel)p;
+            return Color.FromArgb((int)a); 
+        }
 
         public RGBAPixel(byte r, byte g, byte b, byte a) { R = r; G = g; B = b; A = a; }
 
@@ -371,6 +377,7 @@ namespace BrawlLib.Imaging
         public override int GetHashCode() { return base.GetHashCode(); }
     }
 
+    [EditorAttribute(typeof(GoodColorControl.ColorEditor), typeof(UITypeEditor))]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct GXColorS10
     {
@@ -411,6 +418,12 @@ namespace BrawlLib.Imaging
         public static GXColorS10 operator +(GXColorS10 c2, float f) { return new GXColorS10((short)(f + c2.A), (short)(f + c2.R), (short)(f + c2.G), (short)(f + c2.B)); }
         public static GXColorS10 operator /(GXColorS10 c1, float f) { return new GXColorS10((short)(c1.A / f), (short)(c1.R / f), (short)(c1.G / f), (short)(c1.B / f)); }
 
+        public static explicit operator Color(GXColorS10 p)
+        {
+            ARGBPixel a = (ARGBPixel)p;
+            return Color.FromArgb((int)a);
+        }
+
         public void Clamp(short min, short max)
         {
             A = A > max ? max : A < min ? min : A;
@@ -434,5 +447,6 @@ namespace BrawlLib.Imaging
                 return this == (GXColorS10)obj;
             return false;
         }
+        public override int GetHashCode() { return base.GetHashCode(); }
     }
 }

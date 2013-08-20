@@ -149,10 +149,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         internal override void GetStrings(StringTable table) { }
 
-        public void SignalPropertyChange()
-        {
-            //((MDL0ShaderNode)Parent)._renderUpdate = true;
-            base.SignalPropertyChange();
-        }
+        //public void SignalPropertyChange()
+        //{
+        //    //((MDL0ShaderNode)Parent)._renderUpdate = true;
+        //    base.SignalPropertyChange();
+        //}
     }
 }

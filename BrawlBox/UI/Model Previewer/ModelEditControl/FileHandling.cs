@@ -85,9 +85,6 @@ namespace System.Windows.Forms
         }
         private bool CloseExternal()
         {
-            if (_playing)
-                StopAnim();
-
             if (_externalAnimationsNode != null)
             {
                 if (_externalAnimationsNode.IsDirty)
@@ -228,19 +225,21 @@ namespace System.Windows.Forms
                 models.Items.Add(model);
             modelPanel.AddTarget(model);
             model.ApplyCHR(null, 0);
+            model.ApplySRT(null, 0);
             model._renderBones = true;
         }
 
-        public bool CloseFiles() 
+        public bool CloseFiles()
         {
-            try
+            InterpolationEditorVisible = false;
+            StopAnim();
+            if (TargetModel != null)
             {
-                if (TargetModel != null)
-                    TargetModel.ApplyCHR(null, 0);
-                ResetBoneColors();
-                return CloseExternal()/* && pnlMoveset.CloseReferences()*/;
+                TargetModel.ApplyCHR(null, 0);
+                TargetModel.ApplySRT(null, 0);
             }
-            catch { return true; }
+            ResetBoneColors();
+            return CloseExternal();
         }
 
         public bool _resetCam = true;
@@ -251,7 +250,10 @@ namespace System.Windows.Forms
                 _targetModels.Add(model);
 
             if (_targetModel != null)
+            {
                 _targetModel._isTargetModel = false;
+                _targetModel._linearAnimation = false;
+            }
 
             if (model == null)
                 modelPanel.RemoveTarget(_targetModel);
@@ -262,6 +264,7 @@ namespace System.Windows.Forms
                 leftPanel.VIS0Indices = _targetModel.VIS0Indices;
                 _targetModel._isTargetModel = true;
                 ResetVertexColors();
+                _targetModel._linearAnimation = linearInterpolationToolStripMenuItem.Checked;
             }
 
             if (_resetCam)

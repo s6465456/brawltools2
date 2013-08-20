@@ -24,24 +24,32 @@ namespace System.Windows.Forms
         private unsafe void ApplyAngle(int index, float offset)
         {
             NumericInputBox box = chr0Editor._transBoxes[index + 3];
-            box.Value = (float)Math.Round(box._value + offset, 3);
-            chr0Editor.BoxChanged(box, null);
+            float newVal = (float)Math.Round(box._value + offset, 3);
+            if (box.Value != newVal)
+            {
+                box.Value = newVal;
+                chr0Editor.BoxChanged(box, null);
+            }
         }
-        //Updates translation with offset.
         private unsafe void ApplyTranslation(int index, float offset)
         {
             NumericInputBox box = chr0Editor._transBoxes[index + 6];
-            box.Value = (float)Math.Round(box._value + offset, 3);
-            chr0Editor.BoxChanged(box, null);
+            float newVal = (float)Math.Round(box._value + offset, 3);
+            if (box.Value != newVal)
+            {
+                box.Value = newVal;
+                chr0Editor.BoxChanged(box, null);
+            }
         }
-        //Updates scale with offset.
-        private unsafe void ApplyScale(int index, float offset)
+        private unsafe void ApplyScale(int index, float scale)
         {
             NumericInputBox box = chr0Editor._transBoxes[index];
-            float value = (float)Math.Round(box._value * offset, 3);
-            if (value == 0) return;
-            box.Value = value;
-            chr0Editor.BoxChanged(box, null);
+            float newVal = (float)Math.Round(box._value * scale, 3);
+            if (box.Value != newVal && newVal != 0.0f)
+            {
+                box.Value = newVal;
+                chr0Editor.BoxChanged(box, null);
+            }
         }
         private unsafe void ApplyScale2(int index, float offset)
         {
@@ -215,12 +223,14 @@ namespace System.Windows.Forms
         }
         public void UpdatePropDisplay()
         {
-            if (animEditors.Height == 0 || animEditors.Visible == false)
-                return;
+            chr0Editor.UpdatePropDisplay();
+
+            //if (animEditors.Height == 0 || animEditors.Visible == false)
+            //    return;
 
             switch (TargetAnimType)
             {
-                case AnimType.CHR: chr0Editor.UpdatePropDisplay(); break;
+                //case AnimType.CHR: chr0Editor.UpdatePropDisplay(); break;
                 case AnimType.SRT: srt0Editor.UpdatePropDisplay(); break;
                 case AnimType.VIS: 
                     if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))

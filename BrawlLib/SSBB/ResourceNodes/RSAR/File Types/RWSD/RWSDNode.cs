@@ -16,7 +16,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected override void GetStrings(LabelBuilder builder)
         {
             foreach (RWSDDataNode node in Children[0].Children)
-                builder.Add(0, node._name);
+                builder.Add((uint)node.Index, node._name);
         }
 
         //Finds labels using LABL block between header and footer, also initializes array
@@ -46,6 +46,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr dataAddr = Header;
             int len = Header->_header._length;
             int total = WorkingUncompressed.Length;
+
+            SetSizeInternal(len);
 
             //Look for labl block
             LABLHeader* labl = (LABLHeader*)(dataAddr + len);
@@ -116,14 +118,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             else if (VersionMinor >= 3)
                 new RWARNode() { _name = "Audio" }.Initialize(this, _audioSource.Address, _audioSource.Length);
 
-            for (int i = 0; i < count; i++)
-            {
-                RWSD_DATAEntry* entry = (RWSD_DATAEntry*)list->Get(list, i);
-                RWSDDataNode node = new RWSDDataNode();
-                node._offset = list;
-                node.Initialize(Children[0], entry, 0);
-            }
-
             //Get labels
             RSARNode parent;
             int count2 = Header->Data->_list._numEntries;
@@ -147,6 +141,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                         _labels[x] = new LabelItem() { Tag = i, String = symb2->GetStringEntry(entry->_stringId) };
                     }
             }
+
+            for (int i = 0; i < count; i++)
+            {
+                RWSD_DATAEntry* entry = (RWSD_DATAEntry*)list->Get(list, i);
+                RWSDDataNode node = new RWSDDataNode() { _name = _labels[i].String };
+                node._offset = list;
+                node.Initialize(Children[0], entry, 0);
+            }
         }
 
         public override int OnCalculateSize(bool force)
@@ -163,7 +165,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 foreach (ResourceNode g in Children)
                     _headerLen += g.CalculateSize(true);
                 foreach (WAVESoundNode s in Children[1].Children)
-                    _audioLen += s._audioSource.Length;
+                    _audioLen += s._streamBuffer.Length;
             }
 
             return _headerLen + _audioLen;
@@ -173,7 +175,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr addr = address + 0x20;
 
             RWSDHeader* header = (RWSDHeader*)address;
-            header->_header._length = length;
+            header->_header._length = _headerLen;
             header->_header._tag = RWSDHeader.Tag;
             header->_header._numEntries = (ushort)(VersionMinor >= 3 ? 1 : 2);
             header->_header._firstOffset = 0x20;
@@ -187,19 +189,21 @@ namespace BrawlLib.SSBB.ResourceNodes
             Children[0].Rebuild(addr, Children[0]._calcSize, true);
             addr += Children[0]._calcSize;
 
+            SetSizeInternal(_headerLen);
+
             if (VersionMinor <= 2)
             {
                 header->_waveOffset = 0x20 + Children[0]._calcSize;
                 header->_waveLength = Children[1]._calcSize;
 
+                VoidPtr audio = addr;
                 if (RSARNode == null)
-                {
-                    VoidPtr audioAddr = addr;
-                    foreach (ResourceNode e in Children)
-                        audioAddr += e._calcSize;
-                    (Children[1] as RWSDSoundGroupNode)._audioAddr = audioAddr;
-                }
-                else (Children[1] as RWSDSoundGroupNode)._audioAddr = _rebuildAudioAddr;
+                    audio += Children[1]._calcSize;
+                else 
+                    audio = _rebuildAudioAddr;
+
+                (Children[1] as RWSDSoundGroupNode)._audioAddr = audio;
+                _audioSource = new DataSource(audio, _audioLen);
 
                 Children[1].Rebuild(addr, Children[1]._calcSize, true);
                 addr += Children[1]._calcSize;
@@ -209,12 +213,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_waveOffset = 0;
                 header->_waveLength = 0;
 
-                VoidPtr a;
-                if (RSARNode == null)
-                    a = addr + Children[0]._calcSize;
-                else a = _rebuildAudioAddr;
+                VoidPtr audio = addr;
+                if (RSARNode != null)
+                    audio = _rebuildAudioAddr;
 
-                Children[1].Rebuild(a, Children[1]._calcSize, true);
+                _audioSource = new DataSource(audio, _audioLen);
+                Children[1].Rebuild(audio, Children[1]._calcSize, true);
             }
         }
 

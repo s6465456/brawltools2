@@ -41,7 +41,7 @@ namespace Ikarus.UI
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool Updating { get { return _updating; } set { _updating = value; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool Loop { get { return _loop; } set { _loop = value; } }
+        public bool Loop { get { return _loop; } set { _updating = true; pnlPlayback.chkLoop.Checked = _loop = value; _updating = false; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public CHR0Editor CHR0Editor { get { return chr0Editor; } }
@@ -147,6 +147,52 @@ namespace Ikarus.UI
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0Node TargetModel { get { return _targetModel; } set { ModelChanged(value); } }
+
+        public bool _resetCam = true;
+        public bool _hide = false;
+        private void ModelChanged(MDL0Node model)
+        {
+            if (model != null && !_targetModels.Contains(model))
+                _targetModels.Add(model);
+
+            if (_targetModel != null)
+                _targetModel._isTargetModel = false;
+
+            if (model == null)
+                modelPanel.RemoveTarget(_targetModel);
+
+            if ((_targetModel = model) != null)
+            {
+                modelPanel.AddTarget(_targetModel);
+                leftPanel.VIS0Indices = _targetModel.VIS0Indices;
+                _targetModel._isTargetModel = true;
+                ResetVertexColors();
+                hurtboxEditor._mainControl_TargetModelChanged(null, null);
+            }
+
+            if (_resetCam)
+            {
+                modelPanel.ResetCamera();
+                SetFrame(0);
+            }
+            else
+                _resetCam = true;
+
+            leftPanel.Reset();
+            rightPanel.pnlBones.Reset();
+            
+            //if (TargetModelChanged != null)
+            //    TargetModelChanged(this, null);
+
+            _updating = true;
+            if (_targetModel != null && !_editingAll)
+                comboCharacters.SelectedItem = _targetModel;
+            _updating = false;
+
+            if (_targetModel != null)
+                RenderBones = _targetModel._renderBones;
+        }
+        
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public CHR0Node SelectedCHR0
         { 
@@ -322,7 +368,7 @@ namespace Ikarus.UI
         }
         
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int CurrentFrame { get { return _animFrame; } set { MovesetPanel._animFrame = value - 1; _animFrame = value; UpdateModel(); UpdatePropDisplay(); } }
+        public int CurrentFrame { get { return _animFrame; } set { _animFrame = value; UpdateModel(); UpdatePropDisplay(); } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
         {
@@ -437,36 +483,62 @@ namespace Ikarus.UI
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public uint AllowedUndos { get { return _allowedUndos; } set { _allowedUndos = value; } }
 
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public InterpolationEditor InterpolationEditor { get { return null; } set { } }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool InterpolationEditorVisible
+        {
+            get
+            {
+                //if (_interpolationEditor == null || _interpolationEditor.IsDisposed || !_interpolationEditor._open || !_interpolationEditor.Visible)
+                    return false;
+                //else
+                //    return true;
+            }
+            set
+            {
+                //if (value)
+                //{
+                //    if (_interpolationEditor == null || _interpolationEditor.IsDisposed || !_interpolationEditor._open || !_interpolationEditor.Visible)
+                //    {
+                //        _interpolationEditor = new InterpolationEditor(this);
+                //        _interpolationEditor.Visible = true;
+                //        _interpolationEditor._open = true;
+                //        _interpolationEditor.TopMost = true;
+                //    }
+
+                //}
+                //else if (_interpolationEditor._open)
+                //{
+                //    _interpolationEditor.Visible = false;
+                //    _interpolationEditor._open = false;
+                //}
+                //interpolationEditorToolStripMenuItem.Checked = value;
+            }
+        }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool LinearInterpolation { get { return false; } set { } }
+
         public MoveDefHurtBoxNode _selectedHurtbox;
-        public MoveDefSubActionGroupNode _selectedSubActionGrp;
-        public MoveDefActionGroupNode _selectedActionGrp;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MoveDefHurtBoxNode SelectedHurtbox
         {
             get { return _selectedHurtbox; }
-            set { _selectedHurtbox = value; }
-        }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefSubActionGroupNode SelectedSubActionGrp
-        {
-            get { return _selectedSubActionGrp; }
             set 
             {
-                _selectedSubActionGrp = value;
-                MovesetPanel.SubactionGroupChanged();
-            }
-        }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefActionGroupNode SelectedActionGrp
-        {
-            get { return _selectedActionGrp; }
-            set 
-            { 
-                _selectedActionGrp = value;
-                MovesetPanel.ActionGroupChanged();
+                if ((_selectedHurtbox = value) != null)
+                {
+                    EnableHurtboxEditor();
+                    hurtboxEditor.TargetHurtBox = value;
+                }
+                else
+                {
+                    DisableHurtboxEditor();
+                    hurtboxEditor.TargetHurtBox = null;
+                }
             }
         }
     }

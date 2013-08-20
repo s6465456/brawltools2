@@ -20,10 +20,8 @@ namespace Ikarus.UI
 {
     public partial class MainControl : UserControl, IMainWindow
     {
-        public ModelPanel modelPanel;
-        
         #region Designer
-
+        private ModelPanel modelPanel;
         private ColorDialog dlgColor;
         private Button btnLeftToggle;
         private Button btnRightToggle;
@@ -57,11 +55,11 @@ namespace Ikarus.UI
         private Panel controlPanel;
         public SRT0Editor srt0Editor;
         private ToolStripMenuItem fileTypesToolStripMenuItem;
-        private ToolStripMenuItem playCHR0ToolStripMenuItem;
-        private ToolStripMenuItem playSRT0ToolStripMenuItem;
-        private ToolStripMenuItem playSHP0ToolStripMenuItem;
-        private ToolStripMenuItem playPAT0ToolStripMenuItem;
-        private ToolStripMenuItem playVIS0ToolStripMenuItem;
+        public ToolStripMenuItem playCHR0ToolStripMenuItem;
+        public ToolStripMenuItem playSRT0ToolStripMenuItem;
+        public ToolStripMenuItem playSHP0ToolStripMenuItem;
+        public ToolStripMenuItem playPAT0ToolStripMenuItem;
+        public ToolStripMenuItem playVIS0ToolStripMenuItem;
         public VIS0Editor vis0Editor;
         public PAT0Editor pat0Editor;
         public SHP0Editor shp0Editor;
@@ -95,7 +93,7 @@ namespace Ikarus.UI
         private ToolStripMenuItem scaleToolStripMenuItem;
         private ToolStripMenuItem helpToolStripMenuItem;
         private CLR0Editor clr0Editor;
-        private ToolStripMenuItem playCLR0ToolStripMenuItem;
+        public ToolStripMenuItem playCLR0ToolStripMenuItem;
         private ToolStripMenuItem detachViewerToolStripMenuItem;
         private ToolStripMenuItem backgroundToolStripMenuItem;
         private ToolStripMenuItem setColorToolStripMenuItem;
@@ -137,6 +135,8 @@ namespace Ikarus.UI
         public LeftPanel leftPanel;
         private System.Windows.Forms.ModelPlaybackPanel pnlPlayback;
         private RightPanel rightPanel;
+        private Controls.HurtboxEditor hurtboxEditor;
+        private ToolStripMenuItem muteSFXToolStripMenuItem;
         private Label label2;
 
         private void InitializeComponent()
@@ -176,6 +176,7 @@ namespace Ikarus.UI
             this.dontHighlightBonesAndVerticesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enablePointAndLineSmoothingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.enableTextOverlaysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.muteSFXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.storeSettingsExternallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveCurrentSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearSavedSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -246,6 +247,7 @@ namespace Ikarus.UI
             this.animEditors = new System.Windows.Forms.Panel();
             this.pnlPlayback = new System.Windows.Forms.ModelPlaybackPanel();
             this.panel3 = new System.Windows.Forms.Panel();
+            this.hurtboxEditor = new Ikarus.UI.Controls.HurtboxEditor();
             this.vis0Editor = new System.Windows.Forms.VIS0Editor();
             this.pat0Editor = new System.Windows.Forms.PAT0Editor();
             this.shp0Editor = new System.Windows.Forms.SHP0Editor();
@@ -333,7 +335,7 @@ namespace Ikarus.UI
             this.kinectToolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(150, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(242, 24);
             this.menuStrip1.TabIndex = 13;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -488,7 +490,8 @@ namespace Ikarus.UI
             this.chkDontRenderOffscreen,
             this.dontHighlightBonesAndVerticesToolStripMenuItem,
             this.enablePointAndLineSmoothingToolStripMenuItem,
-            this.enableTextOverlaysToolStripMenuItem});
+            this.enableTextOverlaysToolStripMenuItem,
+            this.muteSFXToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -584,6 +587,14 @@ namespace Ikarus.UI
             this.enableTextOverlaysToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
             this.enableTextOverlaysToolStripMenuItem.Text = "Enable text overlays";
             this.enableTextOverlaysToolStripMenuItem.CheckedChanged += new System.EventHandler(this.enableTextOverlaysToolStripMenuItem_CheckedChanged);
+            // 
+            // muteSFXToolStripMenuItem
+            // 
+            this.muteSFXToolStripMenuItem.CheckOnClick = true;
+            this.muteSFXToolStripMenuItem.Name = "muteSFXToolStripMenuItem";
+            this.muteSFXToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
+            this.muteSFXToolStripMenuItem.Text = "Mute SFX";
+            this.muteSFXToolStripMenuItem.CheckedChanged += new System.EventHandler(this.muteSFXToolStripMenuItem_CheckedChanged);
             // 
             // storeSettingsExternallyToolStripMenuItem
             // 
@@ -1049,9 +1060,9 @@ namespace Ikarus.UI
             this.comboCharacters.FormattingEnabled = true;
             this.comboCharacters.Items.AddRange(new object[] {
             "All"});
-            this.comboCharacters.Location = new System.Drawing.Point(204, 2);
+            this.comboCharacters.Location = new System.Drawing.Point(206, 2);
             this.comboCharacters.Name = "comboCharacters";
-            this.comboCharacters.Size = new System.Drawing.Size(115, 21);
+            this.comboCharacters.Size = new System.Drawing.Size(116, 21);
             this.comboCharacters.TabIndex = 21;
             this.comboCharacters.SelectedIndexChanged += new System.EventHandler(this.comboCharacters_SelectedIndexChanged);
             // 
@@ -1068,7 +1079,7 @@ namespace Ikarus.UI
             // 
             // splitter1
             // 
-            this.splitter1.Location = new System.Drawing.Point(322, 0);
+            this.splitter1.Location = new System.Drawing.Point(325, 0);
             this.splitter1.Name = "splitter1";
             this.splitter1.Size = new System.Drawing.Size(3, 24);
             this.splitter1.TabIndex = 31;
@@ -1089,10 +1100,10 @@ namespace Ikarus.UI
             this.chkFloor,
             this.button1,
             this.btnSaveCam});
-            this.toolStrip1.Location = new System.Drawing.Point(322, 0);
+            this.toolStrip1.Location = new System.Drawing.Point(325, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
-            this.toolStrip1.Size = new System.Drawing.Size(819, 24);
+            this.toolStrip1.Size = new System.Drawing.Size(816, 24);
             this.toolStrip1.TabIndex = 30;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -1192,20 +1203,20 @@ namespace Ikarus.UI
             // 
             // panel2
             // 
-            this.panel2.Controls.Add(this.label2);
-            this.panel2.Controls.Add(this.comboCharacters);
             this.panel2.Controls.Add(this.menuStrip1);
+            this.panel2.Controls.Add(this.comboCharacters);
+            this.panel2.Controls.Add(this.label2);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(322, 24);
+            this.panel2.Size = new System.Drawing.Size(325, 24);
             this.panel2.TabIndex = 29;
             // 
             // label2
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(147, 5);
+            this.label2.Location = new System.Drawing.Point(150, 5);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(56, 13);
             this.label2.TabIndex = 22;
@@ -1251,6 +1262,7 @@ namespace Ikarus.UI
             // panel3
             // 
             this.panel3.AutoScroll = true;
+            this.panel3.Controls.Add(this.hurtboxEditor);
             this.panel3.Controls.Add(this.vis0Editor);
             this.panel3.Controls.Add(this.pat0Editor);
             this.panel3.Controls.Add(this.shp0Editor);
@@ -1262,6 +1274,16 @@ namespace Ikarus.UI
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(264, 60);
             this.panel3.TabIndex = 29;
+            // 
+            // hurtboxEditor
+            // 
+            this.hurtboxEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.hurtboxEditor.Location = new System.Drawing.Point(0, 0);
+            this.hurtboxEditor.Name = "hurtboxEditor";
+            this.hurtboxEditor.Size = new System.Drawing.Size(264, 60);
+            this.hurtboxEditor.TabIndex = 31;
+            this.hurtboxEditor.TargetHurtBox = null;
+            this.hurtboxEditor.Visible = false;
             // 
             // vis0Editor
             // 
@@ -1343,7 +1365,6 @@ namespace Ikarus.UI
             this.leftPanel.Name = "leftPanel";
             this.leftPanel.Size = new System.Drawing.Size(202, 391);
             this.leftPanel.TabIndex = 32;
-            this.leftPanel.TargetAnimType = System.Windows.Forms.AnimType.None;
             // 
             // MainControl
             // 
@@ -1397,8 +1418,8 @@ namespace Ikarus.UI
             clr0Editor._mainWindow =
             pnlPlayback._mainWindow =
             this;
-            MovesetPanel.comboBox1.SelectedIndex = 0;
-
+            MovesetPanel.comboActionEntry.SelectedIndex = 0;
+            _updating = true;
             //pnlKeyframes.visEditor._mainWindow = vis0Editor;
             //animEditors.HorizontalScroll.Enabled = addedHeight = (!(animEditors.Width - panel3.Width >= pnlPlayback.MinimumSize.Width));
             //if (pnlPlayback.Width <= pnlPlayback.MinimumSize.Width)
@@ -1412,18 +1433,19 @@ namespace Ikarus.UI
             //TargetAnimType = AnimType.CHR;
             //m_DelegateOpenFile = new DelegateOpenFile(OpenFile);
             ScreenCapBgLocText.Text = Application.StartupPath;
+
             comboCharacters.DataSource = FileManager._supportedCharacters;
+            comboCharacters.SelectedIndex = Array.IndexOf(FileManager._supportedCharacters, FileManager.TargetCharacter);
+            
             _targetModels = new List<MDL0Node>();
 
             FileManager.RootChanged += new EventHandler(FolderManager_RootChanged);
             FileManager.TargetCharacterChanged += new EventHandler(FolderManager_TargetCharacterChanged);
 
-            _timer = new CoolTimer();
-            _timer.RenderFrame += _timer_RenderFrame;
-
             modelPanel._defaultTranslate = new Vector3(20.0f, 15.0f, 35.0f);
             modelPanel._defaultRotate = new Vector2(-10.0f, 30.0f);
             modelPanel.ResetCamera();
+            _updating = false;
         }
 
         #endregion
@@ -1434,6 +1456,11 @@ namespace Ikarus.UI
 
             Ikarus.Properties.Settings.Default.RootPath = "C:\\Users\\David\\Desktop\\Test";
             Program.OpenRootFromPath(pathToolStripMenuItem.Text = Ikarus.Properties.Settings.Default.RootPath);
+
+            RunTime.FramesPerSecond = (double)pnlPlayback.numFPS.Value;
+            RunTime.UpdatesPerSecond = 0;//(double)pnlPlayback.numFPS.Value;
+
+            Application.AddMessageFilter(RunTime.ButtonManager._keyFilter);
         }
 
         private void FolderManager_RootChanged(object sender, EventArgs e)
@@ -1443,6 +1470,9 @@ namespace Ikarus.UI
 
         private void FolderManager_TargetCharacterChanged(object sender, EventArgs e)
         {
+            _updating = true;
+            comboCharacters.SelectedIndex = Array.IndexOf(FileManager._supportedCharacters, FileManager.TargetCharacter);
+            _updating = false;
             Reset();
         }
 
@@ -1505,6 +1535,31 @@ namespace Ikarus.UI
             }
         }
 
+        internal void DisableHurtboxEditor()
+        {
+            if (hurtboxEditor.Visible == true)
+                SetCurrentControl();
+        }
+
+        internal void EnableHurtboxEditor()
+        {
+            if (hurtboxEditor.Visible != true)
+            {
+                Control newControl = hurtboxEditor;
+                if (_currentControl != newControl)
+                {
+                    if (_currentControl != null)
+                        _currentControl.Visible = false;
+                    if ((_currentControl = newControl) != null)
+                    {
+                        _currentControl.Visible = true;
+                        animEditors.Height = 102;
+                        panel3.Width = 288;
+                    }
+                }
+            }
+        }
+
         private void btnLoadRoot_Click(object sender, EventArgs e)
         {
             if (Program.OpenRoot(pathToolStripMenuItem.Text))
@@ -1522,10 +1577,108 @@ namespace Ikarus.UI
             if (FileManager.SelectedInfo != null)
             {
                 _resetCam = false;
-                TargetModel = FileManager.SelectedInfo.FileCollection._models[colorIndex].Children[0].Children[0].Children[0] as MDL0Node;
-                leftPanel.UpdateMoveset(FileManager.SelectedInfo.FileCollection.Moveset);
+                if (FileManager.SelectedInfo.FileCollection._models[colorIndex] != null)
+                    TargetModel = FileManager.SelectedInfo.FileCollection._models[colorIndex].Children[0].Children[0].Children[0] as MDL0Node;
+                leftPanel.UpdateMoveset(FileManager.Moveset);
                 ResetBoneColors();
+                RunTime.ResetSubactionVariables();
+                MoveDefNode mNode = FileManager.Moveset;
+                if (mNode != null)
+                {
+                    MoveDefDataNode d = mNode._data;
+                    if (d != null)
+                    {
+                        RunTime._articles = new ArticleInfo[d._articles.Count];
+                        foreach (MoveDefArticleNode article in d._articles.Values)
+                        {
+                            ArticleInfo articleInfo = new ArticleInfo(article, null, false);
+
+                            int groupID = article.ARCGroupID;
+                            if (groupID >= 0)
+                            {
+                                //First load models in the recolor pac
+                                //These models are always visible
+                                LoadArticles(FileManager.SelectedInfo.FileCollection._characterFiles, groupID, articleInfo, true);
+                                
+                                //Now load extra articles that will be called later
+                                LoadArticles(FileManager.SelectedInfo.FileCollection._characterEtcFiles, groupID, articleInfo, false);
+                            }
+                            RunTime._articles[article.Index] = articleInfo;
+                        }
+                    }
+                }
             }
+        }
+
+        private void LoadArticles(Dictionary<int, Dictionary<ARCFileType, List<ARCEntryNode>>> t1, int groupID, ArticleInfo info, bool addTarget)
+        {
+            if (t1.ContainsKey(groupID))
+            {
+                var t2 = t1[groupID];
+                if (t2.ContainsKey(ARCFileType.ModelData))
+                {
+                    List<ARCEntryNode> entries = t2[ARCFileType.ModelData];
+                    foreach (ARCEntryNode e in entries)
+                    {
+                        //Don't load shadow models or main models
+                        if (e.FileIndex == 10 || e.GroupID == 0)
+                            continue;
+
+                        MDL0Node model = e.Children[0].Children[0] as MDL0Node;
+                        info._model = model;
+
+                        MDL0BoneNode cBone = info._article.CharBoneNode;
+                        if (cBone != null && info._article.ArticleBoneNode != null)
+                        {
+                            MDL0BoneNode aBone = info._article.ArticleBoneNode;
+                            aBone.OverrideBone = cBone;
+                        }
+
+                        if (addTarget)
+                        {
+                            info.Running = true;
+                            info._etcModel = false;
+                            AddTarget(info._model);
+                        }
+                    }
+                }
+                if (t2.ContainsKey(ARCFileType.AnimationData))
+                {
+                    List<ARCEntryNode> entries = t2[ARCFileType.AnimationData];
+                    foreach (ARCEntryNode u in entries)
+                        foreach (BRESGroupNode b in u.Children)
+                        {
+                            AnimationNode anim = b.Children[0] as AnimationNode;
+                            switch (b.Type)
+                            {
+                                case BRESGroupNode.BRESGroupType.CHR0:
+                                    info._chr0List.Add(anim as CHR0Node);
+                                    break;
+                                case BRESGroupNode.BRESGroupType.SRT0:
+                                    info._srt0List.Add(anim as SRT0Node);
+                                    break;
+                                case BRESGroupNode.BRESGroupType.SHP0:
+                                    info._shp0List.Add(anim as SHP0Node);
+                                    break;
+                                case BRESGroupNode.BRESGroupType.VIS0:
+                                    info._vis0List.Add(anim as VIS0Node);
+                                    break;
+                                case BRESGroupNode.BRESGroupType.PAT0:
+                                    info._pat0List.Add(anim as PAT0Node);
+                                    break;
+                                case BRESGroupNode.BRESGroupType.CLR0:
+                                    info._clr0List.Add(anim as CLR0Node);
+                                    break;
+                            }
+                        }
+                }
+
+            }
+        }
+
+        private void muteSFXToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            RunTime._muteSFX = muteSFXToolStripMenuItem.Checked;
         }
     }
 }

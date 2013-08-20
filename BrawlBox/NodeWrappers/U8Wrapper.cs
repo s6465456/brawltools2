@@ -134,13 +134,13 @@ namespace BrawlBox
         public void ImportBRES()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.BRES, out path) > 0)
+            if (Program.OpenFile(FileFilters.BRES, out path) > 0)
                 NewBRES().Replace(path);
         }
         public void ImportMSBin()
         {
             string path;
-            if (Program.OpenFile(ExportFilters.MSBin, out path) > 0)
+            if (Program.OpenFile(FileFilters.MSBin, out path) > 0)
                 NewMSBin().Replace(path);
         }
         

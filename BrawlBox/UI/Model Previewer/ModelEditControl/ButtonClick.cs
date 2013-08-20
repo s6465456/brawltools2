@@ -601,76 +601,76 @@ namespace System.Windows.Forms
                     translationToolStripMenuItem.PerformClick();
                     return true;
                 }
-                else if (key == Keys.C)
-                {
-                    //Copy frame
-                    if (Ctrl)
-                        if ((ModifierKeys & Keys.Shift) == Keys.Shift)
-                        {
-                            //We're copying the whole frame
-                            if (_currentControl is CHR0Editor)
-                            {
-                                chr0Editor.btnCopyAll.PerformClick();
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            //We're copying the entry frame
-                            if (_currentControl is CHR0Editor)
-                            {
-                                chr0Editor.btnCopy.PerformClick();
-                                return true;
-                            }
-                        }
-                }
+                //else if (key == Keys.C)
+                //{
+                //    //Copy frame
+                //    if (Ctrl)
+                //        if ((ModifierKeys & Keys.Shift) == Keys.Shift)
+                //        {
+                //            //We're copying the whole frame
+                //            if (_currentControl is CHR0Editor)
+                //            {
+                //                chr0Editor.btnCopyAll.PerformClick();
+                //                return true;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            //We're copying the entry frame
+                //            if (_currentControl is CHR0Editor)
+                //            {
+                //                chr0Editor.btnCopy.PerformClick();
+                //                return true;
+                //            }
+                //        }
+                //}
                 else if (key == Keys.V)
                 {
                     //Paste frame
-                    if (Ctrl)
-                        if (Shift)
-                            if (Alt)
-                            {
-                                //We're pasting only keyframes of the whole frame
-                                if (_currentControl is CHR0Editor)
-                                {
-                                    chr0Editor._onlyKeys = true;
-                                    chr0Editor.btnPasteAll.PerformClick(); 
-                                    return true;
-                                }
-                            }
-                            else
-                            {
-                                //We're pasting the whole frame
-                                if (_currentControl is CHR0Editor)
-                                {
-                                    chr0Editor._onlyKeys = false;
-                                    chr0Editor.btnPasteAll.PerformClick();
-                                    return true;
-                                }
-                            }
-                        else
-                            if (Alt)
-                            {
-                                //We're pasting only keyframes of the entry frame
-                                if (_currentControl is CHR0Editor)
-                                {
-                                    chr0Editor._onlyKeys = true;
-                                    chr0Editor.btnPaste.PerformClick();
-                                    return true;
-                                }
-                            }
-                            else
-                            {
-                                //We're pasting the entry frame
-                                if (_currentControl is CHR0Editor)
-                                {
-                                    chr0Editor._onlyKeys = false;
-                                    chr0Editor.btnPaste.PerformClick();
-                                    return true;
-                                }
-                            }
-                    else
+                    //if (Ctrl)
+                    //    if (Shift)
+                    //        if (Alt)
+                    //        {
+                    //            //We're pasting only keyframes of the whole frame
+                    //            if (_currentControl is CHR0Editor)
+                    //            {
+                    //                chr0Editor._onlyKeys = true;
+                    //                chr0Editor.btnPasteAll.PerformClick(); 
+                    //                return true;
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            //We're pasting the whole frame
+                    //            if (_currentControl is CHR0Editor)
+                    //            {
+                    //                chr0Editor._onlyKeys = false;
+                    //                chr0Editor.btnPasteAll.PerformClick();
+                    //                return true;
+                    //            }
+                    //        }
+                    //    else
+                    //        if (Alt)
+                    //        {
+                    //            //We're pasting only keyframes of the entry frame
+                    //            if (_currentControl is CHR0Editor)
+                    //            {
+                    //                chr0Editor._onlyKeys = true;
+                    //                chr0Editor.btnPaste.PerformClick();
+                    //                return true;
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            //We're pasting the entry frame
+                    //            if (_currentControl is CHR0Editor)
+                    //            {
+                    //                chr0Editor._onlyKeys = false;
+                    //                chr0Editor.btnPaste.PerformClick();
+                    //                return true;
+                    //            }
+                    //        }
+                    //else
                     {
                         chkVertices.PerformClick();
                         return true;

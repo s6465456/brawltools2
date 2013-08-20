@@ -72,7 +72,16 @@ namespace BrawlLib.OpenGL
             
             OnInit(_ctx);
 
+            _ctx.ContextChanged += ContextChanged;
+
             base.OnLoad(e);
+        }
+
+        void ContextChanged(bool enabled)
+        {
+            //if (enabled)
+            OnResize(null);
+            OnResized();
         }
 
         protected override void DestroyHandle()
@@ -119,6 +128,9 @@ namespace BrawlLib.OpenGL
             {
                 try
                 {
+                    //Direct OpenGL calls to this panel
+                    Capture();
+
                     //Render background image
                     if (BGImage != null)
                         RenderBackground();
@@ -142,8 +154,6 @@ namespace BrawlLib.OpenGL
                             GL.MatrixMode(MatrixMode.Modelview);
                             GL.LoadMatrix((float*)p);
                         }
-
-                    _text.Clear();
                     
                     //Render 3D scene
                     OnRender(_ctx, e);
@@ -153,7 +163,8 @@ namespace BrawlLib.OpenGL
                     {
                         GL.Color4(Color.White);
 
-                        //GL.Clear(ClearBufferMask.DepthBufferBit);
+                        GL.PushAttrib(AttribMask.AllAttribBits);
+
                         GL.Disable(EnableCap.DepthTest);
                         GL.Disable(EnableCap.Lighting);
                         GL.Disable(EnableCap.CullFace);
@@ -175,8 +186,7 @@ namespace BrawlLib.OpenGL
                         if (_selecting && !_forceNoSelection)
                             RenderSelection();
 
-                        GL.Enable(EnableCap.DepthTest);
-                        GL.Enable(EnableCap.Lighting);
+                        GL.PopAttrib();
 
                         GL.PopMatrix();
                         GL.MatrixMode(MatrixMode.Projection);
@@ -192,6 +202,10 @@ namespace BrawlLib.OpenGL
                 }
                 finally { Monitor.Exit(_ctx); }
             }
+
+            //Clear text values
+            //This will be filled until the next render
+            _text.Clear();
         }
 
         public void RenderBackground()
@@ -330,19 +344,6 @@ namespace BrawlLib.OpenGL
             GL.PopMatrix();
             GL.MatrixMode(MatrixMode.Projection);
             GL.PopMatrix();
-        }
-
-        protected override void OnResize(EventArgs e)
-        {
-            _projectionChanged = true;
-
-            if (BGImage != null)
-                GL.Viewport(0, 0, Width, Height);
-
-            if (_ctx != null)
-                _ctx.Update();
-
-            Invalidate();
         }
 
         internal virtual void OnInit(TKContext ctx) { }
@@ -501,10 +502,25 @@ namespace BrawlLib.OpenGL
             }
         }
 
+        protected override void OnResize(EventArgs e)
+        {
+            _projectionChanged = true;
+
+            if (BGImage != null)
+                GL.Viewport(0, 0, Width, Height);
+
+            if (_ctx != null)
+                _ctx.Update();
+
+            Invalidate();
+        }
+
         public virtual void OnResized()
         {
             if (_ctx == null)
                 return;
+
+            Capture();
 
             _aspect = (float)Width / Height;
             CalculateProjection();

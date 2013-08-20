@@ -7,6 +7,6 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.PLT0)]
     class PLT0Wrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.PLT0; } }
+        public override string ExportFilter { get { return FileFilters.PLT0; } }
     }
 }

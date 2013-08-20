@@ -32,5 +32,13 @@ namespace System
         //    }
         //    return newList;
         //}
+        public static int IndexOf(this byte[] searchList, byte[] pattern)
+        {
+            Encoding encoding = Encoding.GetEncoding(1252);
+            string s1 = encoding.GetString(searchList, 0, searchList.Length);
+            string s2 = encoding.GetString(pattern, 0, pattern.Length);
+            int result = s1.IndexOf(s2, StringComparison.Ordinal);
+            return result;
+        }
     }
 }

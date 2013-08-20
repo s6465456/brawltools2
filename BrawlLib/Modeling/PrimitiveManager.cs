@@ -1153,27 +1153,27 @@ namespace BrawlLib.Modeling
 
         public void Bind()
         {
-            GL.GenBuffers(1, out _arrayBufferHandle);
-            GL.GenBuffers(1, out _elementArrayBufferHandle);
+            //GL.GenBuffers(1, out _arrayBufferHandle);
+            //GL.GenBuffers(1, out _elementArrayBufferHandle);
 
-            GL.GenVertexArrays(1, out _arrayHandle);
-            GL.BindVertexArray(_arrayHandle);
+            //GL.GenVertexArrays(1, out _arrayHandle);
+            //GL.BindVertexArray(_arrayHandle);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementArrayBufferHandle);
-            VoidPtr ptr = _triangles._indices.Address;
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(_triangles._indices.Length),
-                ptr, BufferUsageHint.StaticDraw);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementArrayBufferHandle);
+            //VoidPtr ptr = _triangles._indices.Address;
+            //GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(_triangles._indices.Length),
+            //    ptr, BufferUsageHint.StaticDraw);
+            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
         }
 
         public void Unbind()
         {
-            if (_arrayHandle != -1) 
-                GL.DeleteVertexArrays(1, ref _arrayHandle);
-            if (_arrayBufferHandle != -1) 
-                GL.DeleteBuffers(1, ref _arrayBufferHandle);
-            if (_elementArrayBufferHandle != -1) 
-                GL.DeleteBuffers(1, ref _elementArrayBufferHandle);
+            //if (_arrayHandle != -1) 
+            //    GL.DeleteVertexArrays(1, ref _arrayHandle);
+            //if (_arrayBufferHandle != -1) 
+            //    GL.DeleteBuffers(1, ref _arrayBufferHandle);
+            //if (_elementArrayBufferHandle != -1) 
+            //    GL.DeleteBuffers(1, ref _elementArrayBufferHandle);
         }
 
         internal void UpdateStream(int index)

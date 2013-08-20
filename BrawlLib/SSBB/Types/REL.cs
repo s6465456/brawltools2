@@ -32,7 +32,7 @@ namespace BrawlLib.SSBBTypes
         //0x40
         public buint _moduleAlign; //Alignment of this module (32 bytes)
         public buint _bssAlign; //Alignment of the command list for this module (8 bytes)
-        public buint _fixSize; //Pointer to the command list for this module
+        public buint _commandOffset; //Offset to the command list for this module (not to the entry, but directly to the array)
 
         //Data Order
 
@@ -49,14 +49,14 @@ namespace BrawlLib.SSBBTypes
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 
-        public RELSection* SectionInfo { get { return (RELSection*)(Address + _info._sectionInfoOffset); } }
-        public RELImport* Imports { get { return (RELImport*)(Address + _impOffset); } }
+        public RELSectionEntry* SectionInfo { get { return (RELSectionEntry*)(Address + _info._sectionInfoOffset); } }
+        public RELImportEntry* Imports { get { return (RELImportEntry*)(Address + _impOffset); } }
         
-        public int ImportListCount { get { return (int)(_impSize / RELImport.Size); } }
+        public int ImportListCount { get { return (int)(_impSize / RELImportEntry.Size); } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct RELSection
+    public unsafe struct RELSectionEntry
     {
         public const int Size = 8;
 
@@ -72,7 +72,7 @@ namespace BrawlLib.SSBBTypes
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct RELImport
+    public unsafe struct RELImportEntry
     {
         public const int Size = 8;
 
@@ -89,21 +89,17 @@ namespace BrawlLib.SSBBTypes
     {
         public const int Size = 8;
 
-        public bushort _prevOffset; //Size of previous
-        public byte _type;
-        public byte _section;
-        public buint _value;
-
-        public RELLinkType Type { get { return (RELLinkType)_type; } }
-
+        public bushort _prevOffset; //Offset from the last command in the modified section
+        public RELLinkType _type; //The command used to edit the modified section
+        public byte _section; //The target section
+        public buint _value; //Offset relative to the target section's address
+        
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
     }
 
-    [Flags]
     public enum RELLinkType : byte
     {
-        NOP1 = 0xC9, //Increment offset6
-        NOP2 = 0x0,
+        Nop = 0x0,
         WriteWord = 0x1,
         SetBranchOffset = 0x2,
         WriteLowerHalf1 = 0x3,
@@ -117,7 +113,8 @@ namespace BrawlLib.SSBBTypes
         SetBranchConditionDestination1 = 0xB,
         SetBranchConditionDestination2 = 0xC,
         SetBranchConditionDestination3 = 0xD,
-        Section = 0xCA, //Set current section
+        IncrementOffset = 0xC9, //Previous offset can only reach 0xFFFF. This command resets it
+        Section = 0xCA, //Sets the section to be modified by all following commands
         End = 0xCB,
         MrkRef = 0xCC
     }

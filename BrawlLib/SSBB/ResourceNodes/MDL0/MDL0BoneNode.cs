@@ -22,8 +22,29 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal MDL0Bone* Header { get { return (MDL0Bone*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.MDL0Bone; } }
         public override bool AllowDuplicateNames { get { return true; } }
-
-        public MDL0BoneNode Clone() { return MemberwiseClone() as MDL0BoneNode; }
+        
+        private MDL0BoneNode _overrideBone;
+        [Browsable(false)]
+        public MDL0BoneNode OverrideBone
+        {
+            get { return _overrideBone; }
+            set { _overrideBone = value; }
+        }
+        //private List<MDL0BoneNode> _overriding = new List<MDL0BoneNode>();
+        //[Browsable(false)]
+        //public List<MDL0BoneNode> Overriding
+        //{
+        //    get { return _overriding; }
+        //    set { _overriding = value; }
+        //}
+        
+        public MDL0BoneNode Clone() 
+        {
+            MDL0BoneNode b = new MDL0BoneNode();
+            b._name = _name;
+            b._bindState = new FrameState(_bindState._scale, _bindState._rotate, _bindState._translate);
+            return b;
+        }
 
         public bool _locked; //For the weight editor
 
@@ -38,51 +59,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Model.SignalPropertyChange();
             } 
         }
-
-        #region IK Settings
-
-        //bool _lockXRot, _lockYRot, _lockZRot;
-        ////float _maxX, _maxY, _maxZ;
-        ////float _minX, _minY, _minZ;
-        //bool _ikStart, _ikBone, _ikEnd;
-
-        //void DefaultIKs()
-        //{
-        //    switch (_name)
-        //    {
-        //        case "RLegJ":
-        //        case "LLegJ":
-        //            _ikStart = true;
-        //            break;
-
-        //        case "LKneeJ":
-        //        case "RKneeJ":
-        //            _ikBone = true;
-        //            break;
-
-        //        case "LFootJ":
-        //        case "RFootJ":
-        //            _ikEnd = true;
-        //            break;
-
-        //        case "LShoulderJ":
-        //        case "RShoulderJ":
-        //            _ikStart = true;
-        //            break;
-
-        //        case "LArmJ":
-        //        case "RArmJ":
-        //            _ikBone = true;
-        //            break;
-
-        //        case "LHandN":
-        //        case "RHandN":
-        //            _ikEnd = true;
-        //            break;
-        //    }
-        //}
-        
-        #endregion
 
         public BoneFlags _flags1 = (BoneFlags)0x100;
         public BillboardFlags _flags2;
@@ -126,17 +102,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public List<IMatrixNodeUser> Users { get { return _users; } set { _users = value; } }
         internal List<IMatrixNodeUser> _users = new List<IMatrixNodeUser>();
-
-        //public void TransferWeights(MDL0BoneNode n)
-        //{
-        //    foreach (BoneWeight w in Weights)
-        //    {
-        //        w._bone = n;
-        //        w._bone._weights.Add(w);
-        //    }
-        //    foreach (MDL0BoneNode b in Children)
-        //        b.TransferWeights(n);
-        //}
 
 //#if DEBUG
         //[Category("Bone")]
@@ -595,16 +560,31 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         public void RecalcFrameState()
         {
-            if (_parent is MDL0BoneNode)
+            if (_overrideBone != null)
             {
-                _frameMatrix = ((MDL0BoneNode)_parent)._frameMatrix * _frameState._transform;
-                _inverseFrameMatrix = _frameState._iTransform * ((MDL0BoneNode)_parent)._inverseFrameMatrix;
+                _frameMatrix = _overrideBone._frameMatrix;
+                _inverseFrameMatrix = _overrideBone._inverseFrameMatrix;
             }
             else
             {
-                _frameMatrix = _frameState._transform;
-                _inverseFrameMatrix = _frameState._iTransform;
+                if (_overrideTranslate != new Vector3())
+                    _frameState = new FrameState(_frameState.Scale, _frameState.Rotate, _frameState.Translate + _overrideTranslate);
+
+                if (_parent is MDL0BoneNode)
+                {
+                    _frameMatrix = ((MDL0BoneNode)_parent)._frameMatrix * _frameState._transform;
+                    _inverseFrameMatrix = _frameState._iTransform * ((MDL0BoneNode)_parent)._inverseFrameMatrix;
+                }
+                else
+                {
+                    _frameMatrix = _frameState._transform;
+                    _inverseFrameMatrix = _frameState._iTransform;
+                }
             }
+
+            //if (_overriding.Count != 0)
+            //    foreach (MDL0BoneNode b in _overriding)
+            //        b.RecalcFrameState();
 
             if (BillboardSetting == BillboardFlags.PerspectiveSTD)
                 MuliplyRotation();
@@ -674,18 +654,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                 mainWindow.ScreenText[Name] = new Vector3(v2._x, v2._y - 9.0f, v2._z);
             }
 
-            Vector3 v = _frameState._translate;
+            Vector3 v1 = (_parent == null || !(_parent is MDL0BoneNode)) ? new Vector3(0.0f) : ((MDL0BoneNode)_parent)._frameMatrix.GetPoint();
+            Vector3 v = _frameMatrix.GetPoint();
 
             GL.Begin(BeginMode.Lines);
 
-            GL.Vertex3(0.0f, 0.0f, 0.0f);
+            GL.Vertex3((float*)&v1);
             GL.Vertex3((float*)&v);
 
             GL.End();
 
             GL.PushMatrix();
 
-            GL.Translate(v._x, v._y, v._z);
+            fixed (Matrix* m = &_frameMatrix)
+                GL.MultMatrix((float*)m);
 
             //Render node
             GLDisplayList ndl = ctx.FindOrCreate<GLDisplayList>("BoneNodeOrb", CreateNodeOrb);
@@ -697,12 +679,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             ndl.Call();
             
             DrawNodeOrients();
-
-            GL.Translate(-v._x, -v._y, -v._z);
-
-            //Transform Bones
-            fixed (Matrix* m = &_frameState._transform)
-                GL.MultMatrix((float*)m);
 
             if (BillboardSetting != 0 && mainWindow != null)
             {
@@ -721,29 +697,29 @@ namespace BrawlLib.SSBB.ResourceNodes
                 GL.MultMatrix((float*)&m2);
             }
 
-            //Render children
-            foreach (MDL0BoneNode n in Children)
-                n.Render(ctx, mainWindow);
-
             if (BillboardSetting != 0 && mainWindow != null)
                 GL.PopMatrix();
 
             GL.PopMatrix();
+
+            //Render children
+            foreach (MDL0BoneNode n in Children)
+                n.Render(ctx, mainWindow);
         }
 
-        internal void ApplyCHR0(CHR0Node node, int index)
+        internal void ApplyCHR0(CHR0Node node, int index, bool linear)
         {
             CHR0EntryNode e;
 
             if ((node == null) || (index == 0)) //Reset to bind pose
                 _frameState = _bindState;
             else if ((e = node.FindChild(Name, false) as CHR0EntryNode) != null) //Set to anim pose
-                _frameState = new FrameState(e.GetAnimFrame(index - 1));
+                _frameState = new FrameState(e.GetAnimFrame(index - 1, linear));
             else //Set to neutral pose
                 _frameState = _bindState;
 
             foreach (MDL0BoneNode b in Children)
-                b.ApplyCHR0(node, index);
+                b.ApplyCHR0(node, index, linear);
         }
 
         public static GLDisplayList CreateNodeOrb(TKContext ctx)
@@ -793,5 +769,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         #endregion
+
+        public Vector3 _overrideTranslate;
     }
 }

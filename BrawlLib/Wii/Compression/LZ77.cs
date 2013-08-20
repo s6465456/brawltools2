@@ -201,26 +201,15 @@ namespace BrawlLib.Wii.Compression
                 return lz.Compress(srcAddr, srcLen, outStream, prog, extendedFormat);
         }
 
-        public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen)
+        public static void Expand(CompressionHeader* header, VoidPtr dstAddress, int dstLen) { Expand(header->Data, dstAddress, dstLen, header->IsExtendedLZ77); }
+        public static void Expand(VoidPtr data, VoidPtr dstAddress, int dstLen, bool extFmt)
         {
-            bool exFmt = header->IsExtendedLZ77;
-            for (byte* srcPtr = (byte*)header->Data, dstPtr = (byte*)dstAddress, ceiling = dstPtr + dstLen; dstPtr < ceiling; )
+            for (byte* srcPtr = (byte*)data, dstPtr = (byte*)dstAddress, ceiling = dstPtr + dstLen; dstPtr < ceiling; )
                 for (byte control = *srcPtr++, bit = 8; (bit-- != 0) && (dstPtr != ceiling); )
                     if ((control & (1 << bit)) == 0)
                         *dstPtr++ = *srcPtr++;
                     else
-                    {
-                        int num = (*srcPtr >> 4);
-                        if (!exFmt)
-                            num += 3;
-                        else if (num == 1)
-                            num = (((*srcPtr++ & 0x0F) << 12) | ((*srcPtr++) << 4) | (*srcPtr >> 4)) + 0xFF + 0xF + 3;
-                        else if (num == 0)
-                            num = (((*srcPtr++ & 0x0F) << 4) | (*srcPtr >> 4)) + 0xF + 2;
-                        else
-                            num += 1;
-                        for (int offset = (((*srcPtr++ & 0xF) << 8) | *srcPtr++) + 2; (dstPtr != ceiling) && (num-- > 0); *dstPtr++ = dstPtr[-offset]) ;
-                    }
+                        for (int temp = (*srcPtr >> 4), num = !extFmt ? temp + 3 : temp == 1 ? (((*srcPtr++ & 0x0F) << 12) | ((*srcPtr++) << 4) | (*srcPtr >> 4)) + 0xFF + 0xF + 3 : temp == 0 ? (((*srcPtr++ & 0x0F) << 4) | (*srcPtr >> 4)) + 0xF + 2 : temp + 1, offset = (((*srcPtr++ & 0xF) << 8) | *srcPtr++) + 2; dstPtr != ceiling && num-- > 0; *dstPtr++ = dstPtr[-offset]) ;
         }
     }
 }

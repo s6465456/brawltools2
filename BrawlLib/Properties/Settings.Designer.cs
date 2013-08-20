@@ -8,7 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using BrawlLib.Modeling;
 using System;
+using System.Collections.Generic;
 namespace BrawlLib.Properties
 {
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -16,14 +18,7 @@ namespace BrawlLib.Properties
     public sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
     {
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-
-        public static Settings Default
-        {
-            get
-            {
-                return defaultInstance;
-            }
-        }
+        public static Settings Default { get { return defaultInstance; } }
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -67,6 +62,36 @@ namespace BrawlLib.Properties
             set
             {
                 this["External"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public Collada.ImportOptions ColladaImportOptions
+        {
+            get
+            {
+                return ((Collada.ImportOptions)(this["ColladaImportOptions"]));
+            }
+            set
+            {
+                this["ColladaImportOptions"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public List<byte[]> Codes
+        {
+            get
+            {
+                return ((List<byte[]>)(this["Codes"]));
+            }
+            set
+            {
+                this["Codes"] = value;
             }
         }
     }

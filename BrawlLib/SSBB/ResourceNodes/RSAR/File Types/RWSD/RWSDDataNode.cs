@@ -37,11 +37,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte MainSend { get { return _part1._mainSend; } set { _part1._mainSend = value; SignalPropertyChange(); } }
 
         [Category("Note Event")]
-        public float Position { get { return _part2.position; } set { _part2.position = value; } }
+        public float Position { get { return _part2.position; } set { _part2.position = value; SignalPropertyChange(); } }
         [Category("Note Event")]
-        public float Length { get { return _part2.length; } set { _part2.length = value; } }
+        public float Length { get { return _part2.length; } set { _part2.length = value; SignalPropertyChange(); } }
         [Category("Note Event")]
-        public uint Decay { get { return _part2.noteIndex; } set { _part2.noteIndex = value; } }
+        public uint Decay { get { return _part2.noteIndex; } set { _part2.noteIndex = value; SignalPropertyChange(); } }
 
         RSARFileAudioNode _soundNode;
         [Browsable(false)]
@@ -83,25 +83,25 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("Note Info")]
         //public int WaveIndex { get { return _part3._waveIndex; } set { _part3._waveIndex = value; } }
         [Category("Note Info")]
-        public byte Attack { get { return _part3._attack; } set { _part3._attack = value; } }
+        public byte Attack { get { return _part3._attack; } set { _part3._attack = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public byte InfoDecay { get { return _part3._decay; } set { _part3._decay = value; } }
+        public byte InfoDecay { get { return _part3._decay; } set { _part3._decay = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public byte Sustain { get { return _part3._sustain; } set { _part3._sustain = value; } }
+        public byte Sustain { get { return _part3._sustain; } set { _part3._sustain = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public byte Release { get { return _part3._release; } set { _part3._release = value; } }
+        public byte Release { get { return _part3._release; } set { _part3._release = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public byte Hold { get { return _part3._hold; } set { _part3._hold = value; } }
+        public byte Hold { get { return _part3._hold; } set { _part3._hold = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public byte OriginalKey { get { return _part3._originalKey; } set { _part3._originalKey = value; } }
+        public byte OriginalKey { get { return _part3._originalKey; } set { _part3._originalKey = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public byte Volume { get { return _part3._volume; } set { _part3._volume = value; } }
+        public byte Volume { get { return _part3._volume; } set { _part3._volume = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public byte InfoPan { get { return _part3._pan; } set { _part3._pan = value; } }
+        public byte InfoPan { get { return _part3._pan; } set { _part3._pan = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public byte InfoSurroundPan { get { return _part3._surroundPan; } set { _part3._surroundPan = value; } }
+        public byte InfoSurroundPan { get { return _part3._surroundPan; } set { _part3._surroundPan = value; SignalPropertyChange(); } }
         [Category("Note Info")]
-        public float InfoPitch { get { return _part3._pitch; } set { _part3._pitch = value; } }
+        public float InfoPitch { get { return _part3._pitch; } set { _part3._pitch = value; SignalPropertyChange(); } }
 
         [Category("Audio Stream")]
         public WaveEncoding Encoding { get { return _soundNode == null ? WaveEncoding.ADPCM : _soundNode.Encoding; } }

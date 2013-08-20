@@ -252,6 +252,14 @@ namespace BrawlLib.Wii.Animations
             for (int i = 0; i < 3; i++)
                 dataSize += EvaluateCHR0Group(ref kf._evalCode, kf, i, ref entrySize);
 
+            if (!kf._evalCode.HasRotation && !kf._evalCode.HasTranslation)
+            {
+                kf._evalCode.IgnoreRotAndTrans = true;
+
+                if (!kf._evalCode.HasScale)
+                    kf._evalCode.Identity = true;
+            }
+
             return dataSize;
         }
 
@@ -565,16 +573,10 @@ namespace BrawlLib.Wii.Animations
             else //Set isotropic to true, so it sets the default value.
                 isotropic = true;
 
-            //Set scale flag
             if (group == 0)
                 code.IgnoreScale = !exist;
 
-            //Set data flags
-            if (exist)
-                code.ExtraData = 0;
-
             code.SetExists(group, exist);
-            //code.SetIgnore(group, !exist);
             code.SetIsIsotropic(group, isotropic);
             for (int i = 0; i < 3; i++)
                 code.SetIsFixed(index + i, isFixed[i]);
@@ -681,7 +683,7 @@ namespace BrawlLib.Wii.Animations
             //VoidPtr dataAddr = addr + 8;
 
             CHR0Entry* header = (CHR0Entry*)entryAddress;
-            header->_code = code._data;
+            header->_code = (uint)code._data;
             header->_stringOffset = 0;
 
             //entryAddress += 8;
@@ -689,7 +691,6 @@ namespace BrawlLib.Wii.Animations
 
             //Write values/offset and encode groups
             for (int i = 0, x = 0; i < 3; i++, x += 3)
-            {
                 if (code.GetExists(i))
                 {
                     AnimDataFormat format = code.GetFormat(i);
@@ -704,9 +705,7 @@ namespace BrawlLib.Wii.Animations
                         }
                     }
                     else
-                    {
                         for (int y = 0, z = x; y < 3; y++, z++)
-                        {
                             if (code.GetIsFixed(z))
                                 *(bfloat*)pOffset++ = kf._keyRoots[z]._next._value;
                             else
@@ -714,10 +713,7 @@ namespace BrawlLib.Wii.Animations
                                 *pOffset++ = (int)(dataAddress - entryAddress);
                                 dataAddress += EncodeEntry(z, format, kf, dataAddress);
                             }
-                        }
-                    }
                 }
-            }
         }
 
         public static void EncodeSRT0Keyframes(KeyframeCollection kf, VoidPtr entryAddress, VoidPtr dataAddress)
@@ -857,7 +853,7 @@ namespace BrawlLib.Wii.Animations
 
                 byte* dPtr = header->Data;
                 for (i = 0; i < numFrames; i++)
-                    *dPtr++ = (byte)((kf[mode, i] - min) / step/* + 0.5f*/);
+                    *dPtr++ = (byte)((kf[mode, i] - min) / step + 0.5f);
 
                 //Fill remaining bytes
                 while ((i++ & 3) != 0)
@@ -880,10 +876,7 @@ namespace BrawlLib.Wii.Animations
                 for (frame = root._next; frame._index != -1; frame = frame._next)
                 {
                     val = (frame._value - min) / step;
-                    //if (val < 0)
-                    //    val -= 0.5f;
-                    //else
-                    //    val += 0.5f;
+                    val += (val < 0 ? -0.5f : 0.5f);
 
                     *entry++ = new I4Entry(frame._index, (int)val, frame._tangent);
                 }
@@ -904,11 +897,8 @@ namespace BrawlLib.Wii.Animations
 
                 for (frame = root._next; frame._index != -1; frame = frame._next)
                 {
-                    val = (frame._value - min) / step;
-                    //if (val < 0)
-                    //    val -= 0.5f;
-                    //else
-                    //    val += 0.5f;
+                    val = ((frame._value - min) / step);
+                    val += (val < 0 ? -0.5f : 0.5f);
 
                     *entry++ = new I6Entry(frame._index, (int)val, frame._tangent);
                 }
@@ -949,7 +939,7 @@ namespace BrawlLib.Wii.Animations
                     for (int x = 0; x < count; x++)
                     {
                         val = entry.Interpolate(x, linear);
-                        error = (val - valBase) / step/* + 0.5f*/;
+                        error = (val - valBase) / step + 0.5f;
                         error = Math.Abs(val - (valBase + ((int)error * step)));
 
                         if (error > scaleError)

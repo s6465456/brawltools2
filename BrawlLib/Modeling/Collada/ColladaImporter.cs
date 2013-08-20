@@ -12,16 +12,36 @@ using BrawlLib.SSBBTypes;
 using BrawlLib.Wii.Graphics;
 using System.Globalization;
 using System.Threading;
+using System.Drawing;
 
 namespace BrawlLib.Modeling
 {
     public unsafe partial class Collada : Form
     {
-        public Collada() { InitializeComponent(); }
+        public Collada()
+        {
+            InitializeComponent(); r.MaxValue = 255;
+            r.MinValue = 0;
+            r.Integral = true;
+
+            g.MaxValue = 255;
+            g.MinValue = 0;
+            g.Integral = true;
+
+            b.MaxValue = 255;
+            b.MinValue = 0;
+            b.Integral = true;
+
+            a.MaxValue = 255;
+            a.MinValue = 0;
+            a.Integral = true;
+
+            _dlgColor = new GoodColorDialog();
+        }
         public Collada(Form owner, string title) : this()
         {
             Owner = owner;
-            Text = title; 
+            Text = title;
         }
 
         private CheckBox fltVerts;
@@ -39,6 +59,13 @@ namespace BrawlLib.Modeling
         private ComboBox mdlType;
 
         private Label Status;
+        private Button button3;
+        private NumericInputBox b;
+        private NumericInputBox a;
+        private NumericInputBox g;
+        private NumericInputBox r;
+        private Label clr;
+        private Label label24;
         public string _filePath;
 
         public void Finish()
@@ -61,7 +88,23 @@ namespace BrawlLib.Modeling
         
         public MDL0Node ShowDialog(string filePath)
         {
-            mdlType.SelectedIndex = 0;
+            ImportOptions settings = BrawlLib.Properties.Settings.Default.ColladaImportOptions;
+
+            mdlType.SelectedIndex = settings._mdlType;
+            fltVerts.Checked = settings._fltVerts;
+            fltNrms.Checked = settings._fltNrms;
+            fltUVs.Checked = settings._fltUVs;
+            addClrs.Checked = settings._addClrs;
+            rmpClrs.Checked = settings._rmpClrs;
+            rmpMats.Checked = settings._rmpMats;
+            forceTriangles.Checked = settings._forceTriangles;
+            CCW.Checked = settings._forceCCW;
+            r.Value = settings._dfltClr.R;
+            g.Value = settings._dfltClr.G;
+            b.Value = settings._dfltClr.B;
+            a.Value = settings._dfltClr.A;
+            r_ValueChanged(null, null);
+
             if (base.ShowDialog() == DialogResult.OK)
             {
                 panel1.Visible = false;
@@ -88,6 +131,7 @@ namespace BrawlLib.Modeling
             public bool _rmpClrs = true;
             public bool _rmpMats = true;
             public bool _forceCCW = false;
+            public RGBAPixel _dfltClr = new RGBAPixel(100, 100, 100, 255);
         }
 
         public static string Error;
@@ -108,6 +152,7 @@ namespace BrawlLib.Modeling
             model._importOptions._rmpClrs = rmpClrs.Checked;
             model._importOptions._rmpMats = rmpMats.Checked;
             model._importOptions._forceCCW = CCW.Checked;
+            model._importOptions._dfltClr = new RGBAPixel((byte)r.Value, (byte)g.Value, (byte)b.Value, (byte)a.Value);
 
             using (DecoderShell shell = DecoderShell.Import(filePath))
             try
@@ -193,7 +238,6 @@ namespace BrawlLib.Modeling
                 foreach (SceneEntry scene in shell._scenes)
                 {
                     //Parse joints first
-                    //scene._nodes.Sort(NodeEntry.Compare); 
                     NodeEntry[] joints = scene._nodes.Where(x => x._type == NodeType.JOINT).ToArray();
                     NodeEntry[] nodes = scene._nodes.Where(x => x._type != NodeType.JOINT).ToArray();
                     foreach (NodeEntry node in joints)
@@ -248,7 +292,7 @@ namespace BrawlLib.Modeling
                 }
                 else
                 {
-                    //Check each polygon to see if it can be single-binded!
+                    //Check each polygon to see if it can be rigged to a single influence
                     if (model._objList != null && model._objList.Count != 0)
                         foreach (MDL0ObjectNode p in model._objList)
                         {
@@ -284,11 +328,12 @@ namespace BrawlLib.Modeling
                 }
 
                 Error = "There was a problem adding color nodes.";
+
                 //Check for color nodes
                 if (model._importOptions._addClrs && model._colorGroup._children.Count == 0)
                 {
                     model._noColors = true;
-                    RGBAPixel pixel = new RGBAPixel() { R = 100, G = 100, B = 100, A = 255 };
+                    RGBAPixel pixel = model._importOptions._dfltClr;
 
                     //Color nodes will be remapped later
                     if (model._objList != null && model._objList.Count != 0)
@@ -1555,6 +1600,13 @@ namespace BrawlLib.Modeling
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.b = new System.Windows.Forms.NumericInputBox();
+            this.a = new System.Windows.Forms.NumericInputBox();
+            this.g = new System.Windows.Forms.NumericInputBox();
+            this.r = new System.Windows.Forms.NumericInputBox();
+            this.clr = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.button3 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.mdlType = new System.Windows.Forms.ComboBox();
             this.panel1.SuspendLayout();
@@ -1631,7 +1683,7 @@ namespace BrawlLib.Modeling
             this.forceTriangles.Checked = true;
             this.forceTriangles.CheckState = System.Windows.Forms.CheckState.Checked;
             this.forceTriangles.Enabled = false;
-            this.forceTriangles.Location = new System.Drawing.Point(203, 35);
+            this.forceTriangles.Location = new System.Drawing.Point(220, 35);
             this.forceTriangles.Name = "forceTriangles";
             this.forceTriangles.Size = new System.Drawing.Size(162, 17);
             this.forceTriangles.TabIndex = 6;
@@ -1641,7 +1693,7 @@ namespace BrawlLib.Modeling
             // CCW
             // 
             this.CCW.AutoSize = true;
-            this.CCW.Location = new System.Drawing.Point(203, 58);
+            this.CCW.Location = new System.Drawing.Point(220, 58);
             this.CCW.Name = "CCW";
             this.CCW.Size = new System.Drawing.Size(141, 17);
             this.CCW.TabIndex = 7;
@@ -1653,7 +1705,7 @@ namespace BrawlLib.Modeling
             this.rmpMats.AutoSize = true;
             this.rmpMats.Checked = true;
             this.rmpMats.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.rmpMats.Location = new System.Drawing.Point(203, 81);
+            this.rmpMats.Location = new System.Drawing.Point(220, 81);
             this.rmpMats.Name = "rmpMats";
             this.rmpMats.Size = new System.Drawing.Size(104, 17);
             this.rmpMats.TabIndex = 8;
@@ -1662,9 +1714,10 @@ namespace BrawlLib.Modeling
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(226, 105);
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Location = new System.Drawing.Point(220, 149);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.Size = new System.Drawing.Size(79, 23);
             this.button1.TabIndex = 9;
             this.button1.Text = "Okay";
             this.button1.UseVisualStyleBackColor = true;
@@ -1672,9 +1725,10 @@ namespace BrawlLib.Modeling
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(307, 105);
+            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button2.Location = new System.Drawing.Point(303, 149);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.Size = new System.Drawing.Size(79, 23);
             this.button2.TabIndex = 10;
             this.button2.Text = "Cancel";
             this.button2.UseVisualStyleBackColor = true;
@@ -1682,6 +1736,13 @@ namespace BrawlLib.Modeling
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.b);
+            this.panel1.Controls.Add(this.a);
+            this.panel1.Controls.Add(this.g);
+            this.panel1.Controls.Add(this.r);
+            this.panel1.Controls.Add(this.clr);
+            this.panel1.Controls.Add(this.label24);
+            this.panel1.Controls.Add(this.button3);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.mdlType);
             this.panel1.Controls.Add(this.fltVerts);
@@ -1697,13 +1758,80 @@ namespace BrawlLib.Modeling
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(394, 140);
+            this.panel1.Size = new System.Drawing.Size(394, 184);
             this.panel1.TabIndex = 11;
+            // 
+            // b
+            // 
+            this.b.Location = new System.Drawing.Point(114, 151);
+            this.b.Name = "b";
+            this.b.Size = new System.Drawing.Size(49, 20);
+            this.b.TabIndex = 22;
+            this.b.Text = "0";
+            this.b.ValueChanged += new System.EventHandler(this.r_ValueChanged);
+            // 
+            // a
+            // 
+            this.a.Location = new System.Drawing.Point(165, 151);
+            this.a.Name = "a";
+            this.a.Size = new System.Drawing.Size(49, 20);
+            this.a.TabIndex = 20;
+            this.a.Text = "0";
+            this.a.ValueChanged += new System.EventHandler(this.r_ValueChanged);
+            // 
+            // g
+            // 
+            this.g.Location = new System.Drawing.Point(63, 151);
+            this.g.Name = "g";
+            this.g.Size = new System.Drawing.Size(49, 20);
+            this.g.TabIndex = 18;
+            this.g.Text = "0";
+            this.g.ValueChanged += new System.EventHandler(this.r_ValueChanged);
+            // 
+            // r
+            // 
+            this.r.Location = new System.Drawing.Point(12, 151);
+            this.r.Name = "r";
+            this.r.Size = new System.Drawing.Size(49, 20);
+            this.r.TabIndex = 16;
+            this.r.Text = "0";
+            this.r.ValueChanged += new System.EventHandler(this.r_ValueChanged);
+            // 
+            // clr
+            // 
+            this.clr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.clr.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.clr.Location = new System.Drawing.Point(112, 124);
+            this.clr.Name = "clr";
+            this.clr.Size = new System.Drawing.Size(102, 20);
+            this.clr.TabIndex = 14;
+            this.clr.Click += new System.EventHandler(this.clr_Click);
+            // 
+            // label24
+            // 
+            this.label24.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.label24.Location = new System.Drawing.Point(12, 124);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(101, 20);
+            this.label24.TabIndex = 15;
+            this.label24.Text = "Default Color:";
+            this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // button3
+            // 
+            this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button3.Location = new System.Drawing.Point(220, 120);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(162, 23);
+            this.button3.TabIndex = 13;
+            this.button3.Text = "Save Settings";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(200, 13);
+            this.label1.Location = new System.Drawing.Point(217, 13);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(34, 13);
             this.label1.TabIndex = 12;
@@ -1711,11 +1839,12 @@ namespace BrawlLib.Modeling
             // 
             // mdlType
             // 
+            this.mdlType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.mdlType.FormattingEnabled = true;
             this.mdlType.Items.AddRange(new object[] {
             "Character",
             "Stage/Item"});
-            this.mdlType.Location = new System.Drawing.Point(244, 10);
+            this.mdlType.Location = new System.Drawing.Point(261, 10);
             this.mdlType.Name = "mdlType";
             this.mdlType.Size = new System.Drawing.Size(121, 21);
             this.mdlType.TabIndex = 11;
@@ -1723,7 +1852,7 @@ namespace BrawlLib.Modeling
             // 
             // Collada
             // 
-            this.ClientSize = new System.Drawing.Size(394, 140);
+            this.ClientSize = new System.Drawing.Size(394, 184);
             this.ControlBox = false;
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Status);
@@ -1762,6 +1891,49 @@ namespace BrawlLib.Modeling
             //    fltVerts.Checked = fltNrms.Checked = fltUVs.Checked = true;
             //else
             //    fltVerts.Checked = fltNrms.Checked = fltUVs.Checked = false;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            ImportOptions o = new ImportOptions();
+            o._mdlType = mdlType.SelectedIndex;
+            o._forceTriangles = forceTriangles.Checked;
+            o._fltVerts = fltVerts.Checked;
+            o._fltNrms = fltNrms.Checked;
+            o._fltUVs = fltUVs.Checked;
+            o._addClrs = addClrs.Checked;
+            o._rmpClrs = rmpClrs.Checked;
+            o._rmpMats = rmpMats.Checked;
+            o._forceCCW = CCW.Checked;
+            o._dfltClr = new RGBAPixel((byte)r.Value, (byte)g.Value, (byte)b.Value, (byte)a.Value);
+
+            BrawlLib.Properties.Settings.Default.ColladaImportOptions = o;
+            BrawlLib.Properties.Settings.Default.Save();
+        }
+
+        private void r_ValueChanged(object sender, EventArgs e)
+        {
+            if (_updating)
+                return;
+
+            clr.BackColor = Color.FromArgb((int)a.Value, (int)r.Value, (int)g.Value, (int)b.Value);
+        }
+
+        bool _updating = false;
+        private GoodColorDialog _dlgColor;
+        private void clr_Click(object sender, EventArgs e)
+        {
+            _dlgColor.Color = clr.BackColor;
+            if (_dlgColor.ShowDialog(this) == DialogResult.OK)
+            {
+                _updating = true;
+                r.Value = _dlgColor.Color.R;
+                g.Value = _dlgColor.Color.G;
+                b.Value = _dlgColor.Color.B;
+                a.Value = _dlgColor.Color.A;
+                _updating = false;
+                r_ValueChanged(null, null);
+            }
         }
     }
 }

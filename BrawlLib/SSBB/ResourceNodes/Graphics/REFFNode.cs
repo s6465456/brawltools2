@@ -36,7 +36,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             REFF* header = Header;
 
-            _name = header->IdString;
+            if (_name == null)
+                _name = header->IdString;
+
             _dataLen = header->_dataLength;
             _dataOff = header->_dataOffset;
             _unk1 = header->_linkPrev;
@@ -192,7 +194,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             addr += PtclTrackCount; //skip nulled pointers to size list
             for (int i = 0; i < PtclTrackCount; i++)
             {
-                new REFFAnimationNode() { isPtcl = true }.Initialize(this, First + offset, (int)*addr);
+                new REFFAnimationNode() { _isPtcl = true }.Initialize(this, First + offset, (int)*addr);
                 offset += (int)*addr++;
             }
             addr = _emitTrackAddr;
@@ -213,7 +215,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             size += Children.Count * 8;
             foreach (REFFAnimationNode e in Children)
             {
-                if (e.isPtcl) ptcl++; else emit++;
+                if (e._isPtcl) ptcl++; else emit++;
                 size += e.CalculateSize(true);
             }
             return size;
@@ -226,23 +228,23 @@ namespace BrawlLib.SSBB.ResourceNodes
             ((bushort*)addr)[1] = (ushort)_ptclInitTrackCount; 
             addr += ptcl + 1;
             foreach (REFFAnimationNode e in Children)
-                if (e.isPtcl)
+                if (e._isPtcl)
                     *addr++ = (uint)e._calcSize;
             ((bushort*)addr)[0] = emit;
             ((bushort*)addr)[1] = (ushort)_emitInitTrackCount;
             addr += emit + 1;
             foreach (REFFAnimationNode e in Children)
-                if (!e.isPtcl)
+                if (!e._isPtcl)
                     *addr++ = (uint)e._calcSize;
             VoidPtr ptr = addr;
             foreach (REFFAnimationNode e in Children)
-                if (e.isPtcl)
+                if (e._isPtcl)
                 {
                     e.Rebuild(ptr, e._calcSize, true);
                     ptr += e._calcSize;
                 }
             foreach (REFFAnimationNode e in Children)
-                if (!e.isPtcl)
+                if (!e._isPtcl)
                 {
                     e.Rebuild(ptr, e._calcSize, true);
                     ptr += e._calcSize;
@@ -254,43 +256,64 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         internal AnimCurveHeader* Header { get { return (AnimCurveHeader*)WorkingUncompressed.Address; } }
 
-        internal AnimCurveHeader hdr;
+        internal AnimCurveHeader _hdr;
         
-        public bool isPtcl = false;
+        public bool _isPtcl = false;
 
-        public enum animType
+        public enum AnimType
         {
             Particle,
             Emitter
         }
 
-        public animType Type { get { return isPtcl ? animType.Particle : animType.Emitter; } set { isPtcl = value == animType.Particle; SignalPropertyChange(); } }
+        public AnimType Type { get { return _isPtcl ? AnimType.Particle : AnimType.Emitter; } set { _isPtcl = value == AnimType.Particle; SignalPropertyChange(); } }
         
         [Category("Animation")]
-        public byte Magic { get { return hdr.magic; } }
+        public byte Magic { get { return _hdr.magic; } }
         [Category("Animation"), TypeConverter(typeof(DropDownListReffAnimType))]
         public string KindType 
         {
             get 
             {
-                switch (CurveFlag)
-                {
-                    case AnimCurveType.ParticleByte:
-                    case AnimCurveType.ParticleFloat:
-                        return ((AnimCurveTargetByteFloat)hdr.kindType).ToString();
-                    case AnimCurveType.ParticleRotate:
-                        return ((AnimCurveTargetRotateFloat)hdr.kindType).ToString();
-                    case AnimCurveType.ParticleTexture:
-                        return ((AnimCurveTargetPtclTex)hdr.kindType).ToString();
-                    case AnimCurveType.Child:
-                        return ((AnimCurveTargetChild)hdr.kindType).ToString();
-                    case AnimCurveType.Field:
-                        return ((AnimCurveTargetField)hdr.kindType).ToString();
-                    case AnimCurveType.PostField:
-                        return ((AnimCurveTargetPostField)hdr.kindType).ToString();
-                    case AnimCurveType.EmitterFloat:
-                        return ((AnimCurveTargetEmitterFloat)hdr.kindType).ToString();
-                }
+                if (((REFFNode)Parent.Parent).VersionMinor == 9)
+                    switch (CurveFlag)
+                    {
+                        case AnimCurveType.ParticleByte:
+                        case AnimCurveType.ParticleFloat:
+                            return ((v9AnimCurveTargetByteFloat)_hdr.kindType).ToString();
+                        case AnimCurveType.ParticleRotate:
+                            return ((v9AnimCurveTargetRotateFloat)_hdr.kindType).ToString();
+                        case AnimCurveType.ParticleTexture:
+                            return ((v9AnimCurveTargetPtclTex)_hdr.kindType).ToString();
+                        case AnimCurveType.Child:
+                            return ((v9AnimCurveTargetChild)_hdr.kindType).ToString();
+                        case AnimCurveType.Field:
+                            return ((v9AnimCurveTargetField)_hdr.kindType).ToString();
+                        case AnimCurveType.PostField:
+                            return ((v9AnimCurveTargetPostField)_hdr.kindType).ToString();
+                        case AnimCurveType.EmitterFloat:
+                            return ((v9AnimCurveTargetEmitterFloat)_hdr.kindType).ToString();
+                    }
+                else
+                    return _hdr.kindType.ToString();
+                    //switch (CurveFlag)
+                    //{
+                    //    case AnimCurveType.ParticleByte:
+                    //    case AnimCurveType.ParticleFloat:
+                    //        return ((v7AnimCurveTargetByteFloat)_hdr.kindType).ToString();
+                    //    case AnimCurveType.ParticleRotate:
+                    //        return ((v7AnimCurveTargetRotateFloat)_hdr.kindType).ToString();
+                    //    case AnimCurveType.ParticleTexture:
+                    //        return ((v7AnimCurveTargetPtclTex)_hdr.kindType).ToString();
+                    //    case AnimCurveType.Child:
+                    //        return ((v7AnimCurveTargetChild)_hdr.kindType).ToString();
+                    //    case AnimCurveType.Field:
+                    //        return ((v7AnimCurveTargetField)_hdr.kindType).ToString();
+                    //    case AnimCurveType.PostField:
+                    //        return ((v7AnimCurveTargetPostField)_hdr.kindType).ToString();
+                    //    case AnimCurveType.EmitterFloat:
+                    //        return ((v7AnimCurveTargetEmitterFloat)_hdr.kindType).ToString();
+                    //}
                 return null;
             }
             //set 
@@ -352,37 +375,37 @@ namespace BrawlLib.SSBB.ResourceNodes
             //}
         }
         [Category("Animation")]
-        public AnimCurveType CurveFlag { get { return (AnimCurveType)hdr.curveFlag; } }//set { hdr.curveFlag = (byte)value; SignalPropertyChange(); } }
+        public AnimCurveType CurveFlag { get { return (AnimCurveType)_hdr.curveFlag; } }//set { hdr.curveFlag = (byte)value; SignalPropertyChange(); } }
         [Category("Animation")]
-        public byte KindEnable { get { return hdr.kindEnable; } }
+        public byte KindEnable { get { return _hdr.kindEnable; } }
         [Category("Animation")]
-        public AnimCurveHeaderProcessFlagType ProcessFlag { get { return (AnimCurveHeaderProcessFlagType)hdr.processFlag; } }
+        public AnimCurveHeaderProcessFlagType ProcessFlag { get { return (AnimCurveHeaderProcessFlagType)_hdr.processFlag; } }
         [Category("Animation")]
-        public byte LoopCount { get { return hdr.loopCount; } }
+        public byte LoopCount { get { return _hdr.loopCount; } }
 
         [Category("Animation")]
-        public ushort RandomSeed { get { return hdr.randomSeed; } }
+        public ushort RandomSeed { get { return _hdr.randomSeed; } }
         [Category("Animation")]
-        public ushort FrameLength { get { return hdr.frameLength; } }
+        public ushort FrameLength { get { return _hdr.frameLength; } }
         [Category("Animation")]
-        public ushort Padding { get { return hdr.padding; } }
+        public ushort Padding { get { return _hdr.padding; } }
 
         [Category("Animation")]
-        public uint KeyTableSize { get { return hdr.keyTable; } }
+        public uint KeyTableSize { get { return _hdr.keyTable; } }
         [Category("Animation")]
-        public uint RangeTableSize { get { return hdr.rangeTable; } }
+        public uint RangeTableSize { get { return _hdr.rangeTable; } }
         [Category("Animation")]
-        public uint RandomTableSize { get { return hdr.randomTable; } }
+        public uint RandomTableSize { get { return _hdr.randomTable; } }
         [Category("Animation")]
-        public uint NameTableSize { get { return hdr.nameTable; } }
+        public uint NameTableSize { get { return _hdr.nameTable; } }
         [Category("Animation")]
-        public uint InfoTableSize { get { return hdr.infoTable; } }
+        public uint InfoTableSize { get { return _hdr.infoTable; } }
 
         Random random = null;
 
         public override bool OnInitialize()
         {
-            hdr = *Header;
+            _hdr = *Header;
             _name = "AnimCurve" + Index;
             random = new Random(RandomSeed);
             //if (CurveFlag == AnimCurveType.EmitterFloat || CurveFlag == AnimCurveType.Field || CurveFlag == AnimCurveType.PostField)
@@ -402,6 +425,23 @@ namespace BrawlLib.SSBB.ResourceNodes
                 new REFFAnimCurveNameTableNode() { _name = "Name Table" }.Initialize(this, (VoidPtr)Header + 0x20 + KeyTableSize + RangeTableSize + RandomTableSize, (int)NameTableSize);
             if (InfoTableSize > 4)
                 new REFFAnimCurveTableNode() { _name = "Info Table" }.Initialize(this, (VoidPtr)Header + 0x20 + KeyTableSize + RangeTableSize + RandomTableSize + NameTableSize, (int)InfoTableSize);
+        }
+
+        public void ParseCommands()
+        {
+            //KindEnable enables the amount of values and where they affect
+            Bin8 kind = KindEnable;
+            List<int> off = new List<int>();
+            for (int i = 0; i < 8; i++)
+                if (kind[i])
+                    off.Add(i);
+
+            //Child KeyTable:
+            //00000000 00000000 00000000 00000000 0080 0100 0102 0000
+            //00000000 00000000 00000000 00000000 0080 0100 0102 0001
+            //00000000 00000000 00000000 00000000 0080 0100 0102 0002
+
+
         }
 
         public override int OnCalculateSize(bool force)
@@ -557,9 +597,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         public byte TextureReverse { get { return desc.textureReverse; } set { desc.textureReverse = value; SignalPropertyChange(); } }
 
         [Category("Particle Parameters")]
-        public byte ACmpRef0 { get { return desc.mACmpRef0; } set { desc.mACmpRef0 = value; SignalPropertyChange(); } }
+        public byte AlphaCompareRef0 { get { return desc.mACmpRef0; } set { desc.mACmpRef0 = value; SignalPropertyChange(); } }
         [Category("Particle Parameters")]
-        public byte ACmpRef1 { get { return desc.mACmpRef1; } set { desc.mACmpRef1 = value; SignalPropertyChange(); } }
+        public byte AlphaCompareRef1 { get { return desc.mACmpRef1; } set { desc.mACmpRef1 = value; SignalPropertyChange(); } }
 
         [Category("Particle Parameters")]
         public byte RotateOffsetRandom1 { get { return desc.rotateOffsetRandomX; } set { desc.rotateOffsetRandomX = value; SignalPropertyChange(); } }
@@ -743,19 +783,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Draw Settings
 
         [Category("Draw Settings")]
-        public SSBBTypes.DrawFlag mFlags { get { return (SSBBTypes.DrawFlag)(ushort)drawSetting.mFlags; } set { drawSetting.mFlags = (ushort)value; SignalPropertyChange(); } }
+        public DrawFlag mFlags { get { return (SSBBTypes.DrawFlag)(ushort)drawSetting.mFlags; } set { drawSetting.mFlags = (ushort)value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
-        public byte ACmpComp0 { get { return drawSetting.mACmpComp0; } set { drawSetting.mACmpComp0 = value; SignalPropertyChange(); } }
+        public AlphaCompare AlphaComparison0 { get { return (AlphaCompare)drawSetting.mACmpComp0; } set { drawSetting.mACmpComp0 = (byte)value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
-        public byte ACmpComp1 { get { return drawSetting.mACmpComp1; } set { drawSetting.mACmpComp1 = value; SignalPropertyChange(); } }
+        public AlphaCompare AlphaComparison1 { get { return (AlphaCompare)drawSetting.mACmpComp1; } set { drawSetting.mACmpComp1 = (byte)value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
-        public byte ACmpOp { get { return drawSetting.mACmpOp; } set { drawSetting.mACmpOp = value; SignalPropertyChange(); } }
+        public AlphaOp AlphaCompareOperation { get { return (AlphaOp)drawSetting.mACmpOp; } set { drawSetting.mACmpOp = (byte)value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
         public byte TevStageCount { get { return drawSetting.mNumTevs; } set { drawSetting.mNumTevs = value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
         public bool FlagClamp { get { return drawSetting.mFlagClamp != 0; } set { drawSetting.mFlagClamp = (byte)(value ? 1: 0); SignalPropertyChange(); } }
         [Category("Draw Settings")]
-        public SSBBTypes.IndirectTargetStage IndirectTargetStage { get { return (SSBBTypes.IndirectTargetStage)drawSetting.mIndirectTargetStage; } set { drawSetting.mIndirectTargetStage = (byte)value; SignalPropertyChange(); } }
+        public IndirectTargetStage IndirectTargetStage { get { return (SSBBTypes.IndirectTargetStage)drawSetting.mIndirectTargetStage; } set { drawSetting.mIndirectTargetStage = (byte)value; SignalPropertyChange(); } }
 
         #region Old
 
@@ -1545,19 +1585,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Draw Settings
 
         [Category("Draw Settings")]
-        public SSBBTypes.DrawFlag mFlags { get { return (SSBBTypes.DrawFlag)(ushort)drawSetting.mFlags; } set { drawSetting.mFlags = (ushort)value; SignalPropertyChange(); } }
+        public DrawFlag mFlags { get { return (SSBBTypes.DrawFlag)(ushort)drawSetting.mFlags; } set { drawSetting.mFlags = (ushort)value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
-        public byte ACmpComp0 { get { return drawSetting.mACmpComp0; } set { drawSetting.mACmpComp0 = value; SignalPropertyChange(); } }
+        public AlphaCompare AlphaComparison0 { get { return (AlphaCompare)drawSetting.mACmpComp0; } set { drawSetting.mACmpComp0 = (byte)value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
-        public byte ACmpComp1 { get { return drawSetting.mACmpComp1; } set { drawSetting.mACmpComp1 = value; SignalPropertyChange(); } }
+        public AlphaCompare AlphaComparison1 { get { return (AlphaCompare)drawSetting.mACmpComp1; } set { drawSetting.mACmpComp1 = (byte)value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
-        public byte ACmpOp { get { return drawSetting.mACmpOp; } set { drawSetting.mACmpOp = value; SignalPropertyChange(); } }
+        public AlphaOp AlphaCompareOperation { get { return (AlphaOp)drawSetting.mACmpOp; } set { drawSetting.mACmpOp = (byte)value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
         public byte TevStageCount { get { return drawSetting.mNumTevs; } set { drawSetting.mNumTevs = value; SignalPropertyChange(); } }
         [Category("Draw Settings")]
         public bool FlagClamp { get { return drawSetting.mFlagClamp != 0; } set { drawSetting.mFlagClamp = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
         [Category("Draw Settings")]
-        public SSBBTypes.IndirectTargetStage IndirectTargetStage { get { return (SSBBTypes.IndirectTargetStage)drawSetting.mIndirectTargetStage; } set { drawSetting.mIndirectTargetStage = (byte)value; SignalPropertyChange(); } }
+        public IndirectTargetStage IndirectTargetStage { get { return (SSBBTypes.IndirectTargetStage)drawSetting.mIndirectTargetStage; } set { drawSetting.mIndirectTargetStage = (byte)value; SignalPropertyChange(); } }
 
         [Category("TEV")]
         public byte mTevTexture1 { get { return drawSetting.mTevTexture1; } set { drawSetting.mTevTexture1 = value; SignalPropertyChange(); } }

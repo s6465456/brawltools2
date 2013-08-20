@@ -7,6 +7,6 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.RSEQ)]
     class RSEQWrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.RSEQ; } }
+        public override string ExportFilter { get { return FileFilters.RSEQ; } }
     }
 }

@@ -21,19 +21,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal uint DataLen;
 
         [Category("Data Offsets")]
-        public int GlobalICBasics { get { return Header->Unknown0; } }
+        public int GlobalICBasics { get { return Header->GlobalICs; } }
         [Category("Data Offsets")]
-        public int GlobalICBasicsSSE { get { return Header->Unknown1; } }
+        public int GlobalICBasicsSSE { get { return Header->SSEGlobalICs; } }
         [Category("Data Offsets")]
-        public int ICBasics { get { return Header->Unknown2; } }
+        public int ICBasics { get { return Header->ICs; } }
         [Category("Data Offsets")]
-        public int ICBasicsSSE { get { return Header->Unknown3; } }
+        public int ICBasicsSSE { get { return Header->SSEICs; } }
         [Category("Data Offsets")]
-        public int EntryActions { get { return Header->ActionsStart; } }
+        public int EntryActions { get { return Header->EntryActions; } }
         [Category("Data Offsets")]
-        public int ExitActions { get { return Header->Actions2Start; } }
+        public int ExitActions { get { return Header->ExitActions; } }
         [Category("Data Offsets")]
-        public int FlashOverlaysList { get { return Header->Unknown6; } }
+        public int FlashOverlaysList { get { return Header->FlashOverlayArray; } }
         [Category("Data Offsets")]
         public int Unk7 { get { return Header->Unknown7; } }
         [Category("Data Offsets")]
@@ -61,9 +61,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Data Offsets")]
         public int FlashOverlays { get { return Header->Unknown19; } }
         [Category("Data Offsets")]
-        public int ScreenTints { get { return Header->Unknown20; } }
+        public int ScreenTints { get { return Header->ScreenTints; } }
         [Category("Data Offsets")]
-        public int LegBoneNames { get { return Header->Unknown21; } }
+        public int LegBoneNames { get { return Header->LegBones; } }
         [Category("Data Offsets")]
         public int Unk22 { get { return Header->Unknown22; } }
         [Category("Data Offsets")]
@@ -94,8 +94,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnPopulate()
         {
             #region Populate
-            if (ARCNode.SpecialName.Contains(RootNode.Name))
-            {
+            //if (ARCNode.SpecialName.Contains(RootNode.Name))
+            //{
                 MoveDefGroupNode g;
                 List<int> ActionOffsets;
 
@@ -113,8 +113,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     actions.ActionOffsets.Add(ActionOffsets);
                 }
 
-                //unk18 == ColorF4
-
                 int r = 0;
                 foreach (SpecialOffset s in specialOffsets)
                 {
@@ -122,6 +120,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                     {
                         string name = "Params" + r;
                         if (r < 4) name = (r == 0 || r == 2 ? "" : "SSE ") + (r < 2 ? "Global " : "") + "IC-Basics";
+                        
+                        //Value at 0x64 in Global IC-Basics is not an IC; it is the offset to Unknown32's data.
+                        //Value at 0x72C in IC-Basics is not an IC; it is the value of Params24.
+
                         new MoveDefSectionParamNode(r) { _name = name }.Initialize(this, BaseAddress + s.Offset, 0);
                     }
                     r++;
@@ -180,7 +182,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     Root._actions = actions;
                 }
-            }
+            //}
             #endregion
 
             SortChildren();

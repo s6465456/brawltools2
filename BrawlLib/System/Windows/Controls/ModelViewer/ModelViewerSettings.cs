@@ -1118,7 +1118,7 @@ namespace System.Windows.Forms
 
         private void label22_Click(object sender, EventArgs e)
         {
-            _dlgColor.Color = Color.FromArgb(255, (int)(sx.Value ), (int)(sy.Value), (int)(sz.Value));
+            _dlgColor.Color = Color.FromArgb(255, (int)(sx.Value), (int)(sy.Value), (int)(sz.Value));
             if (_dlgColor.ShowDialog(this) == DialogResult.OK)
             {
                 _updating = true;

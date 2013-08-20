@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.ComponentModel;
 using BrawlLib.SSBBTypes;
+using System.Audio;
 
 namespace Ikarus
 {
@@ -47,7 +48,7 @@ namespace Ikarus
                     _selected.LoadFiles();
             } 
         }
-        private static CharName _targetChar = _supportedCharacters[0];
+        private static CharName _targetChar = CharName.ZeroSuitSamus;
         public static CharName TargetCharacter
         {
             get { return _targetChar; }
@@ -71,6 +72,8 @@ namespace Ikarus
         public static MoveDefNode CommonMoveset { get { return _cmnMoveset; } }
         public static ARCNode Common5 { get { return _cmnEffects; } }
         public static RSARNode SoundArchive { get { return _rsar; } }
+
+        public static AudioProvider _audioProvider;
 
         //Stores every file opened by the program
         private static List<ResourceNode> _openedFiles = new List<ResourceNode>();
@@ -116,6 +119,20 @@ namespace Ikarus
                     if (Directory.Exists(fighter + "\\" + s))
                         OpenFighter(fighter + "\\" + ((CharFolder)(int)n).ToString());
                 }
+
+            //Load SFX and music
+            string sound = path + "\\sound";
+            if (Directory.Exists(sound))
+            {
+                string rsar = sound + "\\smashbros_sound.brsar";
+                if (File.Exists(rsar))
+                {
+                    _rsar = NodeFactory.FromFile(null, rsar) as RSARNode;
+                    AddFile(_rsar);
+                    _audioProvider = AudioProvider.Create(null);
+                    _audioProvider.Attach(MainForm.Instance);
+                }
+            }
 
             SelectedInfo = GetInfo(TargetCharacter);
 

@@ -20,9 +20,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override bool OnInitialize()
         {
-            base.OnInitialize();
-
             _name = String.Format("{0}[{1}]", _destruct ? "Destructor" : "Constructor", Index);
+            
+            base.OnInitialize();
 
             return false;
         }

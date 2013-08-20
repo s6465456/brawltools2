@@ -8,26 +8,43 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefUnk17Node : MoveDefEntryNode
+    public unsafe class MoveDefItemAnchorListNode : MoveDefEntryNode
     {
-        internal Unk17Entry* First { get { return (Unk17Entry*)WorkingUncompressed.Address; } }
+        internal FDefItemAnchor* First { get { return (FDefItemAnchor*)WorkingUncompressed.Address; } }
         int Count = 0;
 
         public override bool OnInitialize()
         {
             _extOverride = true;
             base.OnInitialize();
-            if (Size % 0x1C != 0 && Size % 0x1C != 4)
-                Console.WriteLine(Size % 0x1C);
+
+            //if (Size % 0x1C != 0 && Size % 0x1C != 4)
+            //    Console.WriteLine(Size % 0x1C);
+            
             Count = WorkingUncompressed.Length / 0x1C;
             return Count > 0;
         }
 
         public override void OnPopulate()
         {
-            Unk17Entry* addr = First;
+            FDefItemAnchor* addr = First;
             for (int i = 0; i < Count; i++)
-                new MoveDefUnk17EntryNode().Initialize(this, addr++, 28);
+                new MoveDefItemAnchorNode() { _hasName = offsetID == 16 }.Initialize(this, addr++, 28);
+
+            if (offsetID == 16)
+            {
+                Children[0]._name = "FranklinBadge/ScrewAttack";
+                Children[1]._name = "LipStickFlower/BunnyHood";
+                Children[2]._name = "SuperSpicyCurry";
+            }
+            //else if (offsetID == 17)
+            //{
+
+            //}
+            //else if (offsetID == 23)
+            //{
+
+            //}
         }
 
         public override int OnCalculateSize(bool force)
@@ -39,58 +56,61 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             _rebuildAddr = address;
-            Unk17Entry* data = (Unk17Entry*)address;
-            foreach (MoveDefUnk17EntryNode e in Children)
+            FDefItemAnchor* data = (FDefItemAnchor*)address;
+            foreach (MoveDefItemAnchorNode e in Children)
                 e.Rebuild(data++, 0x1C, true);
         }
     }
 
-    public unsafe class MoveDefUnk17EntryNode : MoveDefEntryNode
+    public unsafe class MoveDefItemAnchorNode : MoveDefEntryNode
     {
-        internal Unk17Entry* Header { get { return (Unk17Entry*)WorkingUncompressed.Address; } }
+        internal FDefItemAnchor* Header { get { return (FDefItemAnchor*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
-        int boneIndex;
-        float f1, f2, f3, f4, f5, f6;
+        int _boneIndex;
+        Vector3 _trans, _rot;
 
+        public bool _hasName = false;
+        
         [Browsable(false)]
         public MDL0BoneNode BoneNode
         {
-            get { if (Model == null) return null; if (boneIndex >= Model._linker.BoneCache.Length || boneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[boneIndex]; }
-            set { boneIndex = value.BoneIndex; Name = value.Name; }
+            get { if (Model == null) return null; if (_boneIndex >= Model._linker.BoneCache.Length || _boneIndex < 0) return null; return (MDL0BoneNode)Model._linker.BoneCache[_boneIndex]; }
+            set { _boneIndex = value.BoneIndex; Name = value.Name; }
         }
 
-        [Category("Unknown Entry"), Browsable(true), TypeConverter(typeof(DropDownListBonesMDef))]
-        public string Bone { get { return BoneNode == null ? boneIndex.ToString() : BoneNode.Name; } set { if (Model == null) { boneIndex = Convert.ToInt32(value); Name = boneIndex.ToString(); } else { BoneNode = String.IsNullOrEmpty(value) ? BoneNode : Model.FindBone(value); } SignalPropertyChange(); } }
-        [Category("Unknown Entry")]
-        public float Float1 { get { return f1; } set { f1 = value; SignalPropertyChange(); } }
-        [Category("Unknown Entry")]
-        public float Float2 { get { return f2; } set { f2 = value; SignalPropertyChange(); } }
-        [Category("Unknown Entry")]
-        public float Float3 { get { return f3; } set { f3 = value; SignalPropertyChange(); } }
-        [Category("Unknown Entry")]
-        public float Float4 { get { return f4; } set { f4 = value; SignalPropertyChange(); } }
-        [Category("Unknown Entry")]
-        public float Float5 { get { return f5; } set { f5 = value; SignalPropertyChange(); } }
-        [Category("Unknown Entry")]
-        public float Float6 { get { return f6; } set { f6 = value; SignalPropertyChange(); } }
-
-        public override string Name
+        [Category("Item Anchor"), Browsable(true), TypeConverter(typeof(DropDownListBonesMDef))]
+        public string Bone
         {
-            get { return Bone; }
-            //set { base.Name = value; }
-        }
+            get { return BoneNode == null ? _boneIndex.ToString() : BoneNode.Name; }
+            set
+            {
+                if (Model == null)
+                    _boneIndex = Convert.ToInt32(value); 
+                else
+                    BoneNode = String.IsNullOrEmpty(value) ? BoneNode : Model.FindBone(value); 
 
+                if (!_hasName)
+                    Name = Bone;
+
+                SignalPropertyChange();
+            }
+        }
+        [Category("Item Anchor")]
+        public Vector3 Translation { get { return _trans; } set { _trans = value; SignalPropertyChange(); } }
+        [Category("Item Anchor")]
+        public Vector3 Rotation { get { return _rot; } set { _rot = value; SignalPropertyChange(); } }
+        
         public override bool OnInitialize()
         {
-            boneIndex = Header->_boneIndex;
+            _boneIndex = Header->_boneIndex;
 
-            f1 = Header->_unkVec1._x;
-            f2 = Header->_unkVec1._y;
-            f3 = Header->_unkVec1._z;
-            f4 = Header->_unkVec2._x;
-            f5 = Header->_unkVec2._y;
-            f6 = Header->_unkVec2._z;
+            if (!_hasName)
+                _name = Bone;
+
+            _trans = Header->_translation;
+            _rot = Header->_rotation;
+
             return false;
         }
 
@@ -103,14 +123,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             _rebuildAddr = address;
-            Unk17Entry* data = (Unk17Entry*)address;
-            data->_boneIndex = boneIndex;
-            data->_unkVec1._x = f1;
-            data->_unkVec1._y = f2;
-            data->_unkVec1._z = f3;
-            data->_unkVec2._x = f4;
-            data->_unkVec2._y = f5;
-            data->_unkVec2._z = f6;
+            FDefItemAnchor* data = (FDefItemAnchor*)address;
+            data->_boneIndex = _boneIndex;
+            data->_translation = _trans;
+            data->_rotation = _rot;
         }
     }
 }

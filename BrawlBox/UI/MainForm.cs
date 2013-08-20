@@ -121,7 +121,7 @@ namespace BrawlBox
             texAnimEditControl.TargetSequence = null;
             shpAnimEditControl.TargetSequence = null;
             msBinEditor1.CurrentNode = null;
-            soundPackControl1.TargetNode = null;
+            //soundPackControl1.TargetNode = null;
             clrControl.ColorSource = null;
             visEditor.TargetNode = null;
             scN0CameraEditControl1.TargetSequence = null;
@@ -192,11 +192,11 @@ namespace BrawlBox
                     newControl = scN0FogEditControl1;
                     disable2nd = true;
                 }
-                else if (node is ModuleDataNode && !(node as ModuleDataNode).HasNoCode)
-                {
-                    ppcDisassembler1.TargetNode = node as ModuleDataNode;
-                    newControl = ppcDisassembler1;
-                }
+                //else if (node is ModuleDataNode && (node as ModuleDataNode).HasCode)
+                //{
+                //    ppcDisassembler1.TargetNode = node as ModuleDataNode;
+                //    newControl = ppcDisassembler1;
+                //}
                 else if (node is IAudioSource)
                 {
                     audioPlaybackPanel1.TargetSource = node as IAudioSource;
@@ -483,6 +483,12 @@ namespace BrawlBox
         private void donateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Process.Start("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3T2HNHK5BM8LL&lc=US&item_name=Brawlbox&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted");
+        }
+
+        private void gCTEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GCTEditor c = new GCTEditor();
+            c.Show();
         }
     }
 }

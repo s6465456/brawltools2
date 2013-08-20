@@ -64,7 +64,6 @@ namespace Ikarus.UI
             // 
             // pnlMoveset
             // 
-            this.pnlMoveset.CurrentFrame = -1;
             this.pnlMoveset.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlMoveset.Location = new System.Drawing.Point(0, 0);
             this.pnlMoveset.Name = "pnlMoveset";

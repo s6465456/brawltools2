@@ -84,11 +84,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public class InheritanceItemNode : ModuleEntryNode
+    public class InheritanceItemNode : RELEntryNode
     {
         public RELType _type;
         public uint _unknown;
 
+        public RELType Type { get { return _type; } set { _type = value; SignalPropertyChange(); } }
+        public uint Unknown { get { return _unknown; } set { _unknown = value; SignalPropertyChange(); } }
+        
         public InheritanceItemNode(RELType type, uint unknown)
         {
             _type = type;

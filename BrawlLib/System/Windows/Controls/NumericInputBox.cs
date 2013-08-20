@@ -107,7 +107,7 @@ namespace System.Windows.Forms
                 case Keys.Up:
                     if (float.TryParse(Text, out val))
                     {
-                        if (e.Shift)
+                        if (e.Shift || Integral)
                             Text = (val + 1.0f).ToString();
                         else
                             Text = (val + 0.1f).ToString();
@@ -120,7 +120,7 @@ namespace System.Windows.Forms
                 case Keys.Down:
                     if (float.TryParse(Text, out val))
                     {
-                        if (e.Shift)
+                        if (e.Shift || Integral)
                             Text = (val - 1.0f).ToString();
                         else
                             Text = (val - 0.1f).ToString();
@@ -200,12 +200,14 @@ namespace System.Windows.Forms
             else if (!Integral)
             {
                 float.TryParse(Text, out val);
-                val.Clamp(MinValue, MaxValue);
+                val = val.Clamp(MinValue, MaxValue);
             }
             else
             {
                 int.TryParse(Text, out val2);
-                val2.Clamp((int)MinValue, (int)MaxValue);
+                //int max = (int)MaxValue.Clamp((float)int.MinValue, (float)int.MaxValue);
+                //int min = (int)MinValue.Clamp((float)int.MinValue, (float)int.MaxValue);
+                //val2 = val2.Clamp(min, max);
             }
 
             if (!Integral)

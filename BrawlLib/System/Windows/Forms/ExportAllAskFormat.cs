@@ -14,7 +14,7 @@ namespace System.Windows.Forms
         public ExportAllFormatDialog()
         {
             InitializeComponent();
-            string[] source = ExportFilters.TEX0.Split('|');
+            string[] source = FileFilters.TEX0.Split('|');
             for (int i = 0; i < source.Length; i += 2)
                 if (!source[i].StartsWith("All"))
                     comboBox1.Items.Add(new FormatForExportAllDialog(source[i], source[i + 1]));

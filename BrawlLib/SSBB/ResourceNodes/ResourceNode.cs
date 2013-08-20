@@ -321,8 +321,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             return true;
         }
 
-        public virtual void doMoveDown() { doMoveDown(true); }
-        public virtual void doMoveDown(bool select)
+        public virtual void DoMoveDown() { DoMoveDown(true); }
+        public virtual void DoMoveDown(bool select)
         {
             if (MovedDown != null)
                 MovedDown(this, select);
@@ -330,8 +330,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 MoveDown();
         }
 
-        public virtual void doMoveUp() { doMoveUp(true); }
-        public virtual void doMoveUp(bool select)
+        public virtual void DoMoveUp() { DoMoveUp(true); }
+        public virtual void DoMoveUp(bool select)
         {
             if (MovedUp != null)
                 MovedUp(this, select);
@@ -500,10 +500,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Causes parent node(s) to become dirty.
         //Replace will reference the file in a new DataSource.
         public bool _replaced = false;
-        public unsafe virtual void Replace(string fileName)
+        public unsafe virtual void Replace(string fileName) { Replace(fileName, FileMapProtect.Read, FileOptions.SequentialScan); }
+        public unsafe virtual void Replace(string fileName, FileMapProtect prot, FileOptions options)
         {
             //Name = Path.GetFileNameWithoutExtension(fileName);
-            ReplaceRaw(FileMap.FromFile(fileName, FileMapProtect.Read));
+            ReplaceRaw(FileMap.FromFile(fileName, prot, 0, 0, options));
         }
         public unsafe virtual void ReplaceRaw(VoidPtr address, int length)
         {
@@ -524,7 +525,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             _replUncompSrc.Close();
             _replSrc.Close();
 
-            //FileMap map = FileMap.FromFile(fileName, FileMapProtect.Read);
             if (Compressor.IsDataCompressed(map.Address, map.Length))
             {
                 CompressionHeader* cmpr = (CompressionHeader*)map.Address;
@@ -615,10 +615,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 FileStream stream = new FileStream(Path.GetTempFileName(), FileMode.Open, FileAccess.ReadWrite, FileShare.None, 0x8, FileOptions.DeleteOnClose | FileOptions.SequentialScan);
                 try
                 {
-                    if (this is U8Node && _compression == CompressionType.RunLength)
-                        RunLength.CompactYAZ0(uncompMap.Address, uncompMap.Length, stream, null);
-                    else
-                        Compressor.Compact(_compression, uncompMap.Address, uncompMap.Length, stream, this);
+                    Compressor.Compact(_compression, uncompMap.Address, uncompMap.Length, stream, this);
                     _replSrc = new DataSource(FileMap.FromStreamInternal(stream, FileMapProtect.Read, 0, (int)stream.Length), _compression);
                 }
                 catch (Exception x) { stream.Dispose(); throw x; }

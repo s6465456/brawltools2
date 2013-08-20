@@ -60,6 +60,7 @@ namespace System.Windows.Forms
             {
                 MDL0BoneNode b = child.Clone();
                 parent.InsertChild(b, true, child.Index);
+                b.RecalcBindState();
                 bone = b;
             }
             else
@@ -213,7 +214,7 @@ namespace System.Windows.Forms
 
         private void btnCancel_Click(object sender, EventArgs e) { DialogResult = DialogResult.Cancel; Close(); }
 
-        private void getBaseInfluence()
+        private void GetBaseInfluence()
         {
             ResourceNode[] boneCache = _externalModel._linker.BoneCache;
             if ((node = (MDL0ObjectNode)comboBox1.SelectedItem).Weighted)
@@ -253,7 +254,7 @@ namespace System.Windows.Forms
             if (comboBox1.SelectedItem == null)
                 return;
 
-            getBaseInfluence();
+            GetBaseInfluence();
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
@@ -278,7 +279,7 @@ namespace System.Windows.Forms
             {
                 label1.Show();
                 comboBox1.Show();
-                getBaseInfluence();
+                GetBaseInfluence();
             }
         }
 

@@ -51,12 +51,12 @@ namespace BrawlBox.NodeWrappers
 
         public REFTWrapper() { ContextMenuStrip = _menu; }
 
-        public override string ExportFilter { get { return ExportFilters.REFT; } }
+        public override string ExportFilter { get { return FileFilters.REFT; } }
 
         public void ImportTexture()
         {
             string path;
-            int index = Program.OpenFile(ExportFilters.Images, out path);
+            int index = Program.OpenFile(FileFilters.Images, out path);
             if (index > 0)
                 using (TextureConverterDialog dlg = new TextureConverterDialog())
                 {

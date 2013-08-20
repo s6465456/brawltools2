@@ -164,31 +164,25 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            uint offset = 0;
             RBNK_WAVEHeader* header = (RBNK_WAVEHeader*)address;
             header->_tag = WAVEHeader.Tag;
             header->_list._numEntries = Children.Count;
             header->_length = (uint)length;
             ruint* table = header->_list.Entries;
             VoidPtr addr = (VoidPtr)(table + Children.Count);
+            VoidPtr baseAddr = _audioAddr;
             foreach (WAVESoundNode r in Children)
             {
-                //Set offset and write header data
                 table[r.Index] = (uint)(addr - header->_list.Address);
 
                 r.MoveRaw(addr, r.WorkingUncompressed.Length);
-                //Memory.Move(addr, r.WorkingSource.Address, (uint)r.WorkingSource.Length);
 
-                //Set the offset to the audio samples
                 WaveInfo* wave = (WaveInfo*)addr;
-                wave->_dataLocation = offset;
-                offset += (uint)r._audioSource.Length;
+                wave->_dataLocation = (uint)(_audioAddr - baseAddr);
 
-                //Write audio samples
-                Memory.Move(_audioAddr, r._audioSource.Address, (uint)r._audioSource.Length);
-                _audioAddr += r._audioSource.Length;
+                Memory.Move(_audioAddr, r._streamBuffer.Address, (uint)r._streamBuffer.Length);
 
-                //Advance
+                _audioAddr += (uint)r._streamBuffer.Length;
                 addr += r.WorkingUncompressed.Length;
             }
         }

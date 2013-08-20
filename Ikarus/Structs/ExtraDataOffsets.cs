@@ -127,11 +127,14 @@ namespace Ikarus
                     MoveDefSectionParamNode d = new MoveDefSectionParamNode(i) { offsetID = i, isExtra = true };
                     d.Initialize(node, node.BaseAddress + addr->Entries[i], 0);
                 }
-                for (int i = 5; i < 10; i++)
+                for (int i = 11; i < 20; i++)
                 {
-                    MoveDefArticleNode entry = new MoveDefArticleNode() { offsetID = i, isExtra = true, Static = true, extraOffset = true };
-                    entry.Initialize(node._articleGroup, node.BaseAddress + addr->Entries[i], 0);
-                    node._articles.Add(entry._offset, entry);
+                    if (i != 12 && i != 14)
+                    {
+                        MoveDefArticleNode entry = new MoveDefArticleNode() { offsetID = i, isExtra = true, Static = true, extraOffset = true };
+                        entry.Initialize(node._articleGroup, node.BaseAddress + addr->Entries[i], 0);
+                        node._articles.Add(entry._offset, entry);
+                    }
                 }
             }
 
@@ -168,7 +171,13 @@ namespace Ikarus
 
             public void Parse(MoveDefDataNode node, VoidPtr address)
             {
-
+                Offsets* addr = (Offsets*)address;
+                for (int i = 4; i < 8; i++)
+                {
+                    MoveDefArticleNode entry = new MoveDefArticleNode() { offsetID = i, isExtra = true, Static = true, extraOffset = true };
+                    entry.Initialize(node._articleGroup, node.BaseAddress + addr->Entries[i], 0);
+                    node._articles.Add(entry._offset, entry);
+                }
             }
 
             public void Write(List<MoveDefEntryNode> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)

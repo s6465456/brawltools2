@@ -50,12 +50,12 @@ namespace BrawlBox.NodeWrappers
 
         public TPLWrapper() { ContextMenuStrip = _menu; }
 
-        public override string ExportFilter { get { return ExportFilters.TPL; } }
+        public override string ExportFilter { get { return FileFilters.TPL; } }
 
         public void ImportTexture()
         {
             string path;
-            int index = Program.OpenFile(ExportFilters.Images, out path);
+            int index = Program.OpenFile(FileFilters.Images, out path);
             if (index == 8)
             {
                 TPLTextureNode t = new TPLTextureNode() { Name = "Texture" };
@@ -93,7 +93,7 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.TPLTexture)]
     class TPLTextureNodeWrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.Images; } }
+        public override string ExportFilter { get { return FileFilters.Images; } }
 
         public override void OnReplace(string inStream, int filterIndex)
         {

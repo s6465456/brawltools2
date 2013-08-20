@@ -14,7 +14,7 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.RSARSound)]
     class RSARSoundWrapper : GenericWrapper
     {
-        public override string ExportFilter { get { return ExportFilters.WAV; } }
+        public override string ExportFilter { get { return FileFilters.WAV; } }
 
         #region Menu
 

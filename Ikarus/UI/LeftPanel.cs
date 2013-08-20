@@ -9,6 +9,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Linq;
+using OpenTK.Graphics.OpenGL;
 
 namespace Ikarus.UI
 {
@@ -19,14 +20,12 @@ namespace Ikarus.UI
         public CheckedListBox lstObjects;
         private CheckBox chkAllObj;
         private Button btnObjects;
-        private ProxySplitter spltAnimObj;
         private Panel pnlLists;
         private Button btnLists;
         private Panel pnlTextures;
         private CheckedListBox lstTextures;
         private CheckBox chkAllTextures;
         private Button btnTextures;
-        private ProxySplitter spltObjTex;
         private ContextMenuStrip ctxTextures;
         private ToolStripMenuItem sourceToolStripMenuItem;
         private ToolStripSeparator toolStripMenuItem1;
@@ -60,6 +59,9 @@ namespace Ikarus.UI
         public ComboBox movesetEditor;
         private ComboBox fileType;
         private Panel listGroupPanel;
+        private ListBox SubRoutinesList;
+        private ProxySplitter spltObjTex;
+        private ProxySplitter spltAnimObj;
         private Panel pnlObjects;
 
         private void InitializeComponent()
@@ -77,6 +79,7 @@ namespace Ikarus.UI
             this.lstHurtboxes = new System.Windows.Forms.CheckedListBox();
             this.chkAllHurtboxes = new System.Windows.Forms.CheckBox();
             this.SubActionsList = new System.Windows.Forms.ListBox();
+            this.SubRoutinesList = new System.Windows.Forms.ListBox();
             this.ActionsList = new System.Windows.Forms.ListBox();
             this.pnlTop = new System.Windows.Forms.Panel();
             this.movesetEditor = new System.Windows.Forms.ComboBox();
@@ -96,8 +99,6 @@ namespace Ikarus.UI
             this.lstTextures = new System.Windows.Forms.CheckedListBox();
             this.chkAllTextures = new System.Windows.Forms.CheckBox();
             this.btnTextures = new System.Windows.Forms.Button();
-            this.spltObjTex = new System.Windows.Forms.ProxySplitter();
-            this.spltAnimObj = new System.Windows.Forms.ProxySplitter();
             this.ctxAnim = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -109,6 +110,8 @@ namespace Ikarus.UI
             this.createNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.attributeGridSSE = new System.Windows.Forms.AttributeGrid();
             this.attributeGridMain = new System.Windows.Forms.AttributeGrid();
+            this.spltObjTex = new System.Windows.Forms.ProxySplitter();
+            this.spltAnimObj = new System.Windows.Forms.ProxySplitter();
             this.pnlObjects.SuspendLayout();
             this.pnlLists.SuspendLayout();
             this.listGroupPanel.SuspendLayout();
@@ -127,7 +130,7 @@ namespace Ikarus.UI
             this.pnlObjects.Controls.Add(this.chkAllObj);
             this.pnlObjects.Controls.Add(this.chkSyncVis);
             this.pnlObjects.Controls.Add(this.btnObjects);
-            this.pnlObjects.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlObjects.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnlObjects.Location = new System.Drawing.Point(0, 182);
             this.pnlObjects.MinimumSize = new System.Drawing.Size(0, 21);
             this.pnlObjects.Name = "pnlObjects";
@@ -203,7 +206,7 @@ namespace Ikarus.UI
             this.pnlLists.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pnlLists.Controls.Add(this.listGroupPanel);
             this.pnlLists.Controls.Add(this.btnLists);
-            this.pnlLists.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlLists.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlLists.Location = new System.Drawing.Point(0, 0);
             this.pnlLists.MinimumSize = new System.Drawing.Size(0, 21);
             this.pnlLists.Name = "pnlLists";
@@ -214,6 +217,7 @@ namespace Ikarus.UI
             // 
             this.listGroupPanel.Controls.Add(this.pnlHurtboxes);
             this.listGroupPanel.Controls.Add(this.SubActionsList);
+            this.listGroupPanel.Controls.Add(this.SubRoutinesList);
             this.listGroupPanel.Controls.Add(this.ActionsList);
             this.listGroupPanel.Controls.Add(this.attributeGridSSE);
             this.listGroupPanel.Controls.Add(this.attributeGridMain);
@@ -275,7 +279,19 @@ namespace Ikarus.UI
             this.SubActionsList.TabIndex = 1;
             this.SubActionsList.Visible = false;
             this.SubActionsList.SelectedIndexChanged += new System.EventHandler(this.SubActionsList_SelectedIndexChanged_1);
-            this.SubActionsList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SubActionsList_KeyDown);
+            this.SubActionsList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.List_KeyDown);
+            // 
+            // SubRoutinesList
+            // 
+            this.SubRoutinesList.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SubRoutinesList.FormattingEnabled = true;
+            this.SubRoutinesList.IntegralHeight = false;
+            this.SubRoutinesList.Location = new System.Drawing.Point(0, 21);
+            this.SubRoutinesList.Name = "SubRoutinesList";
+            this.SubRoutinesList.Size = new System.Drawing.Size(200, 134);
+            this.SubRoutinesList.TabIndex = 28;
+            this.SubRoutinesList.Visible = false;
+            this.SubRoutinesList.SelectedIndexChanged += new System.EventHandler(this.SubRoutinesList_SelectedIndexChanged);
             // 
             // ActionsList
             // 
@@ -301,25 +317,25 @@ namespace Ikarus.UI
             // 
             // movesetEditor
             // 
-            this.movesetEditor.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.movesetEditor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.movesetEditor.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.movesetEditor.FormattingEnabled = true;
             this.movesetEditor.Items.AddRange(new object[] {
             "Actions",
             "SubActions",
+            "SubRoutines",
             "Brawl Attributes",
             "SSE Attributes",
             "Hurtboxes"});
             this.movesetEditor.Location = new System.Drawing.Point(0, 0);
             this.movesetEditor.Name = "movesetEditor";
-            this.movesetEditor.Size = new System.Drawing.Size(151, 21);
+            this.movesetEditor.Size = new System.Drawing.Size(153, 21);
             this.movesetEditor.TabIndex = 27;
             this.movesetEditor.SelectedIndexChanged += new System.EventHandler(this.movesetEditor_SelectedIndexChanged);
             // 
             // fileType
             // 
-            this.fileType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.fileType.Dock = System.Windows.Forms.DockStyle.Right;
             this.fileType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.fileType.FormattingEnabled = true;
             this.fileType.Items.AddRange(new object[] {
@@ -329,7 +345,7 @@ namespace Ikarus.UI
             "PAT",
             "VIS",
             "CLR"});
-            this.fileType.Location = new System.Drawing.Point(152, 0);
+            this.fileType.Location = new System.Drawing.Point(153, 0);
             this.fileType.Name = "fileType";
             this.fileType.Size = new System.Drawing.Size(47, 21);
             this.fileType.TabIndex = 26;
@@ -482,26 +498,6 @@ namespace Ikarus.UI
             this.btnTextures.UseVisualStyleBackColor = true;
             this.btnTextures.Click += new System.EventHandler(this.btnTextures_Click);
             // 
-            // spltObjTex
-            // 
-            this.spltObjTex.Cursor = System.Windows.Forms.Cursors.HSplit;
-            this.spltObjTex.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.spltObjTex.Location = new System.Drawing.Point(0, 332);
-            this.spltObjTex.Name = "spltObjTex";
-            this.spltObjTex.Size = new System.Drawing.Size(202, 4);
-            this.spltObjTex.TabIndex = 4;
-            this.spltObjTex.Dragged += new System.Windows.Forms.SplitterEventHandler(this.spltObjTex_Dragged);
-            // 
-            // spltAnimObj
-            // 
-            this.spltAnimObj.Cursor = System.Windows.Forms.Cursors.HSplit;
-            this.spltAnimObj.Dock = System.Windows.Forms.DockStyle.Top;
-            this.spltAnimObj.Location = new System.Drawing.Point(0, 178);
-            this.spltAnimObj.Name = "spltAnimObj";
-            this.spltAnimObj.Size = new System.Drawing.Size(202, 4);
-            this.spltAnimObj.TabIndex = 1;
-            this.spltAnimObj.Dragged += new System.Windows.Forms.SplitterEventHandler(this.spltAnimObj_Dragged);
-            // 
             // ctxAnim
             // 
             this.ctxAnim.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -589,12 +585,32 @@ namespace Ikarus.UI
             this.attributeGridMain.TabIndex = 0;
             this.attributeGridMain.Visible = false;
             // 
+            // spltObjTex
+            // 
+            this.spltObjTex.Cursor = System.Windows.Forms.Cursors.HSplit;
+            this.spltObjTex.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.spltObjTex.Location = new System.Drawing.Point(0, 332);
+            this.spltObjTex.Name = "spltObjTex";
+            this.spltObjTex.Size = new System.Drawing.Size(202, 4);
+            this.spltObjTex.TabIndex = 4;
+            this.spltObjTex.Dragged += new System.Windows.Forms.SplitterEventHandler(this.spltObjTex_Dragged);
+            // 
+            // spltAnimObj
+            // 
+            this.spltAnimObj.Cursor = System.Windows.Forms.Cursors.HSplit;
+            this.spltAnimObj.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.spltAnimObj.Location = new System.Drawing.Point(0, 178);
+            this.spltAnimObj.Name = "spltAnimObj";
+            this.spltAnimObj.Size = new System.Drawing.Size(202, 4);
+            this.spltAnimObj.TabIndex = 1;
+            this.spltAnimObj.Dragged += new System.Windows.Forms.SplitterEventHandler(this.spltAnimObj_Dragged);
+            // 
             // LeftPanel
             // 
+            this.Controls.Add(this.pnlLists);
+            this.Controls.Add(this.spltAnimObj);
             this.Controls.Add(this.pnlObjects);
             this.Controls.Add(this.spltObjTex);
-            this.Controls.Add(this.spltAnimObj);
-            this.Controls.Add(this.pnlLists);
             this.Controls.Add(this.pnlTextures);
             this.Name = "LeftPanel";
             this.Size = new System.Drawing.Size(202, 500);
@@ -705,14 +721,11 @@ namespace Ikarus.UI
         {
             get 
             {
-                return (AnimType)(fileType.SelectedIndex == 5 ? 6 : fileType.SelectedIndex);
+                return (AnimType)fileType.SelectedIndex;
             }
             set 
             {
-                if (value == AnimType.None)
-                    return;
-
-                fileType.SelectedIndex = ((int)value).Clamp(0, 5); 
+                fileType.SelectedIndex = (int)value; 
             }
         }
 
@@ -933,29 +946,28 @@ namespace Ikarus.UI
             if (e.Y == 0)
                 return;
 
-            int TexturesBottom = pnlTextures.Location.Y + pnlTextures.Height;
-            int TexturesTop = pnlTextures.Location.Y;
+            //int TexturesTop = pnlTextures.Location.Y;
 
-            int ObjectsBottom = pnlObjects.Location.Y + pnlObjects.Height;
-            int ObjectsTop = pnlObjects.Location.Y;
+            //int ObjectsBottom = pnlObjects.Location.Y + pnlObjects.Height;
+            //int ObjectsTop = pnlObjects.Location.Y;
 
-            int AnimsBottom = pnlLists.Location.Y + pnlLists.Height;
-            int AnimsTop = pnlLists.Location.Y;
+            //int AnimsBottom = pnlLists.Location.Y + pnlLists.Height;
+            //int AnimsTop = pnlLists.Location.Y;
 
-            int height = -1;
-            if (ObjectsTop + btnObjects.Height + e.Y >= TexturesTop - 6)
-            {
-                int difference = (ObjectsTop + btnObjects.Height + e.Y) - (TexturesTop - 6);
-                if (TexturesTop - 6 - e.Y <= ObjectsTop + btnObjects.Height)
-                    if (e.Y > 0) //Only want to push the texture panel down
-                    {
-                        height = pnlTextures.Height;
-                        pnlTextures.Height -= difference;
-                    }
-            }
+            //int height = -1;
+            //if (ObjectsBottom + e.Y >= TexturesTop - 5)
+            //{
+            //    int difference = (ObjectsBottom + e.Y) - (TexturesTop - 5);
+            //    if (TexturesTop - 5 - e.Y <= ObjectsBottom)
+            //        if (e.Y > 0) //Only want to push the texture panel down
+            //        {
+            //            height = pnlTextures.Height;
+            //            pnlTextures.Height -= difference;
+            //        }
+            //}
 
-            if (height != pnlTextures.Height)
-                pnlLists.Height += e.Y;
+            //if (height != pnlTextures.Height)
+            pnlObjects.Height -= e.Y;
         }
 
         private void spltObjTex_Dragged(object sender, SplitterEventArgs e)
@@ -963,29 +975,29 @@ namespace Ikarus.UI
             if (e.Y == 0)
                 return;
 
-            int TexturesBottom = pnlTextures.Location.Y + pnlTextures.Height;
-            int TexturesTop = pnlTextures.Location.Y;
+            //int TexturesBottom = pnlTextures.Location.Y + pnlTextures.Height;
+            //int TexturesTop = pnlTextures.Location.Y;
 
-            int ObjectsBottom = pnlObjects.Location.Y + pnlObjects.Height;
-            int ObjectsTop = pnlObjects.Location.Y;
+            //int ObjectsBottom = pnlObjects.Location.Y + pnlObjects.Height;
+            //int ObjectsTop = pnlObjects.Location.Y;
 
-            int AnimsBottom = pnlLists.Location.Y + pnlLists.Height;
-            int AnimsTop = pnlLists.Location.Y;
+            //int AnimsBottom = pnlLists.Location.Y + pnlLists.Height;
+            //int AnimsTop = pnlLists.Location.Y;
 
-            int height = -1;
-            if (TexturesTop - 6 + e.Y <= ObjectsTop + btnObjects.Height)
-            {
-                int difference = (ObjectsTop + btnObjects.Height) - (TexturesTop - 6 + e.Y);
-                if (ObjectsTop + btnObjects.Height - e.Y >= TexturesTop - 6)
-                    if (e.Y < 0) //Only want to push the anims panel up
-                    {
-                        height = pnlLists.Height;
-                        pnlLists.Height -= difference;
-                    }
-            }
+            //int height = -1;
+            //if (TexturesTop - 6 + e.Y <= ObjectsTop + btnObjects.Height)
+            //{
+            //    int difference = (ObjectsTop + btnObjects.Height) - (TexturesTop - 6 + e.Y);
+            //    if (ObjectsTop + btnObjects.Height - e.Y >= TexturesTop - 6)
+            //        if (e.Y < 0) //Only want to push the anims panel up
+            //        {
+            //            height = pnlLists.Height;
+            //            pnlLists.Height -= difference;
+            //        }
+            //}
 
-            if (height != pnlLists.Height)
-                pnlTextures.Height -= e.Y;
+            //if (height != pnlLists.Height)
+            pnlTextures.Height -= e.Y;
         }
 
         private void lstPolygons_SelectedValueChanged(object sender, EventArgs e)
@@ -1042,33 +1054,6 @@ namespace Ikarus.UI
             if (!_updating) _mainWindow.ModelPanel.Invalidate();
         }
 
-        //public event EventHandler Key;
-        //public event EventHandler Unkey;
-        //protected override bool ProcessKeyPreview(ref Message m)
-        //{
-        //    if (m.Msg == 0x100)
-        //    {
-        //        Keys key = (Keys)m.WParam;
-        //        if (Control.ModifierKeys == Keys.Control)
-        //        {
-        //            if (key == Keys.K)
-        //            {
-        //                if (Key != null)
-        //                    Key(this, null);
-        //                return true;
-        //            }
-        //            else if (key == Keys.L)
-        //            {
-        //                if (Unkey != null)
-        //                    Unkey(this, null);
-        //                return true;
-        //            }
-        //            return false;
-        //        }
-        //    }
-        //    return base.ProcessKeyPreview(ref m);
-        //}
-
         private void lstTextures_SelectedValueChanged(object sender, EventArgs e)
         {
             if (_selectedTexture != null)
@@ -1106,6 +1091,33 @@ namespace Ikarus.UI
             _mainWindow.ModelPanel.Invalidate();
         }
 
+        private void SetDocks()
+        {
+            if (listGroupPanel.Visible)
+            {
+                pnlLists.Dock = DockStyle.Fill;
+                pnlTextures.Dock = DockStyle.Bottom;
+                pnlObjects.Dock = DockStyle.Bottom;
+            }
+            else
+            {
+                pnlLists.Dock = DockStyle.Top;
+                if (lstObjects.Visible)
+                {
+                    pnlObjects.Dock = DockStyle.Fill;
+                    pnlTextures.Dock = DockStyle.Bottom;
+                }
+                else
+                {
+                    pnlObjects.Dock = DockStyle.Top;
+                    if (lstTextures.Visible)
+                        pnlTextures.Dock = DockStyle.Fill;
+                    else
+                        pnlTextures.Dock = DockStyle.Top;
+                }
+            }
+        }
+
         private void btnObjects_Click(object sender, EventArgs e)
         {
             if (lstObjects.Visible)
@@ -1117,12 +1129,9 @@ namespace Ikarus.UI
             else
             {
                 pnlObjects.Height = (int)pnlObjects.Tag;
-                pnlLists.Dock = DockStyle.Top;
-                pnlTextures.Dock = DockStyle.Bottom;
-                pnlObjects.Dock = DockStyle.Fill;
                 lstObjects.Visible = chkSyncVis.Visible = chkAllObj.Visible = overObjPnl.Visible = true;
-                
-            }
+            } 
+            SetDocks();
         }
 
         private void btnTextures_Click(object sender, EventArgs e)
@@ -1138,6 +1147,7 @@ namespace Ikarus.UI
                 pnlTextures.Height = (int)pnlTextures.Tag;
                 lstTextures.Visible = chkAllTextures.Visible = spltObjTex.Visible = overTexPnl.Visible = true;
             }
+            SetDocks();
         }
 
         private void btnAnims_Click(object sender, EventArgs e)
@@ -1153,6 +1163,7 @@ namespace Ikarus.UI
                 pnlLists.Height = (int)pnlLists.Tag;
                 listGroupPanel.Visible = fileType.Visible = spltAnimObj.Visible = true;
             }
+            SetDocks();
         }
 
         private void lstTextures_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -1287,7 +1298,7 @@ namespace Ikarus.UI
                 using (SaveFileDialog dlgSave = new SaveFileDialog())
                 {
                     dlgSave.FileName = node.Name;
-                    dlgSave.Filter = ExportFilters.TEX0;
+                    dlgSave.Filter = FileFilters.TEX0;
                     if (dlgSave.ShowDialog(this) == DialogResult.OK)
                         node.Export(dlgSave.FileName);
                 }
@@ -1340,13 +1351,13 @@ namespace Ikarus.UI
             dlgSave.FileName = node.Name;
             switch (TargetAnimType)
             {
-                case AnimType.CHR: dlgSave.Filter = ExportFilters.CHR0; break;
-                case AnimType.SRT: dlgSave.Filter = ExportFilters.SRT0; break;
-                case AnimType.SHP: dlgSave.Filter = ExportFilters.SHP0; break;
-                case AnimType.PAT: dlgSave.Filter = ExportFilters.PAT0; break;
-                case AnimType.VIS: dlgSave.Filter = ExportFilters.VIS0; break;
-                case AnimType.SCN: dlgSave.Filter = ExportFilters.SCN0; break;
-                case AnimType.CLR: dlgSave.Filter = ExportFilters.CLR0; break;
+                case AnimType.CHR: dlgSave.Filter = FileFilters.CHR0; break;
+                case AnimType.SRT: dlgSave.Filter = FileFilters.SRT0; break;
+                case AnimType.SHP: dlgSave.Filter = FileFilters.SHP0; break;
+                case AnimType.PAT: dlgSave.Filter = FileFilters.PAT0; break;
+                case AnimType.VIS: dlgSave.Filter = FileFilters.VIS0; break;
+                case AnimType.SCN: dlgSave.Filter = FileFilters.SCN0; break;
+                case AnimType.CLR: dlgSave.Filter = FileFilters.CLR0; break;
             }
             if (dlgSave.ShowDialog() == DialogResult.OK)
                 node.Export(dlgSave.FileName);
@@ -1360,13 +1371,13 @@ namespace Ikarus.UI
 
             switch (TargetAnimType)
             {
-                case AnimType.CHR: dlgOpen.Filter = ExportFilters.CHR0; break;
-                case AnimType.SRT: dlgOpen.Filter = ExportFilters.SRT0; break;
-                case AnimType.SHP: dlgOpen.Filter = ExportFilters.SHP0; break;
-                case AnimType.PAT: dlgOpen.Filter = ExportFilters.PAT0; break;
-                case AnimType.VIS: dlgOpen.Filter = ExportFilters.VIS0; break;
-                case AnimType.SCN: dlgOpen.Filter = ExportFilters.SCN0; break;
-                case AnimType.CLR: dlgOpen.Filter = ExportFilters.CLR0; break;
+                case AnimType.CHR: dlgOpen.Filter = FileFilters.CHR0; break;
+                case AnimType.SRT: dlgOpen.Filter = FileFilters.SRT0; break;
+                case AnimType.SHP: dlgOpen.Filter = FileFilters.SHP0; break;
+                case AnimType.PAT: dlgOpen.Filter = FileFilters.PAT0; break;
+                case AnimType.VIS: dlgOpen.Filter = FileFilters.VIS0; break;
+                case AnimType.SCN: dlgOpen.Filter = FileFilters.SCN0; break;
+                case AnimType.CLR: dlgOpen.Filter = FileFilters.CLR0; break;
             }
 
             if (dlgOpen.ShowDialog() == DialogResult.OK)
@@ -1527,7 +1538,7 @@ namespace Ikarus.UI
         public MoveDefHurtBoxNode SelectedHurtbox
         {
             get { return _mainWindow._selectedHurtbox; }
-            set { _mainWindow._selectedHurtbox = value; }
+            set { _mainWindow.SelectedHurtbox = value; }
         }
 
         private void lstHurtboxes_KeyDown(object sender, KeyEventArgs e)
@@ -1555,68 +1566,46 @@ namespace Ikarus.UI
         {
             if (_updating)
                 return;
-            
+
             _mainWindow.ModelPanel.Invalidate();
-        }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefSubActionGroupNode SelectedSubActionGrp
-        {
-            get { return _mainWindow.SelectedSubActionGrp; }
-            set { _mainWindow.SelectedSubActionGrp = value; }
-        }
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefActionGroupNode SelectedActionGrp
-        {
-            get { return _mainWindow.SelectedActionGrp; }
-            set { _mainWindow.SelectedActionGrp = value; }
-        }
-
-        private void ActionsList_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (_closing)
-                return;
-
-            SelectedActionGrp = ActionsList.SelectedItem as MoveDefActionGroupNode;
-
-            _mainWindow.MaxFrame = 1;
-            _mainWindow.GetFiles(AnimType.None);
-
-            //comboBox1_SelectedIndexChanged(this, null);
-            //UpdateCurrentControl();
-
-            foreach (MoveDefActionNode a in MoveDefActionNode._runningActions)
-                a.Reset();
-
-            MoveDefActionNode._runningActions.Clear();
-            foreach (MoveDefActionNode a in SelectedActionGrp.Children)
-                MoveDefActionNode._runningActions.Add(a);
-
-            _mainWindow.SetFrame(0);
-            //_mainWindow.pnlAssets.listAnims.SelectedIndices.Clear();
         }
 
         Control _currentControl;
         private void movesetEditor_SelectedIndexChanged(object sender, EventArgs e)
         {
             Control newControl = null;
+            lstHurtboxes.SelectedIndex = -1;
+            fileType.Visible = false;
+            if (_mainWindow != null)
+                _mainWindow.DisableHurtboxEditor();
             switch (movesetEditor.SelectedIndex)
             {
                 case 0:
                     newControl = ActionsList;
+                    if (_mainWindow != null)
+                        _mainWindow.MovesetPanel.ScriptType = ScriptType.Actions;
                     break;
                 case 1:
                     newControl = SubActionsList;
+                    if (_mainWindow != null)
+                        _mainWindow.MovesetPanel.ScriptType = ScriptType.Subactions;
+                    fileType.Visible = true;
                     break;
                 case 2:
-                    newControl = attributeGridMain;
+                    newControl = SubRoutinesList;
+                    if (_mainWindow != null)
+                        _mainWindow.MovesetPanel.ScriptType = ScriptType.Subroutines;
                     break;
                 case 3:
-                    newControl = attributeGridSSE;
+                    newControl = attributeGridMain;
                     break;
                 case 4:
+                    newControl = attributeGridSSE;
+                    break;
+                case 5:
                     newControl = pnlHurtboxes;
+                    if (SelectedHurtbox != null)
+                        _mainWindow.EnableHurtboxEditor();
                     break;
             }
 
@@ -1629,14 +1618,48 @@ namespace Ikarus.UI
 
         public void UpdateMoveset(MoveDefNode moveset)
         {
+            if (moveset == null)
+                return;
+
             _updating = true;
             attributeGridMain.TargetNode = moveset._data._attributes;
             attributeGridSSE.TargetNode = moveset._data._sseAttributes;
+            lstHurtboxes.Items.Clear();
             foreach (MoveDefHurtBoxNode h in moveset._data._misc.hurtBoxes.Children)
                 lstHurtboxes.Items.Add(h, true);
+            SubActionsList.Items.Clear();
             SubActionsList.Items.AddRange(moveset._subActions.Children.ToArray());
+            ActionsList.Items.Clear();
             ActionsList.Items.AddRange(moveset._actions.Children.ToArray());
+            SubRoutinesList.Items.Clear();
+            SubRoutinesList.Items.AddRange(moveset._subRoutines.Values.ToArray());
             _updating = false;
+        }
+
+        private void ActionsList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_closing)
+                return;
+
+            RunTime.CurrentAction = ActionsList.SelectedItem as MoveDefActionGroupNode;
+
+            _mainWindow.MaxFrame = 1;
+            _mainWindow.GetFiles(AnimType.None);
+
+            _mainWindow.SetFrame(0);
+        }
+
+        private void SubRoutinesList_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_closing)
+                return;
+
+            RunTime.CurrentSubRoutine = SubRoutinesList.SelectedItem as MoveDefActionNode;
+
+            _mainWindow.MaxFrame = 1;
+            _mainWindow.GetFiles(AnimType.None);
+
+            _mainWindow.SetFrame(0);
         }
 
         private void SubActionsList_SelectedIndexChanged_1(object sender, EventArgs e)
@@ -1644,25 +1667,7 @@ namespace Ikarus.UI
             if (_closing)
                 return;
 
-            SelectedSubActionGrp = SubActionsList.SelectedItem as MoveDefSubActionGroupNode;
-
-            //comboBox1_SelectedIndexChanged(this, null);
-            //UpdateCurrentControl();
-
-            foreach (MoveDefActionNode a in MoveDefActionNode._runningActions)
-                a.Reset();
-
-            MoveDefActionNode._runningActions.Clear();
-            foreach (MoveDefActionNode a in SelectedSubActionGrp.Children)
-                MoveDefActionNode._runningActions.Add(a);
-
-            //_mainWindow.pnlAssets.listAnims.SelectedItems.Clear();
-            //for (int i = 0; i < _mainWindow.pnlAssets.listAnims.Items.Count; i++)
-            //    if (_mainWindow.pnlAssets.listAnims.Items[i].Tag.ToString() == selectedSubActionGrp.Name)
-            //    {
-            //        _mainWindow.pnlAssets.listAnims.Items[i].Selected = true;
-            //        break;
-            //    }
+            RunTime.CurrentSubaction = SubActionsList.SelectedItem as MoveDefSubActionGroupNode;
 
             if (SubActionsList.SelectedItems.Count > 0)
             {
@@ -1671,6 +1676,7 @@ namespace Ikarus.UI
                 int i = Array.IndexOf(anims, s);
                 if (i >= 0)
                 {
+                    _mainWindow._updating = true;
                     switch (TargetAnimType)
                     {
                         case AnimType.CHR: _mainWindow.SelectedCHR0 = _animations[i] as CHR0Node;
@@ -1692,38 +1698,50 @@ namespace Ikarus.UI
                             createNewToolStripMenuItem.Text = "Create New CLR0";
                             break;
                     }
+                    _mainWindow._updating = false;
                     _mainWindow.GetFiles(TargetAnimType);
+                    _mainWindow.AnimChanged(TargetAnimType);
                 }
                 else
                 {
                     _mainWindow.GetFiles(AnimType.None);
                     _mainWindow.SetSelectedBRRESFile(TargetAnimType, null);
                 }
-                _mainWindow.UpdatePropDisplay();
             }
             else
             {
                 _mainWindow.GetFiles(AnimType.None);
-                _mainWindow.UpdatePropDisplay();
                 _mainWindow.UpdateModel();
                 _mainWindow.AnimChanged(AnimType.None);
-                _mainWindow.ModelPanel.Invalidate();
             }
+
+            _mainWindow.UpdatePropDisplay();
+            RunTime.ResetSubactionVariables();
 
             //if (_selectedAnim != null)
             //    portToolStripMenuItem.Enabled = !_selectedAnim.IsPorted;
 
             _mainWindow.Updating = true;
-            _mainWindow.Loop = SelectedSubActionGrp._flags.HasFlag(AnimationFlags.Loop);
+            _mainWindow.Loop = RunTime.CurrentSubaction._flags.HasFlag(AnimationFlags.Loop);
             _mainWindow.Updating = false;
-            _mainWindow.SetFrame(1);
-            _mainWindow.MovesetPanel.comboBox1_SelectedIndexChanged(this, null);
         }
 
-        private void SubActionsList_KeyDown(object sender, KeyEventArgs e)
+        private void List_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Escape)
-                SubActionsList.SelectedItems.Clear();
+            if (e.KeyCode == Keys.Escape && sender is ListBox)
+                (sender as ListBox).SelectedItems.Clear();
+        }
+
+        internal unsafe void ApplyAttributes(MainControl mainControl)
+        {
+            AttributeGrid targetGrid = attributeGridMain;
+            if (targetGrid.TargetNode != null)
+            {
+                float size = targetGrid.GetFloat(45);
+                Matrix m = Matrix.ScaleMatrix(size, size, size);
+                if (TargetModel != null)
+                    mainControl.TargetModel._matrixOffset = m;
+            }
         }
     }
 }

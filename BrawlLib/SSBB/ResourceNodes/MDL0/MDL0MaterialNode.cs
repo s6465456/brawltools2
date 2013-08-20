@@ -698,7 +698,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         mr.getTexMtxVal();
                     }
 
-                    _chan1 = new LightChannel(63, new RGBAPixel(128, 128, 128, 255), new RGBAPixel(255, 255, 255, 255), 0, 0);
+                    _chan1 = new LightChannel(63, new RGBAPixel(128, 128, 128, 255), new RGBAPixel(255, 255, 255, 255), 0, 0, this);
                     C1ColorEnabled = true;
                     C1ColorDiffuseFunction = GXDiffuseFn.Clamped;
                     C1ColorAttenuation = GXAttnFn.Spotlight;
@@ -706,7 +706,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     C1AlphaDiffuseFunction = GXDiffuseFn.Clamped;
                     C1AlphaAttenuation = GXAttnFn.Spotlight;
 
-                    _chan2 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(), 0, 0);
+                    _chan2 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(), 0, 0, this);
                     C2ColorEnabled = true;
                     C2ColorDiffuseFunction = GXDiffuseFn.Disabled;
                     C2ColorAttenuation = GXAttnFn.Specular;
@@ -858,8 +858,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             MDL0MaterialLighting* Light = header->Light(_initVersion);
 
-            _chan1 = Light->Channel1;
-            _chan2 = Light->Channel2;
+            (_chan1 = Light->Channel1)._parent = this;
+            (_chan2 = Light->Channel2)._parent = this;
 
             c1 = CReg2Color;
             c2 = CReg2Color;
@@ -1006,10 +1006,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     //_cull = CullMode.Cull_Inside;
 
-                    _chan1.Color = new LightChannelControl(1795);
-                    _chan1.Alpha = new LightChannelControl(1795);
-                    _chan2.Color = new LightChannelControl(1795);
-                    _chan2.Alpha = new LightChannelControl(1795);
+                    _chan1.Color = new LightChannelControl(1795, _chan1);
+                    _chan1.Alpha = new LightChannelControl(1795, _chan1);
+                    _chan2.Color = new LightChannelControl(1795, _chan2);
+                    _chan2.Alpha = new LightChannelControl(1795, _chan2);
                 }
 
                 //Set default texgen flags
@@ -1432,109 +1432,112 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public class LightChannel
     {
-        public LightChannel(uint flags, RGBAPixel mat, RGBAPixel amb, uint color, uint alpha) 
+        public MDL0MaterialNode _parent = null;
+
+        public LightChannel(uint flags, RGBAPixel mat, RGBAPixel amb, uint color, uint alpha, MDL0MaterialNode material) : this(flags, mat, amb, color, alpha) { _parent = material; }
+        public LightChannel(uint flags, RGBAPixel mat, RGBAPixel amb, uint color, uint alpha)
         {
             _flags = flags;
             _matColor = mat;
             _ambColor = amb;
-            _color = new LightChannelControl(color);
-            _alpha = new LightChannelControl(alpha);
+            _color = new LightChannelControl(color, this);
+            _alpha = new LightChannelControl(alpha, this);
         }
 
         [Category("Lighting Channel")]
-        public LightingChannelFlags Flags { get { return (LightingChannelFlags)_flags; } set { _flags = (uint)value; } }
+        public LightingChannelFlags Flags { get { return (LightingChannelFlags)_flags; } set { _flags = (uint)value; _parent.SignalPropertyChange(); } }
 
         [Category("Lighting Channel"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel MaterialColor { get { return _matColor; } set { _matColor = value; } }
+        public RGBAPixel MaterialColor { get { return _matColor; } set { _matColor = value; _parent.SignalPropertyChange(); } }
 
         [Category("Lighting Channel"), TypeConverter(typeof(RGBAStringConverter))]
-        public RGBAPixel AmbientColor { get { return _ambColor; } set { _ambColor = value; } }
+        public RGBAPixel AmbientColor { get { return _ambColor; } set { _ambColor = value; _parent.SignalPropertyChange(); } }
 
         [Category("Lighting Channel"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public LightChannelControl Color
         {
             get { return _color; }
-            set { _color = value; }
+            set { _color = value; _parent.SignalPropertyChange(); }
         }
 
         [Category("Lighting Channel"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public LightChannelControl Alpha
         {
             get { return _alpha; }
-            set { _alpha = value; }
+            set { _alpha = value; _parent.SignalPropertyChange(); }
         }
 
         [Category("Lighting Channel"), Browsable(false)]
         public GXColorSrc ColorMaterialSource
         {
             get { return _color.MaterialSource; }
-            set { _color.MaterialSource = value; }
+            set { _color.MaterialSource = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public bool ColorEnabled
         {
             get { return _color.Enabled; }
-            set { _color.Enabled = value; }
+            set { _color.Enabled = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public GXColorSrc ColorAmbientSource
         {
             get { return _color.AmbientSource; }
-            set { _color.AmbientSource = value; }
+            set { _color.AmbientSource = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public GXDiffuseFn ColorDiffuseFunction
         {
             get { return _color.DiffuseFunction; }
-            set { _color.DiffuseFunction = value; }
+            set { _color.DiffuseFunction = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public GXAttnFn ColorAttenuation
         {
             get { return _color.Attenuation; }
-            set { _color.Attenuation = value; }
+            set { _color.Attenuation = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public MatChanLights ColorLights
         {
             get { return _color.Lights; }
-            set { _color.Lights = value; }
+            set { _color.Lights = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public GXColorSrc AlphaMaterialSource
         {
             get { return _alpha.MaterialSource; }
-            set { _alpha.MaterialSource = value; }
+            set { _alpha.MaterialSource = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public bool AlphaEnabled
         {
             get { return _alpha.Enabled; }
-            set { _alpha.Enabled = value; }
+            set { _alpha.Enabled = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public GXColorSrc AlphaAmbientSource
         {
             get { return _alpha.AmbientSource; }
-            set { _alpha.AmbientSource = value; }
+            set { _alpha.AmbientSource = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public GXDiffuseFn AlphaDiffuseFunction
         {
             get { return _alpha.DiffuseFunction; }
-            set { _alpha.DiffuseFunction = value; }
+            set { _alpha.DiffuseFunction = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public GXAttnFn AlphaAttenuation
         {
             get { return _alpha.Attenuation; }
-            set { _alpha.Attenuation = value; }
+            set { _alpha.Attenuation = value; _parent.SignalPropertyChange(); }
         }
         [Category("Lighting Channel"), Browsable(false)]
         public MatChanLights AlphaLights
         {
             get { return _alpha.Lights; }
-            set { _alpha.Lights = value; }
+            set { _alpha.Lights = value; _parent.SignalPropertyChange(); }
         }
 
         public uint _flags;
@@ -1589,7 +1592,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public class LightChannelControl
     {
-        public LightChannelControl(uint ctrl) { _binary = new Bin32(ctrl); }
+        LightChannel _parent;
+
+        public LightChannelControl(uint ctrl, LightChannel parent) { _binary = new Bin32(ctrl); _parent = parent; }
 
         public Bin32 _binary;
 
@@ -1603,13 +1608,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         //0000 0000 0000 0000 0111 1000 0000 0000   Light 4567
 
         [Category("Lighting Control")]
-        public bool Enabled { get { return _binary[1]; } set { _binary[1] = value; } }
+        public bool Enabled { get { return _binary[1]; } set { _binary[1] = value; _parent._parent.SignalPropertyChange(); } }
         [Category("Lighting Control")]
-        public GXColorSrc MaterialSource { get { return (GXColorSrc)(_binary[0] ? 1 : 0); } set { _binary[0] = ((int)value != 0); } }
+        public GXColorSrc MaterialSource { get { return (GXColorSrc)(_binary[0] ? 1 : 0); } set { _binary[0] = ((int)value != 0); _parent._parent.SignalPropertyChange(); } }
         [Category("Lighting Control")]
-        public GXColorSrc AmbientSource { get { return (GXColorSrc)(_binary[6] ? 1 : 0); } set { _binary[6] = ((int)value != 0); } }
+        public GXColorSrc AmbientSource { get { return (GXColorSrc)(_binary[6] ? 1 : 0); } set { _binary[6] = ((int)value != 0); _parent._parent.SignalPropertyChange(); } }
         [Category("Lighting Control")]
-        public GXDiffuseFn DiffuseFunction { get { return (GXDiffuseFn)(_binary[7, 2]); } set { _binary[7, 2] = ((uint)value); } }
+        public GXDiffuseFn DiffuseFunction { get { return (GXDiffuseFn)(_binary[7, 2]); } set { _binary[7, 2] = ((uint)value); _parent._parent.SignalPropertyChange(); } }
         [Category("Lighting Control")]
         public GXAttnFn Attenuation
         {
@@ -1632,6 +1637,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _binary[9] = false;
                     _binary[10] = false;
                 }
+
+                _parent._parent.SignalPropertyChange();
             }
         }
         [Category("Lighting Control")]
@@ -1643,6 +1650,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 uint val = (uint)value;
                 _binary[2, 4] = (val & 0xF);
                 _binary[11, 4] = ((val >> 4) & 0xF);
+
+                _parent._parent.SignalPropertyChange();
             }
         }
     }

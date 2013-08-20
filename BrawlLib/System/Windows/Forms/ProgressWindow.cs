@@ -20,8 +20,8 @@ namespace System.Windows.Forms
         {
             Owner = owner;
             Text = title; 
-            Caption = caption; 
-            CanCancel = CanCancel; 
+            Caption = caption;
+            CanCancel = canCancel; 
         }
         private Control controlOwner;
         public ProgressWindow(Control owner, string title, string caption, bool canCancel) : this()

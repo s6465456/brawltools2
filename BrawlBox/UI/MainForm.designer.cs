@@ -49,6 +49,7 @@ namespace BrawlBox
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gCTEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.donateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -235,7 +236,8 @@ namespace BrawlBox
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.settingsToolStripMenuItem});
+            this.settingsToolStripMenuItem,
+            this.gCTEditorToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.toolsToolStripMenuItem.Text = "&Tools";
@@ -243,9 +245,16 @@ namespace BrawlBox
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.settingsToolStripMenuItem.Text = "&Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click_1);
+            // 
+            // gCTEditorToolStripMenuItem
+            // 
+            this.gCTEditorToolStripMenuItem.Name = "gCTEditorToolStripMenuItem";
+            this.gCTEditorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.gCTEditorToolStripMenuItem.Text = "GCT Editor";
+            this.gCTEditorToolStripMenuItem.Click += new System.EventHandler(this.gCTEditorToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -340,6 +349,7 @@ namespace BrawlBox
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.previewPanel2.CurrentIndex = 0;
+            this.previewPanel2.DisposeImage = true;
             this.previewPanel2.Location = new System.Drawing.Point(0, 0);
             this.previewPanel2.Name = "previewPanel2";
             this.previewPanel2.RenderingTarget = null;
@@ -518,6 +528,7 @@ namespace BrawlBox
         private ToolStripMenuItem donateToolStripMenuItem;
         public ToolStripMenuItem editToolStripMenuItem;
         private VideoPlaybackPanel videoPlaybackPanel1;
+        private ToolStripMenuItem gCTEditorToolStripMenuItem;
     }
 }
 

@@ -22,21 +22,50 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        internal int _frameCount = 1, _version = 3, _loop;
+        internal int _numFrames = 1, _version = 3, _loop;
+
+        public int ConversionBias = 0;
+        public int startUpVersion = 3;
 
         [Category("Bone Visibility Data")]
-        public int Version { get { return _version; } set { _version = value; SignalPropertyChange(); } }
+        public int Version 
+        { 
+            get { return _version; } 
+            set 
+            {
+                if (_version == value)
+                    return;
+
+                if (value == startUpVersion)
+                    ConversionBias = 0;
+                else if (startUpVersion == 4 && value == 3)
+                    ConversionBias = 1;
+                else if (startUpVersion == 3 && value == 4)
+                    ConversionBias = -1;
+
+                _version = value; 
+                
+                SignalPropertyChange(); 
+            } 
+        }
         [Category("Bone Visibility Data")]
         public override int FrameCount 
         { 
-            get { return _frameCount; } 
-            set 
+            get { return _numFrames + (startUpVersion == 3 ? 1 : 0); }
+            set
             {
-                _frameCount = value;
+                int bias = (startUpVersion == 3 ? 1 : 0);
+
+                if ((_numFrames == value - bias) || (value - bias < (1 - bias)))
+                    return;
+
+                _numFrames = value - bias;
+
                 foreach (VIS0EntryNode e in Children)
-                    e.EntryCount = _frameCount + 1;
+                    e.EntryCount = FrameCount;
+
                 SignalPropertyChange();
-            } 
+            }
         }
         
         [Category("Bone Visibility Data")]
@@ -54,7 +83,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             VIS0EntryNode entry = new VIS0EntryNode();
             entry._entryCount = -1;
-            entry.EntryCount = _frameCount + 1;
+            entry.EntryCount = _numFrames + 1;
             entry.Name = this.FindName(null);
             AddChild(entry);
             return entry;
@@ -69,7 +98,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_version == 4)
             {
                 VIS0v4* header = Header4;
-                _frameCount = header->_numFrames;
+                _numFrames = header->_numFrames;
                 _loop = header->_loop;
                 if ((_name == null) && (header->_stringOffset != 0))
                     _name = header->ResourceString;
@@ -82,7 +111,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
             {
                 VIS0v3* header = Header3;
-                _frameCount = header->_numFrames;
+                _numFrames = header->_numFrames;
                 _loop = header->_loop;
 
                 if ((_name == null) && (header->_stringOffset != 0))
@@ -113,13 +142,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_version == 4)
             {
                 VIS0v4* header = (VIS0v4*)address;
-                *header = new VIS0v4(length, (ushort)_frameCount, (ushort)count, _loop);
+                *header = new VIS0v4(length, (ushort)(_numFrames - ConversionBias), (ushort)count, _loop);
                 group = header->Group;
             }
             else
             {
                 VIS0v3* header = (VIS0v3*)address;
-                *header = new VIS0v3(length, (ushort)_frameCount, (ushort)count, _loop);
+                *header = new VIS0v3(length, (ushort)(_numFrames - ConversionBias), (ushort)count, _loop);
                 group = header->Group;
             }
 
@@ -158,8 +187,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(n.Name);
 
             if (_version == 4)
-            foreach (UserDataClass s in _userEntries)
-                table.Add(s._name);
+                foreach (UserDataClass s in _userEntries)
+                    table.Add(s._name);
 
             if (!String.IsNullOrEmpty(_originalPath))
                 table.Add(_originalPath);
@@ -260,7 +289,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if ((_flags & VIS0Flags.Constant) == 0)
             {
-                _entryCount = ((VIS0Node)_parent)._frameCount + 1;
+                _entryCount = ((VIS0Node)_parent)._numFrames + 1;
                 int numBytes = _entryCount.Align(32) / 8;
 
                 SetSizeInternal(numBytes + 8);
@@ -310,7 +339,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _flags = VIS0Flags.None;
             _entryCount = -1;
-            EntryCount = ((VIS0Node)_parent)._frameCount + 1;
+            EntryCount = ((VIS0Node)_parent)._numFrames + 1;
 
             if (enabled)
                 for (int i = 0; i < _entryCount; i++)

@@ -171,6 +171,7 @@
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Messaging" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
@@ -209,6 +210,9 @@
     <Compile Include="Modeling\IMatrixNode.cs" />
     <Compile Include="Modeling\PrimitiveManager.cs" />
     <None Include="Modeling\TextureManager.cs" />
+    <Compile Include="Modeling\Triangle Converter\VertexCache.cs" />
+    <Compile Include="Modeling\Triangle Converter\NvTriStripObjects.cs" />
+    <Compile Include="Modeling\Triangle Converter\NvTriStrip.cs" />
     <Compile Include="Modeling\Triangle Converter\TriangleConverter.cs" />
     <Compile Include="Modeling\Vertex.cs" />
     <Compile Include="Modeling\Wavefront.cs" />
@@ -231,7 +235,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="SSBB\BinaryStringTable.cs" />
     <Compile Include="SSBB\CompactStringTable.cs" />
-    <Compile Include="SSBB\ExportFilters.cs" />
+    <Compile Include="SSBB\FileFilters.cs" />
     <Compile Include="SSBB\LabelBuilder.cs" />
     <Compile Include="SSBB\NodeComparer.cs" />
     <Compile Include="SSBB\ResourceNodes\AI\AIPDNode.cs" />
@@ -239,8 +243,10 @@
     <Compile Include="SSBB\ResourceNodes\AI\CENode.cs" />
     <Compile Include="SSBB\ResourceNodes\Archives\FileScanNode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
+    <Compile Include="SSBB\ResourceNodes\GCTNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\GLSL\MDL0ObjectNodeGLSL.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\GLSL\MDL0MaterialNodeGLSL.cs" />
+    <Compile Include="SSBB\ResourceNodes\Modules\Relocation.cs" />
     <Compile Include="SSBB\ResourceNodes\THPNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurVecNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurPosNode.cs" />
@@ -274,9 +280,12 @@
     <Compile Include="SSBB\ResourceNodes\Archives\U8Node.cs" />
     <Compile Include="System\ArrayExtension.cs" />
     <Compile Include="System\CoolTimer.cs" />
-    <Compile Include="System\ListExtension.cs" />
-    <Compile Include="System\TypeConverters.cs" />
     <Compile Include="System\Helpers.cs" />
+    <Compile Include="System\ListExtension.cs" />
+    <Compile Include="System\PowerPCAssembly\PPCInfo.cs" />
+    <Compile Include="System\PowerPCAssembly\PPCData.cs" />
+    <Compile Include="System\PowerPCAssembly\PPCOpCode.cs" />
+    <Compile Include="System\TypeConverters.cs" />
     <Compile Include="SSBB\ResourceNodes\RASDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0TEVStage.cs" />
     <Compile Include="SSBB\ResourceNodes\PhysicsNode.cs" />
@@ -357,8 +366,28 @@
     <Compile Include="System\Int24.cs" />
     <Compile Include="System\UInt24.cs" />
     <Compile Include="System\IO\GeckoStream.cs" />
-    <Compile Include="System\PowerPCAssembly\Assembly Manager.cs" />
-    <Compile Include="System\PowerPCAssembly\PowerPcAssembly.cs" />
+    <Compile Include="System\PowerPCAssembly\Assembly.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\BuiltInContextMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\Hex Editor\ByteCharConverters.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\ByteCollection.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\BytePositionInfo.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\DataBlock.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\DataMap.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\DynamicByteProvider.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\DynamicFileByteProvider.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\FileByteProvider.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\FileDataBlock.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\FindOptions.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\HexBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\Hex Editor\HexCasing.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\IByteProvider.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\MemoryDataBlock.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\NativeMethods.cs" />
+    <Compile Include="System\Windows\Controls\Hex Editor\Util.cs" />
     <Compile Include="System\Windows\Controls\ModelViewer\IMainWindow.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -422,6 +451,24 @@
     <Compile Include="System\Windows\Controls\PreviewPanel.designer.cs">
       <DependentUpon>PreviewPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="System\Windows\Controls\InterpolationViewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\InterpolationViewer.Designer.cs">
+      <DependentUpon>InterpolationViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Controls\RichTextBoxBordered.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\RichTextBoxBordered.Designer.cs">
+      <DependentUpon>RichTextBoxBordered.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Controls\SectionMemoryViewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Controls\SectionMemoryViewer.designer.cs">
+      <DependentUpon>SectionMemoryViewer.cs</DependentUpon>
+    </Compile>
     <Compile Include="System\Windows\Controls\VideoPlaybackPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -437,7 +484,7 @@
     <Compile Include="System\Windows\Controls\PowerPcDisassembler.Designer.cs">
       <DependentUpon>PowerPcDisassembler.cs</DependentUpon>
     </Compile>
-    <Compile Include="System\PowerPCAssembly\PowerPcFormat.cs" />
+    <Compile Include="System\PowerPCAssembly\PPCFormat.cs" />
     <Compile Include="System\RoundingExtensions.cs" />
     <Compile Include="System\ViewerSettingsFile.cs" />
     <Compile Include="System\DropDownLists.cs" />
@@ -473,6 +520,7 @@
     <Compile Include="System\ByteExtension.cs" />
     <Compile Include="System\Vector4.cs" />
     <Compile Include="System\VQuant.cs" />
+    <None Include="System\Windows\Controls\Hex Editor\HexBox.snk" />
     <None Include="System\Windows\Forms\GradientDialog2.cs">
       <SubType>Form</SubType>
     </None>
@@ -493,6 +541,24 @@
     </Compile>
     <Compile Include="System\Windows\Controls\SCN0LightEditControl.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\RELSectionMemoryEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\RELSectionMemoryEditor.Designer.cs">
+      <DependentUpon>RELSectionMemoryEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Forms\GCTEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\GCTEditor.Designer.cs">
+      <DependentUpon>GCTEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Forms\InterpolationEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\InterpolationEditor.Designer.cs">
+      <DependentUpon>InterpolationEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="System\Windows\Forms\ModuleSectionEditor.cs">
       <SubType>Form</SubType>
@@ -529,9 +595,6 @@
     </Compile>
     <Compile Include="System\Windows\Controls\StringInputComboBox.cs">
       <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="System\Windows\Forms\TangentEditor.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="System\Windows\Controls\TexAnimEditControl.cs">
       <SubType>UserControl</SubType>
@@ -688,6 +751,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\Hex Editor\HexBox.resx">
+      <DependentUpon>HexBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\EditAllDialog\SRT0.resx">
       <DependentUpon>SRT0.cs</DependentUpon>
     </EmbeddedResource>
@@ -736,6 +802,12 @@
     <EmbeddedResource Include="System\Windows\Controls\PreviewPanel.resx">
       <DependentUpon>PreviewPanel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\RichTextBoxBordered.resx">
+      <DependentUpon>RichTextBoxBordered.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Controls\SectionMemoryViewer.resx">
+      <DependentUpon>SectionMemoryViewer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\VideoPlaybackPanel.resx">
       <DependentUpon>VideoPlaybackPanel.cs</DependentUpon>
     </EmbeddedResource>
@@ -762,6 +834,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\SCN0LightEditControl.resx">
       <DependentUpon>SCN0LightEditControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\RELSectionMemoryEditor.resx">
+      <DependentUpon>RELSectionMemoryEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\GCTEditor.resx">
+      <DependentUpon>GCTEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\InterpolationEditor.resx">
+      <DependentUpon>InterpolationEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ModuleSectionEditor.resx">
       <DependentUpon>ModuleSectionEditor.cs</DependentUpon>
@@ -790,9 +871,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\ShpAnimEditControl.resx">
       <DependentUpon>ShpAnimEditControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\TangentEditor.resx">
-      <DependentUpon>TangentEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\TexAnimEditControl.resx">
       <DependentUpon>TexAnimEditControl.cs</DependentUpon>
@@ -856,6 +934,7 @@
   <ItemGroup />
   <ItemGroup>
     <Content Include="OpenTK.dll" />
+    <Content Include="System\Windows\Controls\Hex Editor\HexBox.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
