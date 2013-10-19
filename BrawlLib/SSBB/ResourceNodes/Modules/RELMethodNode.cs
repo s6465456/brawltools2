@@ -23,30 +23,30 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         public override bool OnInitialize()
         {
-            ModuleSectionNode section = Location;
-            if (section == null)
-                return false;
+            //ModuleSectionNode section = Location;
+            //if (section == null)
+            //    return false;
 
-            uint relative = (uint)Header - (uint)section.WorkingUncompressed.Address;
+            //uint relative = (uint)Header - (uint)section.WorkingUncompressed.Address;
 
-            int x = 0;
-            while (!((PPCOpCode.Disassemble(&Header[x++])) is OpBlr)) ;
+            //int x = 0;
+            //while (!((PPCOpCode.Disassemble(&Header[x++])) is OpBlr)) ;
 
-            _relocations = new Relocation[x];
-            Array.Copy(section._relocations, relative / 4, _relocations, 0, x);
+            //_relocations = new List<Relocation>();
+            //Array.Copy(section._relocations, relative / 4, _relocations, 0, x);
 
-            _dataBuffer = new UnsafeBuffer(x * 4);
+            //_dataBuffer = new UnsafeBuffer(x * 4);
 
-            byte* pOut = (byte*)_dataBuffer.Address;
-            byte* pIn = (byte*)section._dataBuffer.Address + relative;
-            for (int i = 0; i < _dataBuffer.Length; i++)
-                *pOut++ = *pIn++;
+            //byte* pOut = (byte*)_dataBuffer.Address;
+            //byte* pIn = (byte*)section._dataBuffer.Address + relative;
+            //for (int i = 0; i < _dataBuffer.Length; i++)
+            //    *pOut++ = *pIn++;
 
-            if (_relocations != null && _relocations.Length != 0)
-            {
-                _relocations[0].Tags.Add(FullName + " Start");
-                _relocations[_relocations.Length - 1].Tags.Add(FullName + " End");
-            }
+            //if (_relocations != null && _relocations.Count != 0)
+            //{
+            //    _relocations[0].Tags.Add(FullName + " Start");
+            //    _relocations[_relocations.Count - 1].Tags.Add(FullName + " End");
+            //}
 
             return false;
         }

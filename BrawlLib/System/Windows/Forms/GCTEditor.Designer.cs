@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GCTEditor));
             this.panel3 = new System.Windows.Forms.Panel();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.txtPath = new System.Windows.Forms.TextBox();
@@ -38,17 +39,25 @@
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rememberAllCodesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.forgetAllCodesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAllRememberedCodesToGCTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadCodesToRememberToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.panel6 = new System.Windows.Forms.Panel();
             this.txtCode = new System.Windows.Forms.RichTextBoxBordered();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.status = new System.Windows.Forms.ToolStripStatusLabel();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.btnDeleteCode = new System.Windows.Forms.Button();
+            this.btnAddRemoveCode = new System.Windows.Forms.Button();
             this.splitter2 = new System.Windows.Forms.Splitter();
             this.panel5 = new System.Windows.Forms.Panel();
             this.txtDesc = new System.Windows.Forms.RichTextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.panel4 = new System.Windows.Forms.Panel();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.btnDeleteCode = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.txtName = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -64,17 +73,16 @@
             this.moveDownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitter1 = new System.Windows.Forms.Splitter();
-            this.panel6 = new System.Windows.Forms.Panel();
             this.panel3.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.panel6.SuspendLayout();
             this.statusStrip.SuspendLayout();
-            this.panel5.SuspendLayout();
             this.panel4.SuspendLayout();
+            this.panel5.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
-            this.panel6.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel3
@@ -106,16 +114,17 @@
             // 
             this.txtPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtPath.Location = new System.Drawing.Point(45, 2);
+            this.txtPath.Location = new System.Drawing.Point(104, 2);
             this.txtPath.Name = "txtPath";
             this.txtPath.ReadOnly = true;
-            this.txtPath.Size = new System.Drawing.Size(292, 20);
+            this.txtPath.Size = new System.Drawing.Size(233, 20);
             this.txtPath.TabIndex = 2;
             // 
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.optionsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(464, 24);
@@ -136,30 +145,77 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveAsToolStripMenuItem.Text = "Save As";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.btnSaveAs_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.rememberAllCodesToolStripMenuItem,
+            this.toolStripMenuItem1,
+            this.forgetAllCodesToolStripMenuItem,
+            this.saveAllRememberedCodesToGCTToolStripMenuItem,
+            this.loadCodesToRememberToolStripMenuItem});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.optionsToolStripMenuItem.Text = "Options";
+            // 
+            // rememberAllCodesToolStripMenuItem
+            // 
+            this.rememberAllCodesToolStripMenuItem.Name = "rememberAllCodesToolStripMenuItem";
+            this.rememberAllCodesToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.rememberAllCodesToolStripMenuItem.Text = "Remember all codes in this file";
+            this.rememberAllCodesToolStripMenuItem.Click += new System.EventHandler(this.rememberAllCodesToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(254, 22);
+            this.toolStripMenuItem1.Text = "Forget all codes in this file";
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+            // 
+            // forgetAllCodesToolStripMenuItem
+            // 
+            this.forgetAllCodesToolStripMenuItem.Name = "forgetAllCodesToolStripMenuItem";
+            this.forgetAllCodesToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.forgetAllCodesToolStripMenuItem.Text = "Forget all codes";
+            this.forgetAllCodesToolStripMenuItem.Click += new System.EventHandler(this.forgetAllCodesToolStripMenuItem_Click);
+            // 
+            // saveAllRememberedCodesToGCTToolStripMenuItem
+            // 
+            this.saveAllRememberedCodesToGCTToolStripMenuItem.Name = "saveAllRememberedCodesToGCTToolStripMenuItem";
+            this.saveAllRememberedCodesToGCTToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.saveAllRememberedCodesToGCTToolStripMenuItem.Text = "Save all remembered codes to file";
+            this.saveAllRememberedCodesToGCTToolStripMenuItem.Click += new System.EventHandler(this.saveAllRememberedCodesToGCTToolStripMenuItem_Click);
+            // 
+            // loadCodesToRememberToolStripMenuItem
+            // 
+            this.loadCodesToRememberToolStripMenuItem.Name = "loadCodesToRememberToolStripMenuItem";
+            this.loadCodesToRememberToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.loadCodesToRememberToolStripMenuItem.Text = "Load codes to remember from file";
+            this.loadCodesToRememberToolStripMenuItem.Click += new System.EventHandler(this.loadCodesToRememberToolStripMenuItem_Click);
             // 
             // panel1
             // 
@@ -173,12 +229,23 @@
             this.panel1.Size = new System.Drawing.Size(281, 333);
             this.panel1.TabIndex = 17;
             // 
+            // panel6
+            // 
+            this.panel6.Controls.Add(this.txtCode);
+            this.panel6.Controls.Add(this.statusStrip);
+            this.panel6.Controls.Add(this.panel4);
+            this.panel6.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel6.Location = new System.Drawing.Point(0, 0);
+            this.panel6.Name = "panel6";
+            this.panel6.Size = new System.Drawing.Size(281, 230);
+            this.panel6.TabIndex = 13;
+            // 
             // txtCode
             // 
             this.txtCode.Dock = System.Windows.Forms.DockStyle.Fill;
             this.txtCode.Location = new System.Drawing.Point(0, 23);
             this.txtCode.Name = "txtCode";
-            this.txtCode.Size = new System.Drawing.Size(281, 207);
+            this.txtCode.Size = new System.Drawing.Size(281, 185);
             this.txtCode.TabIndex = 9;
             // 
             // statusStrip
@@ -194,6 +261,50 @@
             // 
             this.status.Name = "status";
             this.status.Size = new System.Drawing.Size(0, 17);
+            // 
+            // panel4
+            // 
+            this.panel4.Controls.Add(this.textBox1);
+            this.panel4.Controls.Add(this.btnDeleteCode);
+            this.panel4.Controls.Add(this.btnAddRemoveCode);
+            this.panel4.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel4.Location = new System.Drawing.Point(0, 0);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(281, 23);
+            this.panel4.TabIndex = 8;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBox1.Location = new System.Drawing.Point(0, 0);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(128, 20);
+            this.textBox1.TabIndex = 21;
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // btnDeleteCode
+            // 
+            this.btnDeleteCode.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnDeleteCode.Location = new System.Drawing.Point(128, 0);
+            this.btnDeleteCode.Name = "btnDeleteCode";
+            this.btnDeleteCode.Size = new System.Drawing.Size(57, 23);
+            this.btnDeleteCode.TabIndex = 20;
+            this.btnDeleteCode.Text = "Delete";
+            this.btnDeleteCode.UseVisualStyleBackColor = true;
+            this.btnDeleteCode.Click += new System.EventHandler(this.btnDeleteCode_Click);
+            // 
+            // btnAddRemoveCode
+            // 
+            this.btnAddRemoveCode.AutoSize = true;
+            this.btnAddRemoveCode.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.btnAddRemoveCode.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnAddRemoveCode.Location = new System.Drawing.Point(185, 0);
+            this.btnAddRemoveCode.Name = "btnAddRemoveCode";
+            this.btnAddRemoveCode.Size = new System.Drawing.Size(96, 23);
+            this.btnAddRemoveCode.TabIndex = 22;
+            this.btnAddRemoveCode.Text = "Remember Code";
+            this.btnAddRemoveCode.UseVisualStyleBackColor = true;
+            this.btnAddRemoveCode.Click += new System.EventHandler(this.btnAddRemoveCode_Click);
             // 
             // splitter2
             // 
@@ -236,36 +347,6 @@
             this.label4.TabIndex = 7;
             this.label4.Text = "Description";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // panel4
-            // 
-            this.panel4.Controls.Add(this.textBox1);
-            this.panel4.Controls.Add(this.btnDeleteCode);
-            this.panel4.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel4.Location = new System.Drawing.Point(0, 0);
-            this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(281, 23);
-            this.panel4.TabIndex = 8;
-            // 
-            // textBox1
-            // 
-            this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox1.Location = new System.Drawing.Point(0, 0);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(224, 20);
-            this.textBox1.TabIndex = 21;
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
-            // 
-            // btnDeleteCode
-            // 
-            this.btnDeleteCode.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnDeleteCode.Location = new System.Drawing.Point(224, 0);
-            this.btnDeleteCode.Name = "btnDeleteCode";
-            this.btnDeleteCode.Size = new System.Drawing.Size(57, 23);
-            this.btnDeleteCode.TabIndex = 20;
-            this.btnDeleteCode.Text = "Delete";
-            this.btnDeleteCode.UseVisualStyleBackColor = true;
-            this.btnDeleteCode.Click += new System.EventHandler(this.btnDeleteCode_Click);
             // 
             // groupBox1
             // 
@@ -389,17 +470,6 @@
             this.splitter1.TabIndex = 20;
             this.splitter1.TabStop = false;
             // 
-            // panel6
-            // 
-            this.panel6.Controls.Add(this.statusStrip);
-            this.panel6.Controls.Add(this.txtCode);
-            this.panel6.Controls.Add(this.panel4);
-            this.panel6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel6.Location = new System.Drawing.Point(0, 0);
-            this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(281, 230);
-            this.panel6.TabIndex = 13;
-            // 
             // GCTEditor
             // 
             this.ClientSize = new System.Drawing.Size(464, 403);
@@ -408,25 +478,27 @@
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.panel3);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "GCTEditor";
-            this.Text = "GCT Editor";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Code Manager";
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.panel1.ResumeLayout(false);
+            this.panel6.ResumeLayout(false);
+            this.panel6.PerformLayout();
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
-            this.panel5.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
+            this.panel5.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.contextMenuStrip1.ResumeLayout(false);
-            this.panel6.ResumeLayout(false);
-            this.panel6.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -469,5 +541,12 @@
         private StatusStrip statusStrip;
         private ToolStripStatusLabel status;
         private Panel panel6;
+        private Button btnAddRemoveCode;
+        private ToolStripMenuItem optionsToolStripMenuItem;
+        private ToolStripMenuItem rememberAllCodesToolStripMenuItem;
+        private ToolStripMenuItem toolStripMenuItem1;
+        private ToolStripMenuItem forgetAllCodesToolStripMenuItem;
+        private ToolStripMenuItem saveAllRememberedCodesToGCTToolStripMenuItem;
+        private ToolStripMenuItem loadCodesToRememberToolStripMenuItem;
     }
 }

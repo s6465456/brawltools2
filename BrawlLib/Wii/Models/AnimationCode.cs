@@ -167,12 +167,9 @@ namespace BrawlLib.Wii.Animations
 
             //return new string(buffer, 0, 39);
 
-            return String.Format("S:{0}; R:{1}; T:{2}", ScaleDataFormat.ToString(), RotationDataFormat.ToString(), TranslationDataFormat.ToString()); ;
-        }
+            return _data.ToString();
 
-        internal void GetEntrySize()
-        {
-            throw new NotImplementedException();
+            //return String.Format("S:{0}; R:{1}; T:{2}; UMS:{3} UMR:{4} UMT:{5}", ScaleDataFormat.ToString(), RotationDataFormat.ToString(), TranslationDataFormat.ToString(), UseModelScale, UseModelRot, UseModelTrans);
         }
     }
 }

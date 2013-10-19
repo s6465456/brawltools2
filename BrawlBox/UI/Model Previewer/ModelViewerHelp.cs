@@ -10,14 +10,19 @@ namespace System.Windows.Forms
     {
         public ModelViewerHelp() { InitializeComponent(); }
 
-        protected override void OnLoad(EventArgs e)
+        public void Show(IWin32Window owner, bool collisionEditor)
         {
-            base.OnLoad(e);
-        }
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelViewerHelp));
+            if (collisionEditor)
+            {
+                richTextBox1.Text = resources.GetString("richTextBox1.Text2");
+                Width = 425;
+                Height = 425;
+            }
+            else
+                richTextBox1.Text = resources.GetString("richTextBox1.Text");
 
-        public DialogResult ShowDialog(IWin32Window owner)
-        {
-            return base.ShowDialog(owner);
+            base.Show(owner);
         }
 
         private unsafe void btnOkay_Click(object sender, EventArgs e)
@@ -63,7 +68,6 @@ namespace System.Windows.Forms
             this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
             this.richTextBox1.Size = new System.Drawing.Size(657, 557);
             this.richTextBox1.TabIndex = 2;
-            this.richTextBox1.Text = resources.GetString("richTextBox1.Text");
             // 
             // ModelViewerHelp
             // 

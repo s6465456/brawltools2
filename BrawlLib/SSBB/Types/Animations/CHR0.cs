@@ -119,9 +119,9 @@ namespace BrawlLib.SSBBTypes
 
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
 
-        public AnimationCode Code { get { return new AnimationCode() { _data = (uint)_code }; } set { _code = (uint)value._data; } }
-
         public VoidPtr Data { get { return Address + 8; } }
+
+        public AnimationCode Code { get { return (AnimationCode)(uint)_code; } set { _code = (uint)value; } }
 
         public string ResourceString { get { return new String((sbyte*)this.ResourceStringAddress); } }
         public VoidPtr ResourceStringAddress

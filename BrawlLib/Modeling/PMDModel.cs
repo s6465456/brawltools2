@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using BrawlLib.Wii.Models;
 using OpenTK.Graphics.OpenGL;
 using BrawlLib.Imaging;
+using BrawlLib.Wii.Graphics;
 
 namespace BrawlLib.Modeling
 {
@@ -31,10 +32,7 @@ namespace BrawlLib.Modeling
 
                 float version = BitConverter.ToSingle(reader.ReadBytes(4), 0);
                 if (version == 1.0f)
-                {
                     model = new MDL0Node();
-                    model.InitGroups();
-                }
                 else
                     throw new Exception("Version " + version.ToString() + " models are not supported.");
 
@@ -462,6 +460,16 @@ namespace BrawlLib.Modeling
         #region PMD to MDL0
         public static unsafe void PMD2MDL0(MDL0Node model)
         {
+            model._version = 9;
+            model._needsNrmMtxArray = model._needsTexMtxArray = 1;
+            model._isImport = true;
+            model._importOptions._forceCCW = true;
+            model._importOptions._fltVerts = true;
+            model._importOptions._fltNrms = true;
+            model._importOptions._fltUVs = true;
+
+            model.InitGroups();
+
             List<MDL0BoneNode> BoneCache = new List<MDL0BoneNode>();
 
             int index = 0;
@@ -497,7 +505,7 @@ namespace BrawlLib.Modeling
                 {
                     bone.Parent = model._boneGroup;
                     bone._bindState._scale = new Vector3(1.0f);
-                    bone._bindState._translate = new Vector3(b._boneHeadPos[0], b._boneHeadPos[1], b._boneHeadPos[2]);
+                    bone._bindState._translate = new Vector3(b._wPos[0], b._wPos[1], b._wPos[2]);
                     bone._bindState.CalcTransforms();
                     bone.RecalcBindState();
                 }
@@ -505,10 +513,7 @@ namespace BrawlLib.Modeling
                 BoneCache.Add(bone);
             }
 
-            model._version = 9;
-            model._needNrmMtxArray = model._needTexMtxArray = 1;
-            model._isImport = true;
-            model._reopen = true;
+            MDL0ShaderNode texSpa = null, tex = null, colorSpa = null, color = null;
 
             index = 0;
             foreach (ModelMaterial m in _materials)
@@ -545,6 +550,7 @@ namespace BrawlLib.Modeling
                     {
                         texRef = new MDL0MaterialRefNode();
                         texRef.Name = m._textureFileName.Substring(0, m._textureFileName.IndexOf('.'));
+                        texRef.Coordinates = Wii.Graphics.TexSourceRow.TexCoord0;
                     }
 
                 if (texRef != null)
@@ -563,6 +569,51 @@ namespace BrawlLib.Modeling
                 mn._chan1._matColor = new RGBAPixel((byte)(m._diffuseColor[0] * 255), (byte)(m._diffuseColor[1] * 255), (byte)(m._diffuseColor[2] * 255), 255);
                 mn._chan1.ColorMaterialSource = GXColorSrc.Register;
 
+                if (texRef != null && spaRef != null)
+                {
+                    if (texSpa == null)
+                    {
+                        MDL0ShaderNode n = TexSpaShader;
+                        n._parent = model._shadGroup;
+                        model._shadList.Add(n);
+                        texSpa = n;
+                    }
+                    mn.ShaderNode = texSpa;
+                }
+                else if (texRef != null)
+                {
+                    if (tex == null)
+                    {
+                        MDL0ShaderNode n = TexShader;
+                        n._parent = model._shadGroup;
+                        model._shadList.Add(n);
+                        tex = n;
+                    }
+                    mn.ShaderNode = tex;
+                }
+                else if (spaRef != null)
+                {
+                    if (colorSpa == null)
+                    {
+                        MDL0ShaderNode n = ColorSpaShader;
+                        n._parent = model._shadGroup;
+                        model._shadList.Add(n);
+                        colorSpa = n;
+                    }
+                    mn.ShaderNode = colorSpa;
+                }
+                else
+                {
+                    if (color == null)
+                    {
+                        MDL0ShaderNode n = ColorShader;
+                        n._parent = model._shadGroup;
+                        model._shadList.Add(n);
+                        color = n;
+                    }
+                    mn.ShaderNode = color;
+                }
+
                 mn._parent = model._matGroup;
                 model._matList.Add(mn);
             }
@@ -573,6 +624,7 @@ namespace BrawlLib.Modeling
             {
                 PrimitiveManager manager = new PrimitiveManager() { _pointCount = (int)m._faceVertCount };
                 MDL0ObjectNode p = new MDL0ObjectNode() { _manager = manager, _opaMaterial = (MDL0MaterialNode)model._matList[x] };
+                p._opaMaterial._objects.Add(p);
                 p._manager._vertices = new List<Vertex3>();
                 p.Name = "polygon" + x++;
                 p._parent = model._objGroup;
@@ -648,16 +700,50 @@ namespace BrawlLib.Modeling
                     *Indices++ = j;
                     *pTri++ = (uint)l;
                     *Vertices++ = p._manager._vertices[j]._position;
-                    *Normals++ = new Vector3(mv._normal[0], mv._normal[1], mv._normal[2]);
-                    *UVs++ = new Vector2(mv._texCoord[0], mv._texCoord[1]);
+                    *Normals++ = mv._normal;
+                    *UVs++ = mv._texCoord;
                 }
                 model._objList.Add(p);
                 offset += (int)m._faceVertCount;
             }
 
-            model._importOptions._forceCCW = true;
+            //Check each polygon to see if it can be rigged to a single influence
+            if (model._objList != null && model._objList.Count != 0)
+                foreach (MDL0ObjectNode p in model._objList)
+                {
+                    IMatrixNode node = null;
+                    bool singlebind = true;
+
+                    foreach (Vertex3 v in p._manager._vertices)
+                        if (v._matrixNode != null)
+                        {
+                            if (node == null)
+                                node = v._matrixNode;
+
+                            if (v._matrixNode != node)
+                            {
+                                singlebind = false;
+                                break;
+                            }
+                        }
+
+                    if (singlebind && p._matrixNode == null)
+                    {
+                        //Increase reference count ahead of time for rebuild
+                        if (p._manager._vertices[0]._matrixNode != null)
+                            p._manager._vertices[0]._matrixNode.ReferenceCount++;
+
+                        foreach (Vertex3 v in p._manager._vertices)
+                            if (v._matrixNode != null)
+                                v._matrixNode.ReferenceCount--;
+
+                        p._nodeId = -2; //Continued on polygon rebuild
+                    }
+                }
+
             model.CleanGroups();
-            model._linker = ModelLinker.Prepare(model);
+            model.Rebuild(true);
+            //model.BuildFromScratch(null);
         }
         public static void AssignParent(MDL0BoneNode pBone, ModelBone child, MDL0BoneNode cBone, ModelBone parent)
         {
@@ -667,15 +753,10 @@ namespace BrawlLib.Modeling
                 (cBone._parent = pBone)._children.Add(cBone);
 
                 //Convert the world point into a local point relative to the bone's parent
-                Vector3 pPos = new Vector3(parent._boneHeadPos[0], parent._boneHeadPos[1], parent._boneHeadPos[2]);
-                Vector3 cPos = new Vector3(child._boneHeadPos[0], child._boneHeadPos[1], child._boneHeadPos[2]);
+                Matrix m = (Matrix.TranslationMatrix(child._wPos) * Matrix.Invert(Matrix.TranslationMatrix(parent._wPos)));
 
-                Matrix pMatrix = Matrix.TranslationMatrix(pPos);
-                Matrix cMatrix = Matrix.TranslationMatrix(cPos);
-
-                Matrix childTransform = cMatrix * Matrix.Invert(pMatrix);
-                
-                cBone._bindState = childTransform.Derive();
+                //Derive to state and recalc bind matrices
+                cBone._bindState = m.Derive();
                 cBone.RecalcBindState();
             }
             else //Parent not found, continue searching children.
@@ -683,43 +764,73 @@ namespace BrawlLib.Modeling
                     AssignParent(pMatch, child, cBone, parent);
         }
 
-        public static MDL0ShaderNode _texColorAndSpa = null;
-        public static MDL0ShaderNode _texColor = null;
-        public static MDL0ShaderNode _color = null;
-        public static MDL0ShaderNode _colorAndSpa = null;
-
-        public static MDL0ShaderNode TexColorSpaShader
+        public static MDL0ShaderNode TexSpaShader
         {
             get
             {
-                if (_texColorAndSpa != null)
-                    return _texColorAndSpa;
-
                 MDL0ShaderNode shader = new MDL0ShaderNode();
+                shader.TextureRef0 = true;
+                shader.TextureRef1 = true;
 
-                return shader;
-            }
-        }
-        public static MDL0ShaderNode TexColorShader
-        {
-            get
-            {
-                if (_texColor != null)
-                    return _texColor;
+                TEVStage s = new TEVStage();
+                shader.AddChild(s);
 
-                MDL0ShaderNode shader = new MDL0ShaderNode();
+                s._colorEnv = 0x8FFF8;
+                s._alphaEnv = 0x8FFC0;
+                s.KonstantColorSelection = TevKColorSel.KSel_3_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_3_Alpha;
+                s.TextureMapID = TexMapID.TexMap0;
+                s.TextureCoord = TexCoordID.TexCoord0;
+                s.TextureEnabled = true;
+                s.ColorChannel = ColorSelChan.Zero;
 
-                return shader;
-            }
-        }
-        public static MDL0ShaderNode ColorShader
-        {
-            get
-            {
-                if (_color != null)
-                    return _color;
+                s = new TEVStage();
+                shader.AddChild(s);
 
-                MDL0ShaderNode shader = new MDL0ShaderNode();
+                s._colorEnv = 0x88E80;
+                s._alphaEnv = 0x8FF80;
+                s.KonstantColorSelection = TevKColorSel.Constant1_4;
+                s.KonstantAlphaSelection = TevKAlphaSel.Constant1_4;
+                s.TextureMapID = TexMapID.TexMap1;
+                s.TextureCoord = TexCoordID.TexCoord1;
+                s.TextureEnabled = true;
+                s.ColorChannel = ColorSelChan.Zero;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x28F0AF;
+                s._alphaEnv = 0x8FF80;
+                s.KonstantColorSelection = TevKColorSel.KSel_0_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.ColorChannel0;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x8FEB0;
+                s._alphaEnv = 0x81FF0;
+                s.KonstantColorSelection = TevKColorSel.KSel_1_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.ColorChannel0;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x806EF;
+                s._alphaEnv = 0x81FF0;
+                s.KonstantColorSelection = TevKColorSel.KSel_0_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = true;
+                s.ColorChannel = ColorSelChan.Zero;
 
                 return shader;
             }
@@ -728,10 +839,159 @@ namespace BrawlLib.Modeling
         {
             get
             {
-                if (_colorAndSpa != null)
-                    return _colorAndSpa;
-
                 MDL0ShaderNode shader = new MDL0ShaderNode();
+                shader.TextureRef0 = true;
+
+                TEVStage s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x8FFFA;
+                s._alphaEnv = 0x8FFD0;
+                s.KonstantColorSelection = TevKColorSel.KSel_3_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_3_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.ColorChannel0;
+                
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x88E80;
+                s._alphaEnv = 0x8FF80;
+                s.KonstantColorSelection = TevKColorSel.Constant1_4;
+                s.KonstantAlphaSelection = TevKAlphaSel.Constant1_4;
+                s.TextureMapID = TexMapID.TexMap0;
+                s.TextureCoord = TexCoordID.TexCoord0;
+                s.TextureEnabled = true;
+                s.ColorChannel = ColorSelChan.Zero;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x28F0AF;
+                s._alphaEnv = 0x8FF80;
+                s.KonstantColorSelection = TevKColorSel.KSel_0_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.ColorChannel0;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x8FEB0;
+                s._alphaEnv = 0x81FF0;
+                s.KonstantColorSelection = TevKColorSel.KSel_1_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.ColorChannel0;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x806EF;
+                s._alphaEnv = 0x81FF0;
+                s.KonstantColorSelection = TevKColorSel.KSel_0_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = true;
+                s.ColorChannel = ColorSelChan.Zero;
+
+                return shader;
+            }
+        }
+        public static MDL0ShaderNode TexShader
+        {
+            get
+            {
+                MDL0ShaderNode shader = new MDL0ShaderNode();
+                shader.TextureRef0 = true;
+
+                TEVStage s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x28FFF8;
+                s._alphaEnv = 0x8FFC0;
+                s.KonstantColorSelection = TevKColorSel.KSel_0_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap0;
+                s.TextureCoord = TexCoordID.TexCoord0;
+                s.TextureEnabled = true;
+                s.ColorChannel = ColorSelChan.Zero;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x8FEB0;
+                s._alphaEnv = 0x81FF0;
+                s.KonstantColorSelection = TevKColorSel.KSel_1_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.ColorChannel0;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x806EF;
+                s._alphaEnv = 0x81FF0;
+                s.KonstantColorSelection = TevKColorSel.KSel_0_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.Zero;
+
+                return shader;
+            }
+        }
+        public static MDL0ShaderNode ColorShader
+        {
+            get
+            {
+                MDL0ShaderNode shader = new MDL0ShaderNode();
+
+                TEVStage s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x28FFFA;
+                s._alphaEnv = 0x8FFD0;
+                s.KonstantColorSelection = TevKColorSel.KSel_0_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.ColorChannel0;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x8FEB0;
+                s._alphaEnv = 0x81FF0;
+                s.KonstantColorSelection = TevKColorSel.KSel_1_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.ColorChannel0;
+
+                s = new TEVStage();
+                shader.AddChild(s);
+
+                s._colorEnv = 0x806EF;
+                s._alphaEnv = 0x81FF0;
+                s.KonstantColorSelection = TevKColorSel.KSel_0_Value;
+                s.KonstantAlphaSelection = TevKAlphaSel.KSel_0_Alpha;
+                s.TextureMapID = TexMapID.TexMap7;
+                s.TextureCoord = TexCoordID.TexCoord7;
+                s.TextureEnabled = false;
+                s.ColorChannel = ColorSelChan.Zero;
 
                 return shader;
             }
@@ -761,19 +1021,11 @@ namespace BrawlLib.Modeling
                 ModelBone bone = new ModelBone();
                 MDL0BoneNode mBone = (MDL0BoneNode)model._linker.BoneCache[i];
 
-                if (!(mBone.Parent is MDL0GroupNode))
-                {
-                    bone._boneHeadPos[0] = mBone._bindState._translate._x + ((MDL0BoneNode)mBone.Parent)._bindState._translate._x;
-                    bone._boneHeadPos[1] = mBone._bindState._translate._y + ((MDL0BoneNode)mBone.Parent)._bindState._translate._y;
-                    bone._boneHeadPos[2] = mBone._bindState._translate._z + ((MDL0BoneNode)mBone.Parent)._bindState._translate._z;
-                }
-                else
-                {
-                    bone._boneHeadPos[0] = mBone._bindState._translate._x;
-                    bone._boneHeadPos[1] = mBone._bindState._translate._y;
-                    bone._boneHeadPos[2] = mBone._bindState._translate._z;
-                }
-
+                Vector3 wPos = mBone._bindMatrix.GetPoint();
+                bone._wPos[0] = wPos._x;
+                bone._wPos[1] = wPos._y;
+                bone._wPos[2] = wPos._z;
+              
                 bone._boneName = mBone.Name;
 
                 bone._boneType = 0;
@@ -833,18 +1085,18 @@ namespace BrawlLib.Modeling
     #region Model Vertex
     public class ModelVertex
     {
-        public float[] _position;
-        public float[] _normal;
-        public float[] _texCoord;
+        public Vector3 _position;
+        public Vector3 _normal;
+        public Vector2 _texCoord;
         public UInt16[] _boneIndex;
         public byte _boneWeight;
         public byte _edgeFlag;
 
         public ModelVertex()
         {
-            _position = new float[3];
-            _normal = new float[3];
-            _texCoord = new float[2];
+            _position = new Vector3();
+            _normal = new Vector3();
+            _texCoord = new Vector2();
             _boneIndex = new UInt16[2];
             _boneWeight = 0;
             _edgeFlag = 0;
@@ -852,16 +1104,13 @@ namespace BrawlLib.Modeling
 
         internal void Read(BinaryReader reader, float CoordZ)
         {
-            _position = new float[3];
-            _normal = new float[3];
-            _texCoord = new float[2];
+            _position = new Vector3();
+            _normal = new Vector3();
+            _texCoord = new Vector2();
             _boneIndex = new UInt16[2];
-            for (int i = 0; i < _position.Length; i++)
-                _position[i] = BitConverter.ToSingle(reader.ReadBytes(4), 0);
-            for (int i = 0; i < _normal.Length; i++)
-                _normal[i] = BitConverter.ToSingle(reader.ReadBytes(4), 0);
-            for (int i = 0; i < _texCoord.Length; i++)
-                _texCoord[i] = BitConverter.ToSingle(reader.ReadBytes(4), 0);
+            _position = new Vector3(BitConverter.ToSingle(reader.ReadBytes(4), 0), BitConverter.ToSingle(reader.ReadBytes(4), 0), BitConverter.ToSingle(reader.ReadBytes(4), 0));
+            _normal = new Vector3(BitConverter.ToSingle(reader.ReadBytes(4), 0), BitConverter.ToSingle(reader.ReadBytes(4), 0), BitConverter.ToSingle(reader.ReadBytes(4), 0));
+            _texCoord = new Vector2(BitConverter.ToSingle(reader.ReadBytes(4), 0), BitConverter.ToSingle(reader.ReadBytes(4), 0));
             for (int i = 0; i < _boneIndex.Length; i++)
                 _boneIndex[i] = BitConverter.ToUInt16(reader.ReadBytes(2), 0);
             _boneWeight = reader.ReadByte();
@@ -874,12 +1123,14 @@ namespace BrawlLib.Modeling
         {
             _position[2] = _position[2] * CoordZ;
             _normal[2] = _normal[2] * CoordZ;
-            for (int i = 0; i < _position.Length; i++)
-                writer.Write(_position[i]);
-            for (int i = 0; i < _normal.Length; i++)
-                writer.Write(_normal[i]);
-            for (int i = 0; i < _texCoord.Length; i++)
-                writer.Write(_texCoord[i]);
+            writer.Write(_position._x);
+            writer.Write(_position._y);
+            writer.Write(_position._z);
+            writer.Write(_normal._x);
+            writer.Write(_normal._y);
+            writer.Write(_normal._z);
+            writer.Write(_texCoord._x);
+            writer.Write(_texCoord._y);
             for (int i = 0; i < _boneIndex.Length; i++)
                 writer.Write(_boneIndex[i]);
             writer.Write(_boneWeight);
@@ -953,27 +1204,24 @@ namespace BrawlLib.Modeling
         public UInt16 _tailPosBoneIndex;
         public byte _boneType;
         public UInt16 _IKParentBoneIndex;
-        public float[] _boneHeadPos;
+        public Vector3 _wPos;
         public string _boneNameEnglish;
 
         public ModelBone()
         {
-            _boneHeadPos = new float[3];
+            _wPos = new Vector3();
         }
 
         internal void Read(BinaryReader reader, float CoordZ)
         {
-            _boneHeadPos = new float[3];
             _boneName = PMDModel.GetString(reader.ReadBytes(20));
             _parentBoneIndex = BitConverter.ToUInt16(reader.ReadBytes(2), 0);
             _tailPosBoneIndex = BitConverter.ToUInt16(reader.ReadBytes(2), 0);
             _boneType = reader.ReadByte();
             _IKParentBoneIndex = BitConverter.ToUInt16(reader.ReadBytes(2), 0);
-            for (int i = 0; i < _boneHeadPos.Length; i++)
-                _boneHeadPos[i] = BitConverter.ToSingle(reader.ReadBytes(4), 0);
-            
+            _wPos = new Vector3(BitConverter.ToSingle(reader.ReadBytes(4), 0), BitConverter.ToSingle(reader.ReadBytes(4), 0), BitConverter.ToSingle(reader.ReadBytes(4), 0));
             _boneNameEnglish = null;
-            _boneHeadPos[2] = _boneHeadPos[2] * CoordZ;
+            _wPos[2] = _wPos[2] * CoordZ;
         }
 
         internal void ReadExpansion(BinaryReader reader)
@@ -983,14 +1231,15 @@ namespace BrawlLib.Modeling
 
         internal void Write(BinaryWriter writer, float CoordZ)
         {
-            _boneHeadPos[2] = _boneHeadPos[2] * CoordZ;
+            _wPos[2] = _wPos[2] * CoordZ;
             writer.Write(PMDModel.GetBytes(_boneName, 20));
             writer.Write(_parentBoneIndex);
             writer.Write(_tailPosBoneIndex);
             writer.Write(_boneType);
             writer.Write(_IKParentBoneIndex);
-            for (int i = 0; i < _boneHeadPos.Length; i++)
-                writer.Write(_boneHeadPos[i]);
+            writer.Write(_wPos._x);
+            writer.Write(_wPos._y);
+            writer.Write(_wPos._z);
         }
         
         internal void WriteExpansion(BinaryWriter writer)

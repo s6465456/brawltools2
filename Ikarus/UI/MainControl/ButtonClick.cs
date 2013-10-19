@@ -219,8 +219,8 @@ namespace Ikarus.UI
         {            
             try
             {
-                BBVS settings = new BBVS();
-                settings._tag = BBVS.Tag;
+                BrawlBoxViewerSettings settings = new BrawlBoxViewerSettings();
+                settings._tag = BrawlBoxViewerSettings.Tag;
                 settings._version = 2;
                 settings._defaultCam = modelPanel._defaultTranslate;
                 settings._defaultRot = modelPanel._defaultRotate;
@@ -236,8 +236,8 @@ namespace Ikarus.UI
                 settings._zScale = modelPanel.ZoomScale;
                 settings._orbColor = (ARGBPixel)MDL0BoneNode.DefaultNodeColor;
                 settings._lineColor = (ARGBPixel)MDL0BoneNode.DefaultBoneColor;
-                settings._floorColor = (ARGBPixel)MainWindowStaticVars._floorHue;
-                settings.SetOptions(
+                settings._floorColor = (ARGBPixel)StaticMainWindow._floorHue;
+                settings.SetFlags1(
                     syncAnimationsTogetherToolStripMenuItem.Checked,
                     true,
                     syncLoopToAnimationToolStripMenuItem.Checked,
@@ -270,12 +270,12 @@ namespace Ikarus.UI
                     {
                         CompactStringTable s = new CompactStringTable();
                         s.Add(ScreenCapBgLocText.Text);
-                        stream.SetLength((long)BBVS.Size + s.TotalSize);
+                        stream.SetLength((long)BrawlBoxViewerSettings.Size + s.TotalSize);
                         using (FileMap map = FileMap.FromStream(stream))
                         {
-                            *(BBVS*)map.Address = settings;
-                            s.WriteTable(map.Address + BBVS.Size);
-                            ((BBVS*)map.Address)->_screenCapPathOffset = (uint)s[ScreenCapBgLocText.Text] - (uint)map.Address;
+                            *(BrawlBoxViewerSettings*)map.Address = settings;
+                            s.WriteTable(map.Address + BrawlBoxViewerSettings.Size);
+                            ((BrawlBoxViewerSettings*)map.Address)->_screenCapPathOffset = (uint)s[ScreenCapBgLocText.Text] - (uint)map.Address;
                         }
                     }
                 }
@@ -323,7 +323,7 @@ namespace Ikarus.UI
                 }
                 else
                 {
-                    BBVS v = BrawlLib.Properties.Settings.Default.ViewerSettings;
+                    BrawlBoxViewerSettings v = BrawlLib.Properties.Settings.Default.ViewerSettings;
                     v.UseModelViewerSettings = false;
                     BrawlLib.Properties.Settings.Default.ViewerSettings = v;
                 }

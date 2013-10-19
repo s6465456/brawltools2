@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefActionPreNode : MoveDefEntryNode
+    public unsafe class MoveDefActionPreNode : MoveDefEntry
     {
         internal bint* Start { get { return (bint*)WorkingUncompressed.Address; } }
         internal int Count = 0;
@@ -48,7 +48,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefActionPreEntryNode : MoveDefEntryNode
+    public unsafe class MoveDefActionPreEntryNode : MoveDefEntry
     {
         internal bint* Header { get { return (bint*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -60,22 +60,22 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Action Pre"), Browsable(true), TypeConverter(typeof(DropDownListExtNodesMDef))]
         public string ExternalNode
         {
-            get { return _extNode != null ? _extNode.Name : null; }
+            get { return _externalEntry != null ? _externalEntry.Name : null; }
             set
             {
-                if (_extNode != null)
-                    if (_extNode.Name != value)
-                        _extNode._refs.Remove(this);
+                if (_externalEntry != null)
+                    if (_externalEntry.Name != value)
+                        _externalEntry._refs.Remove(this);
                 
-                foreach (MoveDefExternalNode e in Root._externalRefs)
+                foreach (ReferenceEntry e in _root._referenceList)
                     if (e.Name == value)
                     {
-                        _extNode = e;
-                        e._refs.Add(this);
+                        _externalEntry = e;
+                        e._references.Add(this);
                         Name = e.Name;
                     }
 
-                if (_extNode == null)
+                if (_externalEntry == null)
                     Name = "Action" + Index;
             }
         }

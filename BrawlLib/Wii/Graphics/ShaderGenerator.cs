@@ -154,42 +154,42 @@ namespace BrawlLib.Wii.Graphics
 
         public static void SetUniforms(MDL0ObjectNode obj)
         {
-            MDL0MaterialNode mat = obj.UsableMaterialNode;
+            //MDL0MaterialNode mat = obj.UsableMaterialNode;
 
-            int pHandle = obj._programHandle;
-            int u = -1;
+            //int pHandle = obj._programHandle;
+            //int u = -1;
 
-            u = GL.GetUniformLocation(pHandle, "C1Amb");
-            if (u > -1) 
-                GL.Uniform4(u, 
-                mat.C1AmbientColor.R * RGBAPixel.ColorFactor,
-                mat.C1AmbientColor.G * RGBAPixel.ColorFactor,
-                mat.C1AmbientColor.B * RGBAPixel.ColorFactor,
-                mat.C1AmbientColor.A * RGBAPixel.ColorFactor);
+            //u = GL.GetUniformLocation(pHandle, "C1Amb");
+            //if (u > -1) 
+            //    GL.Uniform4(u, 
+            //    mat.C1AmbientColor.R * RGBAPixel.ColorFactor,
+            //    mat.C1AmbientColor.G * RGBAPixel.ColorFactor,
+            //    mat.C1AmbientColor.B * RGBAPixel.ColorFactor,
+            //    mat.C1AmbientColor.A * RGBAPixel.ColorFactor);
 
-            u = GL.GetUniformLocation(pHandle, "C2Amb");
-            if (u > -1) 
-                GL.Uniform4(u, 
-                mat.C2AmbientColor.R * RGBAPixel.ColorFactor,
-                mat.C2AmbientColor.G * RGBAPixel.ColorFactor,
-                mat.C2AmbientColor.B * RGBAPixel.ColorFactor,
-                mat.C2AmbientColor.A * RGBAPixel.ColorFactor);
+            //u = GL.GetUniformLocation(pHandle, "C2Amb");
+            //if (u > -1) 
+            //    GL.Uniform4(u, 
+            //    mat.C2AmbientColor.R * RGBAPixel.ColorFactor,
+            //    mat.C2AmbientColor.G * RGBAPixel.ColorFactor,
+            //    mat.C2AmbientColor.B * RGBAPixel.ColorFactor,
+            //    mat.C2AmbientColor.A * RGBAPixel.ColorFactor);
 
-            u = GL.GetUniformLocation(pHandle, "C1Mat");
-            if (u > -1)
-                GL.Uniform4(u,
-                mat.C1MaterialColor.R * RGBAPixel.ColorFactor,
-                mat.C1MaterialColor.G * RGBAPixel.ColorFactor,
-                mat.C1MaterialColor.B * RGBAPixel.ColorFactor,
-                mat.C1MaterialColor.A * RGBAPixel.ColorFactor);
+            //u = GL.GetUniformLocation(pHandle, "C1Mat");
+            //if (u > -1)
+            //    GL.Uniform4(u,
+            //    mat.C1MaterialColor.R * RGBAPixel.ColorFactor,
+            //    mat.C1MaterialColor.G * RGBAPixel.ColorFactor,
+            //    mat.C1MaterialColor.B * RGBAPixel.ColorFactor,
+            //    mat.C1MaterialColor.A * RGBAPixel.ColorFactor);
 
-            u = GL.GetUniformLocation(pHandle, "C2Mat");
-            if (u > -1)
-                GL.Uniform4(u,
-                mat.C2MaterialColor.R * RGBAPixel.ColorFactor,
-                mat.C2MaterialColor.G * RGBAPixel.ColorFactor,
-                mat.C2MaterialColor.B * RGBAPixel.ColorFactor,
-                mat.C2MaterialColor.A * RGBAPixel.ColorFactor);
+            //u = GL.GetUniformLocation(pHandle, "C2Mat");
+            //if (u > -1)
+            //    GL.Uniform4(u,
+            //    mat.C2MaterialColor.R * RGBAPixel.ColorFactor,
+            //    mat.C2MaterialColor.G * RGBAPixel.ColorFactor,
+            //    mat.C2MaterialColor.B * RGBAPixel.ColorFactor,
+            //    mat.C2MaterialColor.A * RGBAPixel.ColorFactor);
         }
 
         public static readonly string[] tevCOutputTable = { "prev.rgb", "c0.rgb", "c1.rgb", "c2.rgb" };

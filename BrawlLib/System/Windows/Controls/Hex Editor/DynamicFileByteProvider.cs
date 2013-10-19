@@ -16,7 +16,7 @@ namespace Be.Windows.Forms
         const int COPY_BLOCK_SIZE = 4096;
 
         string _fileName;
-        Stream _stream;
+        public Stream _stream;
         DataMap _dataMap;
         long _totalLength;
         bool _readOnly;
@@ -185,11 +185,16 @@ namespace Be.Windows.Forms
             }
         }
 
+        public bool _supportsInsDel = true;
+
         /// <summary>
         /// See <see cref="IByteProvider.InsertBytes" /> for more information.
         /// </summary>
         public void InsertBytes(long index, byte[] bs)
         {
+            if (!_supportsInsDel)
+                return;
+
             try
             {
                 // Find the block affected.
@@ -257,6 +262,9 @@ namespace Be.Windows.Forms
         /// </summary>
         public void DeleteBytes(long index, long length)
         {
+            if (!_supportsInsDel)
+                return;
+
             try
             {
                 long bytesToDelete = length;
@@ -378,9 +386,7 @@ namespace Be.Windows.Forms
                 {
                     _stream.Position = dataOffset;
                     for (int memoryOffset = 0; memoryOffset < memoryBlock.Length; memoryOffset += COPY_BLOCK_SIZE)
-                    {
                         _stream.Write(memoryBlock.Data, memoryOffset, (int)Math.Min(COPY_BLOCK_SIZE, memoryBlock.Length - memoryOffset));
-                    }
                 }
                 dataOffset += block.Length;
             }
@@ -403,7 +409,7 @@ namespace Be.Windows.Forms
         /// </summary>
         public bool SupportsInsertBytes()
         {
-            return !_readOnly;
+            return _supportsInsDel;
         }
 
         /// <summary>
@@ -411,7 +417,7 @@ namespace Be.Windows.Forms
         /// </summary>
         public bool SupportsDeleteBytes()
         {
-            return !_readOnly;
+            return _supportsInsDel;
         }
         #endregion
 
@@ -466,7 +472,7 @@ namespace Be.Windows.Forms
         {
             if (findOffset < 0 || findOffset > _totalLength)
             {
-                throw new ArgumentOutOfRangeException("findOffset");
+                //throw new ArgumentOutOfRangeException("findOffset");
             }
 
             // Iterate over the blocks until the block containing the required offset is encountered.

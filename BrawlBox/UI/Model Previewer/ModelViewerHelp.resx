@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="helpProvider1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
   <data name="richTextBox1.Text" xml:space="preserve">
     <value>Model Editor Help
 
@@ -150,7 +147,6 @@ B key: Toggle bones
 P key: Toggle polygons
 V key: Toggle vertices
 
-H key: Toggle Weight Editor (replaces animation editor on bottom panel)
 J key: Toggle Vertex Editor (replaces animation editor on bottom panel)
 
 Ctrl + U: Reset Camera
@@ -330,5 +326,27 @@ Textures are automatically loaded from the same directory as the file. You can l
     When you make changes to a texture, use the reload feature to see the changes.
     Textures no longer have to be replaced to see how it affects the model, just reload them.
     When you're done, open the original file and use the Replace All feature. </value>
+  </data>
+  <data name="richTextBox1.Text2" xml:space="preserve">
+    <value>Collision Editor Help
+
+[___Controls___]
+
+Escape: Clear selection
+Delete: Delete selected plane/link
+
+Ctrl+Z: Undo
+Ctrl+Y: Redo
+
+[ key and ] key: Move selection to next or previous plane/link
+
+a,w,s,d keys: Move selected plane/link with a small increment
+a,w,s,d + Shift: Move selected plane/link with a large increment
+
+Alt + Left Click: Create a link in space or on the target plane
+Shift + Left Click: Add plane/link to selection
+Ctrl + Left Click: Remove plane/link from selection
+
+Shift + Ctrl + Left Click: Drag plane/link when not hovering over it</value>
   </data>
 </root>

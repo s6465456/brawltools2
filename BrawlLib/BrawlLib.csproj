@@ -210,9 +210,6 @@
     <Compile Include="Modeling\IMatrixNode.cs" />
     <Compile Include="Modeling\PrimitiveManager.cs" />
     <None Include="Modeling\TextureManager.cs" />
-    <Compile Include="Modeling\Triangle Converter\VertexCache.cs" />
-    <Compile Include="Modeling\Triangle Converter\NvTriStripObjects.cs" />
-    <Compile Include="Modeling\Triangle Converter\NvTriStrip.cs" />
     <Compile Include="Modeling\Triangle Converter\TriangleConverter.cs" />
     <Compile Include="Modeling\Vertex.cs" />
     <Compile Include="Modeling\Wavefront.cs" />
@@ -244,8 +241,6 @@
     <Compile Include="SSBB\ResourceNodes\Archives\FileScanNode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
     <Compile Include="SSBB\ResourceNodes\GCTNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\MDL0\GLSL\MDL0ObjectNodeGLSL.cs" />
-    <Compile Include="SSBB\ResourceNodes\MDL0\GLSL\MDL0MaterialNodeGLSL.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\Relocation.cs" />
     <Compile Include="SSBB\ResourceNodes\THPNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurVecNode.cs" />
@@ -254,7 +249,7 @@
     <Compile Include="SSBB\ResourceNodes\Graphics\TPLNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Graphics\REFFTEVStage.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELMethodNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Modules\RELObjectParser.cs" />
+    <None Include="SSBB\ResourceNodes\Modules\RELObjectParser.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\ModuleDataNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELDeConStructorNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELCommand.cs" />
@@ -283,8 +278,11 @@
     <Compile Include="System\Helpers.cs" />
     <Compile Include="System\ListExtension.cs" />
     <Compile Include="System\PowerPCAssembly\PPCInfo.cs" />
-    <Compile Include="System\PowerPCAssembly\PPCData.cs" />
-    <Compile Include="System\PowerPCAssembly\PPCOpCode.cs" />
+    <Compile Include="System\PowerPCAssembly\OperandType.cs" />
+    <Compile Include="System\PowerPCAssembly\PowerPC.cs" />
+    <None Include="System\PowerPCAssembly\PPCData.cs" />
+    <Compile Include="System\PowerPCAssembly\PPCOpcode.cs" />
+    <Compile Include="System\PowerPCAssembly\PPCOperand.cs" />
     <Compile Include="System\TypeConverters.cs" />
     <Compile Include="SSBB\ResourceNodes\RASDNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0TEVStage.cs" />
@@ -366,7 +364,7 @@
     <Compile Include="System\Int24.cs" />
     <Compile Include="System\UInt24.cs" />
     <Compile Include="System\IO\GeckoStream.cs" />
-    <Compile Include="System\PowerPCAssembly\Assembly.cs" />
+    <None Include="System\PowerPCAssembly\Assembly.cs" />
     <Compile Include="System\Windows\Controls\Hex Editor\BuiltInContextMenu.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -463,19 +461,25 @@
     <Compile Include="System\Windows\Controls\RichTextBoxBordered.Designer.cs">
       <DependentUpon>RichTextBoxBordered.cs</DependentUpon>
     </Compile>
-    <Compile Include="System\Windows\Controls\SectionMemoryViewer.cs">
+    <Compile Include="System\Windows\Controls\InterpolationEditor.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Controls\SectionMemoryViewer.designer.cs">
-      <DependentUpon>SectionMemoryViewer.cs</DependentUpon>
+    <Compile Include="System\Windows\Controls\InterpolationEditor.Designer.cs">
+      <DependentUpon>InterpolationEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="System\Windows\Controls\VideoPlaybackPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Controls\PPCOpCodeEditor.cs">
+    <Compile Include="System\Windows\Forms\ModelViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Controls\PPCOpCodeEditor.Designer.cs">
+    <Compile Include="System\Windows\Forms\ModelViewerForm.Designer.cs">
+      <DependentUpon>ModelViewerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Forms\PPCOpCodeEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\PPCOpCodeEditor.Designer.cs">
       <DependentUpon>PPCOpCodeEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="System\Windows\Controls\PowerPcDisassembler.cs">
@@ -542,11 +546,23 @@
     <Compile Include="System\Windows\Controls\SCN0LightEditControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\RELSectionMemoryEditor.cs">
+    <Compile Include="System\Windows\Forms\FrameCountChanger.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\RELSectionMemoryEditor.Designer.cs">
-      <DependentUpon>RELSectionMemoryEditor.cs</DependentUpon>
+    <Compile Include="System\Windows\Forms\FrameCountChanger.Designer.cs">
+      <DependentUpon>FrameCountChanger.cs</DependentUpon>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Section Editor\FormFind.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Section Editor\FormGoTo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Section Editor\SectionEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\Section Editor\SectionEditor.Designer.cs">
+      <DependentUpon>SectionEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="System\Windows\Forms\GCTEditor.cs">
       <SubType>Form</SubType>
@@ -554,14 +570,11 @@
     <Compile Include="System\Windows\Forms\GCTEditor.Designer.cs">
       <DependentUpon>GCTEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="System\Windows\Forms\InterpolationEditor.cs">
+    <Compile Include="System\Windows\Forms\InterpolationForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="System\Windows\Forms\InterpolationEditor.Designer.cs">
-      <DependentUpon>InterpolationEditor.cs</DependentUpon>
-    </Compile>
-    <Compile Include="System\Windows\Forms\ModuleSectionEditor.cs">
-      <SubType>Form</SubType>
+    <Compile Include="System\Windows\Forms\InterpolationForm.Designer.cs">
+      <DependentUpon>InterpolationForm.cs</DependentUpon>
     </Compile>
     <Compile Include="System\Windows\Forms\ExportAllAskFormat.cs">
       <SubType>Form</SubType>
@@ -653,6 +666,7 @@
     <Compile Include="System\StringConverters.cs" />
     <Compile Include="System\PString.cs" />
     <Compile Include="Wii\Animations\CHR0TextImporter.cs" />
+    <Compile Include="Wii\Animations\AnimFormat.cs" />
     <Compile Include="Wii\Audio\RWAVConverter.cs" />
     <Compile Include="Wii\Audio\RSARSoundConverter.cs" />
     <Compile Include="Wii\Compression\Huffman.cs" />
@@ -805,13 +819,16 @@
     <EmbeddedResource Include="System\Windows\Controls\RichTextBoxBordered.resx">
       <DependentUpon>RichTextBoxBordered.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Controls\SectionMemoryViewer.resx">
-      <DependentUpon>SectionMemoryViewer.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Controls\InterpolationEditor.resx">
+      <DependentUpon>InterpolationEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\VideoPlaybackPanel.resx">
       <DependentUpon>VideoPlaybackPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Controls\PPCOpCodeEditor.resx">
+    <EmbeddedResource Include="System\Windows\Forms\ModelViewerForm.resx">
+      <DependentUpon>ModelViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\PPCOpCodeEditor.resx">
       <DependentUpon>PPCOpCodeEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\PowerPcDisassembler.resx">
@@ -835,17 +852,23 @@
     <EmbeddedResource Include="System\Windows\Controls\SCN0LightEditControl.resx">
       <DependentUpon>SCN0LightEditControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\RELSectionMemoryEditor.resx">
-      <DependentUpon>RELSectionMemoryEditor.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Forms\FrameCountChanger.resx">
+      <DependentUpon>FrameCountChanger.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Section Editor\FormFind.resx">
+      <DependentUpon>FormFind.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Section Editor\FormGoTo.resx">
+      <DependentUpon>FormGoTo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\Section Editor\SectionEditor.resx">
+      <DependentUpon>SectionEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\GCTEditor.resx">
       <DependentUpon>GCTEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\InterpolationEditor.resx">
-      <DependentUpon>InterpolationEditor.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\ModuleSectionEditor.resx">
-      <DependentUpon>ModuleSectionEditor.cs</DependentUpon>
+    <EmbeddedResource Include="System\Windows\Forms\InterpolationForm.resx">
+      <DependentUpon>InterpolationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\GradientDialog2.resx">
       <DependentUpon>GradientDialog2.cs</DependentUpon>
@@ -874,9 +897,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\TexAnimEditControl.resx">
       <DependentUpon>TexAnimEditControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="System\Windows\Forms\ObjectImporter.resx">
-      <DependentUpon>ObjectImporter.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\EditAllKeyframesDialog.resx">
       <DependentUpon>EditAllKeyframesDialog.cs</DependentUpon>

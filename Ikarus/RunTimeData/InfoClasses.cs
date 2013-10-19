@@ -41,9 +41,9 @@ namespace Ikarus
         public VIS0Node _vis0;
         public CLR0Node _clr0;
 
-        public MoveDefSubActionGroupNode _currentSubaction = null;
-        public MoveDefActionGroupNode _currentAction = null;
-        public MoveDefSubActionGroupNode CurrentSubaction
+        public SubActionGroup _currentSubaction = null;
+        public ActionGroup _currentAction = null;
+        public SubActionGroup CurrentSubaction
         {
             get { return _currentSubaction; }
             set
@@ -55,7 +55,7 @@ namespace Ikarus
             }
         }
 
-        public MoveDefActionGroupNode CurrentAction
+        public ActionGroup CurrentAction
         {
             get { return _currentAction; }
             set
@@ -72,7 +72,7 @@ namespace Ikarus
                     if (RunTime._runningScripts[i]._attachedArticleIndex >= 0)
                         RunTime._runningScripts.RemoveAt(i);
                 
-                foreach (MoveDefActionNode a in CurrentSubaction.Children)
+                foreach (ActionScript a in CurrentSubaction.Children)
                 {
                     RunTime._runningScripts.Add(a);
                     a.Reset();
@@ -138,6 +138,14 @@ namespace Ikarus
             CurrentFrame = (index + 1 - _setAt);
         }
 
+        private AnimationNode GetAnim(AnimationNode[] arr, string name)
+        {
+            foreach (AnimationNode n in arr)
+                if (n.Name.Contains(name))
+                    return n;
+            return null;
+        }
+
         private int _subaction = -1;
         public int SubactionIndex 
         {
@@ -146,22 +154,18 @@ namespace Ikarus
             {
                 if ((_subaction = value) >= 0 && _article._subActions != null && _subaction < _article._subActions.Children.Count)
                 {
-                    CurrentSubaction = _article._subActions.Children[_subaction] as MoveDefSubActionGroupNode;
-                    if (_subaction < _chr0List.Count)
+                    CurrentSubaction = _article._subActions.Children[_subaction] as SubActionGroup;
+                    if (CurrentSubaction != null)
                     {
-                        _chr0 = _chr0List[_subaction];
+                        _chr0 = GetAnim(_chr0List.ToArray<AnimationNode>(), CurrentSubaction.Name) as CHR0Node;
+                        _srt0 = GetAnim(_srt0List.ToArray<AnimationNode>(), CurrentSubaction.Name) as SRT0Node;
+                        _pat0 = GetAnim(_pat0List.ToArray<AnimationNode>(), CurrentSubaction.Name) as PAT0Node;
+                        _vis0 = GetAnim(_vis0List.ToArray<AnimationNode>(), CurrentSubaction.Name) as VIS0Node;
+                        _shp0 = GetAnim(_shp0List.ToArray<AnimationNode>(), CurrentSubaction.Name) as SHP0Node;
+                        _clr0 = GetAnim(_clr0List.ToArray<AnimationNode>(), CurrentSubaction.Name) as CLR0Node;
+
                         _maxFrame = _chr0.FrameCount;
                     }
-                    if (_subaction < _srt0List.Count)
-                        _srt0 = _srt0List[_subaction];
-                    if (_subaction < _shp0List.Count)
-                        _shp0 = _shp0List[_subaction];
-                    if (_subaction < _vis0List.Count)
-                        _vis0 = _vis0List[_subaction];
-                    if (_subaction < _pat0List.Count)
-                        _pat0 = _pat0List[_subaction];
-                    if (_subaction < _clr0List.Count)
-                        _clr0 = _clr0List[_subaction];
                 }
                 CurrentFrame = 0;
             }
@@ -271,7 +275,7 @@ namespace Ikarus
                 bool failed = false;
                 foreach (RequirementInfo req in list)
                 {
-                    bool isTrue = MoveDefActionNode.ApplyRequirement(req);
+                    bool isTrue = ActionScript.ApplyRequirement(req);
                     if (!isTrue)
                     {
                         failed = true;
@@ -303,7 +307,7 @@ namespace Ikarus
                 return false;
 
             foreach (RequirementInfo i in _requirements)
-                if (!MoveDefActionNode.ApplyRequirement(i))
+                if (!ActionScript.ApplyRequirement(i))
                     return false;
 
             return true;

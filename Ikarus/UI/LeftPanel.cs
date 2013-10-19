@@ -815,7 +815,7 @@ namespace Ikarus.UI
             _mainWindow.Updating = false;
             CurrentFrame = frame;
 
-            if ((_mainWindow.GetSelectedBRRESFile((AnimType)TargetAnimType) == null) && (SubActionsList.SelectedItems.Count == 0))
+            if ((_mainWindow.GetAnimation((AnimType)TargetAnimType) == null) && (SubActionsList.SelectedItems.Count == 0))
             {
                 _mainWindow.SelectedCHR0 = null;
                 _mainWindow.SelectedSRT0 = null;
@@ -1334,10 +1334,10 @@ namespace Ikarus.UI
         #region Animation Context Menu
         private void ctxAnim_Opening(object sender, CancelEventArgs e)
         {
-            if (_mainWindow.GetSelectedBRRESFile(TargetAnimType) == null)
+            if (_mainWindow.GetAnimation(TargetAnimType) == null)
                 e.Cancel = true;
             else
-                sourceToolStripMenuItem.Text = String.Format("Source: {0}", Path.GetFileName(_mainWindow.GetSelectedBRRESFile(TargetAnimType).RootNode._origPath));
+                sourceToolStripMenuItem.Text = String.Format("Source: {0}", Path.GetFileName(_mainWindow.GetAnimation(TargetAnimType).RootNode._origPath));
         }
 
         private SaveFileDialog dlgSave = new SaveFileDialog();
@@ -1345,7 +1345,7 @@ namespace Ikarus.UI
         private void exportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             BRESEntryNode node;
-            if ((node = _mainWindow.GetSelectedBRRESFile(TargetAnimType) as BRESEntryNode) == null)
+            if ((node = _mainWindow.GetAnimation(TargetAnimType) as BRESEntryNode) == null)
                 return;
 
             dlgSave.FileName = node.Name;
@@ -1366,7 +1366,7 @@ namespace Ikarus.UI
         private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             BRESEntryNode node;
-            if ((node = _mainWindow.GetSelectedBRRESFile(TargetAnimType) as BRESEntryNode) == null)
+            if ((node = _mainWindow.GetAnimation(TargetAnimType) as BRESEntryNode) == null)
                 return;
 
             switch (TargetAnimType)
@@ -1386,18 +1386,10 @@ namespace Ikarus.UI
 
         private unsafe void portToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (TargetAnimType != 0 || SelectedCHR0 == null || (SelectedCHR0.IsPorted && MessageBox.Show("This animation has already been ported!\nDo you still want to continue?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.No))
+            if (TargetAnimType != 0 || SelectedCHR0 == null)
                 return;
 
-            MDL0Node model;
-
-            OpenFileDialog dlgOpen = new OpenFileDialog();
-            dlgOpen.Filter = "MDL0 Raw Model (*.mdl0)|*.mdl0";
-            dlgOpen.Title = "Select the model this animation is for...";
-
-            if (dlgOpen.ShowDialog() == DialogResult.OK)
-                if ((model = (MDL0Node)NodeFactory.FromFile(null, dlgOpen.FileName)) != null)
-                    SelectedCHR0.Port(TargetModel, model);
+            SelectedCHR0.Port(TargetModel);
 
             _mainWindow.UpdateModel();
             _mainWindow.ModelPanel.Invalidate();
@@ -1407,20 +1399,20 @@ namespace Ikarus.UI
         private void listAnims_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right)
-                if (_mainWindow.GetSelectedBRRESFile(TargetAnimType) != null)
+                if (_mainWindow.GetAnimation(TargetAnimType) != null)
                     SubActionsList.ContextMenuStrip = ctxAnim;
         }
 
         private void renameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (RenameDialog dlg = new RenameDialog())
-                dlg.ShowDialog(this.ParentForm, _mainWindow.GetSelectedBRRESFile(TargetAnimType));
+                dlg.ShowDialog(this.ParentForm, _mainWindow.GetAnimation(TargetAnimType));
         }
 
         private void createNewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ResourceNode r;
-            if ((r = _mainWindow.GetSelectedBRRESFile(TargetAnimType)) != null)
+            if ((r = _mainWindow.GetAnimation(TargetAnimType)) != null)
                 switch (TargetAnimType)
                 {
                     case AnimType.CHR: ((BRESNode)r.Parent.Parent).CreateResource<CHR0Node>("NewCHR"); break;
@@ -1508,7 +1500,7 @@ namespace Ikarus.UI
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _mainWindow.GetSelectedBRRESFile(TargetAnimType).Remove();
+            _mainWindow.GetAnimation(TargetAnimType).Remove();
             _mainWindow.GetFiles(AnimType.None);
             UpdateAnimations();
             _mainWindow.UpdatePropDisplay();
@@ -1641,7 +1633,7 @@ namespace Ikarus.UI
             if (_closing)
                 return;
 
-            RunTime.CurrentAction = ActionsList.SelectedItem as MoveDefActionGroupNode;
+            RunTime.CurrentAction = ActionsList.SelectedItem as ActionGroup;
 
             _mainWindow.MaxFrame = 1;
             _mainWindow.GetFiles(AnimType.None);
@@ -1654,7 +1646,7 @@ namespace Ikarus.UI
             if (_closing)
                 return;
 
-            RunTime.CurrentSubRoutine = SubRoutinesList.SelectedItem as MoveDefActionNode;
+            RunTime.CurrentSubRoutine = SubRoutinesList.SelectedItem as ActionScript;
 
             _mainWindow.MaxFrame = 1;
             _mainWindow.GetFiles(AnimType.None);
@@ -1667,7 +1659,7 @@ namespace Ikarus.UI
             if (_closing)
                 return;
 
-            RunTime.CurrentSubaction = SubActionsList.SelectedItem as MoveDefSubActionGroupNode;
+            RunTime.CurrentSubaction = SubActionsList.SelectedItem as SubActionGroup;
 
             if (SubActionsList.SelectedItems.Count > 0)
             {

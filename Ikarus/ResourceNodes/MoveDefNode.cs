@@ -15,376 +15,217 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefEntryNode : ResourceNode
+    public unsafe class MoveDefEntry
     {
-        //Variables specific for rebuilding
+        //Properties
         [Browsable(false)]
         public VoidPtr RebuildBase { get { return MoveDefNode.Builder == null ? null : MoveDefNode.Builder._rebuildBase; } }
+        [Browsable(false)]
+        public int RebuildOffset { get { return _rebuildAddr == null || RebuildBase == null || _rebuildAddr < RebuildBase ? -1 : (int)_rebuildAddr - (int)RebuildBase; } }
+        [Browsable(false)]
+        public VoidPtr BaseAddress { get { return _root.BaseAddress; } }
+        [Browsable(false)]
+        public MDL0Node Model { get { return _root._model; } }
+        public MoveDefNode _root;
+        [Browsable(false)]
+        public bool External { get { return _externalEntry != null; } }
 
+        //Variables
+        public int _size;
+        public string _name;
+        public int _offset;
+        public ExternalEntry _externalEntry = null;
+        public int _offsetID = 0;
+        public VoidPtr _rebuildAddr = null;
+        public int _entryLength = 0, _childLength = 0;
         public int _lookupCount = 0;
         public List<VoidPtr> _lookupOffsets = new List<VoidPtr>();
 
-        //Nodes rebuild with their children before them
-        //This is the address of the main data that contains all the children
-        public VoidPtr _rebuildAddr;
-        public int _entryLength = 0, _childLength = 0;
-
-        [Browsable(false)]
-        public int RebuildOffset { get { return (int)_rebuildAddr - (int)RebuildBase; } }
-        
-        [Browsable(false)]
-        public VoidPtr Data { get { return (VoidPtr)WorkingUncompressed.Address; } }
-        [Browsable(false)]
-        public VoidPtr BaseAddress 
+        //Functions
+        public void SignalRebuildChange() { _root._rebuildNeeded = true; }
+        public void SignalPropertyChange() 
         {
-            get
-            {
-                if (Root == null)
-                    return 0;
-
-                return Root._baseAddress;
-            }
+            if (!_root._propertyChangedEntries.Contains(this))
+                _root._propertyChangedEntries.Add(this); 
         }
-        [Browsable(false)]
-        public MDL0Node Model { get { return Root._model; } }
-        [Browsable(false)]
-        public MoveDefNode Root
+        public int GetOffset(VoidPtr address) { return (int)(address - BaseAddress); }
+        public int GetSize(int offset) { return _root.GetSize(offset); }
+        public static T Parse<T>(MoveDefNode node, int offset) where T : MoveDefEntry
         {
-            get
-            {
-                ResourceNode n = _parent;
-                while (!(n is MoveDefNode) && (n != null))
-                    n = n._parent;
-                return n as MoveDefNode;
-            }
+            T n = Activator.CreateInstance(typeof(T)) as T;
+            n.Setup(node, offset);
+            n.Parse(node.BaseAddress + offset);
+            return n;
         }
-        [Browsable(false)]
-        public MoveDefArticleNode ParentArticle
+        private void Setup(MoveDefNode node, int offset)
         {
-            get
-            {
-                ResourceNode n = _parent;
-                while (!(n is MoveDefArticleNode) && !(n is MoveDefNode) && (n != null))
-                    n = n._parent;
-                return n as MoveDefArticleNode;
-            }
-        }
-        [Category("Moveset Entry"), Browsable(false)]
-        public int IntOffset { get { return _offset; } }
-        [Browsable(false)]
-        public int _offset { get { if (Data != null) return (int)Data - (int)BaseAddress; else return 0; } }
-        [Category("Moveset Entry"), Browsable(false)]
-        public string DataOffset { get { return _offset.ToString("X"); } }
-        [Category("Moveset Entry"), Browsable(false)]
-        public int Size { get { return WorkingUncompressed.Length; } }
-        [Category("Moveset Entry"), Browsable(false)]
-        public bool External { get { return _extNode != null; } }
-
-        public MoveDefExternalNode _extNode = null;
-        public bool _extOverride = false;
-        
-        VoidPtr data = null;
-        VoidPtr dAddr { get { return data == null ? data = Data : data; } }
-
-        public int offsetID = 0;
-        public bool isExtra = false;
-
-        public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
-
-        public override bool OnInitialize()
-        {
-            if (Root == null)
-                return base.OnInitialize();
-            if (_extNode == null)
-            {
-                _extNode = Root.IsExternal(_offset);
-                if (_extNode != null && !_extOverride)
+            _root = node;
+            _offset = offset;
+            _size = node.GetSize(offset);
+            if ((_externalEntry = _root.TryGetExternal(offset)) != null)
+                if (_externalEntry is SectionEntry)
                 {
-                    _name = _extNode.Name;
-                    _extNode._refs.Add(this);
+                    if (((SectionEntry)_externalEntry).Reference != null) 
+                        Console.WriteLine("wat");
+
+                    ((SectionEntry)_externalEntry).Reference = this;
                 }
-            }
-            if (!Root.nodeDictionary.ContainsKey(_offset))
-                Root.nodeDictionary.Add(_offset, this);
-            if (Size == 0)
-            {
-                int size = Root.GetSize(_offset);
-                if (size > 0)
-                    SetSizeInternal(size);
-            }
-            return base.OnInitialize();
+                else
+                    ((ReferenceEntry)_externalEntry).References.Add(this);
         }
+        public void Write(int offset) { Write(_root.BaseAddress + offset); }
 
-        public ActionEventInfo GetEventInfo(long id)
-        {
-            if (FileManager.EventDictionary.ContainsKey(id))
-                return FileManager.EventDictionary[id];
-
-            return new ActionEventInfo(id, id.ToString("X"), "No Description Available.", null, null);
-        }
-
-        public void SortChildren()
-        {
-            _children.Sort(MoveDefEntryNode.Compare);
-        }
-
-        public static int Compare(ResourceNode n1, ResourceNode n2)
-        {
-            if (((MoveDefEntryNode)n1)._offset < ((MoveDefEntryNode)n2)._offset)
-                return -1;
-            if (((MoveDefEntryNode)n1)._offset > ((MoveDefEntryNode)n2)._offset)
-                return 1;
-
-            return 0;
-        }
-
-        public static int ActionCompare(ResourceNode n1, ResourceNode n2)
-        {
-            if (((MoveDefEntryNode)n1.Children[0])._offset < ((MoveDefEntryNode)n2.Children[0])._offset)
-                return -1;
-            if (((MoveDefEntryNode)n1.Children[0])._offset > ((MoveDefEntryNode)n2.Children[0])._offset)
-                return 1;
-
-            return 0;
-        }
-
-        public ResourceNode FindNode(int offset)
-        {
-            ResourceNode n;
-            if (offset == _offset)
-                return this;
-            else
-                foreach (MoveDefEntryNode e in Children)
-                    if ((n = e.FindNode(offset)) != null)
-                        return n;
-
-            return null;
-        }
-
-        public ResourceNode GetByOffsetID(int id)
-        {
-            foreach (MoveDefEntryNode e in Children)
-                if (e.offsetID == id)
-                    return e;
-            return null;
-        }
-
+        //Overridable functions
+        private virtual void Parse(VoidPtr address) { }
+        private virtual int Write(VoidPtr address) { return 0; }
+        public virtual int GetSize() { return 0; }
         public virtual void PostProcess(LookupManager lookupOffsets) { }
     }
 
-    public unsafe abstract class MoveDefExternalNode : MoveDefEntryNode
+    public unsafe class ExternalEntry : MoveDefEntry
     {
-        public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
+        protected List<int> _dataOffsets = new List<int>();
+        protected List<MoveDefEntry> _references = new List<MoveDefEntry>();
+    }
 
-        public List<int> _offsets = new List<int>();
-        public List<MoveDefEntryNode> _refs = new List<MoveDefEntryNode>();
+    /// <summary>
+    /// Stores offsets to various entries that run a specific external subroutine.
+    /// </summary>
+    public unsafe class ReferenceEntry : ExternalEntry
+    {
+        public List<int> DataOffsets { get { return _dataOffsets; } set { _dataOffsets = value; } }
+        public List<MoveDefEntry> References { get { return _references; } set { _references = value; } }
 
-        public MoveDefEntryNode[] References { get { return _refs.ToArray(); } }
-
-        public override void Remove()
+        public override void Parse(VoidPtr address)
         {
-            foreach (MoveDefEntryNode e in _refs)
-                e._extNode = null;
-            base.Remove();
+            _dataOffsets = new List<int>();
+            _dataOffsets.Add(_offset);
+            int offset = *(bint*)address;
+            while (offset > 0)
+            {
+                _dataOffsets.Add(offset);
+                offset = *(bint*)(BaseAddress + offset);
+
+                //Infinite loops are NO GOOD
+                if (_dataOffsets.Contains(offset))
+                    break;
+            }
         }
     }
 
-    public unsafe class MoveDefNode : ARCEntryNode
+    /// <summary>
+    /// Stores an offset to an important entry
+    /// </summary>
+    public unsafe class SectionEntry : ExternalEntry
     {
-        internal FDefHeader* Header { get { return (FDefHeader*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.MDef; } }
+        public int DataOffset { get { return _dataOffsets.Count == 0 ? 0 : _dataOffsets[0]; } set { if (_dataOffsets.Count != 0) _dataOffsets[0] = value; } }
+        public MoveDefEntry Reference { get { return _references.Count == 0 ? null : _references[0]; } set { if (_references.Count != 0) _references[0] = value; } }
 
-        [Category("Moveset Definition")]
-        public int LookupOffset { get { return lookupOffset; } }
-        [Category("Moveset Definition")]
-        public int LookupCount { get { return numLookupEntries; } }
-        [Category("Moveset Definition")]
-        public int DataTableCount { get { return numDataTable; } }
-        [Category("Moveset Definition")]
-        public int ExtSubRoutines { get { return numExternalSubRoutine; } }
-        [Category("Moveset Definition")]
-        public string DataSize { get { return "0x" + dataSize.ToString("X"); } }
-
-        public MoveDefNode(CharName character)
+        public override void Parse(VoidPtr address)
         {
-            _character = character;
+            _dataOffsets = new List<int>();
+            _dataOffsets.Add(_offset);
+            _references.Add(null);
         }
+    }
+
+    public unsafe class MoveDefNode
+    {
+        public MoveDefNode(CharName character) { _character = character; }
 
         #region Stuff to get other stuff
         
         public int GetSize(int offset)
         {
             if (_lookupSizes.ContainsKey(offset))
-            {
-                //_lookupSizes[offset].remove = true;
                 return _lookupSizes[offset].DataSize;
-            }
             return -1;
         }
 
-        public List<ResourceNode> _externalRefs;
-        public List<MoveDefExternalNode> _externalSections;
-        public MoveDefExternalNode IsExternal(int offset)
+        public ExternalEntry TryGetExternal(int offset)
         {
-            foreach (MoveDefExternalNode e in _externalRefs)
-                foreach (int i in e._offsets)
-                    if (i == offset)
-                        return e; 
-            foreach (MoveDefExternalNode e in _externalSections)
-                foreach (int i in e._offsets)
+            foreach (ReferenceEntry e in _referenceList)
+                foreach (int i in e.DataOffsets)
                     if (i == offset)
                         return e;
+            foreach (SectionEntry e in _sectionList)
+                if (e.DataOffset == offset)
+                    return e;
             return null;
         }
 
-        public ResourceNode FindNode(int offset)
+        public MoveDefEntry GetEntry(int offset)
         {
-            ResourceNode n;
-            if (offset == 0)
-                return this;
-            else
-                foreach (MoveDefEntryNode e in Children)
-                    if ((n = e.FindNode(offset)) != null)
-                        return n;
-
+            if (_entryCache.ContainsKey(offset))
+                return _entryCache[offset];
             return null;
         }
 
-        public MoveDefActionNode GetAction(int offset)
+        public enum ListValue
         {
-            int list, type, index;
-            GetLocation(offset, out list, out type, out index);
-            return GetAction(list, type, index);
+            Actions = 0,
+            SubActions = 1,
+            SubRoutines = 2,
+            References = 3,
+            Null = 4,
+            FlashOverlays = 5,
+            ScreenTints = 6
         }
 
-        public MoveDefActionNode GetAction(int list, int type, int index)
+        public enum TypeValue
         {
-            if ((list >= 3 && _dataCommon == null) || list == 4 || index == -1)
+            None = -1,
+            Main = 0,
+            GFX = 1,
+            SFX = 2,
+            Other = 3,
+            Entry = 0,
+            Exit = 1,
+        }
+
+        public ActionScript GetAction(int offset)
+        {
+            if (offset < 0)
                 return null;
 
-            if (list > 4 && _dataCommon != null)
-            {
-                if (list == 5 && type >= 0 && index < _dataCommon._flashOverlay.Children.Count)
-                    return (MoveDefActionNode)_dataCommon._flashOverlay.Children[index];//.Children[0];
+            MoveDefEntry e = GetEntry(offset);
 
-                if (list == 6 && type >= 0 && index < _dataCommon._screenTint.Children.Count)
-                    return (MoveDefActionNode)_dataCommon._screenTint.Children[index];//.Children[0];
-            }
-
-            if (list == 0 && type >= 0 && index < _actions.Children.Count)
-                return (MoveDefActionNode)_actions.Children[index].Children[type];
-
-            if (list == 1 && type >= 0 && index < _subActions.Children.Count)
-                return (MoveDefActionNode)_subActions.Children[index].Children[type];
-
-            if (list == 2 && _subRoutineList.Count > index)
-                return (MoveDefActionNode)_subRoutineList[index];
+            if (e is ActionScript)
+                return e as ActionScript;
 
             return null;
         }
 
-        public int GetOffset(int list, int type, int index)
+        public ActionScript GetAction(ListValue list, TypeValue type, int index)
         {
-            if (list == 4 || index == -1)
-                return -1;
+            if ((list >= ListValue.References && _dataCommon == null) || list == ListValue.Null || index == -1)
+                return null;
 
-            if (list == 0 && type >= 0 && type < _actions.ActionOffsets.Count)
-                if (_actions.ActionOffsets[type].Count > index)
-                    return _actions.ActionOffsets[type][index];
-
-            if (list == 1 && type >= 0 && type < _subActions.ActionOffsets.Count)
-                if (_subActions.ActionOffsets[type].Count > index)
-                    return _subActions.ActionOffsets[type][index];
-
-            if (list == 2)
-                if (_subRoutineList.Count > index)
-                    return ((MoveDefEntryNode)_subRoutineList[index])._offset;
-
-            if (list == 3)
-                if (_externalRefs.Count > index)
-                    return ((MoveDefEntryNode)_externalRefs[index])._offset;
-
-            return -1;
+            switch (list)
+            {
+                case ListValue.Actions:
+                    if ((type == TypeValue.Entry || type == TypeValue.Exit) && index >= 0 && index < _actions.Count)
+                        return (ActionScript)_actions[index].GetWithType((int)type);
+                    break;
+                case ListValue.SubActions:
+                    if (_data != null && index >= 0 && index < _data._subActions.Count)
+                        return (ActionScript)_data._subActions[index].GetWithType((int)type);
+                    break;
+                case ListValue.SubRoutines:
+                    if (index >= 0 && index < _subRoutines.Count)
+                        return (ActionScript)_subRoutines[index];
+                    break;
+                case ListValue.FlashOverlays:
+                    if (_dataCommon != null && index >= 0 && index < _dataCommon._flashOverlays.Count)
+                        return (ActionScript)_dataCommon._flashOverlays[index];
+                    break;
+                case ListValue.ScreenTints:
+                    if (_dataCommon != null && index >= 0 && index < _dataCommon._screenTints.Count)
+                        return (ActionScript)_dataCommon._screenTints[index];
+                    break;
+            }
+            return null;
         }
-
-        public void GetLocation(int offset, out int list, out int type, out int index)
-        {
-            list = 0;
-            type = -1; 
-            index = -1;
-
-            bool done = false;
-
-            if ((_dataCommon == null && _data == null) || offset <= 0)
-            {
-                list = 4; //Null
-                done = true;
-            }
-
-            if (!done && _actions != null) //Search actions
-                for (type = 0; type < _actions.ActionOffsets.Count; type++)
-                    if ((index = _actions.ActionOffsets[type].IndexOf(offset)) != -1)
-                    {
-                        done = true;
-                        break;
-                    }
-            if (!done) //Search sub actions
-            {
-                list++;
-                if (_subActions != null)
-                for (type = 0; type < _subActions.ActionOffsets.Count; type++)
-                    if ((index = _subActions.ActionOffsets[type].IndexOf(offset)) != -1)
-                        {
-                            done = true;
-                            break;
-                        }
-            }
-            if (!done) //Search subroutines
-            {
-                list++;
-                if (_subRoutines.ContainsKey(offset))
-                {
-                    index = _subRoutines[offset].Index;
-                    type = -1;
-                    done = true;
-                }
-            }
-            if (!done)
-            {
-                list++;
-                MoveDefExternalNode e = IsExternal(offset);
-                if (e != null)
-                {
-                    index = e.Index;
-                    type = -1;
-                    done = true;
-                }
-            }
-            if (!done)
-            {
-                list++;
-                type = -1;
-                index = -1;
-            }
-            if (_dataCommon != null && _data == null && offset > 0)
-            {
-                if (_dataCommon._screenTint != null && !done)
-                {
-                    list++;
-                    if ((index = _dataCommon._screenTint.ActionOffsets.IndexOf((uint)offset)) != -1)
-                        return;
-                }
-                if (_dataCommon._flashOverlay != null && !done)
-                {
-                    list++;
-                    if ((index = _dataCommon._flashOverlay.ActionOffsets.IndexOf((uint)offset)) != -1)
-                        return;
-                }
-            }
-            if (!done)
-                list = 4;
-        }
-
         #endregion
 
         #region Bone Index Handling
@@ -396,8 +237,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_data != null)
                     if (_data.warioParams8 != null)
                     {
-                        MoveDefSectionParamNode p1 = _data.warioParams8.Children[0] as MoveDefSectionParamNode;
-                        MoveDefSectionParamNode p2 = _data.warioParams8.Children[1] as MoveDefSectionParamNode;
+                        RawParamList p1 = _data.warioParams8.Children[0] as RawParamList;
+                        RawParamList p2 = _data.warioParams8.Children[1] as RawParamList;
                         bint* values = (bint*)p2.AttributeBuffer.Address;
                         int i = 0;
                         for ( ; i < p2.AttributeBuffer.Length / 4; i++)
@@ -424,8 +265,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_data != null)
                     if (_data.warioParams8 != null)
                     {
-                        MoveDefSectionParamNode p1 = _data.warioParams8.Children[0] as MoveDefSectionParamNode;
-                        MoveDefSectionParamNode p2 = _data.warioParams8.Children[1] as MoveDefSectionParamNode;
+                        RawParamList p1 = _data.warioParams8.Children[0] as RawParamList;
+                        RawParamList p2 = _data.warioParams8.Children[1] as RawParamList;
                         bint* values = (bint*)p2.AttributeBuffer.Address;
                         int i = 0;
                         for (; i < p1.AttributeBuffer.Length / 4; i++)
@@ -449,81 +290,108 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Variables
 
         public CharName _character;
-        internal int
-            dataSize,
-            lookupOffset,
-            numLookupEntries,
-            numDataTable,
-            numExternalSubRoutine;
+        public List<MoveDefEntry> _propertyChangedEntries = new List<MoveDefEntry>();
+        public bool _rebuildNeeded = false;
 
-        public bool[] StatusIDs;
+        public List<ActionGroup> _actions = new List<ActionGroup>();
+        public List<ActionScript> _subRoutines = new List<ActionScript>();
 
-        public Dictionary<uint, List<MoveDefEventNode>> _events;
+        public MoveDefDataNode _data = null;
+        public MoveDefDataCommonNode _dataCommon = null;
+        public MoveDefAnimParamNode _animParam = null;
 
-        public SortedList<int, string> _paths = new SortedList<int, string>();
-        public SortedList<int, string> Paths { get { return _paths; } }
-
-        public Dictionary<string, SectionParamInfo> Params = null;
-
-        public MoveDefActionListNode _subActions;
-        public MoveDefActionListNode _actions;
-
-        public SortedDictionary<int, MoveDefActionNode> _subRoutines;
-        public List<ResourceNode> _subRoutineList;
-        public ResourceNode _subRoutineGroup;
-
-        public MoveDefDataNode _data;
-        public MoveDefDataCommonNode _dataCommon;
-
-        public MoveDefReferenceNode _references;
         public MoveDefSectionNode _sections;
+
+        public List<ReferenceEntry> _referenceList;
+        public List<SectionEntry> _sectionList;
+
+        public Dictionary<int, MoveDefEntry> _entryCache;
+
         public MoveDefLookupNode _lookupNode;
 
         public Dictionary<int, MoveDefLookupOffsetNode> _lookupSizes;
 
         public MDL0Node _model = null;
-        
-        public VoidPtr _baseAddress;
-        
-        public SortedDictionary<int, MoveDefEntryNode> NodeDictionary { get { return nodeDictionary; } }
-        public SortedDictionary<int, MoveDefEntryNode> nodeDictionary = new SortedDictionary<int, MoveDefEntryNode>();
 
+        public VoidPtr BaseAddress { get { return _source.Address + 0x20; } }
+        
         #endregion
 
         #region Parsing
 
-        public override bool OnInitialize()
+        DataSource _source;
+        public void Parse(DataSource d)
         {
-            if (_name == null)
-                _name = _character.ToString();
+            _source = d;
+            FDefHeader* hdr = (FDefHeader*)_source.Address;
 
-            nodeDictionary = new SortedDictionary<int, MoveDefEntryNode>();
+            _subRoutines = new List<ActionScript>();
+            _referenceList = new List<ReferenceEntry>();
+            _sectionList = new List<SectionEntry>();
+            _lookupSizes = new Dictionary<int, MoveDefLookupOffsetNode>();
 
-            dataSize = Header->_fileSize;
-            lookupOffset = Header->_lookupOffset;
-            numLookupEntries = Header->_lookupEntryCount;
-            numDataTable = Header->_dataTableEntryCount;
-            numExternalSubRoutine = Header->_externalSubRoutineCount;
+            int
+            dataSize = hdr->_fileSize,
+            lookupOffset = hdr->_lookupOffset,
+            numLookup = hdr->_lookupEntryCount,
+            numSections = hdr->_dataTableEntryCount,
+            numRefs = hdr->_externalSubRoutineCount;
+            FDefStringTable* stringTable = hdr->StringTable;
 
-            _baseAddress = (VoidPtr)Header + 0x20;
-            return true;
+            //Parse references
+            if (numRefs > 0)
+            {
+                FDefStringEntry* entries = (FDefStringEntry*)hdr->ExternalSubRoutines;
+                for (int i = 0; i < numRefs; i++)
+                {
+                    ReferenceEntry e = Parse<ReferenceEntry>(this, entries[i]._dataOffset);
+                    e._name = stringTable->GetString(entries[i]._stringOffset);
+                    _referenceList.Add(e);
+                }
+            }
+
+            //Parse sections
+            if (numSections > 0)
+            {
+                FDefStringEntry* entries = (FDefStringEntry*)hdr->DataTable;
+                for (int i = 0; i < numSections; i++)
+                {
+                    string s = stringTable->GetString(entries[i]._stringOffset);
+                    int off = entries[i]._dataOffset;
+                    SectionEntry e = null;
+                    switch (s)
+                    {
+                        case "data":
+                            e = Parse<MoveDefDataNode>(this, off);
+                            break;
+                        case "dataCommon":
+                            e = Parse<MoveDefDataCommonNode>(this, off);
+                            break;
+                        case "animParam":
+                            e = Parse<MoveDefRawDataNode>(this, off);
+                            break;
+                        case "subParam":
+                            e = Parse<MoveDefRawDataNode>(this, off);
+                            break;
+                        default:
+                            e = Parse<MoveDefRawDataNode>(this, off);
+                            break;
+                    }
+
+                    e._name = s;
+                    _sectionList.Add(e);
+                }
+            }
+        }
+
+        public static T Parse<T>(MoveDefNode node, int offset) where T : MoveDefEntry
+        {
+            return MoveDefEntry.Parse<T>(node, offset);
         }
 
         public override void OnPopulate()
         {
-            _subRoutines = new SortedDictionary<int, MoveDefActionNode>();
-            _externalRefs = new List<ResourceNode>();
-            _externalSections = new List<MoveDefExternalNode>();
-            _lookupSizes = new Dictionary<int, MoveDefLookupOffsetNode>();
-            _events = new Dictionary<uint, List<MoveDefEventNode>>();
-            StatusIDs = new bool[0];
 
-            //Parse references first but don't add to children yet
-            if (numExternalSubRoutine > 0)
-            {
-                (_references = new MoveDefReferenceNode(Header->StringTable) { _parent = this }).Initialize(this, new DataSource(Header->ExternalSubRoutines, numExternalSubRoutine * 8));
-                _externalRefs = _references.Children;
-            }
             (_sections = new MoveDefSectionNode(Header->_fileSize, (VoidPtr)Header->StringTable)).Initialize(this, new DataSource(Header->DataTable, Header->_dataTableEntryCount * 8));
             (_lookupNode = new MoveDefLookupNode(Header->_lookupEntryCount) { _parent = this }).Initialize(this, new DataSource(Header->LookupEntries, Header->_lookupEntryCount * 4));
 
@@ -534,45 +402,19 @@ namespace BrawlLib.SSBB.ResourceNodes
             MoveDefSubRoutineListNode g = new MoveDefSubRoutineListNode() { _name = "SubRoutines", _parent = this };
 
             _subRoutineGroup = g;
-            _subRoutineList = g.Children;
+            _subRoutines = g.Children;
 
             //Load subroutines
             //if (!RootNode._origPath.Contains("Test"))
             {
                 _sections.Populate();
-                foreach (MoveDefEntryNode p in _sections._sectionList)
-                    if (p is MoveDefExternalNode && (p as MoveDefExternalNode)._refs.Count == 0)
+                foreach (MoveDefEntry p in _sections._sectionList)
+                    if (p is ReferenceEntry && (p as ReferenceEntry)._references.Count == 0)
                         _sections.Children.Add(p);
             }
             g._name = "[" + g.Children.Count + "] " + g._name;
 
             _children.Add(g);
-
-            //_children.Sort(MoveDefEntryNode.Compare);
-
-            _children[0]._children.Sort(MoveDefEntryNode.Compare);
-            for (int i = 0; i < _children[0]._children.Count; i++)
-                _children[0]._children[i]._name = "SubRoutine" + i;
-            int x = 0;
-            {
-                foreach (MoveDefActionNode i in _subRoutines.Values)
-                {
-                    i._name = "SubRoutine" + x;
-                    foreach (MoveDefEventNode e in i._actionRefs)
-                        if (e.EventID == 218104320)
-                            (e.Children[1] as MoveDefEventOffsetNode).index = x;
-                        else
-                            (e.Children[0] as MoveDefEventOffsetNode).index = x;
-                    x++;
-                }
-            }
-
-            //for (int i = 0; i < lookupNode.Children.Count; i++)
-            //    if ((lookupNode.Children[i] as MoveDefLookupOffsetNode).remove)
-            //        lookupNode.Children[i--].Remove();
-
-            //foreach (var i in Paths)
-            //    Console.WriteLine(i.ToString());
         }
 
         #endregion
@@ -602,7 +444,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public class NameSizeGroup { public string Name; public int Size; public NameSizeGroup(string name, int size) { Name = name; Size = size; } }
 
-    public unsafe class MoveDefSectionNode : MoveDefEntryNode
+    public unsafe class MoveDefSectionNode : MoveDefEntry
     {
         internal FDefStringEntry* Header { get { return (FDefStringEntry*)WorkingUncompressed.Address; } }
         private Dictionary<NameSizeGroup, FDefStringEntry> DataTable = new Dictionary<NameSizeGroup, FDefStringEntry>();
@@ -639,10 +481,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Console.WriteLine(sorted[i].ToString());
             }
         }
-        public List<MoveDefEntryNode> _sectionList;
+        public List<MoveDefEntry> _sectionList;
         public override void OnPopulate()
         {
-            _sectionList = new List<MoveDefEntryNode>();
+            _sectionList = new List<MoveDefEntry>();
 
             int offsetID = 0;
 
@@ -656,9 +498,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 if (data.Key.Name != "data" && data.Key.Name != "dataCommon" && data.Key.Name != "animParam" && data.Key.Name != "subParam")
                 {
-                    MoveDefRawDataNode r = new MoveDefRawDataNode(data.Key.Name) { _parent = this, offsetID = offsetID };
+                    MoveDefRawDataNode r = new MoveDefRawDataNode(data.Key.Name) { _parent = this, _offsetID = offsetID };
                     r.Initialize(this, new DataSource(BaseAddress + data.Value._dataOffset, data.Key.Size));
-                    Root._externalSections.Add(r);
+                    _root._sectionList.Add(r);
                     _sectionList.Add(r);
                 }
                 else
@@ -668,12 +510,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     switch (data.Key.Name)
                     {
                         case "data":
-                            nodes.Add((Root._data = new MoveDefDataNode((uint)DataSize, data.Key.Name) { offsetID = offsetID }));
-                            _sectionList.Add(Root._data);
+                            nodes.Add((_root._data = new MoveDefDataNode((uint)DataSize, data.Key.Name) { _offsetID = offsetID }));
+                            _sectionList.Add(_root._data);
                             break;
                         case "dataCommon":
-                            nodes.Add((Root._dataCommon = new MoveDefDataCommonNode((uint)DataSize, data.Key.Name) { offsetID = offsetID }));
-                            _sectionList.Add(Root._dataCommon);
+                            nodes.Add((_root._dataCommon = new MoveDefDataCommonNode((uint)DataSize, data.Key.Name) { _offsetID = offsetID }));
+                            _sectionList.Add(_root._dataCommon);
                             break;
                         case "animParam":
                             //nodes.Add((Root._animParam = new MoveDefAnimParamNode((uint)DataSize, data.Key.Name) { offsetID = offsetID }));

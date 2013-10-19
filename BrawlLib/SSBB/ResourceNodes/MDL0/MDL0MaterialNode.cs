@@ -30,6 +30,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             _normMapRefLight3 =
             _normMapRefLight4 = -1;
             _numLights = 1;
+
+            _chan1 = new LightChannel(63, new RGBAPixel(255, 255, 255, 255), new RGBAPixel(255, 255, 255, 255), 0, 0, this);
+            _chan2 = new LightChannel(15, new RGBAPixel(0, 0, 0, 255), new RGBAPixel(), 0, 0, this);
         }
 
         #region Variables
@@ -74,8 +77,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Attributes
 
-        public MDL0ObjectNode[] Objects { get { if (!isMetal) return _polygons.ToArray(); else return MetalMaterial == null ? null : MetalMaterial._polygons.ToArray(); } }
-        internal List<MDL0ObjectNode> _polygons = new List<MDL0ObjectNode>();
+        public MDL0ObjectNode[] Objects { get { if (!isMetal) return _objects.ToArray(); else return MetalMaterial == null ? null : MetalMaterial._objects.ToArray(); } }
+        internal List<MDL0ObjectNode> _objects = new List<MDL0ObjectNode>();
 
         [Browsable(false)]
         public XFData[] XFCommands { get { return XFCmds.ToArray(); } }
@@ -225,7 +228,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(true), TypeConverter(typeof(DropDownListShaders))]
         public string Shader
         {
-            get { return _shader == null ? null : _shader._name; }
+            get { return _shader == null ? null : _shader.Name; }
             set
             {
                 if (CheckIfMetal())
@@ -505,8 +508,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _usageFlags[31] = value;
 
                     string message = "";
-                    for (int i = 0; i < _polygons.Count; i++)
-                        _polygons[i].EvalMaterials(ref message);
+                    for (int i = 0; i < _objects.Count; i++)
+                        _objects[i].EvalMaterials(ref message);
 
                     if (message.Length != 0)
                         if (MessageBox.Show(null, "Are you sure you want to continue?\nThe following objects will no longer use this material:\n" + message, "Continue?", MessageBoxButtons.YesNo) == DialogResult.No)
@@ -517,8 +520,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                         }
                     
                     message = "";
-                    for (int i = 0; i < _polygons.Count; i++)
-                        _polygons[i].FixMaterials(ref message);
+                    for (int i = 0; i < _objects.Count; i++)
+                        _objects[i].FixMaterials(ref message);
 
                     //if (message.Length != 0)
                     //    MessageBox.Show("The following objects no longer use this material:\n" + message);
@@ -732,7 +735,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public bool CheckIfMetal()
         {
-            if (Model._autoMetal)
+            if (Model != null && Model._autoMetal)
             {
                 if (!_updating)
                 {
@@ -976,14 +979,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Set defaults if the model is an import or the material was created
             if (Model._isImport || New)
             {
-                if (Model._importOptions._mdlType == 0 || New)
+                if (New)
                 {
                     _lSet = 20;
                     _fSet = 4;
                     _ssc = 3;
 
-                    //_cull = CullMode.Cull_Inside;
-                    
                     C1ColorEnabled = true;
                     C1AlphaMaterialSource = GXColorSrc.Vertex;
                     C1ColorMaterialSource = GXColorSrc.Vertex;
@@ -997,19 +998,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                     C2ColorAttenuation = GXAttnFn.None;
                     C2AlphaDiffuseFunction = GXDiffuseFn.Disabled;
                     C2AlphaAttenuation = GXAttnFn.None;
-                }
-                else
-                {
-                    _lSet = 0;
-                    _fSet = 0;
-                    _ssc = 1;
-
-                    //_cull = CullMode.Cull_Inside;
-
-                    _chan1.Color = new LightChannelControl(1795, _chan1);
-                    _chan1.Alpha = new LightChannelControl(1795, _chan1);
-                    _chan2.Color = new LightChannelControl(1795, _chan2);
-                    _chan2.Alpha = new LightChannelControl(1795, _chan2);
                 }
 
                 //Set default texgen flags
@@ -1207,7 +1195,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void Render(TKContext ctx, ModelPanel mainWindow)
         {
-            foreach (MDL0ObjectNode p in _polygons)
+            foreach (MDL0ObjectNode p in _objects)
                 p.Render(ctx, false, mainWindow);
 
             #region Old
@@ -1288,22 +1276,22 @@ namespace BrawlLib.SSBB.ResourceNodes
                 m.Unbind();
         }
 
-        internal void ApplySRT0(SRT0Node node, int index)
+        internal void ApplySRT0(SRT0Node node, int index, bool linear)
         {
             SRT0EntryNode e;
 
             if (node == null || index == 0)
                 foreach (MDL0MaterialRefNode r in Children)
-                    r.ApplySRT0Texture(null, 0);
+                    r.ApplySRT0Texture(null, 0, linear);
             else if ((e = node.FindChild(Name, false) as SRT0EntryNode) != null)
             {
                 foreach (SRT0TextureNode t in e.Children)
                     if (t._textureIndex < Children.Count)
-                        ((MDL0MaterialRefNode)Children[t._textureIndex]).ApplySRT0Texture(t, index);
+                        ((MDL0MaterialRefNode)Children[t._textureIndex]).ApplySRT0Texture(t, index, linear);
             }
             else
                 foreach (MDL0MaterialRefNode r in Children)
-                    r.ApplySRT0Texture(null, 0);
+                    r.ApplySRT0Texture(null, 0, linear);
         }
         
         internal void ApplyCLR0(CLR0Node node, int index)
@@ -1440,8 +1428,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _flags = flags;
             _matColor = mat;
             _ambColor = amb;
-            _color = new LightChannelControl(color, this);
-            _alpha = new LightChannelControl(alpha, this);
+            _color = new LightChannelControl(color) { _parent = this };
+            _alpha = new LightChannelControl(alpha) { _parent = this };
         }
 
         [Category("Lighting Channel")]
@@ -1457,14 +1445,14 @@ namespace BrawlLib.SSBB.ResourceNodes
         public LightChannelControl Color
         {
             get { return _color; }
-            set { _color = value; _parent.SignalPropertyChange(); }
+            set { _color = value; _color._parent = this; _parent.SignalPropertyChange(); }
         }
 
         [Category("Lighting Channel"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public LightChannelControl Alpha
         {
             get { return _alpha; }
-            set { _alpha = value; _parent.SignalPropertyChange(); }
+            set { _alpha = value; _alpha._parent = this; _parent.SignalPropertyChange(); }
         }
 
         [Category("Lighting Channel"), Browsable(false)]
@@ -1592,9 +1580,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public class LightChannelControl
     {
-        LightChannel _parent;
+        public LightChannel _parent;
 
-        public LightChannelControl(uint ctrl, LightChannel parent) { _binary = new Bin32(ctrl); _parent = parent; }
+        public LightChannelControl(uint ctrl) { _binary = new Bin32(ctrl); }
 
         public Bin32 _binary;
 
@@ -1608,13 +1596,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         //0000 0000 0000 0000 0111 1000 0000 0000   Light 4567
 
         [Category("Lighting Control")]
-        public bool Enabled { get { return _binary[1]; } set { _binary[1] = value; _parent._parent.SignalPropertyChange(); } }
+        public bool Enabled { get { return _binary[1]; } set { _binary[1] = value; if (_parent != null) _parent._parent.SignalPropertyChange(); } }
         [Category("Lighting Control")]
-        public GXColorSrc MaterialSource { get { return (GXColorSrc)(_binary[0] ? 1 : 0); } set { _binary[0] = ((int)value != 0); _parent._parent.SignalPropertyChange(); } }
+        public GXColorSrc MaterialSource { get { return (GXColorSrc)(_binary[0] ? 1 : 0); } set { _binary[0] = ((int)value != 0); if (_parent != null) _parent._parent.SignalPropertyChange(); } }
         [Category("Lighting Control")]
-        public GXColorSrc AmbientSource { get { return (GXColorSrc)(_binary[6] ? 1 : 0); } set { _binary[6] = ((int)value != 0); _parent._parent.SignalPropertyChange(); } }
+        public GXColorSrc AmbientSource { get { return (GXColorSrc)(_binary[6] ? 1 : 0); } set { _binary[6] = ((int)value != 0); if (_parent != null) _parent._parent.SignalPropertyChange(); } }
         [Category("Lighting Control")]
-        public GXDiffuseFn DiffuseFunction { get { return (GXDiffuseFn)(_binary[7, 2]); } set { _binary[7, 2] = ((uint)value); _parent._parent.SignalPropertyChange(); } }
+        public GXDiffuseFn DiffuseFunction { get { return (GXDiffuseFn)(_binary[7, 2]); } set { _binary[7, 2] = ((uint)value); if (_parent != null) _parent._parent.SignalPropertyChange(); } }
         [Category("Lighting Control")]
         public GXAttnFn Attenuation
         {
@@ -1638,7 +1626,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _binary[10] = false;
                 }
 
-                _parent._parent.SignalPropertyChange();
+                if (_parent != null)
+                    _parent._parent.SignalPropertyChange();
             }
         }
         [Category("Lighting Control")]
@@ -1651,7 +1640,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _binary[2, 4] = (val & 0xF);
                 _binary[11, 4] = ((val >> 4) & 0xF);
 
-                _parent._parent.SignalPropertyChange();
+                if (_parent != null)
+                    _parent._parent.SignalPropertyChange();
             }
         }
     }

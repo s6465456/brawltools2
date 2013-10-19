@@ -206,7 +206,10 @@ namespace System.Windows.Forms
             // numScaleX
             // 
             this.numScaleX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numScaleX.Integral = false;
             this.numScaleX.Location = new System.Drawing.Point(73, 54);
+            this.numScaleX.MaximumValue = 3.402823E+38F;
+            this.numScaleX.MinimumValue = -3.402823E+38F;
             this.numScaleX.Name = "numScaleX";
             this.numScaleX.Size = new System.Drawing.Size(82, 20);
             this.numScaleX.TabIndex = 18;
@@ -217,7 +220,10 @@ namespace System.Windows.Forms
             // numScaleY
             // 
             this.numScaleY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numScaleY.Integral = false;
             this.numScaleY.Location = new System.Drawing.Point(154, 54);
+            this.numScaleY.MaximumValue = 3.402823E+38F;
+            this.numScaleY.MinimumValue = -3.402823E+38F;
             this.numScaleY.Name = "numScaleY";
             this.numScaleY.Size = new System.Drawing.Size(82, 20);
             this.numScaleY.TabIndex = 19;
@@ -228,7 +234,10 @@ namespace System.Windows.Forms
             // numScaleZ
             // 
             this.numScaleZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numScaleZ.Integral = false;
             this.numScaleZ.Location = new System.Drawing.Point(235, 54);
+            this.numScaleZ.MaximumValue = 3.402823E+38F;
+            this.numScaleZ.MinimumValue = -3.402823E+38F;
             this.numScaleZ.Name = "numScaleZ";
             this.numScaleZ.Size = new System.Drawing.Size(82, 20);
             this.numScaleZ.TabIndex = 20;
@@ -239,7 +248,10 @@ namespace System.Windows.Forms
             // numRotX
             // 
             this.numRotX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotX.Integral = false;
             this.numRotX.Location = new System.Drawing.Point(73, 35);
+            this.numRotX.MaximumValue = 3.402823E+38F;
+            this.numRotX.MinimumValue = -3.402823E+38F;
             this.numRotX.Name = "numRotX";
             this.numRotX.Size = new System.Drawing.Size(82, 20);
             this.numRotX.TabIndex = 15;
@@ -250,7 +262,10 @@ namespace System.Windows.Forms
             // numRotY
             // 
             this.numRotY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotY.Integral = false;
             this.numRotY.Location = new System.Drawing.Point(154, 35);
+            this.numRotY.MaximumValue = 3.402823E+38F;
+            this.numRotY.MinimumValue = -3.402823E+38F;
             this.numRotY.Name = "numRotY";
             this.numRotY.Size = new System.Drawing.Size(82, 20);
             this.numRotY.TabIndex = 16;
@@ -261,7 +276,10 @@ namespace System.Windows.Forms
             // numRotZ
             // 
             this.numRotZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotZ.Integral = false;
             this.numRotZ.Location = new System.Drawing.Point(235, 35);
+            this.numRotZ.MaximumValue = 3.402823E+38F;
+            this.numRotZ.MinimumValue = -3.402823E+38F;
             this.numRotZ.Name = "numRotZ";
             this.numRotZ.Size = new System.Drawing.Size(82, 20);
             this.numRotZ.TabIndex = 17;
@@ -272,7 +290,10 @@ namespace System.Windows.Forms
             // numTransX
             // 
             this.numTransX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numTransX.Integral = false;
             this.numTransX.Location = new System.Drawing.Point(73, 16);
+            this.numTransX.MaximumValue = 3.402823E+38F;
+            this.numTransX.MinimumValue = -3.402823E+38F;
             this.numTransX.Name = "numTransX";
             this.numTransX.Size = new System.Drawing.Size(82, 20);
             this.numTransX.TabIndex = 3;
@@ -283,7 +304,10 @@ namespace System.Windows.Forms
             // numTransY
             // 
             this.numTransY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numTransY.Integral = false;
             this.numTransY.Location = new System.Drawing.Point(154, 16);
+            this.numTransY.MaximumValue = 3.402823E+38F;
+            this.numTransY.MinimumValue = -3.402823E+38F;
             this.numTransY.Name = "numTransY";
             this.numTransY.Size = new System.Drawing.Size(82, 20);
             this.numTransY.TabIndex = 13;
@@ -294,7 +318,10 @@ namespace System.Windows.Forms
             // numTransZ
             // 
             this.numTransZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numTransZ.Integral = false;
             this.numTransZ.Location = new System.Drawing.Point(235, 16);
+            this.numTransZ.MaximumValue = 3.402823E+38F;
+            this.numTransZ.MinimumValue = -3.402823E+38F;
             this.numTransZ.Name = "numTransZ";
             this.numTransZ.Size = new System.Drawing.Size(82, 20);
             this.numTransZ.TabIndex = 14;
@@ -460,7 +487,7 @@ namespace System.Windows.Forms
             this.removeAllToolStripMenuItem,
             this.addCustomAmountToolStripMenuItem});
             this.ctxBox.Name = "ctxBox";
-            this.ctxBox.Size = new System.Drawing.Size(167, 142);
+            this.ctxBox.Size = new System.Drawing.Size(167, 120);
             // 
             // Source
             // 
@@ -570,7 +597,7 @@ namespace System.Windows.Forms
         public IMainWindow _mainWindow;
 
         public NumericInputBox[] _transBoxes = new NumericInputBox[9];
-        private AnimationFrame _tempFrame = AnimationFrame.Identity;
+        //private AnimationFrame _tempFrame = AnimationFrame.Identity;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public MDL0BoneNode TargetBone { get { return _mainWindow.SelectedBone; } set { _mainWindow.SelectedBone = value; } }
@@ -617,12 +644,17 @@ namespace System.Windows.Forms
             grpTransAll.Enabled = SelectedAnimation != null;
             btnInsert.Enabled = btnDelete.Enabled = btnClearAll.Enabled = CurrentFrame != 0 && SelectedAnimation != null;
             grpTransform.Enabled = TargetBone != null;
-            
+
             for (int i = 0; i < 9; i++)
                 ResetBox(i);
 
-            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor._open)
-                _mainWindow.InterpolationEditor.SetTarget(Entry);
+            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor.Visible && _mainWindow.TargetAnimType == AnimType.CHR)
+            {
+                if (_mainWindow.InterpolationEditor._targetNode != Entry)
+                    _mainWindow.InterpolationEditor.SetTarget(Entry);
+                else
+                    _mainWindow.InterpolationEditor.interpolationViewer.Invalidate();
+            }
         }
 
         public CHR0EntryNode Entry
@@ -670,6 +702,7 @@ namespace System.Windows.Forms
                 box.Value = index < 3 ? 1 : 0;
                 box.BackColor = Color.White;
             }
+            
         }
         public unsafe void ApplyState(SaveState save)
         {
@@ -709,99 +742,31 @@ namespace System.Windows.Forms
 
             if ((SelectedAnimation != null) && (CurrentFrame > 0))
             {
-                //Find bone anim and change transform
                 CHR0EntryNode entry = SelectedAnimation.FindChild(bone.Name, false) as CHR0EntryNode;
-                int kfIndex = _mainWindow.KeyframePanel.FindKeyframe(CurrentFrame - 1);
-                int x;
-
-                if (entry == null) //Create new bone animation
+                if (entry == null)
                 {
                     if (!float.IsNaN(box.Value))
                     {
                         entry = SelectedAnimation.CreateEntry();
                         entry.Name = bone.Name;
 
-                        //Set initial values (so they aren't null)
-                        FrameState state = bone._bindState; //Get the bone's bindstate
+                        FrameState state = bone._bindState;
                         float* p = (float*)&state;
-                        for (int i = 0; i < 3; i++) //Get the scale
-                            if (p[i] != 1.0f) //Check for default values
+                        for (int i = 0; i < 3; i++)
+                            if (p[i] != 1.0f)
                                 entry.SetKeyframe(KeyFrameMode.ScaleX + i, 0, p[i]);
-                        for (int i = 3; i < 9; i++) //Get rotation and translation respectively
-                            if (p[i] != 0.0f) //Check for default values
+                        for (int i = 3; i < 9; i++)
+                            if (p[i] != 0.0f)
                                 entry.SetKeyframe(KeyFrameMode.ScaleX + i, 0, p[i]);
 
-                        kf = AnimationFrame.Empty;
-                        kf.forKeyframeCHR = true;
-                        kf.SetBool(index + 0x10, true);
-                        kf.Index = CurrentFrame - 1;
-                        pkf[index] = box.Value;
-
-                        int count = _mainWindow.KeyframePanel.listKeyframes.Items.Count;
-                        for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
-
-                        _mainWindow.KeyframePanel.listKeyframes.Items.Insert(x, kf);
-                        _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = x;
-
-                        //Finally, replace with the changed value
                         entry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
                     }
                 }
-                else //Set to existing CHR0 entry 
+                else
                     if (float.IsNaN(box.Value))
-                    {
-                        if (_mainWindow.TargetAnimType == AnimType.CHR)
-                        {
-                            //Value removed, find keyframe and zero it out
-                            if (kfIndex >= 0)
-                            {
-                                kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
-                                kf.forKeyframeCHR = true;
-                                kf.SetBool(index + 0x10, false);
-                                pkf[index] = box.Value;
-
-                                for (x = 0; (x < 9) && (float.IsNaN(pkf[x]) || !kf.GetBool(x + 0x10)); x++) ;
-                                if (x == 9)
-                                {
-                                    _mainWindow.KeyframePanel.listKeyframes.Items.RemoveAt(kfIndex);
-                                    _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = -1;
-                                }
-                                else
-                                    _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
-                            }
-                        }
-
                         entry.RemoveKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1);
-                    }
                     else
-                    {
-                        if (_mainWindow.TargetAnimType == AnimType.CHR)
-                        {
-                            if (kfIndex >= 0)
-                            {
-                                kf = (AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[kfIndex];
-                                kf.forKeyframeCHR = true;
-                                kf.SetBool(index + 0x10, true);
-                                pkf[index] = box.Value;
-                                _mainWindow.KeyframePanel.listKeyframes.Items[kfIndex] = kf;
-                            }
-                            else
-                            {
-                                kf = AnimationFrame.Empty;
-                                kf.forKeyframeCHR = true;
-                                kf.SetBool(index + 0x10, true);
-                                kf.Index = CurrentFrame - 1;
-                                pkf[index] = box.Value;
-
-                                int count = _mainWindow.KeyframePanel.listKeyframes.Items.Count;
-                                for (x = 0; (x < count) && (((AnimationFrame)_mainWindow.KeyframePanel.listKeyframes.Items[x]).Index < CurrentFrame - 1); x++) ;
-
-                                _mainWindow.KeyframePanel.listKeyframes.Items.Insert(x, kf);
-                                _mainWindow.KeyframePanel.listKeyframes.SelectedIndex = x;
-                            }
-                        }
                         entry.SetKeyframe(KeyFrameMode.ScaleX + index, CurrentFrame - 1, box.Value);
-                    }
             }
             else
             {
@@ -811,13 +776,17 @@ namespace System.Windows.Forms
                 p[index] = float.IsNaN(box.Value) ? (index > 2 ? 0.0f : 1.0f) : box.Value;
                 bone._bindState = bone._frameState = state;
                 bone._bindState.CalcTransforms();
-                //bone.RecalcBindState();
                 bone.SignalPropertyChange();
             }
 
             _mainWindow.UpdateModel();
 
             ResetBox(index);
+            _mainWindow.KeyframePanel.UpdateKeyframe(CurrentFrame - 1);
+            UpdateInterpolationEditor(box);
+
+            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor.Visible)
+                _mainWindow.InterpolationEditor.KeyframeChanged();
         }
 
         private static Dictionary<string, AnimationFrame> _copyAllState = new Dictionary<string, AnimationFrame>();
@@ -837,7 +806,7 @@ namespace System.Windows.Forms
                     if (!AllScale.Checked)
                         frame.Scale = new Vector3(1);
                     for (int i = 0x10; i < 0x19; i++)
-                        frame.SetBool(i, true);
+                        frame.SetBool(i - 0x10, true);
                     _copyAllState[bone._name] = frame;
                 }
             else
@@ -947,21 +916,22 @@ namespace System.Windows.Forms
             if (group == null)
                 return;
 
+            int keyCount = 0;
             List<CHR0EntryNode> badNodes = new List<CHR0EntryNode>();
             foreach (CHR0EntryNode entry in SelectedAnimation.Children)
             {
                 if (group.FindChild(entry._name, true) == null)
                     badNodes.Add(entry);
                 else
-                    entry.Keyframes.Clean();
+                    keyCount += entry.Keyframes.Clean();
             }
-            int temp = badNodes.Count;
+            int nodeCount = badNodes.Count;
             foreach (CHR0EntryNode n in badNodes)
             {
                 n.Remove();
                 n.Dispose();
             }
-            MessageBox.Show(temp + " unused nodes removed.");
+            MessageBox.Show(String.Format("{0} unused bone entr{2} and {1} redundant keyframe value{3} removed.", nodeCount, keyCount, nodeCount == 1 ? "y" : "ies", keyCount == 1 ? " was" : "s were"));
             UpdatePropDisplay();
         }
 
@@ -973,22 +943,19 @@ namespace System.Windows.Forms
 
         public void UpdateInterpolationEditor(NumericInputBox box)
         {
-            if (_mainWindow.InterpolationEditor == null || !_mainWindow.InterpolationEditor._open)
+            if (_mainWindow.InterpolationEditor == null || !_mainWindow.InterpolationEditor.Visible)
                 return;
 
-            _mainWindow.InterpolationEditor.SelectedMode = (KeyFrameMode)type;
-
+            _mainWindow.InterpolationEditor.interpolationViewer._updating = true;
             if (box.BackColor == Color.Yellow)
             {
                 CHR0EntryNode entry = SelectedAnimation.FindChild(TargetBone.Name, false) as CHR0EntryNode;
-                KeyframeEntry kfe = entry.GetKeyframe((KeyFrameMode)type, CurrentFrame - 1);
-                if (kfe != null)
-                    _mainWindow.InterpolationEditor.SelectedKeyframe = kfe;
-                else
-                    _mainWindow.InterpolationEditor.SelectedKeyframe = null;
+                KeyframeEntry kfe = entry.GetKeyframe((KeyFrameMode)(0x10 + (int)box.Tag), CurrentFrame - 1);
+                _mainWindow.InterpolationEditor.SelectedKeyframe = kfe;
             }
             else
                 _mainWindow.InterpolationEditor.SelectedKeyframe = null;
+            _mainWindow.InterpolationEditor.interpolationViewer._updating = false;
         }
 
         public int type = 0;
@@ -996,8 +963,14 @@ namespace System.Windows.Forms
         {
             NumericInputBox box = sender as NumericInputBox;
 
-            type = 0x10 + (int)box.Tag;
-            UpdateInterpolationEditor(box);
+            type = (int)box.Tag;
+
+            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor.Visible)
+            {
+                if (_mainWindow.InterpolationEditor.SelectedMode != type)
+                    _mainWindow.InterpolationEditor.SelectedMode = type;
+                UpdateInterpolationEditor(box);
+            }
 
             if (e.Button == Forms.MouseButtons.Right)
                 if (box.Enabled == true)
@@ -1011,7 +984,7 @@ namespace System.Windows.Forms
 
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
-            if (SelectedAnimation == null || type == 0)
+            if (SelectedAnimation == null)
                 return;
 
             KeyframeEntry kfe;
@@ -1019,16 +992,16 @@ namespace System.Windows.Forms
             if (_target != null)
             {
                 for (int x = 0; x < _target.FrameCount; x++) //Loop thru each frame
-                    if ((kfe = _target.GetKeyframe((KeyFrameMode)type, x)) != null) //Check for a keyframe
+                    if ((kfe = _target.GetKeyframe((KeyFrameMode)(type + 0x10), x)) != null) //Check for a keyframe
                     { kfe._value += 180; }
-                ResetBox(type - 0x10);
+                ResetBox(type);
                 _mainWindow.UpdateModel();
             }
         }
 
         private void toolStripMenuItem4_Click(object sender, EventArgs e)
         {
-            if (SelectedAnimation == null || type == 0)
+            if (SelectedAnimation == null)
                 return;
 
             KeyframeEntry kfe;
@@ -1036,9 +1009,9 @@ namespace System.Windows.Forms
             if (_target != null)
             {
                 for (int x = 0; x < _target.FrameCount; x++) //Loop thru each frame
-                    if ((kfe = _target.GetKeyframe((KeyFrameMode)type, x)) != null) //Check for a keyframe
+                    if ((kfe = _target.GetKeyframe((KeyFrameMode)(type + 0x10), x)) != null) //Check for a keyframe
                     { kfe._value += 90; }
-                ResetBox(type - 0x10);
+                ResetBox(type);
                 _mainWindow.UpdateModel();
             }
         }
@@ -1050,7 +1023,7 @@ namespace System.Windows.Forms
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
-            if (SelectedAnimation == null || type == 0)
+            if (SelectedAnimation == null)
                 return;
 
             KeyframeEntry kfe;
@@ -1058,16 +1031,16 @@ namespace System.Windows.Forms
             if (_target != null)
             {
                 for (int x = 0; x < _target.FrameCount; x++) //Loop thru each frame
-                    if ((kfe = _target.GetKeyframe((KeyFrameMode)type, x)) != null) //Check for a keyframe
+                    if ((kfe = _target.GetKeyframe((KeyFrameMode)(type + 0x10), x)) != null) //Check for a keyframe
                     { kfe._value -= 90; }
-                ResetBox(type - 0x10);
+                ResetBox(type);
                 _mainWindow.UpdateModel();
             }
         }
 
         private void toolStripMenuItem7_Click(object sender, EventArgs e)
         {
-            if (SelectedAnimation == null || type == 0)
+            if (SelectedAnimation == null)
                 return;
 
             KeyframeEntry kfe;
@@ -1075,16 +1048,16 @@ namespace System.Windows.Forms
             if (_target != null)
             {
                 for (int x = 0; x < _target.FrameCount; x++) //Loop thru each frame
-                    if ((kfe = _target.GetKeyframe((KeyFrameMode)type, x)) != null) //Check for a keyframe
+                    if ((kfe = _target.GetKeyframe((KeyFrameMode)(type + 0x10), x)) != null) //Check for a keyframe
                     { kfe._value += 45; }
-                ResetBox(type - 0x10);
+                ResetBox(type);
                 _mainWindow.UpdateModel();
             }
         }
 
         private void toolStripMenuItem8_Click(object sender, EventArgs e)
         {
-            if (SelectedAnimation == null || type == 0)
+            if (SelectedAnimation == null)
                 return;
 
             KeyframeEntry kfe;
@@ -1092,37 +1065,37 @@ namespace System.Windows.Forms
             if (_target != null)
             {
                 for (int x = 0; x < _target.FrameCount; x++) //Loop thru each frame
-                    if ((kfe = _target.GetKeyframe((KeyFrameMode)type, x)) != null) //Check for a keyframe
+                    if ((kfe = _target.GetKeyframe((KeyFrameMode)(type + 0x10), x)) != null) //Check for a keyframe
                     { kfe._value -= 45; }
-                ResetBox(type - 0x10);
+                ResetBox(type);
                 _mainWindow.UpdateModel();
             }
         }
 
         private void removeAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedAnimation == null || type == 0)
+            if (SelectedAnimation == null)
                 return;
 
             CHR0EntryNode _target = SelectedAnimation.FindChild(TargetBone.Name, false) as CHR0EntryNode;
             if (_target != null)
             {
-                _target.Keyframes._keyRoots[type & 0xF] = new KeyframeEntry(-1, type >= 0x10 && type <= 0x12 ? 1 : 0);
-                _target.Keyframes._keyCounts[type & 0xF] = 0;
+                _target.Keyframes._keyRoots[type] = new KeyframeEntry(-1, type >= 0 && type <= 2 ? 1 : 0);
+                _target.Keyframes._keyCounts[type] = 0;
                 _target.SignalPropertyChange();
-                ResetBox(type - 0x10);
+                ResetBox(type);
                 _mainWindow.UpdateModel();
             }
         }
 
         private void addCustomAmountToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedAnimation == null || type == 0)
+            if (SelectedAnimation == null)
                 return;
 
             EditAllKeyframesDialog ed = new EditAllKeyframesDialog();
-            ed.ShowDialog(null, (KeyFrameMode)type, SelectedAnimation.FindChild(TargetBone.Name, false) as CHR0EntryNode);
-            ResetBox(type - 0x10);
+            ed.ShowDialog(null, (KeyFrameMode)(type + 0x10), SelectedAnimation.FindChild(TargetBone.Name, false) as CHR0EntryNode);
+            ResetBox(type);
             _mainWindow.UpdateModel();
         }
 
@@ -1131,15 +1104,11 @@ namespace System.Windows.Forms
             AnimationFrame frame = new AnimationFrame();
             float* p = (float*)&frame;
 
-            //if (FrameScale.Checked) frame.hasSx = frame.hasSy = frame.hasSz = true;
-            //if (FrameRot.Checked) frame.hasRx = frame.hasRy = frame.hasRz = true;
-            //if (FrameTrans.Checked) frame.hasTx = frame.hasTy = frame.hasTz = true;
-
             BoxChangedCreateUndo(this, null);
 
             for (int i = 0; i < 9; i++)
             {
-                frame.SetBool(i + 0x10, false);
+                frame.SetBool(i, false);
                 if ((!FrameScale.Checked && i < 3))
                     p[i] = 1;
                 else if (
@@ -1148,13 +1117,15 @@ namespace System.Windows.Forms
                     (FrameTrans.Checked && i >= 6))
                 {
                     p[i] = _transBoxes[i].Value;
-                    frame.SetBool(i + 0x10, _transBoxes[i].BackColor == Color.Yellow);
+                    frame.SetBool(i, _transBoxes[i].BackColor == Color.Yellow);
                 }
                 _transBoxes[i].Value = float.NaN;
                 BoxChanged(_transBoxes[i], null);
             }
 
-            _tempFrame = frame;
+            DataObject da = new DataObject();
+            da.SetData("AnimationFrame", frame);
+            Clipboard.SetDataObject(da, true);
         }
 
         public void ClearEntry()
@@ -1173,13 +1144,9 @@ namespace System.Windows.Forms
             AnimationFrame frame = new AnimationFrame();
             float* p = (float*)&frame;
 
-            //if (FrameScale.Checked) frame.hasSx = frame.hasSy = frame.hasSz = true;
-            //if (FrameRot.Checked) frame.hasRx = frame.hasRy = frame.hasRz = true;
-            //if (FrameTrans.Checked) frame.hasTx = frame.hasTy = frame.hasTz = true;
-
             for (int i = 0; i < 9; i++)
             {
-                frame.SetBool(i + 0x10, false);
+                frame.SetBool(i, false);
                 if ((!FrameScale.Checked && i < 3))
                     p[i] = 1;
                 else if (
@@ -1188,30 +1155,34 @@ namespace System.Windows.Forms
                     (FrameTrans.Checked && i >= 6))
                 {
                     p[i] = _transBoxes[i].Value;
-                    frame.SetBool(i + 0x10, _transBoxes[i].BackColor == Color.Yellow);
+                    frame.SetBool(i, _transBoxes[i].BackColor == Color.Yellow);
                 }
             }
-            _tempFrame = frame;
-            //Clipboard.SetData("AnimationFrame", frame);
+            DataObject da = new DataObject();
+            da.SetData("AnimationFrame", frame);
+            Clipboard.SetDataObject(da, true);
         }
 
         private unsafe void btnPaste_Click(object sender, EventArgs e)
         {
-            //AnimationFrame copyFrame = (AnimationFrame)Clipboard.GetData("AnimationFrame");
-
-            AnimationFrame frame = _tempFrame;
-            float* p = (float*)&frame;
-
-            BoxChangedCreateUndo(this, null);
-
-            for (int i = 0; i < 9; i++)
+            IDataObject da = Clipboard.GetDataObject();
+            if (da.GetDataPresent("AnimationFrame"))
             {
-                if ((FrameScale.Checked && i < 3) ||
-                    (FrameRot.Checked && i >= 3 && i < 6) ||
-                    (FrameTrans.Checked && i >= 6))
-                    if (_transBoxes[i].Value != p[i] && (!_onlyKeys || frame.GetBool(i)))
-                        _transBoxes[i].Value = p[i];
-                BoxChanged(_transBoxes[i], null);
+                AnimationFrame frame = (AnimationFrame)da.GetData("AnimationFrame");
+
+                float* p = (float*)&frame;
+
+                BoxChangedCreateUndo(this, null);
+
+                for (int i = 0; i < 9; i++)
+                {
+                    if ((FrameScale.Checked && i < 3) ||
+                        (FrameRot.Checked && i >= 3 && i < 6) ||
+                        (FrameTrans.Checked && i >= 6))
+                        if (_transBoxes[i].Value != p[i] && (!_onlyKeys || frame.GetBool(i)))
+                            _transBoxes[i].Value = p[i];
+                    BoxChanged(_transBoxes[i], null);
+                }
             }
         }
 

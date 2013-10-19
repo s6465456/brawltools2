@@ -8,9 +8,8 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefActionListNode : MoveDefEntryNode
+    public unsafe class MoveDefActionListNode : MoveDefEntry
     {
-        public override ResourceType ResourceType { get { return ResourceType.MDefActionList; } }
         public List<List<int>> ActionOffsets = new List<List<int>>();
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
@@ -19,9 +18,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             int count = 0;
             if (Children.Count > 0) count = Children[0].Children.Count;
             for (int i = 0; i < count; i++)
-                foreach (MoveDefEntryNode g in Children)
+                foreach (MoveDefEntry g in Children)
                 {
-                    MoveDefActionNode a = (MoveDefActionNode)g.Children[i];
+                    ActionScript a = (ActionScript)g.Children[i];
                     addr[g.Index + Children.Count * count] = a.RebuildOffset;
                 }
         }
@@ -29,21 +28,21 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override int OnCalculateSize(bool force)
         {
             int s = 0;
-            foreach (MoveDefEntryNode g in Children)
+            foreach (MoveDefEntry g in Children)
                 s += g.Children.Count * 4;
             return s;
         }
     }
-    public class MoveDefSubRoutineListNode : MoveDefEntryNode
+    public class MoveDefSubRoutineListNode : MoveDefEntry
     {
         public override ResourceType ResourceType { get { return ResourceType.MDefSubroutineList; } }
     }
-    public class MoveDefGroupNode : MoveDefEntryNode
+    public class MoveDefGroupNode : MoveDefEntry
     {
         public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
     }
 
-    public unsafe class MoveDefRawDataNode : MoveDefExternalNode
+    public unsafe class MoveDefRawDataNode : ReferenceEntry
     {
         internal byte* Header { get { return (byte*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -54,11 +53,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override bool OnInitialize()
         {
-            if ((Parent as MoveDefEntryNode)._offset != _offset)
+            if ((Parent as MoveDefEntry)._offset != _offset)
                 base.OnInitialize();
 
-            _offsets = new List<int>();
-            _offsets.Add(_offset);
+            _dataOffsets = new List<int>();
+            _dataOffsets.Add(_offset);
 
             data = new byte[WorkingUncompressed.Length];
             
@@ -98,7 +97,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefBoneIndicesNode : MoveDefEntryNode
+    public unsafe class MoveDefBoneIndicesNode : MoveDefEntry
     {
         internal bint* Start { get { return (bint*)WorkingUncompressed.Address; } }
         internal int Count = 0;
@@ -136,7 +135,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefBoneIndexNode : MoveDefEntryNode
+    public unsafe class MoveDefBoneIndexNode : MoveDefEntry
     {
         internal bint* Header { get { return (bint*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -200,7 +199,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefIndicesNode : MoveDefEntryNode
+    public unsafe class MoveDefIndicesNode : MoveDefEntry
     {
         internal bint* Start { get { return (bint*)WorkingUncompressed.Address; } }
         internal int Count = 0;
@@ -239,7 +238,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefIndexNode : MoveDefEntryNode
+    public unsafe class MoveDefIndexNode : MoveDefEntry
     {
         internal bint* Header { get { return (bint*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -271,7 +270,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefOffsetNode : MoveDefEntryNode
+    public unsafe class MoveDefOffsetNode : MoveDefEntry
     {
         internal bint* Header { get { return (bint*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -287,11 +286,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             i = *Header;
             if (_name == null)
             {
-                _extNode = Root.IsExternal(DataOffset);
-                if (_extNode != null && !_extOverride)
+                _externalEntry = _root.TryGetExternal(DataOffset);
+                if (_externalEntry != null && !_extOverride)
                 {
-                    _name = _extNode.Name;
-                    _extNode._refs.Add(this);
+                    _name = _externalEntry.Name;
+                    _externalEntry._refs.Add(this);
                 }
             }
 
@@ -302,7 +301,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefListOffsetNode : MoveDefEntryNode
+    public unsafe class MoveDefListOffsetNode : MoveDefEntry
     {
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         internal int i = 0;

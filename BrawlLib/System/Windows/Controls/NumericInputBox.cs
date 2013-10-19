@@ -13,7 +13,7 @@ namespace System.Windows.Forms
             get { return _value; }
             set
             {
-                float val = value.Clamp(MinValue, MaxValue);
+                float val = value.Clamp(_minValue, _maxValue);
                 if (_value == val) return;
                 _value = val;
 
@@ -24,9 +24,13 @@ namespace System.Windows.Forms
 
         public NumericInputBox() { UpdateText(); }
 
-        public float MinValue = float.MinValue;
-        public float MaxValue = float.MaxValue;
-        public bool Integral = false;
+        public float MinimumValue { get { return _minValue; } set { _minValue = value; } }
+        public float MaximumValue { get { return _maxValue; } set { _maxValue = value; } }
+        public bool Integral { get { return _integral; } set { _integral = value; } }
+
+        public float _minValue = float.MinValue;
+        public float _maxValue = float.MaxValue;
+        public bool _integral = false;
 
         public event EventHandler ValueChanged;
 
@@ -107,7 +111,7 @@ namespace System.Windows.Forms
                 case Keys.Up:
                     if (float.TryParse(Text, out val))
                     {
-                        if (e.Shift || Integral)
+                        if (e.Shift || _integral)
                             Text = (val + 1.0f).ToString();
                         else
                             Text = (val + 0.1f).ToString();
@@ -120,7 +124,7 @@ namespace System.Windows.Forms
                 case Keys.Down:
                     if (float.TryParse(Text, out val))
                     {
-                        if (e.Shift || Integral)
+                        if (e.Shift || _integral)
                             Text = (val - 1.0f).ToString();
                         else
                             Text = (val - 0.1f).ToString();
@@ -197,10 +201,10 @@ namespace System.Windows.Forms
 
             if (Text == "")
                 val = float.NaN;
-            else if (!Integral)
+            else if (!_integral)
             {
                 float.TryParse(Text, out val);
-                val = val.Clamp(MinValue, MaxValue);
+                val = val.Clamp(_minValue, _maxValue);
             }
             else
             {
@@ -210,7 +214,7 @@ namespace System.Windows.Forms
                 //val2 = val2.Clamp(min, max);
             }
 
-            if (!Integral)
+            if (!_integral)
             {
                 if (_value != val)
                 {

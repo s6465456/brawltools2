@@ -167,7 +167,10 @@
             // numRadius
             // 
             this.numRadius.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRadius.Integral = false;
             this.numRadius.Location = new System.Drawing.Point(75, 54);
+            this.numRadius.MaximumValue = 3.402823E+38F;
+            this.numRadius.MinimumValue = -3.402823E+38F;
             this.numRadius.Name = "numRadius";
             this.numRadius.Size = new System.Drawing.Size(70, 20);
             this.numRadius.TabIndex = 45;
@@ -177,7 +180,10 @@
             // numRegion
             // 
             this.numRegion.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRegion.Integral = false;
             this.numRegion.Location = new System.Drawing.Point(213, 54);
+            this.numRegion.MaximumValue = 3.402823E+38F;
+            this.numRegion.MinimumValue = -3.402823E+38F;
             this.numRegion.Name = "numRegion";
             this.numRegion.Size = new System.Drawing.Size(70, 20);
             this.numRegion.TabIndex = 47;
@@ -187,7 +193,10 @@
             // numRotX
             // 
             this.numRotX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotX.Integral = false;
             this.numRotX.Location = new System.Drawing.Point(75, 35);
+            this.numRotX.MaximumValue = 3.402823E+38F;
+            this.numRotX.MinimumValue = -3.402823E+38F;
             this.numRotX.Name = "numRotX";
             this.numRotX.Size = new System.Drawing.Size(70, 20);
             this.numRotX.TabIndex = 42;
@@ -197,7 +206,10 @@
             // numRotY
             // 
             this.numRotY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotY.Integral = false;
             this.numRotY.Location = new System.Drawing.Point(144, 35);
+            this.numRotY.MaximumValue = 3.402823E+38F;
+            this.numRotY.MinimumValue = -3.402823E+38F;
             this.numRotY.Name = "numRotY";
             this.numRotY.Size = new System.Drawing.Size(70, 20);
             this.numRotY.TabIndex = 43;
@@ -207,7 +219,10 @@
             // numRotZ
             // 
             this.numRotZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotZ.Integral = false;
             this.numRotZ.Location = new System.Drawing.Point(213, 35);
+            this.numRotZ.MaximumValue = 3.402823E+38F;
+            this.numRotZ.MinimumValue = -3.402823E+38F;
             this.numRotZ.Name = "numRotZ";
             this.numRotZ.Size = new System.Drawing.Size(70, 20);
             this.numRotZ.TabIndex = 44;
@@ -217,7 +232,10 @@
             // numTransX
             // 
             this.numTransX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numTransX.Integral = false;
             this.numTransX.Location = new System.Drawing.Point(75, 16);
+            this.numTransX.MaximumValue = 3.402823E+38F;
+            this.numTransX.MinimumValue = -3.402823E+38F;
             this.numTransX.Name = "numTransX";
             this.numTransX.Size = new System.Drawing.Size(70, 20);
             this.numTransX.TabIndex = 36;
@@ -227,7 +245,10 @@
             // numTransY
             // 
             this.numTransY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numTransY.Integral = false;
             this.numTransY.Location = new System.Drawing.Point(144, 16);
+            this.numTransY.MaximumValue = 3.402823E+38F;
+            this.numTransY.MinimumValue = -3.402823E+38F;
             this.numTransY.Name = "numTransY";
             this.numTransY.Size = new System.Drawing.Size(70, 20);
             this.numTransY.TabIndex = 40;
@@ -237,7 +258,10 @@
             // numTransZ
             // 
             this.numTransZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numTransZ.Integral = false;
             this.numTransZ.Location = new System.Drawing.Point(213, 16);
+            this.numTransZ.MaximumValue = 3.402823E+38F;
+            this.numTransZ.MinimumValue = -3.402823E+38F;
             this.numTransZ.Name = "numTransZ";
             this.numTransZ.Size = new System.Drawing.Size(70, 20);
             this.numTransZ.TabIndex = 41;
@@ -354,9 +378,10 @@
             this.groupBox1.Controls.Add(this.SelectedBone);
             this.groupBox1.Controls.Add(this.SelectedZone);
             this.groupBox1.Controls.Add(this.checkBox1);
-            this.groupBox1.Location = new System.Drawing.Point(0, 3);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(288, 98);
+            this.groupBox1.Size = new System.Drawing.Size(289, 99);
             this.groupBox1.TabIndex = 54;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Edit Hurtbox";
@@ -367,7 +392,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox1);
             this.Name = "HurtboxEditor";
-            this.Size = new System.Drawing.Size(288, 102);
+            this.Size = new System.Drawing.Size(289, 99);
             this.ctxBox.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

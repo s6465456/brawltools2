@@ -454,7 +454,7 @@ namespace Ikarus
         public Dictionary<int, List<string>> Enums;
     }
 
-    public class Event
+    public class EventData
     {
         public void SetEventEvent(uint v) { _eventEvent = v; ResolveEventEvent(); }
         public long GetEventEvent() { return _eventEvent; }
@@ -470,24 +470,24 @@ namespace Ikarus
 
             _paramCount = (byte)((_eventEvent >> 8) & 0xFF);
 
-            Array.Resize<Param>(ref _parameters, (int)_paramCount);
-            for (int i = 0; i < _paramCount; i++) _parameters[i] = new Param();
+            Array.Resize<ParameterData>(ref _parameters, (int)_paramCount);
+            for (int i = 0; i < _paramCount; i++) _parameters[i] = new ParameterData();
         }
 
         public string _eventId;
         public uint _pParameters;
         public byte _paramCount;
-        public Param[] _parameters;
+        public ParameterData[] _parameters;
         public uint _eventEvent;
     }
 
-    public class Param
+    public class ParameterData
     {
         public ArgVarType _type;
         public int _data;
 
-        public static implicit operator int(Param val) { return (int)val._data; }
-        public static implicit operator uint(Param val) { return (uint)val._data; }
+        public static implicit operator int(ParameterData val) { return (int)val._data; }
+        public static implicit operator uint(ParameterData val) { return (uint)val._data; }
     }
 
     public enum ArgVarType : int

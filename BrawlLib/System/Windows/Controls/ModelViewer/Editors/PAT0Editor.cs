@@ -240,15 +240,15 @@ namespace System.Windows.Forms
 
                 if (node != null)
                 {
-                    PAT0TextureEntryNode tex = node.GetTextureEntryExplicit(CurrentFrame - 1);
+                    PAT0TextureEntryNode tex = node.GetEntry(CurrentFrame - 1);
                     if (tex == null)
                     {
                         if (!String.IsNullOrEmpty(texBox.Text) || !String.IsNullOrEmpty(pltBox.Text))
                         {
                             tex = new PAT0TextureEntryNode();
-                            tex._key = CurrentFrame - 1;
+                            tex._frame = CurrentFrame - 1;
                             if (node.Children.Count > 0)
-                                node.InsertChild(tex, true, node.GetTextureEntry(CurrentFrame - 1).Index + 1);
+                                node.InsertChild(tex, true, node.GetPrevious(CurrentFrame - 1).Index + 1);
                             else
                                 node.AddChild(tex, true);
                             tex.Texture = texBox.Text;

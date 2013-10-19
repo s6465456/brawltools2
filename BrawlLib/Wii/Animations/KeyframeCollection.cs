@@ -5,6 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using BrawlLib.SSBBTypes;
+using BrawlLib.Modeling;
 
 namespace BrawlLib.Wii.Animations
 {
@@ -28,7 +29,7 @@ namespace BrawlLib.Wii.Animations
     public interface IKeyframeHolder
     {
         KeyframeEntry GetKeyframe(KeyFrameMode mode, int index);
-        void SetKeyframe(KeyFrameMode mode, int index, float value);
+        KeyframeEntry SetKeyframe(KeyFrameMode mode, int index, float value);
         void SetKeyframe(int index, AnimationFrame frame);
         void SetKeyframeOnlyTrans(int index, AnimationFrame frame);
         void SetKeyframeOnlyRot(int index, AnimationFrame frame);
@@ -87,13 +88,13 @@ namespace BrawlLib.Wii.Animations
 
         public int this[KeyFrameMode mode] { get { return _keyCounts[(int)mode - 0x10]; } }
 
-        internal int _frameLimit;
-        public int FrameLimit
+        internal int _frameCount;
+        public int FrameCount
         {
-            get { return _frameLimit; }
+            get { return _frameCount; }
             set
             {
-                _frameLimit = value;
+                _frameCount = value;
                 for (int i = 0; i < 9; i++)
                 {
                     KeyframeEntry root = _keyRoots[i];
@@ -103,12 +104,14 @@ namespace BrawlLib.Wii.Animations
                         _keyCounts[i]--;
                     }
                 }
-                FindMaxMin();
             }
         }
         
         internal bool _linearRot;
         public bool LinearRotation { get { return _linearRot; } set { _linearRot = value; } }
+
+        internal bool _loop;
+        public bool Loop { get { return _loop; } set { _loop = value; } }
 
         public float this[KeyFrameMode mode, int index]
         {
@@ -116,12 +119,12 @@ namespace BrawlLib.Wii.Animations
             set { SetFrameValue(mode, index, value); }
         }
 
-        public KeyframeCollection(int limit) { _frameLimit = limit; }
+        public KeyframeCollection(int limit) { _frameCount = limit; }
 
         private const float _cleanDistance = 0.00001f;
-        public void Clean()
+        public int Clean()
         {
-            int flag, res;
+            int flag, res, removed = 0;
             KeyframeEntry entry, root;
             for (int i = 0; i < 9; i++)
             {
@@ -153,10 +156,11 @@ namespace BrawlLib.Wii.Animations
                         entry = entry._prev;
                         entry._next.Remove();
                         _keyCounts[i]--;
+                        removed++;
                     }
                 }
             }
-            FindMaxMin();
+            return removed;
         }
 
         public KeyframeEntry GetKeyframe(KeyFrameMode mode, int index)
@@ -169,26 +173,30 @@ namespace BrawlLib.Wii.Animations
         }
         public float GetFrameValue(KeyFrameMode mode, int index)
         {
-            return GetFrameValue(mode, index, false);
+            return GetFrameValue(mode, index, false, false);
         }
-        public float GetFrameValue(KeyFrameMode mode, int index, bool linear)
+        public float GetFrameValue(KeyFrameMode mode, int index, bool linear, bool loop)
         {
             KeyframeEntry entry, root = _keyRoots[(int)mode & 0xF];
 
             if (index >= root._prev._index)
-                return root._prev._value;
+                //if (!loop || root._prev == root._next)
+                    return root._prev._value;
+                //else
+                //    return root._prev.Interpolate2(_frameCount - index + root._next._index, _linearRot || linear, _frameCount);
             if (index <= root._next._index)
-                return root._next._value;
+                //if (!loop || root._prev == root._next)
+                    return root._next._value;
+                //else
+                //    return root._prev.Interpolate2(_frameCount - root._prev._index + index, _linearRot || linear, _frameCount);
 
-            //Find the entry just before the specified index
-            for (entry = root._next; //Get the first entry
-                (entry != root) && //Make sure it's not the root
-                (entry._index < index);  //Its index must be less than the current index
-                entry = entry._next) //Get the next entry
-                if (entry._index == index) //The index is a keyframe
-                    return entry._value; //Return the value of the keyframe.
-
-            //There was no keyframe... interpolate!
+            for (entry = root._next;
+                (entry != root) &&
+                (entry._index < index); 
+                entry = entry._next)
+                if (entry._index == index)
+                    return entry._value;
+            
             return entry._prev.Interpolate(index - entry._prev._index, _linearRot || linear);
         }
         public KeyframeEntry SetFrameValue(KeyFrameMode mode, int index, float value)
@@ -212,34 +220,7 @@ namespace BrawlLib.Wii.Animations
                 else
                     entry._value = value;
             }
-            FindMaxMin();
             return entry;
-        }
-
-        public List<float> _minVals;
-        public List<float> _maxVals;
-
-        public void FindMaxMin()
-        {
-            _minVals = new List<float> { float.MaxValue, float.MaxValue, float.MaxValue, float.MaxValue, float.MaxValue, float.MaxValue, float.MaxValue, float.MaxValue, float.MaxValue };
-            _maxVals = new List<float> { float.MinValue, float.MinValue, float.MinValue, float.MinValue, float.MinValue, float.MinValue, float.MinValue, float.MinValue, float.MinValue };
-
-            for (int i = 0; i <= _frameLimit; i++)
-            {
-                for (int y = 0x10; y < 0x19; y++)
-                {
-                    if (this[(KeyFrameMode)y] == 0)
-                        continue;
-
-                    float v = GetFrameValue((KeyFrameMode)y, i);
-                    
-                    int s = y - 0x10;
-                    if (v < _minVals[s])
-                        _minVals[s] = v;
-                    if (v > _minVals[s])
-                        _minVals[s] = v;
-                }
-            }
         }
 
         public AnimationFrame GetFullFrame(int index)
@@ -248,12 +229,12 @@ namespace BrawlLib.Wii.Animations
         }
         public AnimationFrame GetFullFrame(int index, bool linear)
         {
-            AnimationFrame frame;
+            AnimationFrame frame = new AnimationFrame() { Index = index };
             float* dPtr = (float*)&frame;
             for (int x = 0x10; x < 0x19; x++)
             {
-                frame.SetBool(x, GetKeyframe((KeyFrameMode)x, index) != null);
-                *dPtr++ = GetFrameValue((KeyFrameMode)x, index, linear);
+                frame.SetBool(x - 0x10, GetKeyframe((KeyFrameMode)x, index) != null);
+                *dPtr++ = GetFrameValue((KeyFrameMode)x, index, linear, false);
             }
             return frame;
         }
@@ -275,7 +256,6 @@ namespace BrawlLib.Wii.Animations
                 else
                     entry = null;
             }
-            FindMaxMin();
             return entry;
         }
 
@@ -286,14 +266,13 @@ namespace BrawlLib.Wii.Animations
             {
                 root = _keyRoots[x];
                 for (entry = root._prev; (entry != root) && (entry._index >= index); entry = entry._prev)
-                    if (++entry._index >= _frameLimit)
+                    if (++entry._index >= _frameCount)
                     {
                         entry = entry._next;
                         entry._prev.Remove();
                         _keyCounts[x]--;
                     }
             }
-            FindMaxMin();
         }
 
         public void Delete(KeyFrameMode mode, int index)
@@ -310,7 +289,6 @@ namespace BrawlLib.Wii.Animations
                         _keyCounts[x]--;
                     }
             }
-            FindMaxMin();
         }
     }
 
@@ -347,7 +325,24 @@ namespace BrawlLib.Wii.Animations
         {
             _next._prev = _prev;
             _prev._next = _next;
-            //_prev = _next = this;
+        }
+
+        public float Interpolate2(float offset, bool linear, int frameCount)
+        {
+            if (offset == 0) return _value;
+            int span = frameCount - _index + _next._index;
+            if (offset == span) return _next._value;
+
+            float diff = _next._value - _value;
+
+            if (linear) return _value + (diff / span * offset);
+
+            float time = (float)offset / span;
+            float inv = time - 1.0f;
+
+            return _value
+                + (offset * inv * ((inv * _tangent) + (time * _next._tangent)))
+                + ((time * time) * (3.0f - 2.0f * time) * diff);
         }
 
         public float Interpolate(float offset, bool linear)
@@ -368,24 +363,11 @@ namespace BrawlLib.Wii.Animations
                 + ((time * time) * (3.0f - 2.0f * time) * diff);
         }
 
-        /*-------------------------------------------------------------------------*
-          Name:         Hermite(f32, f32, f32, f32, f32)
-
-          Description:  Performs Hermite interpolation.
-
-          Arguments:    
-
-          Returns:      
-         *-------------------------------------------------------------------------*/
-        // f32 Hermite(f32 p1, f32 t1, f32 p2, f32 t2, f32 s)
-        //
-        // Description:  Performs Hermite interpolation.
         // Arguments:    p1: Value at point 1.
         //               t1: Slope at point 1.
         //               p2: Value at point 2.
         //               t2: Slope at point 2.
         //               s:  Interpolation target position. (Point 1: 0.0~1.0 :Point 2)
-        // Return value: Value of interpolated result.
         float Hermite(float p1, float t1,
                     float p2, float t2,
                     float s)
@@ -400,28 +382,13 @@ namespace BrawlLib.Wii.Animations
             return p1 - a2 * p1 + a2 * p2 + b1 * t1 + b2 * t2;
         }
 
-
-        /*-------------------------------------------------------------------------*
-          Name:         Bezier(f32, f32, f32, f32, f32)
-
-          Description:  Performs Bezier interpolation.
-
-          Arguments:    
-
-          Returns:      
-         *-------------------------------------------------------------------------*/
-        // f32 Bezier(f32 p1, f32 p2, f32 p3, f32 p4, f32 s)
-        //
-        // Description:  Performs Bezier interpolation.
         // Arguments:    p1: Value at point 1.
         //               p2: Control value at point 1.
         //               p3: Control value at point 2.
         //               p4: Value at point 2.
         //               s:  Interpolation target position. (Point 1: 0.0~1.0 :Point 2)
-        // Return value: Value of interpolated result.
         float Bezier(float p1, float p2, float p3, float p4, float s)
         {
-            // Be sure to use a better method of calculation
             float t = 1.0f - s;
             float tt = t * t;
             float ss = s * s;
@@ -434,29 +401,13 @@ namespace BrawlLib.Wii.Animations
             return a1 * p1 + a2 * p2 + a3 * p3 + a4 * p4;
         }
 
-
-
-        /*-------------------------------------------------------------------------*
-          Name:         CatmullRom(f32, f32, f32, f32, f32)
-          
-          Description:  Performs Catmull-Rom interpolation.
-          
-          Arguments:    
-          
-          Returns:      
-         *-------------------------------------------------------------------------*/
-        // f32 CatmullRom(f32 p0, f32 p1, f32 p2, f32 p3, f32 s)
-        //
-        // Description: Performs Catmull-Rom interpolation.
         // Arguments:   p0: Control value at point 1.
         //              p1: Value at point 1.
         //              p2: Value at point 2.
         //              p3: Control value at point 2.
         //              s:  Interpolation target position. (Point 1: 0.0~1.0 :Point 2)
-        // Return value: Value of interpolated result.
         public float CatmullRom(float p0, float p1, float p2, float p3, float s)
         {
-            // Be sure to use a better method of calculation
             return Hermite(p1, 0.5f * (p0 + p2),
                            p2, 0.5f * (p1 + p3),
                            s);
@@ -515,7 +466,6 @@ namespace BrawlLib.Wii.Animations
                     _keyCount--;
                 }
 
-                FindMaxMin();
             }
         }
         
@@ -569,7 +519,6 @@ namespace BrawlLib.Wii.Animations
                     _keyCount--;
                 }
             }
-            FindMaxMin();
         }
 
         public KeyframeEntry GetKeyframe(int index)
@@ -580,7 +529,12 @@ namespace BrawlLib.Wii.Animations
                 return entry;
             return null;
         }
-        public float GetFrameValue(float index)
+
+        public float GetFrameValue(int index)
+        {
+            return GetFrameValue(index, false);
+        }
+        public float GetFrameValue(int index, bool linear)
         {
             KeyframeEntry entry;
 
@@ -598,8 +552,9 @@ namespace BrawlLib.Wii.Animations
                     return entry._value; //Return the value of the keyframe.
 
             //There was no keyframe... interpolate!
-            return entry._prev.Interpolate(index - (float)entry._prev._index, _linear);
+            return entry._prev.Interpolate(index - entry._prev._index, _linear || linear);
         }
+
         public KeyframeEntry SetFrameValue(int index, float value)
         {
             KeyframeEntry entry = null;
@@ -617,28 +572,7 @@ namespace BrawlLib.Wii.Animations
             else
                 entry._value = value;
 
-            FindMaxMin();
-
             return entry;
-        }
-
-        public float _minVal;
-        public float _maxVal;
-
-        public void FindMaxMin()
-        {
-            _minVal = float.MaxValue;
-            _maxVal = float.MinValue;
-
-            for (int i = 0; i <= _frameLimit; i++)
-            {
-                float v = GetFrameValue(i);
-                
-                if (v < _minVal)
-                    _minVal = v;
-                if (v > _maxVal)
-                    _maxVal = v;
-            }
         }
 
         public KeyframeEntry Remove(int index)
@@ -654,8 +588,6 @@ namespace BrawlLib.Wii.Animations
             else
                 entry = null;
 
-            FindMaxMin();
-
             return entry;
         }
 
@@ -669,8 +601,6 @@ namespace BrawlLib.Wii.Animations
                     entry._prev.Remove();
                     _keyCount--;
                 }
-
-            FindMaxMin();
         }
 
         public void Delete(int index)
@@ -683,8 +613,6 @@ namespace BrawlLib.Wii.Animations
                     entry._prev.Remove();
                     _keyCount--;
                 }
-
-            FindMaxMin();
         }
     }
 }

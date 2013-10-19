@@ -8,7 +8,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefUnk22Node : MoveDefEntryNode
+    public unsafe class MoveDefUnk22Node : MoveDefEntry
     {
         internal FDefUnk22* Header { get { return (FDefUnk22*)WorkingUncompressed.Address; } }
 
@@ -35,7 +35,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnPopulate()
         {
-            new MoveDefActionNode("Action", false, this).Initialize(this, BaseAddress + _actionOffset, 0);
+            new ActionScript("Action", false, this).Initialize(this, BaseAddress + _actionOffset, 0);
         }
 
         public override int OnCalculateSize(bool force)
@@ -50,7 +50,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             FDefUnk22* data = (FDefUnk22*)address;
             data->_unk1 = _unk1;
             data->_unk2 = _unk2;
-            data->_actionOffset = (int)(Children[0] as MoveDefActionNode)._rebuildAddr - (int)RebuildBase;
+            data->_actionOffset = (int)(Children[0] as ActionScript)._rebuildAddr - (int)RebuildBase;
 
             _lookupOffsets.Add(data->_actionOffset.Address);
         }

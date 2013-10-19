@@ -19,48 +19,7 @@ namespace System.Windows.Forms
 {
     public partial class ModelEditControl : UserControl, IMainWindow
     {
-        private void toggleNormals_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_updating) return;
-
-            _updating = true;
-            RenderNormals = toggleNormals.Checked;
-            _updating = false;
-        }
-        private unsafe void storeSettingsExternallyToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_updating) return;
-            BrawlLib.Properties.Settings.Default.External = storeSettingsExternallyToolStripMenuItem.Checked;
-
-            BBVS settings = new BBVS();
-            if (BrawlLib.Properties.Settings.Default.External)
-            {
-                settings = BrawlLib.Properties.Settings.Default.ViewerSettings;
-                using (FileStream stream = new FileStream(Application.StartupPath + "/brawlbox.settings", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 8, FileOptions.SequentialScan))
-                {
-                    CompactStringTable s = new CompactStringTable();
-                    s.Add(ScreenCapBgLocText.Text);
-                    stream.SetLength((long)BBVS.Size + s.TotalSize);
-                    using (FileMap map = FileMap.FromStream(stream))
-                    {
-                        *(BBVS*)map.Address = settings;
-                        s.WriteTable(map.Address + BBVS.Size);
-                        ((BBVS*)map.Address)->_screenCapPathOffset = (uint)s[ScreenCapBgLocText.Text] - (uint)map.Address;
-                    }
-                }
-            }
-            else
-            {
-                if (File.Exists(Application.StartupPath + "/brawlbox.settings"))
-                    using (FileMap map = FileMap.FromFile(Application.StartupPath + "/brawlbox.settings", FileMapProtect.Read))
-                        if (*(uint*)map.Address == BBVS.Tag)
-                            settings = *(BBVS*)map.Address;
-
-                BrawlLib.Properties.Settings.Default.ViewerSettings = settings;
-                BrawlLib.Properties.Settings.Default.ScreenCapBgLocText = ScreenCapBgLocText.Text;
-                BrawlLib.Properties.Settings.Default.Save();
-            }
-        }
+        #region Projection
         private void orthographicToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (_updating)
@@ -69,17 +28,16 @@ namespace System.Windows.Forms
             _updating = true;
             if (orthographicToolStripMenuItem.Checked)
             {
-                modelPanel.SetProjectionType(true);
+                ModelPanel.SetProjectionType(true);
                 perspectiveToolStripMenuItem.Checked = false;
             }
             else
             {
-                modelPanel.SetProjectionType(false);
+                ModelPanel.SetProjectionType(false);
                 perspectiveToolStripMenuItem.Checked = true;
             }
             _updating = false;
         }
-
         private void perspectiveToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (_updating)
@@ -88,16 +46,20 @@ namespace System.Windows.Forms
             _updating = true;
             if (perspectiveToolStripMenuItem.Checked)
             {
-                modelPanel.SetProjectionType(false);
+                ModelPanel.SetProjectionType(false);
                 orthographicToolStripMenuItem.Checked = false;
             }
             else
             {
-                modelPanel.SetProjectionType(true);
+                ModelPanel.SetProjectionType(true);
                 orthographicToolStripMenuItem.Checked = true;
             }
             _updating = false;
         }
+        #endregion
+
+        #region BG Image Display
+
         private void stretchToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (_updating) return;
@@ -105,9 +67,9 @@ namespace System.Windows.Forms
             {
                 _updating = true;
                 centerToolStripMenuItem1.Checked = resizeToolStripMenuItem1.Checked = false;
-                modelPanel._bgType = GLPanel.BackgroundType.Stretch;
+                ModelPanel._bgType = GLPanel.BackgroundType.Stretch;
                 _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
 
@@ -118,9 +80,9 @@ namespace System.Windows.Forms
             {
                 _updating = true;
                 stretchToolStripMenuItem1.Checked = resizeToolStripMenuItem1.Checked = false;
-                modelPanel._bgType = GLPanel.BackgroundType.Center;
+                ModelPanel._bgType = GLPanel.BackgroundType.Center;
                 _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
 
@@ -131,51 +93,34 @@ namespace System.Windows.Forms
             {
                 _updating = true;
                 centerToolStripMenuItem1.Checked = stretchToolStripMenuItem1.Checked = false;
-                modelPanel._bgType = GLPanel.BackgroundType.ResizeWithBars;
+                ModelPanel._bgType = GLPanel.BackgroundType.ResizeWithBars;
                 _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
-        private void chkShaders_CheckedChanged(object sender, EventArgs e)
-        {
-            if (modelPanel._ctx != null)
-            {
-                if (modelPanel._ctx._version < 2 && chkShaders.Checked)
-                {
-                    MessageBox.Show("You need at least OpenGL 2.0 to view shaders.", "GLSL not supported",
-                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 
-                    chkShaders.Checked = false;
-                    return;
-                }
-                else
-                {
-                    if (modelPanel._ctx._shadersEnabled && !chkShaders.Checked) { GL.UseProgram(0); GL.ActiveTexture(TextureUnit.Texture0); }
-                    modelPanel._ctx._shadersEnabled = chkShaders.Checked;
-                }
-            }
-            modelPanel.Invalidate();
-        }
+        #endregion
 
+        #region Settings
         private void showCameraCoordinatesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            modelPanel._showCamCoords = showCameraCoordinatesToolStripMenuItem.Checked;
+            ModelPanel._showCamCoords = showCameraCoordinatesToolStripMenuItem.Checked;
         }
-
         private void enableTextOverlaysToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            modelPanel._textEnabled = enableTextOverlaysToolStripMenuItem.Checked;
+            ModelPanel._textEnabled = enableTextOverlaysToolStripMenuItem.Checked;
         }
-
         private void enablePointAndLineSmoothingToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            modelPanel._enableSmoothing = enablePointAndLineSmoothingToolStripMenuItem.Checked;
+            ModelPanel._enableSmoothing = enablePointAndLineSmoothingToolStripMenuItem.Checked;
         }
-
         private void stPersonToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            
+            ModelPanel.Invalidate();
         }
+        #endregion
+
+        #region Bone Control
 
         private void rotationToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
@@ -187,7 +132,7 @@ namespace System.Windows.Forms
                 _editType = TransformType.Rotation;
                 _snapCirc = _snapX = _snapY = _snapZ = false;
                 _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
             else if (translationToolStripMenuItem.Checked == rotationToolStripMenuItem.Checked == scaleToolStripMenuItem.Checked)
                 _editType = TransformType.None;
@@ -203,7 +148,7 @@ namespace System.Windows.Forms
                 _editType = TransformType.Translation;
                 _snapCirc = _snapX = _snapY = _snapZ = false;
                 _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
             else if (translationToolStripMenuItem.Checked == rotationToolStripMenuItem.Checked == scaleToolStripMenuItem.Checked)
                 _editType = TransformType.None;
@@ -219,49 +164,15 @@ namespace System.Windows.Forms
                 _editType = TransformType.Scale;
                 _snapCirc = _snapX = _snapY = _snapZ = false;
                 _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
             else if (translationToolStripMenuItem.Checked == rotationToolStripMenuItem.Checked == scaleToolStripMenuItem.Checked)
                 _editType = TransformType.None;
         }
-        private void displayBRRESRelativeAnimationsToolStripMenuItem_CheckStateChanged(object sender, EventArgs e)
-        {
-            leftPanel.BRRESRelative = displayBRRESRelativeAnimationsToolStripMenuItem.CheckState;
-            leftPanel.UpdateAnimations(TargetAnimType);
-            switch (leftPanel.BRRESRelative)
-            {
-                case CheckState.Checked:
-                    displayBRRESRelativeAnimationsToolStripMenuItem.Text = "Displaying only BRRES animations"; break;
-                case CheckState.Indeterminate:
-                    displayBRRESRelativeAnimationsToolStripMenuItem.Text = "Displaying BRRES and external animations"; break;
-                case CheckState.Unchecked:
-                    displayBRRESRelativeAnimationsToolStripMenuItem.Text = "Displaying all animations"; break;
-            }
-        }
 
-        private void chkPolygons_CheckStateChanged(object sender, EventArgs e)
-        {
-            if (!_updating)
-                RenderPolygons = chkPolygons.Checked;
-        }
+        #endregion
 
-        private void displayFrameCountDifferencesToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
-        {
-            if (_updating)
-                return;
-
-            DialogResult d;
-            if (!displayFrameCountDifferencesToolStripMenuItem.Checked)
-            {
-                if ((d = MessageBox.Show("Do you want to sync animation frame counts by default?", "Sync Frame Counts by Default", MessageBoxButtons.YesNo)) == DialogResult.Yes && !alwaysSyncFrameCountsToolStripMenuItem.Checked)
-                    alwaysSyncFrameCountsToolStripMenuItem.Checked = true;
-                else if (d == DialogResult.No)
-                    alwaysSyncFrameCountsToolStripMenuItem.Checked = false;
-            }
-            else
-                alwaysSyncFrameCountsToolStripMenuItem.Checked = false;
-        }
-
+        #region List Synchronization
         private void syncObjectsListToVIS0ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (_updating)
@@ -269,7 +180,6 @@ namespace System.Windows.Forms
 
             leftPanel.chkSyncVis.Checked = syncObjectsListToVIS0ToolStripMenuItem.Checked;
         }
-
         private void syncAnimationsTogetherToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (syncAnimationsTogetherToolStripMenuItem.Checked)
@@ -277,71 +187,9 @@ namespace System.Windows.Forms
             else
                 GetFiles(AnimType.None);
         }
-        public void pnlAnim_ReferenceLoaded(ResourceNode node) { modelPanel.AddReference(node); }
+        #endregion
 
-        public void CHR0StateChanged(object sender, EventArgs e)
-        {
-            if (_chr0 == null)
-                return;
-
-            if (_animFrame < _chr0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _chr0.FrameCount;
-        }
-        public void SRT0StateChanged(object sender, EventArgs e)
-        {
-            if (_srt0 == null)
-                return;
-
-            if (_animFrame < _srt0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _srt0.FrameCount;
-        }
-        public void SHP0StateChanged(object sender, EventArgs e)
-        {
-            if (_shp0 == null)
-                return;
-
-            if (_animFrame < _shp0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _shp0.FrameCount;
-        }
-        public void VIS0StateChanged(object sender, EventArgs e)
-        {
-            if (_vis0 == null)
-                return;
-
-            if (_animFrame < _vis0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _vis0.FrameCount;
-        }
-        public void PAT0StateChanged(object sender, EventArgs e)
-        {
-            if (_pat0 == null)
-                return;
-
-            if (_animFrame < _pat0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _pat0.FrameCount;
-        }
-
-        private void Undo(object sender, EventArgs e)
-        {
-            if (btnUndo.Enabled)
-                btnUndo_Click(null, null);
-        }
-        private void Redo(object sender, EventArgs e)
-        {
-            if (btnRedo.Enabled)
-                btnRedo_Click(null, null);
-        }
-        //private void ApplySave(object sender, EventArgs e)
-        //{
-        //    SaveState save = _save;
-        //    pnlAnim.ApplySave(save);
-        //    SetFrame(save.frameIndex);
-        //    modelPanel1.Invalidate();
-        //}
+        #region Playback Panel
         public void numFrameIndex_ValueChanged(object sender, EventArgs e)
         {
             int val = (int)pnlPlayback.numFrameIndex.Value;
@@ -350,7 +198,6 @@ namespace System.Windows.Forms
                 int difference = val - _animFrame;
                 if (TargetAnimation != null)
                     SetFrame(_animFrame += difference);
-                rightPanel.pnlKeyframes.numFrame_ValueChanged();
             }
         }
         public void numFPS_ValueChanged(object sender, EventArgs e)
@@ -360,20 +207,51 @@ namespace System.Windows.Forms
         public void chkLoop_CheckedChanged(object sender, EventArgs e) 
         {
             _loop = pnlPlayback.chkLoop.Checked;
-            if (syncLoopToAnimationToolStripMenuItem.Checked && !_updating)
-                TargetAnimation.Loop = _loop;
+            //if (TargetAnimation != null)
+            //    TargetAnimation.Loop = _loop;
+        }
+        public void numTotalFrames_ValueChanged(object sender, EventArgs e)
+        {
+            if ((TargetAnimation == null) || (_updating))
+                return;
+
+            pnlPlayback.numFrameIndex.Maximum = TargetAnimation.FrameCount = _maxFrame = (int)pnlPlayback.numTotalFrames.Value;
+        }
+        #endregion
+
+        #region Panel Toggles
+
+        private void showLeft_CheckedChanged(object sender, EventArgs e)
+        {
+            leftPanel.Visible = spltLeft.Visible = showLeft.Checked;
+            btnLeftToggle.Text = showLeft.Checked == false ? ">" : "<";
+        }
+        private void showRight_CheckedChanged(object sender, EventArgs e)
+        {
+            rightPanel.Visible = spltRight.Visible = showRight.Checked;
+            btnRightToggle.Text = showRight.Checked == false ? "<" : ">";
+        }
+        private void showBottom_CheckedChanged(object sender, EventArgs e) 
+        {
+            animEditors.Visible = !animEditors.Visible;
+            CheckDimensions();
+        }
+        private void showTop_CheckedChanged(object sender, EventArgs e) { controlPanel.Visible = showTop.Checked; }
+        public void DetermineRight()
+        {
+            if (rightPanel.Visible)
+                btnRightToggle.Text = ">";
+            else
+                btnRightToggle.Text = "<";
         }
 
-        //private void FileChanged(object sender, EventArgs e)
-        //{
-        //    movesetToolStripMenuItem1.Visible = chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = pnlMoveset._mainMoveset != null;
-        //}
+        #endregion
 
-        public void SelectedPolygonChanged(object sender, EventArgs e) 
+        public void SelectedPolygonChanged(object sender, EventArgs e)
         {
             _targetModel._polyIndex = _targetModel._objList.IndexOf(leftPanel.SelectedPolygon);
 
-            if (leftPanel._syncObjTex)
+            if (syncTexObjToolStripMenuItem.Checked)
                 leftPanel.UpdateTextures();
 
             if (TargetAnimType == AnimType.VIS)
@@ -392,144 +270,185 @@ namespace System.Windows.Forms
                         vis0Editor.listBox1.SelectedIndex = -1;
                 }
 
-            modelPanel.Invalidate(); 
+            ModelPanel.Invalidate();
         }
 
-        public void numTotalFrames_ValueChanged(object sender, EventArgs e)
+        private void chkShaders_CheckedChanged(object sender, EventArgs e)
         {
-            if ((TargetAnimation == null) || (_updating))
-                return;
-
-            _maxFrame = (int)pnlPlayback.numTotalFrames.Value;
-
-            AnimationNode n;
-            if (alwaysSyncFrameCountsToolStripMenuItem.Checked)
-                for (int i = 0; i < 5; i++)
-                    if ((n = GetSelectedBRRESFile((AnimType)i)) != null) 
-                        n.FrameCount = _maxFrame;
-                    else { }
-            else
+            if (ModelPanel._ctx != null)
             {
-                if ((n = TargetAnimation) != null)
-                    n.FrameCount = _maxFrame;
-                if (displayFrameCountDifferencesToolStripMenuItem.Checked)
-                    if (MessageBox.Show("Do you want to update the frame counts of the other animation types?", "Update Frame Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    for (int i = 0; i < 5; i++)
-                        if (i != (int)TargetAnimType && (n = GetSelectedBRRESFile((AnimType)i)) != null)
-                            n.FrameCount = _maxFrame;
+                if (ModelPanel._ctx._version < 2 && chkShaders.Checked)
+                {
+                    MessageBox.Show("You need at least OpenGL 2.0 to view shaders.", "GLSL not supported",
+                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+
+                    chkShaders.Checked = false;
+                    return;
+                }
+                else
+                {
+                    if (ModelPanel._ctx._shadersEnabled && !chkShaders.Checked) { GL.UseProgram(0); GL.ActiveTexture(TextureUnit.Texture0); }
+                    ModelPanel._ctx._shadersEnabled = chkShaders.Checked;
+                }
             }
-
-            pnlPlayback.numFrameIndex.Maximum = _maxFrame;
-        }
-        private void showAssets_CheckedChanged(object sender, EventArgs e)
-        {
-            leftPanel.Visible = spltLeft.Visible = showLeft.Checked;
-            btnLeftToggle.Text = showLeft.Checked == false ? ">" : "<";
-        }
-        private void showAnim_CheckedChanged(object sender, EventArgs e)
-        {
-            rightPanel.Visible = spltRight.Visible = showRight.Checked;
-            btnRightToggle.Text = showRight.Checked == false ? "<" : ">";
-        }
-        public void DetermineRight()
-        {
-            if (rightPanel.Visible)
-                btnRightToggle.Text = ">";
-            else
-                btnRightToggle.Text = "<";
-        }
-        private void showPlay_CheckedChanged(object sender, EventArgs e) 
-        {
-            animEditors.Visible = !animEditors.Visible;
-            //if (_currentControl is CHR0Editor)
-            //{
-            //    animEditors.Height =
-            //    panel3.Height = 82;
-            //    panel3.Width = 732;
-            //}
-            //else if (_currentControl is SRT0Editor)
-            //{
-            //    animEditors.Height =
-            //    panel3.Height = 82;
-            //    panel3.Width = 561;
-            //}
-            //else if (_currentControl is SHP0Editor)
-            //{
-            //    animEditors.Height =
-            //    panel3.Height = 106;
-            //    panel3.Width = 533;
-            //}
-            //else if (_currentControl is PAT0Editor)
-            //{
-            //    animEditors.Height =
-            //    panel3.Height = 77;
-            //    panel3.Width = 402;
-            //}
-            //else if (_currentControl is VIS0Editor)
-            //{
-            //    animEditors.Height =
-            //    panel3.Height = 112;
-            //    panel3.Width = 507;
-            //}
-            //else
-            //    animEditors.Height = panel3.Width = 0;
-            CheckDimensions();
-        }
-        private void showOptions_CheckedChanged(object sender, EventArgs e) { controlPanel.Visible = showOptions.Checked; }
-        //private void undoToolStripMenuItem_EnabledChanged(object sender, EventArgs e) { Undo.Enabled = undoToolStripMenuItem.Enabled; }
-        //private void redoToolStripMenuItem_EnabledChanged(object sender, EventArgs e) { Redo.Enabled = redoToolStripMenuItem.Enabled; }
-        
-        private void checkBox3_CheckedChanged(object sender, EventArgs e)
-        {
-            if (!_updating)
-                RenderVertices = chkVertices.Checked;
+            ModelPanel.Invalidate();
         }
 
-        private void models_SelectedIndexChanged(object sender, EventArgs e)
+        #region Coordinates
+
+        private void SparentLocalToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (_updating)
                 return;
 
-            _resetCam = false;
+            _updating = true;
+            SworldToolStripMenuItem.Checked = !SparentLocalToolStripMenuItem.Checked;
+            _updating = false;
 
-            if ((models.SelectedItem is MDL0Node) && models.SelectedItem.ToString() != "All")
-                TargetModel = (MDL0Node)models.SelectedItem;
-            else
-                TargetModel = _targetModels != null && _targetModels.Count > 0 ? _targetModels[0] : null;
-
-            _undoSaves.Clear();
-            _redoSaves.Clear();
-            _saveIndex = -1;
+            ModelPanel.Invalidate();
         }
 
-        private void chkBones_CheckedChanged(object sender, EventArgs e)
+        private void SworldToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (!_updating)
-                RenderBones = chkBones.Checked;
+            if (_updating)
+                return;
+
+            _updating = true;
+            SparentLocalToolStripMenuItem.Checked = !SworldToolStripMenuItem.Checked;
+            _updating = false;
+
+            ModelPanel.Invalidate();
         }
 
-        private void chkFloor_CheckedChanged(object sender, EventArgs e)
+        private void RparentLocalToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (!_updating)
-                RenderFloor = chkFloor.Checked;
+            if (_updating)
+                return;
+
+            _updating = true;
+            RworldToolStripMenuItem.Checked = !RparentLocalToolStripMenuItem.Checked;
+            _updating = false;
+
+            ModelPanel.Invalidate();
         }
 
-        private void boundingBoxToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        private void RworldToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (!_updating)
-                RenderBox = boundingBoxToolStripMenuItem.Checked;
+            if (_updating)
+                return;
+
+            _updating = true;
+            RparentLocalToolStripMenuItem.Checked = !RworldToolStripMenuItem.Checked;
+            _updating = false;
+
+            ModelPanel.Invalidate();
         }
 
-        private void chkDontRenderOffscreen_CheckedChanged(object sender, EventArgs e)
+        private void TparentLocalToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (!_updating)
-                DontRenderOffscreen = chkDontRenderOffscreen.Checked;
+            if (_updating)
+                return;
+
+            _updating = true;
+            TworldToolStripMenuItem.Checked = !TparentLocalToolStripMenuItem.Checked;
+            _updating = false;
+
+            ModelPanel.Invalidate();
         }
 
-        private void wireframeToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        private void TworldToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (!_updating)
-                RenderWireframe = wireframeToolStripMenuItem.Checked;
+            if (_updating)
+                return;
+
+            _updating = true;
+            TparentLocalToolStripMenuItem.Checked = !TworldToolStripMenuItem.Checked;
+            _updating = false;
+
+            ModelPanel.Invalidate();
+        }
+
+        #endregion
+
+        private void chkExternalAnims_CheckedChanged(object sender, EventArgs e)
+        {
+            leftPanel.UpdateAnimations();
+        }
+
+        private void chkBRRESAnims_CheckedChanged(object sender, EventArgs e)
+        {
+            leftPanel.UpdateAnimations();
+        }
+
+        private void chkNonBRRESAnims_CheckedChanged(object sender, EventArgs e)
+        {
+            leftPanel.UpdateAnimations();
+        }
+
+        private void cHR0ToolStripMenuItem1_CheckedChanged(object sender, EventArgs e)
+        {
+            CHR0EntryNode._generateTangents = chkGenTansCHR.Checked;
+        }
+
+        private void sRT0ToolStripMenuItem1_CheckedChanged(object sender, EventArgs e)
+        {
+            SRT0TextureNode._generateTangents = chkGenTansSRT.Checked;
+        }
+
+        private void sHP0ToolStripMenuItem1_CheckedChanged(object sender, EventArgs e)
+        {
+            SHP0VertexSetNode._generateTangents = chkGenTansSHP.Checked;
+        }
+
+        private void sCN0LightToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            SCN0LightNode._generateTangents = chkGenTansLight.Checked;
+        }
+
+        private void sCN0FogToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            SCN0FogNode._generateTangents = chkGenTansFog.Checked;
+        }
+
+        private void sCN0CameraToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            SCN0CameraNode._generateTangents = chkGenTansCamera.Checked;
+        }
+
+        private void sHP0ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            SHP0VertexSetNode._linear = chkLinearSHP.Checked;
+            UpdateModel();
+        }
+
+        private void sRT0ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            SRT0TextureNode._linear = chkLinearSRT.Checked;
+            UpdateModel();
+        }
+
+        private void cHR0ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            CHR0EntryNode._linear = chkGenTansCHR.Checked;
+            UpdateModel();
+        }
+
+        private void sCN0LightsToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            SCN0LightNode._linear = chkLinearLight.Checked;
+            ModelPanel.Invalidate();
+        }
+
+        private void sCN0FogToolStripMenuItem1_CheckedChanged(object sender, EventArgs e)
+        {
+            SCN0FogNode._linear = chkLinearFog.Checked;
+            ModelPanel.Invalidate();
+        }
+
+        private void sCN0CameraToolStripMenuItem1_CheckedChanged(object sender, EventArgs e)
+        {
+            SCN0CameraNode._linear = chkLinearCamera.Checked;
+            ModelPanel.Invalidate();
         }
     }
 }

@@ -45,6 +45,8 @@ namespace BrawlBox
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+            this.recentFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,7 +60,6 @@ namespace BrawlBox
             this.videoPlaybackPanel1 = new System.Windows.Forms.VideoPlaybackPanel();
             this.modelPanel1 = new System.Windows.Forms.ModelPanel();
             this.previewPanel2 = new System.Windows.Forms.PreviewPanel();
-            this.ppcDisassembler1 = new System.Windows.Forms.PPCDisassembler();
             this.scN0FogEditControl1 = new System.Windows.Forms.SCN0FogEditControl();
             this.scN0LightEditControl1 = new System.Windows.Forms.SCN0LightEditControl();
             this.scN0CameraEditControl1 = new System.Windows.Forms.SCN0CameraEditControl();
@@ -136,6 +137,8 @@ namespace BrawlBox
             this.saveAsToolStripMenuItem,
             this.closeToolStripMenuItem,
             this.toolStripMenuItem1,
+            this.recentFilesToolStripMenuItem,
+            this.toolStripSeparator1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -219,6 +222,18 @@ namespace BrawlBox
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(162, 6);
             // 
+            // recentFilesToolStripMenuItem
+            // 
+            this.recentFilesToolStripMenuItem.Name = "recentFilesToolStripMenuItem";
+            this.recentFilesToolStripMenuItem.Size = new System.Drawing.Size(165, 22);
+            this.recentFilesToolStripMenuItem.Text = "Recent Files";
+            this.recentFilesToolStripMenuItem.DropDownItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.recentFilesToolStripMenuItem_DropDownItemClicked);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(162, 6);
+            // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
@@ -253,7 +268,7 @@ namespace BrawlBox
             // 
             this.gCTEditorToolStripMenuItem.Name = "gCTEditorToolStripMenuItem";
             this.gCTEditorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.gCTEditorToolStripMenuItem.Text = "GCT Editor";
+            this.gCTEditorToolStripMenuItem.Text = "Code Manager";
             this.gCTEditorToolStripMenuItem.Click += new System.EventHandler(this.gCTEditorToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
@@ -295,7 +310,6 @@ namespace BrawlBox
             this.splitContainer2.Panel2.Controls.Add(this.videoPlaybackPanel1);
             this.splitContainer2.Panel2.Controls.Add(this.modelPanel1);
             this.splitContainer2.Panel2.Controls.Add(this.previewPanel2);
-            this.splitContainer2.Panel2.Controls.Add(this.ppcDisassembler1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0FogEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0LightEditControl1);
             this.splitContainer2.Panel2.Controls.Add(this.scN0CameraEditControl1);
@@ -356,15 +370,6 @@ namespace BrawlBox
             this.previewPanel2.Size = new System.Drawing.Size(368, 134);
             this.previewPanel2.TabIndex = 16;
             this.previewPanel2.Visible = false;
-            // 
-            // ppcDisassembler1
-            // 
-            this.ppcDisassembler1.Location = new System.Drawing.Point(0, 0);
-            this.ppcDisassembler1.Name = "ppcDisassembler1";
-            this.ppcDisassembler1.Size = new System.Drawing.Size(384, 169);
-            this.ppcDisassembler1.TabIndex = 14;
-            this.ppcDisassembler1.TargetNode = null;
-            this.ppcDisassembler1.Visible = false;
             // 
             // scN0FogEditControl1
             // 
@@ -522,13 +527,14 @@ namespace BrawlBox
         private SCN0CameraEditControl scN0CameraEditControl1;
         private SCN0FogEditControl scN0FogEditControl1;
         private ToolStripMenuItem u8FileArchiveToolStripMenuItem;
-        private PPCDisassembler ppcDisassembler1;
         public ModelPanel modelPanel1;
         private PreviewPanel previewPanel2;
         private ToolStripMenuItem donateToolStripMenuItem;
         public ToolStripMenuItem editToolStripMenuItem;
         private VideoPlaybackPanel videoPlaybackPanel1;
         private ToolStripMenuItem gCTEditorToolStripMenuItem;
+        private ToolStripMenuItem recentFilesToolStripMenuItem;
+        private ToolStripSeparator toolStripSeparator1;
     }
 }
 

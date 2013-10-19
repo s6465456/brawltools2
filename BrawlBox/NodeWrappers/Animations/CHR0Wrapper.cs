@@ -67,25 +67,15 @@ namespace BrawlBox.NodeWrappers
 
         public void Merge()
         {
-            CHR0Node external = null;
-            OpenFileDialog o = new OpenFileDialog();
-            o.Filter = "CHR0 Raw Animation (*.chr0)|*.chr0";
-            o.Title = "Please select an animation to merge with.";
-            if (o.ShowDialog() == DialogResult.OK)
-            {
-                if ((external = (CHR0Node)NodeFactory.FromFile(null, o.FileName)) != null)
-                {
-                    ((CHR0Node)_resource).MergeWith(external);
-                    BaseWrapper res = this.FindResource(_resource, false);
-                    res.EnsureVisible();
-                    res.TreeView.SelectedNode = res;
-                }
-            }
+            ((CHR0Node)_resource).MergeWith();
+            BaseWrapper res = this.FindResource(_resource, false);
+            res.EnsureVisible();
+            res.TreeView.SelectedNode = res;
         }
 
         public void Resize()
         {
-            ((CHR0Node)_resource).Resize(((CHR0Node)_resource).FrameCount * 2);
+            ((CHR0Node)_resource).Resize();
             BaseWrapper res = this.FindResource(_resource, false);
             res.EnsureVisible();
             res.TreeView.SelectedNode = res;
@@ -93,20 +83,10 @@ namespace BrawlBox.NodeWrappers
         
         public void Append()
         {
-            CHR0Node external = null;
-            OpenFileDialog o = new OpenFileDialog();
-            o.Filter = "CHR0 Raw Animation (*.chr0)|*.chr0";
-            o.Title = "Please select an animation to append.";
-            if (o.ShowDialog() == DialogResult.OK)
-            {
-                if ((external = (CHR0Node)NodeFactory.FromFile(null, o.FileName)) != null)
-                {
-                    ((CHR0Node)_resource).Append(external);
-                    BaseWrapper res = this.FindResource(_resource, false);
-                    res.EnsureVisible();
-                    res.TreeView.SelectedNode = res;
-                }
-            }
+            ((CHR0Node)_resource).Append();
+            BaseWrapper res = this.FindResource(_resource, false);
+            res.EnsureVisible();
+            res.TreeView.SelectedNode = res;
         }
     }
 }

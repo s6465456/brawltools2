@@ -164,6 +164,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NodeWrappers\DOLWrapper.cs" />
     <Compile Include="NodeWrappers\RSARWrapper.cs" />
     <Compile Include="NodeWrappers\TPLWrapper.cs" />
     <Compile Include="NodeWrappers\RWSDSoundGroupWrapper.cs" />
@@ -212,6 +213,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="UI\AboutForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -240,6 +246,9 @@
     <Compile Include="UI\Model Previewer\ModelEditControl\CheckedChanged.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="UI\Model Previewer\ModelEditControl\MiscFunctions.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="UI\Model Previewer\ModelEditControl\Designer.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -258,9 +267,6 @@
     <Compile Include="UI\Model Previewer\ModelEditControl\Variables.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\Model Previewer\ModelSwitcher.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="UI\Model Previewer\ModelViewerHelp.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -271,6 +277,10 @@
       <SubType>Form</SubType>
     </Compile>
     <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="UI\AudioPlaybackControl.cs">
       <SubType>UserControl</SubType>
     </None>
@@ -311,9 +321,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\Model Previewer\ModelEditControl\Designer.resx">
       <DependentUpon>Designer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="UI\Model Previewer\ModelSwitcher.resx">
-      <DependentUpon>ModelSwitcher.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\Model Previewer\ModelViewerHelp.resx">
       <DependentUpon>ModelViewerHelp.cs</DependentUpon>
@@ -455,6 +462,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Brawlbox.ico" />
+    <None Include="Resources\REFFEntry.png" />
     <None Include="Changelog.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

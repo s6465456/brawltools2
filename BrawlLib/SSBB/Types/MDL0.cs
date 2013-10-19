@@ -1218,7 +1218,7 @@ namespace BrawlLib.SSBBTypes
             Mem15 = (BPMemory)0xFD,
             _Value15 = new KSel(0xE),
             Mem16 = (BPMemory)0x27,
-            _Value16 = new BUInt24(0xFF, 0xFF, 0xFF),
+            _Value16 = new RAS1_IRef(0xFFFFFF),
         };
 
         public byte Reg00; //0x61
@@ -1287,7 +1287,7 @@ namespace BrawlLib.SSBBTypes
         
         public byte Reg16; //0x61
         public BPMemory Mem16; //IREF
-        public BUInt24 _Value16; 
+        public RAS1_IRef _Value16; 
 
         private fixed byte _pad[11];
     }

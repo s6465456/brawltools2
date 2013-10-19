@@ -13,7 +13,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
-            MDL0Node model = (context.Instance as MoveDefEntryNode).Model;
+            MDL0Node model = (context.Instance as MoveDefEntry).Model;
             if (model != null)
                 return new StandardValuesCollection(model._linker.BoneCache.Select(n => n.ToString()).ToList());
             return null;
@@ -49,7 +49,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
         public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
         {
-            ResourceNode[] values = (context.Instance as MoveDefEntryNode).Root._externalRefs.ToArray();
+            ResourceNode[] values = (context.Instance as MoveDefEntry)._root._referenceList.ToArray();
             if (values != null)
                 return new StandardValuesCollection(values.Select(n => n.ToString()).ToList());
             return null;

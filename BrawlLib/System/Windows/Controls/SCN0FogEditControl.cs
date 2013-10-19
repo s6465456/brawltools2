@@ -65,29 +65,9 @@ namespace System.Windows.Forms
                 if (_target.FrameCount > 0)
                 {
                     FogAnimationFrame a;
-                    bool check = false;
-                    for (int x = 0; x < _target.FrameCount; x++) //Loop thru each frame
-                    {
-                        a = _target.GetAnimFrame(x); //Get the frame to check
-                        a.Index = x;
-                        a.ResetBools();
-                        for (int i = 0; i < 2; i++) //Loop thru values
-                        {
-                            if (_target.GetKeyframe(i, x) != null) //Check for a keyframe
-                            {
-                                check = true; //Keyframe found
-                                a.SetBools(i, true); //Make sure the anim frame displays this
-                            }
-                        }
-                        if (check == true)
-                        {
-                            //Only add the frame if it has a keyframe
+                    for (int x = 0; x < _target.FrameCount; x++)
+                        if ((a = _target.GetAnimFrame(x)).HasKeys)
                             listKeyframes.Items.Add(a);
-                            check = false; //Reset the check for the loop
-                        }
-                    }
-                    //foreach (AnimationKeyframe f in _target.Keyframes.Keyframes)
-                    //    listKeyframes.Items.Add(f);
 
                     _numFrames = _target.FrameCount;
 

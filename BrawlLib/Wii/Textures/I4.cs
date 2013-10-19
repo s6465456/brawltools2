@@ -17,7 +17,6 @@ namespace BrawlLib.Wii.Textures
         //public override PixelFormat DecodedFormat { get { return PixelFormat.Format24bppRgb; } }
         public override WiiPixelFormat RawFormat { get { return WiiPixelFormat.I4; } }
 
-
         protected override void DecodeBlock(VoidPtr blockAddr, ARGBPixel* dPtr, int width)
         {
             I4Pixel* sPtr = (I4Pixel*)blockAddr; 

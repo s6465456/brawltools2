@@ -7,6 +7,7 @@ using System.IO;
 using System.ComponentModel;
 using System.PowerPcAssembly;
 using System.Drawing;
+using Be.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {   
@@ -23,12 +24,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         public ModuleDataNode _section;
         public int _index;
 
+        public bool 
+            _prolog = false, 
+            _epilog = false, 
+            _unresolved = false, 
+            _name = false,
+            _initializer = false, 
+            _finalizer = false;
+
         [Category("Relocation Data"), Browsable(false)]
         public RelCommand Command { get { return _command; } set { SetCommand(value); } }
         private RelCommand _command;
 
         [Browsable(false)]
-        public PPCOpCode Code { get { return RelOffset; } }
+        public PPCOpCode Code { get { return RawValue; } }
 
         [Browsable(false)]
         public Relocation Target { get { return _target; } set { SetTarget(value); } }
@@ -38,7 +47,42 @@ namespace BrawlLib.SSBB.ResourceNodes
         public VoidPtr Address { get { return _section.WorkingUncompressed.Address[_index, 4]; } }
 
         [Browsable(false)]
-        public uint RawValue { get { return _section.BufferAddress[_index]; } set { _section.BufferAddress[_index] = value; } }
+        public uint RawValue 
+        {
+            get
+            {
+                if (_section._linkedEditor == null)
+                    return _section.BufferAddress[_index];
+                else
+                {
+                    long t = _index * 4;
+                    HexBox hexBox1 = _section._linkedEditor.hexBox1;
+                    byte[] bytes = new byte[]
+                    {
+                        hexBox1.ByteProvider.ReadByte(t + 3),
+                        hexBox1.ByteProvider.ReadByte(t + 2),
+                        hexBox1.ByteProvider.ReadByte(t + 1),
+                        hexBox1.ByteProvider.ReadByte(t + 0),
+                    };
+                    return BitConverter.ToUInt32(bytes, 0);
+                }
+            }
+            set
+            {
+                if (_section._linkedEditor == null)
+                    _section.BufferAddress[_index] = value;
+                else
+                {
+                    long t = _index * 4;
+                    HexBox hexBox1 = _section._linkedEditor.hexBox1;
+                    byte[] bytes = BitConverter.GetBytes(value);
+                    hexBox1.ByteProvider.WriteByte(t + 3, bytes[0]);
+                    hexBox1.ByteProvider.WriteByte(t + 2, bytes[1]);
+                    hexBox1.ByteProvider.WriteByte(t + 1, bytes[2]);
+                    hexBox1.ByteProvider.WriteByte(t + 0, bytes[3]);
+                }
+            } 
+        }
         [Browsable(false)]
         public uint RelOffset { get { return (Command != null ? Command.Apply(true) : RawValue); } }
         [Browsable(false)]
@@ -52,7 +96,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Relocation NextAt(int count)
         {
             int newIndex = _index + count;
-            if (newIndex < 0 || newIndex >= _section._relocations.Length)
+            if (newIndex < 0 || newIndex >= _section.Relocations.Count)
                 return null;
             else
                 return _section[newIndex];
@@ -66,13 +110,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_command != null)
             {
                 SetTarget(null);
-                _command.SetRelocationParent(null);
+                _command._parentRelocation = null;
             }
 
             if ((_command = command) != null)
             {
-                _command.SetRelocationParent(this);
-                SetTarget(_command._targetRelocation);
+                _command._parentRelocation = this;
+                SetTarget(_command.GetTargetRelocation());
             }
         }
 
@@ -94,8 +138,27 @@ namespace BrawlLib.SSBB.ResourceNodes
         public BindingList<Relocation> Linked { get { return _linked; } }
         private BindingList<Relocation> _linked = new BindingList<Relocation>();
 
-        internal void Link(Relocation rel) { _linked.Add(rel); }
-        internal void Unlink(Relocation rel) { _linked.Remove(rel); }
+        internal void Link(Relocation r) 
+        {
+            _linked.Add(r);
+            //CheckStructors();
+        }
+        internal void Unlink(Relocation r) 
+        {
+            _linked.Remove(r);
+            //CheckStructors();
+        }
+
+        private void CheckStructors()
+        {
+            _initializer = false;
+            _finalizer = false;
+            foreach (Relocation r1 in _linked)
+                if (r1._section.Index == 2)
+                    _initializer = true;
+                else if (r1._section.Index == 3)
+                    _finalizer = true;
+        }
 
         private List<object> _tags = new List<object>();
         public List<object> Tags { get { return _tags; } }
@@ -136,5 +199,43 @@ namespace BrawlLib.SSBB.ResourceNodes
             string id = RELNode._idNames.ContainsKey(i) ? RELNode._idNames[i] : "m" + i.ToString();
             return String.Format("{0}[{1}]0x{2}", id, _section.Index, (_index * 4).ToString("X"));
         }
+
+        private bool SpecificFunc()
+        {
+            return _prolog || _epilog || _unresolved || _initializer || _finalizer || _name;
+        }
+
+        public Color Color
+        {
+            get
+            {
+                if (!SpecificFunc())
+                    return _color;
+                else
+                    return _funcColor;
+            }
+            set 
+            {
+                _color = value; 
+                _colorBrush = new SolidBrush(_color);
+            }
+        }
+        public Brush ColorBrush
+        {
+            get
+            {
+                if (!SpecificFunc())
+                    return _colorBrush;
+                else
+                    return _funcBrush;
+            }
+        }
+
+        public Color _color = Color.Transparent;
+        public Brush _colorBrush;
+        public static Color _funcColor = Color.FromArgb(255, 200, 255, 0);
+        public static Brush _funcBrush = new SolidBrush(_funcColor);
+
+        public bool _selected = false;
     }
 }

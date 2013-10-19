@@ -19,6 +19,13 @@ namespace System.Windows.Forms
 {
     public partial class ModelEditControl : UserControl, IMainWindow
     {
+        public event GLRenderEventHandler EventPostRender, EventPreRender;
+        public event MouseEventHandler EventMouseDown, EventMouseMove, EventMouseUp;
+        public event EventHandler TargetModelChanged, ModelViewerChanged;
+
+        private delegate void DelegateOpenFile(String s);
+        private DelegateOpenFile m_DelegateOpenFile;
+
         private const float _orbRadius = 1.0f;
         private const float _circRadius = 1.2f;
         private const float _axisSnapRange = 7.0f;
@@ -27,13 +34,45 @@ namespace System.Windows.Forms
         private const float _selectOrbScale = _selectRange / _orbRadius;
         private const float _circOrbScale = _circRadius / _orbRadius;
 
-        public event EventHandler TargetModelChanged;
-
-        private delegate void DelegateOpenFile(String s);
-        private DelegateOpenFile m_DelegateOpenFile;
-
         public int _animFrame = 0, _maxFrame;
         public bool _updating, _loop;
+
+        public bool _resetCamera = true;
+
+        public CHR0Node _chr0;
+        public SRT0Node _srt0;
+        public SHP0Node _shp0;
+        public PAT0Node _pat0;
+        public VIS0Node _vis0;
+        public SCN0Node _scn0;
+        public CLR0Node _clr0;
+
+        public bool _rotating, _translating, _scaling;
+        private Vector3 _lastPointBone, _firstPointBone, _lastPointWorld, _firstPointWorld;
+        private Vector3 _oldAngles, _oldPosition, _oldScale;
+        private bool _snapX, _snapY, _snapZ, _snapCirc;
+        private bool _hiX, _hiY, _hiZ, _hiCirc, _hiSphere;
+
+        public List<MDL0Node> _targetModels = new List<MDL0Node>();
+        private MDL0Node _targetModel;
+
+        public Color _clearColor;
+        public MDL0MaterialRefNode _targetTexRef = null;
+        public VIS0EntryNode _targetVisEntry;
+        public bool _enableTransform = true;
+
+        public bool _renderFloor, _renderBones = true, _renderBox, _dontRenderOffscreen = true, _renderVertices, _renderNormals, _renderPolygons = true, _renderWireframe;
+
+        public static BindingList<AnimType> _editableAnimTypes = new BindingList<AnimType>()
+        {
+            AnimType.CHR,
+            AnimType.SRT,
+            AnimType.SHP,
+            AnimType.PAT,
+            AnimType.VIS,
+            AnimType.SCN,
+            AnimType.CLR
+        };
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int MaxFrame { get { return _maxFrame; } set { _maxFrame = value; } }
@@ -76,40 +115,19 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public BonesPanel BonesPanel { get { return rightPanel.pnlBones; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ModelPanel ModelPanel { get { return modelPanel; } }
-
-        public CHR0Node _chr0;
-        public SRT0Node _srt0;
-        public SHP0Node _shp0;
-        public PAT0Node _pat0;
-        public VIS0Node _vis0;
-        public SCN0Node _scn0;
-        public CLR0Node _clr0;
-
-        public bool _rotating, _translating, _scaling;
-        private Vector3 _lastPointBone, _firstPointBone, _lastPointWorld, _firstPointWorld;
-        private Vector3 _oldAngles, _oldPosition, _oldScale;
-        private bool _snapX, _snapY, _snapZ, _snapCirc;
-        private bool _hiX, _hiY, _hiZ, _hiCirc, _hiSphere;
-
-        public List<MDL0Node> _targetModels = new List<MDL0Node>();
-        private MDL0Node _targetModel;
-
-        public Color _clearColor;
-        public MDL0MaterialRefNode _targetTexRef = null;
-        public Vertex3 _targetVertex = null;
-        public VIS0EntryNode _targetVisEntry;
-        public bool _enableTransform = true;
-
-        public bool _renderFloor, _renderBones = true, _renderBox, _dontRenderOffscreen = true, _renderVertices, _renderNormals, _renderPolygons = true, _renderWireframe;
-
+        public ModelPanel ModelPanel { get { return _viewerForm == null ? modelPanel : _viewerForm.modelPanel1; } }
+        
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ModelViewerForm ModelViewerForm { get { return _viewerForm; } }
+        ModelViewerForm _viewerForm = null;
+        
         public AnimationNode TargetAnimation 
         {
-            get { return GetSelectedBRRESFile(TargetAnimType); } 
-            set { SetSelectedBRRESFile(TargetAnimType, value); } 
+            get { return GetAnimation(TargetAnimType); } 
+            set { SetAnimation(TargetAnimType, value); } 
         }
 
-        public AnimationNode GetSelectedBRRESFile(AnimType type)
+        public AnimationNode GetAnimation(AnimType type)
         {
             switch (type)
             {
@@ -123,7 +141,7 @@ namespace System.Windows.Forms
                 default: return null;
             }
         }
-        public void SetSelectedBRRESFile(AnimType type, BRESEntryNode value)
+        public void SetAnimation(AnimType type, AnimationNode value)
         {
             switch (type)
             {
@@ -135,6 +153,23 @@ namespace System.Windows.Forms
                 case AnimType.SCN: SelectedSCN0 = value as SCN0Node; break;
                 case AnimType.CLR: SelectedCLR0 = value as CLR0Node; break;
             }
+        }
+        public void SetAnimation(AnimationNode value)
+        {
+            if (value is CHR0Node)
+                SelectedCHR0 = value as CHR0Node;
+            else if (value is SRT0Node)
+                SelectedSRT0 = value as SRT0Node;
+            else if (value is SHP0Node)
+                SelectedSHP0 = value as SHP0Node;
+            else if (value is PAT0Node)
+                SelectedPAT0 = value as PAT0Node;
+            else if (value is VIS0Node)
+                SelectedVIS0 = value as VIS0Node;
+            else if (value is SCN0Node)
+                SelectedSCN0 = value as SCN0Node;
+            else if (value is CLR0Node)
+                SelectedCLR0 = value as CLR0Node;
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -247,31 +282,7 @@ namespace System.Windows.Forms
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color ClearColor { get { return _clearColor; } set { _clearColor = value; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Image BGImage { get { return modelPanel.BackgroundImage; } set { modelPanel.BackgroundImage = value; } }
-
-        //[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        //public Vertex3 TargetVertex 
-        //{
-        //    get { return _targetVertex; }
-        //    set
-        //    {
-        //        if (_targetVertex != null)
-        //        {
-        //            _targetVertex._highlightColor = Color.Transparent;
-        //            if (_selectedVertices.Contains(_targetVertex))
-        //                _selectedVertices.Remove(_targetVertex);
-        //        }
-        //        if ((_targetVertex = value) != null)
-        //        {
-        //            _targetVertex._highlightColor = Color.Orange;
-        //            _targetVertex._selected = true;
-        //            if (!_selectedVertices.Contains(_targetVertex))
-        //                _selectedVertices.Add(_targetVertex);
-        //        }
-        //        //weightEditor.TargetVertex = _targetVertex;
-        //        UpdatePropDisplay();
-        //    }
-        //}
+        public Image BGImage { get { return ModelPanel.BackgroundImage; } set { ModelPanel.BackgroundImage = value; } }
 
         MDL0BoneNode _selectedBone = null;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -282,7 +293,7 @@ namespace System.Windows.Forms
             {
                 if (_selectedBone != null)
                     _selectedBone._boneColor = _selectedBone._nodeColor = Color.Transparent;
-                
+
                 if ((_selectedBone = value) != null)
                 {
                     _selectedBone._boneColor = Color.FromArgb(0, 128, 255);
@@ -293,9 +304,10 @@ namespace System.Windows.Forms
                     if (_selectedBone != null)
                         if (TargetModel != _selectedBone.Model)
                         {
+                            _resetCamera = false;
+
                             //The user selected a bone from another model.
                             TargetModel = _selectedBone.Model;
-                            _resetCam = false;
                         }
 
                 rightPanel.pnlBones.lstBones.SelectedItem = _selectedBone;
@@ -334,13 +346,13 @@ namespace System.Windows.Forms
         { 
             get { return _animFrame; } 
             set 
-            { 
+            {
                 _animFrame = value;
                 UpdateModel(); 
-                UpdatePropDisplay();
 
-                if (_interpolationEditor != null)
-                    _interpolationEditor.Frame = CurrentFrame;
+                //The more frames there are in the animation, the more the viewer lags
+                //if (InterpolationEditor != null)
+                //    InterpolationEditor.Frame = CurrentFrame;
             } 
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -359,7 +371,10 @@ namespace System.Windows.Forms
                 vis0Editor.Enabled =
                 pat0Editor.Enabled =
                 scn0Editor.Enabled =
-                clr0Editor.Enabled = value;
+                clr0Editor.Enabled = 
+                KeyframePanel.Enabled = value;
+                if (InterpolationEditor != null && InterpolationEditor.Visible)
+                    InterpolationEditor.Enabled = value;
 
                 if (value)
                     UpdatePropDisplay();
@@ -372,30 +387,26 @@ namespace System.Windows.Forms
             get { return _renderFloor; } 
             set
             {
-                _renderFloor = value;
-                _updating = true;
-                chkFloor.Checked = toggleFloor.Checked = _renderFloor;
-                _updating = false;
-                modelPanel.Invalidate();
+                chkFloor.Checked = toggleFloor.Checked = _renderFloor = value;
+                ModelPanel.Invalidate();
             }
         }
+
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool RenderBones
         {
             get { return _renderBones; }
             set
             {
+                chkBones.Checked = toggleBones.Checked = _renderBones = value;
+
                 if (_editingAll)
                     foreach (MDL0Node m in _targetModels)
-                        m._renderBones = value;
+                        m._renderBones = _renderBones;
                 else if (TargetModel != null)
-                    TargetModel._renderBones = value;
+                    TargetModel._renderBones = _renderBones;
 
-                _renderBones = value;
-                _updating = true;
-                chkBones.Checked = toggleBones.Checked = _renderBones;
-                _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -404,18 +415,16 @@ namespace System.Windows.Forms
             get { return _renderVertices; }
             set
             {
+                chkVertices.Checked = toggleVertices.Checked = _renderVertices = value;
+
                 if (_editingAll)
                     foreach (MDL0Node m in _targetModels)
-                        m._renderVertices = value;
+                        m._renderVertices = _renderVertices;
                 else 
                     if (TargetModel != null)
-                        TargetModel._renderVertices = value;
+                        TargetModel._renderVertices = _renderVertices;
 
-                _renderVertices = value;
-                _updating = true;
-                chkVertices.Checked = toggleVertices.Checked = _renderVertices;
-                _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -424,18 +433,16 @@ namespace System.Windows.Forms
             get { return _renderNormals; }
             set
             {
+                toggleNormals.Checked = _renderNormals = value;
+
                 if (_editingAll)
                     foreach (MDL0Node m in _targetModels)
-                        m._renderNormals = value;
+                        m._renderNormals = _renderNormals;
                 else
                     if (TargetModel != null)
-                        TargetModel._renderNormals = value;
+                        TargetModel._renderNormals = _renderNormals;
 
-                _renderNormals = value;
-                _updating = true;
-                toggleNormals.Checked = _renderNormals;
-                _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -444,17 +451,15 @@ namespace System.Windows.Forms
             get { return _renderPolygons; }
             set
             {
+                chkPolygons.Checked = togglePolygons.Checked = _renderPolygons = value;
+
                 if (_editingAll)
                     foreach (MDL0Node m in _targetModels)
-                        m._renderPolygons = value;
+                        m._renderPolygons = _renderPolygons;
                 else if (TargetModel != null)
-                    TargetModel._renderPolygons = value;
+                    TargetModel._renderPolygons = _renderPolygons;
 
-                _renderPolygons = value;
-                _updating = true;
-                chkPolygons.Checked = togglePolygons.Checked = _renderPolygons;
-                _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -463,14 +468,15 @@ namespace System.Windows.Forms
             get { return _renderWireframe; }
             set
             {
+                wireframeToolStripMenuItem.Checked = _renderWireframe = value;
+
                 if (_editingAll)
                     foreach (MDL0Node m in _targetModels)
-                        m._renderWireframe = value;
+                        m._renderWireframe = _renderWireframe;
                 else if (TargetModel != null)
-                    TargetModel._renderWireframe = value;
+                    TargetModel._renderWireframe = _renderWireframe;
 
-                _renderWireframe = value;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -479,17 +485,15 @@ namespace System.Windows.Forms
             get { return _renderBox; }
             set
             {
+                boundingBoxToolStripMenuItem.Checked = _renderBox = value;
+
                 if (_editingAll && _targetModels != null)
                     foreach (MDL0Node m in _targetModels)
-                        m._renderBox = value;
+                        m._renderBox = _renderBox;
                 else if (TargetModel != null)
-                    TargetModel._renderBox = value;
+                    TargetModel._renderBox = _renderBox;
 
-                _renderBox = value;
-                _updating = true;
-                boundingBoxToolStripMenuItem.Checked = _renderBox;
-                _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -498,60 +502,27 @@ namespace System.Windows.Forms
             get { return _dontRenderOffscreen; }
             set
             {
+                chkDontRenderOffscreen.Checked = _dontRenderOffscreen = value;
+
                 if (_editingAll && _targetModels != null)
                     foreach (MDL0Node m in _targetModels)
-                        m._dontRenderOffscreen = value;
+                        m._dontRenderOffscreen = _dontRenderOffscreen;
                 else if (TargetModel != null)
-                    TargetModel._dontRenderOffscreen = value;
+                    TargetModel._dontRenderOffscreen = _dontRenderOffscreen;
 
-                _dontRenderOffscreen = value;
-                _updating = true;
-                chkDontRenderOffscreen.Checked = _dontRenderOffscreen;
-                _updating = false;
-                modelPanel.Invalidate();
+                ModelPanel.Invalidate();
             }
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool RenderLightDisplay { get { return _renderLightDisplay; } set { _renderLightDisplay = value; modelPanel.Invalidate(); } }
+        public bool RenderLightDisplay { get { return _renderLightDisplay; } set { _renderLightDisplay = value; ModelPanel.Invalidate(); } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public uint AllowedUndos { get { return _allowedUndos; } set { _allowedUndos = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public InterpolationEditor InterpolationEditor { get { return _interpolationEditor; } }
+        public InterpolationEditor InterpolationEditor { get { return _interpolationEditor.Visible ? _interpolationEditor : _interpolationForm != null ? _interpolationForm._interpolationEditor : null; } }
         private InterpolationEditor _interpolationEditor;
-
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool InterpolationEditorVisible
-        {
-            get 
-            {
-                if (_interpolationEditor == null || _interpolationEditor.IsDisposed || !_interpolationEditor._open || !_interpolationEditor.Visible)
-                    return false;
-                else
-                    return true;
-            }
-            set 
-            {
-                if (value)
-                {
-                    if (_interpolationEditor == null || _interpolationEditor.IsDisposed || !_interpolationEditor._open || !_interpolationEditor.Visible)
-                    {
-                        _interpolationEditor = new InterpolationEditor(this);
-                        _interpolationEditor.Visible = true;
-                        _interpolationEditor._open = true;
-                        _interpolationEditor.TopMost = true;
-                    }
-
-                }
-                else if (_interpolationEditor != null && (_interpolationEditor._open || _interpolationEditor.Visible))
-                {
-                    _interpolationEditor.Visible = false;
-                    _interpolationEditor._open = false;
-                }
-                interpolationEditorToolStripMenuItem.Checked = value;
-            }
-        }
+        public InterpolationForm _interpolationForm = null;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool LinearInterpolation { get { return linearInterpolationToolStripMenuItem.Checked; } set { linearInterpolationToolStripMenuItem.Checked = value; } }

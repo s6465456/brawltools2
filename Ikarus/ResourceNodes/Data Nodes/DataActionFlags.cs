@@ -8,7 +8,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefActionFlagsNode : MoveDefEntryNode
+    public unsafe class MoveDefActionFlagsNode : MoveDefEntry
     {
         internal FDefActionFlags* First { get { return (FDefActionFlags*)WorkingUncompressed.Address; } }
         int Count = 0;
@@ -43,7 +43,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefActionFlagsEntryNode : MoveDefEntryNode
+    public unsafe class MoveDefActionFlagsEntryNode : MoveDefEntry
     {
         internal FDefActionFlags* Header { get { return (FDefActionFlags*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -97,7 +97,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefFlagsNode : MoveDefEntryNode
+    public unsafe class MoveDefFlagsNode : MoveDefEntry
     {
         internal FDefSubActionFlag* Header { get { return (FDefSubActionFlag*)WorkingUncompressed.Address; } }
 

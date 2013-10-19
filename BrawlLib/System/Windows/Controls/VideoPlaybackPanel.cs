@@ -154,20 +154,15 @@ namespace System.Windows.Forms
             Seek(_frame - 1);
         }
 
-        int temp = 0;
         public void RenderUpdate(object sender, FrameEventArgs e)
         {
             if ((_isPlaying))
             {
-                //int temp2;
                 if (_buffer != null)
                 {
+                    //TODO: Sync video to audio
+                    _frame++;
                     _buffer.Fill();
-                    //temp2 = (int)Math.Round(_targetSource._audio.SamplePosition / _targetSource.Frequency * _targetSource.FrameRate, 0).Clamp(0, (int)_targetSource.NumFrames - 1);
-                    //if (temp2 != temp)
-                    //    _frame = temp = temp2;
-                    //else
-                        _frame++;
                 }
                 else
                     _frame++;

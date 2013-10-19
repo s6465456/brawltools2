@@ -245,96 +245,39 @@ namespace System
         }
     }
 
-    public class Bin16StringConverter : TypeConverter
-    {
-        private static char[] delims = new char[] { ',', '(', ')', ' ' };
-
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) { return destinationType == typeof(Bin16); }
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) { return value.ToString(); }
-
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) { return sourceType == typeof(string); }
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            ushort b = 0;
-            
-            string s = value.ToString();
-            string[] arr = s.Split(delims, StringSplitOptions.RemoveEmptyEntries);
-
-            for (int len = 0; len < arr.Length; len++)
-            {
-                byte bit = 0;
-                for (int i = 0; i < arr[len].Length; i++)
-                {
-                    b <<= 1;
-                    byte.TryParse(arr[len][i].ToString(), out bit);
-                    bit = (byte)(bit > 1 ? 1 : bit < 0 ? 0 : bit);
-                    b += bit;
-                }
-            }
-
-            return new Bin16(b);
-        }
-    }
-
-    public class Bin32StringConverter : TypeConverter
-    {
-        private static char[] delims = new char[] { ',', '(', ')', ' ' };
-
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) { return destinationType == typeof(Bin32); }
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) { return value.ToString(); }
-
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) { return sourceType == typeof(string); }
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            uint b = 0;
-
-            string s = value.ToString();
-            string[] arr = s.Split(delims, StringSplitOptions.RemoveEmptyEntries);
-
-            for (int len = 0; len < arr.Length; len++)
-            {
-                byte bit = 0;
-                for (int i = 0; i < arr[len].Length; i++)
-                {
-                    b <<= 1;
-                    byte.TryParse(arr[len][i].ToString(), out bit);
-                    bit = (byte)(bit > 1 ? 1 : bit < 0 ? 0 : bit);
-                    b += bit;
-                }
-            }
-
-            return new Bin32(b);
-        }
-    }
-
     public class Bin8StringConverter : TypeConverter
     {
-        private static char[] delims = new char[] { ',', '(', ')', ' ' };
-
         public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) { return destinationType == typeof(Bin8); }
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) { return value.ToString(); }
 
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) { return sourceType == typeof(string); }
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            byte b = 0;
+            return Bin8.FromString(value.ToString());
+        }
+    }
 
-            string s = value.ToString();
-            string[] arr = s.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+    public class Bin16StringConverter : TypeConverter
+    {
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) { return destinationType == typeof(Bin16); }
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) { return value.ToString(); }
 
-            for (int len = 0; len < arr.Length; len++)
-            {
-                byte bit = 0;
-                for (int i = 0; i < arr[len].Length; i++)
-                {
-                    b <<= 1;
-                    byte.TryParse(arr[len][i].ToString(), out bit);
-                    bit = (byte)(bit > 1 ? 1 : bit < 0 ? 0 : bit);
-                    b += bit;
-                }
-            }
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) { return sourceType == typeof(string); }
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            return Bin16.FromString(value.ToString());
+        }
+    }
 
-            return new Bin8(b);
+    public class Bin32StringConverter : TypeConverter
+    {
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) { return destinationType == typeof(Bin32); }
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) { return value.ToString(); }
+
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) { return sourceType == typeof(string); }
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            return Bin32.FromString(value.ToString());
         }
     }
 }

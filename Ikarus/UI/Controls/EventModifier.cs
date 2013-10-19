@@ -423,9 +423,9 @@ namespace System.Windows.Forms
 
         public DialogResult _status;
 
-        private MoveDefEventNode _origEvent;
-        private MoveDefEventNode _newEv = null;
-        public MoveDefEventNode NewEvent 
+        private Event _origEvent;
+        private Event _newEv = null;
+        public Event NewEvent 
         {
             get 
             {
@@ -433,7 +433,7 @@ namespace System.Windows.Forms
                 //So that changes don't affect the original event until the user finishes
                 if (_newEv == null)
                 {
-                    _newEv = new MoveDefEventNode() { _parent = _origEvent.Parent };
+                    _newEv = new Event() { _parent = _origEvent.Parent };
 
                     _newEv.EventID = _origEvent._event;
                     ActionEventInfo info = _origEvent.EventInfo;
@@ -467,7 +467,7 @@ namespace System.Windows.Forms
 
         public MoveDefEventParameterNode param = null;
 
-        public void Setup(MoveDefEventNode original)
+        public void Setup(Event original)
         {
             _origEvent = original;
 
@@ -557,13 +557,13 @@ namespace System.Windows.Forms
         {
             //Pass in the event Event.
             frmEventList.eventEvent = NewEvent._event;
-            frmEventList.p = NewEvent.Root;
+            frmEventList.p = NewEvent._root;
             frmEventList.ShowDialog();
 
             //Retrieve and setup the new event according to the new event Event.
             if (frmEventList.status == DialogResult.OK)
             {
-                _newEv = new MoveDefEventNode() { _parent = _origEvent.Parent };
+                _newEv = new Event() { _parent = _origEvent.Parent };
 
                 NewEvent.EventID = (uint)frmEventList.eventEvent;
                 ActionEventInfo info = NewEvent.EventInfo;
@@ -648,7 +648,7 @@ namespace System.Windows.Forms
 
             _status = DialogResult.OK;
             int index = _origEvent.Index;
-            MoveDefActionNode action = _origEvent.Parent as MoveDefActionNode;
+            ActionScript action = _origEvent.Parent as ActionScript;
             _origEvent.Remove();
             action.InsertChild(NewEvent, true, index);
 
@@ -665,7 +665,7 @@ namespace System.Windows.Forms
                 comboBox3.Items.Add("Exit");
 
                 comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param.Root._actions.Children.ToArray());
+                comboBox2.Items.AddRange(param._root._actions.Children.ToArray());
             }
             if (comboBox1.SelectedIndex == 1)
             {
@@ -676,7 +676,7 @@ namespace System.Windows.Forms
                 comboBox3.Items.Add("Other");
 
                 comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param.Root._subActions.Children.ToArray());
+                comboBox2.Items.AddRange(param._root._subActions.Children.ToArray());
             }
             if (comboBox1.SelectedIndex >= 2)
                 comboBox3.Visible = label4.Visible = false;
@@ -689,12 +689,12 @@ namespace System.Windows.Forms
             if (comboBox1.SelectedIndex == 2)
             {
                 comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param.Root._subRoutineList.ToArray());
+                comboBox2.Items.AddRange(param._root._subRoutines.ToArray());
             }
             if (comboBox1.SelectedIndex == 3)
             {
                 comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param.Root._externalRefs.ToArray());
+                comboBox2.Items.AddRange(param._root._referenceList.ToArray());
             }
         }
 
@@ -708,28 +708,28 @@ namespace System.Windows.Forms
             }
             if (comboBox1.SelectedIndex >= 3)
             {
-                if (comboBox1.SelectedIndex == 3 && comboBox2.SelectedIndex >= 0 && comboBox2.SelectedIndex < param.Root._externalRefs.Count)
+                if (comboBox1.SelectedIndex == 3 && comboBox2.SelectedIndex >= 0 && comboBox2.SelectedIndex < param._root._referenceList.Count)
                 {
-                    if (_targetNode._extNode != null)
+                    if (_targetNode._externalEntry != null)
                     {
-                        _targetNode._extNode._refs.Remove(_targetNode);
-                        _targetNode._extNode = null;
+                        _targetNode._externalEntry._refs.Remove(_targetNode);
+                        _targetNode._externalEntry = null;
                     }
-                    (param._extNode = param.Root._externalRefs[comboBox2.SelectedIndex] as MoveDefExternalNode)._refs.Add(param);
+                    (param._externalEntry = param._root._referenceList[comboBox2.SelectedIndex] as ReferenceEntry)._refs.Add(param);
                 }
             }
             else
             {
-                if (param._extNode != null)
+                if (param._externalEntry != null)
                 {
-                    param._extNode._refs.Remove(param);
-                    param._extNode = null;
+                    param._externalEntry._refs.Remove(param);
+                    param._externalEntry = null;
                 }
             }
             _targetNode.list = comboBox1.SelectedIndex;
             _targetNode.type = (comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex);
             _targetNode.index = (comboBox1.SelectedIndex == 4 ? -1 : comboBox2.SelectedIndex);
-            _targetNode.action = param.Root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
+            _targetNode.action = param._root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
             if (_targetNode.action != null)
             {
                 param._value = _targetNode.action._offset;

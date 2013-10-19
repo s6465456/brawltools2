@@ -159,13 +159,9 @@ namespace Ikarus
                 if (_movesetArc == null) return null;
                 if (_movesetArc.Children.Count == 0) return null;
                 ARCEntryNode entry = _movesetArc.Children[0] as ARCEntryNode;
-                (_moveset = new MoveDefNode((CharName)_charId) { _name = "Fit" + ((CharFolder)_charId).ToString() }).Initialize(null, entry.WorkingUncompressed.Address, entry.WorkingUncompressed.Length);
-                if (_moveset != null)
-                {
-                    if (_models[_selectedModelIndex] != null)
-                        _moveset._model = _models[_selectedModelIndex].Children[0].Children[0].Children[0] as MDL0Node;
-                    _moveset.Populate(0);
-                }
+                (_moveset = new MoveDefNode((CharName)_charId)).Parse(entry.WorkingUncompressed);
+                if (_moveset != null && _selectedModelIndex < _models.Length && _selectedModelIndex >= 0 && _models[_selectedModelIndex] != null)
+                    _moveset._model = _models[_selectedModelIndex].Children[0].Children[0].Children[0] as MDL0Node;
                 return _moveset;
             }
         }

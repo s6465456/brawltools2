@@ -10,7 +10,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefEventParameterNode : MoveDefEntryNode
+    public unsafe class MoveDefEventParameterNode : MoveDefEntry
     {
         internal FDefEventArgument* Header { get { return (FDefEventArgument*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Parameter; } }
@@ -42,7 +42,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Browsable(false)]
-        public string Description { get { return (Parent as MoveDefEventNode).EventInfo != null && Index < (Parent as MoveDefEventNode).EventInfo._paramDescs.Length ? (Parent as MoveDefEventNode).EventInfo._paramDescs[Index] : "No Description Available."; } }
+        public string Description { get { return (Parent as Event).EventInfo != null && Index < (Parent as Event).EventInfo._paramDescs.Length ? (Parent as Event).EventInfo._paramDescs[Index] : "No Description Available."; } }
 
         public MoveDefEventParameterNode() { }
 
@@ -288,8 +288,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //    SignalPropertyChange();
                 //    return;
                 //}
-                ResourceNode r = Root.FindNode(value);
-                if (r != null && r is MoveDefActionNode)
+                ResourceNode r = _root.GetEntry(value);
+                if (r != null && r is ActionScript)
                 {
                     _value = value;
                     SignalPropertyChange();
@@ -302,38 +302,38 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             get
             {
-                return _extNode != null ? _extNode.Name : null;
+                return _externalEntry != null ? _externalEntry.Name : null;
             }
             set
             {
-                if (_extNode != null)
-                    if (_extNode.Name != value)
-                        _extNode._refs.Remove(this);
-                foreach (MoveDefExternalNode e in Root._externalRefs)
+                if (_externalEntry != null)
+                    if (_externalEntry.Name != value)
+                        _externalEntry._refs.Remove(this);
+                foreach (ReferenceEntry e in _root._referenceList)
                     if (e.Name == value)
                     {
-                        _extNode = e;
-                        e._refs.Add(this);
+                        _externalEntry = e;
+                        e._references.Add(this);
                         Name = e.Name;
                         action = null;
                         list = 3;
-                        index = _extNode.Index;
+                        index = _externalEntry.Index;
                     }
 
-                if (_extNode == null)
+                if (_externalEntry == null)
                     Name = "Offset";
             }
         }
 
-        public MoveDefActionNode GetAction()
+        public ActionScript GetAction()
         {
-            ResourceNode r = Root.FindNode(RawOffset);
-            if (r != null && r is MoveDefActionNode)
-                return r as MoveDefActionNode;
+            ResourceNode r = _root.GetEntry(RawOffset);
+            if (r != null && r is ActionScript)
+                return r as ActionScript;
             return null;
         }
 
-        public MoveDefActionNode action;
+        public ActionScript action;
 
         public MoveDefEventOffsetNode(string name) { _name = name != null ? name : "Offset"; }
 
@@ -343,10 +343,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if (RawOffset > 0)
             {
-                Root.GetLocation(RawOffset, out list, out type, out index);
+                _root.GetActionLocation(RawOffset, out list, out type, out index);
                 if (!External)
                 {
-                    action = Root.GetAction(list, type, index);
+                    action = _root.GetAction(list, type, index);
                     if (action == null)
                         action = GetAction();
                 }
@@ -354,7 +354,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             else if (RawOffset < 0 && External)
             {
                 action = null;
-                index = _extNode.Index;
+                index = _externalEntry.Index;
                 list = 3;
                 type = -1;
             }
@@ -397,16 +397,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 arg->_data = -1;
                 if (External)
                 {
-                    if (_extNode is MoveDefReferenceEntryNode)
+                    if (_externalEntry is MoveDefReferenceEntryNode)
                         _rebuildAddr += 4;
                 }
                 else
-                    foreach (MoveDefReferenceEntryNode e in Root._references.Children)
+                    foreach (MoveDefReferenceEntryNode e in _root._references.Children)
                         if (e.Name == this.Name)
                         {
-                            _extNode = e;
+                            _externalEntry = e;
                             //if (!e._refs.Contains(this))
-                                e._refs.Add(this);
+                                e._references.Add(this);
                             _rebuildAddr += 4;
                             break;
                         }

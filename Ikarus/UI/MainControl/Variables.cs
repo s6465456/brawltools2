@@ -115,11 +115,11 @@ namespace Ikarus.UI
 
         public AnimationNode TargetAnimation
         {
-            get { return GetSelectedBRRESFile(TargetAnimType); }
+            get { return GetAnimation(TargetAnimType); }
             set { SetSelectedBRRESFile(TargetAnimType, value); }
         }
 
-        public AnimationNode GetSelectedBRRESFile(AnimType type)
+        public AnimationNode GetAnimation(AnimType type)
         {
             switch (type)
             {

@@ -18,50 +18,47 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal MDL0Shader* Header { get { return (MDL0Shader*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.MDL0Shader; } }
 
-        public List<string> Defaults = new List<string>();
-
-        //Konstant Alpha Selection Swap table
         public KSelSwapBlock _swapBlock = KSelSwapBlock.Default;
 
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap0Red { get { return (ColorChannel)_swapBlock._Value01.XRB; } set { _swapBlock._Value01.XRB = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap0Red { get { return (ColorChannel)_swapBlock._Value01.XRB; } set { _swapBlock._Value01.XRB = value; SignalPropertyChange(); } }
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap0Green { get { return (ColorChannel)_swapBlock._Value01.XGA; } set { _swapBlock._Value01.XGA = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap0Green { get { return (ColorChannel)_swapBlock._Value01.XGA; } set { _swapBlock._Value01.XGA = value; SignalPropertyChange(); } }
 
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap0Blue { get { return (ColorChannel)_swapBlock._Value03.XRB; } set { _swapBlock._Value03.XRB = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap0Blue { get { return (ColorChannel)_swapBlock._Value03.XRB; } set { _swapBlock._Value03.XRB = value; SignalPropertyChange(); } }
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap0Alpha { get { return (ColorChannel)_swapBlock._Value03.XGA; } set { _swapBlock._Value03.XGA = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap0Alpha { get { return (ColorChannel)_swapBlock._Value03.XGA; } set { _swapBlock._Value03.XGA = value; SignalPropertyChange(); } }
 
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap1Red { get { return (ColorChannel)_swapBlock._Value05.XRB; } set { _swapBlock._Value05.XRB = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap1Red { get { return (ColorChannel)_swapBlock._Value05.XRB; } set { _swapBlock._Value05.XRB = value; SignalPropertyChange(); } }
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap1Green { get { return (ColorChannel)_swapBlock._Value05.XGA; } set { _swapBlock._Value05.XGA = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap1Green { get { return (ColorChannel)_swapBlock._Value05.XGA; } set { _swapBlock._Value05.XGA = value; SignalPropertyChange(); } }
 
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap1Blue { get { return (ColorChannel)_swapBlock._Value07.XRB; } set { _swapBlock._Value07.XRB = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap1Blue { get { return (ColorChannel)_swapBlock._Value07.XRB; } set { _swapBlock._Value07.XRB = value; SignalPropertyChange(); } }
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap1Alpha { get { return (ColorChannel)_swapBlock._Value07.XGA; } set { _swapBlock._Value07.XGA = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap1Alpha { get { return (ColorChannel)_swapBlock._Value07.XGA; } set { _swapBlock._Value07.XGA = value; SignalPropertyChange(); } }
 
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap2Red { get { return (ColorChannel)_swapBlock._Value09.XRB; } set { _swapBlock._Value09.XRB = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap2Red { get { return (ColorChannel)_swapBlock._Value09.XRB; } set { _swapBlock._Value09.XRB = value; SignalPropertyChange(); } }
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap2Green { get { return (ColorChannel)_swapBlock._Value09.XGA; } set { _swapBlock._Value09.XGA = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap2Green { get { return (ColorChannel)_swapBlock._Value09.XGA; } set { _swapBlock._Value09.XGA = value; SignalPropertyChange(); } }
 
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap2Blue { get { return (ColorChannel)_swapBlock._Value11.XRB; } set { _swapBlock._Value11.XRB = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap2Blue { get { return (ColorChannel)_swapBlock._Value11.XRB; } set { _swapBlock._Value11.XRB = value; SignalPropertyChange(); } }
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap2Alpha { get { return (ColorChannel)_swapBlock._Value11.XGA; } set { _swapBlock._Value11.XGA = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap2Alpha { get { return (ColorChannel)_swapBlock._Value11.XGA; } set { _swapBlock._Value11.XGA = value; SignalPropertyChange(); } }
 
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap3Red { get { return (ColorChannel)_swapBlock._Value13.XRB; } set { _swapBlock._Value13.XRB = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap3Red { get { return (ColorChannel)_swapBlock._Value13.XRB; } set { _swapBlock._Value13.XRB = value; SignalPropertyChange(); } }
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap3Green { get { return (ColorChannel)_swapBlock._Value13.XGA; } set { _swapBlock._Value13.XGA = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap3Green { get { return (ColorChannel)_swapBlock._Value13.XGA; } set { _swapBlock._Value13.XGA = value; SignalPropertyChange(); } }
 
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap3Blue { get { return (ColorChannel)_swapBlock._Value15.XRB; } set { _swapBlock._Value15.XRB = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap3Blue { get { return (ColorChannel)_swapBlock._Value15.XRB; } set { _swapBlock._Value15.XRB = value; SignalPropertyChange(); } }
         [Category("Swap Mode Table"), Browsable(true)]
-        public ColorChannel Swap3Alpha { get { return (ColorChannel)_swapBlock._Value15.XGA; } set { _swapBlock._Value15.XGA = (int)value; SignalPropertyChange(); } }
+        public ColorChannel Swap3Alpha { get { return (ColorChannel)_swapBlock._Value15.XGA; } set { _swapBlock._Value15.XGA = value; SignalPropertyChange(); } }
 
         //Used by Alpha Env to retrieve what values to swap
         public string[] swapModeTable = new string[4];
@@ -108,46 +105,26 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         [Category("TEV RAS1 IRef"), Browsable(true)]
-        public TexMapID IndTex0MapID { get { return (TexMapID)bi0; } set { bi0 = (int)value; getRawIRef(); } }
+        public TexMapID IndTex0MapID { get { return _swapBlock._Value16.TexMap0; } set { _swapBlock._Value16.TexMap0 = value; SignalPropertyChange(); } }
         [Category("TEV RAS1 IRef"), Browsable(true)]
-        public TexCoordID IndTex0Coord { get { return (TexCoordID)bc0; } set { bc0 = (int)value; getRawIRef(); } }
+        public TexCoordID IndTex0Coord { get { return _swapBlock._Value16.TexCoord0; } set { _swapBlock._Value16.TexCoord0 = value; SignalPropertyChange(); } }
         [Category("TEV RAS1 IRef"), Browsable(true)]
-        public TexMapID IndTex1MapID { get { return (TexMapID)bi1; } set { bi1 = (int)value; getRawIRef(); } }
+        public TexMapID IndTex1MapID { get { return _swapBlock._Value16.TexMap1; } set { _swapBlock._Value16.TexMap1 = value; SignalPropertyChange(); } }
         [Category("TEV RAS1 IRef"), Browsable(true)]
-        public TexCoordID IndTex1Coord { get { return (TexCoordID)bc1; } set { bc1 = (int)value; getRawIRef(); } }
+        public TexCoordID IndTex1Coord { get { return _swapBlock._Value16.TexCoord1; } set { _swapBlock._Value16.TexCoord1 = value; SignalPropertyChange(); } }
         [Category("TEV RAS1 IRef"), Browsable(true)]
-        public TexMapID IndTex2MapID { get { return (TexMapID)bi2; } set { bi2 = (int)value; getRawIRef(); } }
+        public TexMapID IndTex2MapID { get { return _swapBlock._Value16.TexMap2; } set { _swapBlock._Value16.TexMap2 = value; SignalPropertyChange(); } }
         [Category("TEV RAS1 IRef"), Browsable(true)]
-        public TexCoordID IndTex2Coord { get { return (TexCoordID)bc2; } set { bc2 = (int)value; getRawIRef(); } }
+        public TexCoordID IndTex2Coord { get { return _swapBlock._Value16.TexCoord2; } set { _swapBlock._Value16.TexCoord2 = value; SignalPropertyChange(); } }
         [Category("TEV RAS1 IRef"), Browsable(true)]
-        public TexMapID IndTex3MapID { get { return (TexMapID)bi3; } set { bi3 = (int)value; getRawIRef(); } }
+        public TexMapID IndTex3MapID { get { return _swapBlock._Value16.TexMap3; } set { _swapBlock._Value16.TexMap3 = value; SignalPropertyChange(); } }
         [Category("TEV RAS1 IRef"), Browsable(true)]
-        public TexCoordID IndTex3Coord { get { return (TexCoordID)bc3; } set { bc3 = (int)value; getRawIRef(); } }
-
-        public int bc0 = 7, bi0 = 7, bc1 = 7, bi1 = 7, bc2 = 7, bi2 = 7, bc3 = 7, bi3 = 7;
-
-        private void getRawIRef()
-        {
-            _swapBlock._Value16 = (BUInt24)RAS1_IRef.Shift(bi0, bc0, bi1, bc1, bi2, bc2, bi3, bc3);
-            SignalPropertyChange();
-        }
-        public void getIRefValues()
-        {
-            RAS1_IRef _rawIRef = new RAS1_IRef(_swapBlock._Value16);
-            bi0 = _rawIRef.TexMap0;
-            bc0 = _rawIRef.TexCoord0;
-            bi1 = _rawIRef.TexMap1;
-            bc1 = _rawIRef.TexCoord1;
-            bi2 = _rawIRef.TexMap2;
-            bc2 = _rawIRef.TexCoord2;
-            bi3 = _rawIRef.TexMap3;
-            bc3 = _rawIRef.TexCoord3;
-        }
+        public TexCoordID IndTex3Coord { get { return _swapBlock._Value16.TexCoord3; } set { _swapBlock._Value16.TexCoord3 = value; SignalPropertyChange(); } }
 
         public MDL0MaterialNode[] Materials { get { return _materials.ToArray(); } }
         public List<MDL0MaterialNode> _materials = new List<MDL0MaterialNode>();
 
-        public sbyte _ref0, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
+        public sbyte _ref0 = -1, _ref1 = -1, _ref2 = -1, _ref3 = -1, _ref4 = -1, _ref5 = -1, _ref6 = -1, _ref7 = -1;
         public byte _stages, _res0, _res1, _res2;
         int _datalen, _mdl0offset, _pad0, _pad1;
 
@@ -206,7 +183,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         //public int Pad1 { get { return pad1; } }
 
         public bool _renderUpdate = false;
-        public void SignalPropertyChange()
+        public new void SignalPropertyChange()
         {
             _renderUpdate = true;
             base.SignalPropertyChange();
@@ -218,9 +195,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int texCount = -1;
         public bool rendered = false;
 
+        public override string Name
+        {
+            get
+            {
+                return String.Format("Shader{0}", Index);
+            }
+            set
+            {
+                base.Name = value;
+            }
+        }
+
         public void Default()
         {
-            Name = String.Format("Shader{0}", Index);
             _datalen = 512;
             _ref0 =
             _ref1 =
@@ -233,14 +221,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             _stages = 1;
 
-            TEVStage stage = new TEVStage(Children.Count);
+            TEVStage stage = new TEVStage();
             AddChild(stage, true);
             stage.Default();
         }
 
         public void DefaultAsMetal(int texcount)
         {
-            Name = String.Format("Shader{0}", Index);
             _datalen = 512;
             _autoMetal = true;
 
@@ -273,7 +260,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             TEVStage s;
             while (i++ < 4)
             {
-                AddChild(s = new TEVStage(i));
+                AddChild(s = new TEVStage());
                 s.DefaultAsMetal(texcount - 1);
             }
         }
@@ -308,9 +295,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             _pad0 = header->_pad0;
             _pad1 = header->_pad1;
             
-            if (_name == null)
-                _name = String.Format("Shader{0}", Index);
-
             //Attach to materials
             byte* pHeader = (byte*)Header;
             if ((Model != null) && (Model._matList != null))
@@ -325,7 +309,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
 
             _swapBlock = *header->SwapBlock;
-            getIRefValues();
 
             Populate();
             return true;
@@ -337,43 +320,41 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int r = 0; r < 8; r++, grp = grp->Next)
                 if (grp->mask.Reg == 0x61)
                 {
-                    TEVStage s0 = new TEVStage(r * 2);
+                    TEVStage s0 = new TEVStage();
 
-                    KSel KSEL = new KSel(grp->ksel.Data.Value);
-                    RAS1_TRef TREF = new RAS1_TRef(grp->tref.Data.Value);
+                    KSel ksel = new KSel(grp->ksel.Data.Value);
+                    RAS1_TRef tref = new RAS1_TRef(grp->tref.Data.Value);
 
-                    s0.rawColEnv = grp->eClrEnv.Data.Value;
-                    s0.rawAlphaEnv = grp->eAlpEnv.Data.Value;
-                    s0.rawCMD = grp->eCMD.Data.Value;
+                    s0._colorEnv = grp->eClrEnv.Data;
+                    s0._alphaEnv = grp->eAlpEnv.Data;
+                    s0._cmd = grp->eCMD.Data;
 
-                    s0.kcsel = KSEL.KCSEL0;
-                    s0.kasel = KSEL.KASEL0;
+                    s0._kcSel = ksel.KCSel0;
+                    s0._kaSel = ksel.KASel0;
 
-                    s0.ti = TREF.TI0;
-                    s0.tc = TREF.TC0;
-                    s0.cc = TREF.CC0;
-                    s0.te = TREF.TE0;
+                    s0._texMapID = tref.TexMapID0;
+                    s0._texCoord = tref.TexCoord0;
+                    s0._colorChan = tref.ColorChannel0;
+                    s0._texEnabled = tref.TexEnabled0;
 
-                    s0.getValues();
                     AddChild(s0, false);
 
                     if (grp->oClrEnv.Reg == 0x61 && grp->oAlpEnv.Reg == 0x61 && grp->oCMD.Reg == 0x61)
                     {
-                        TEVStage s1 = new TEVStage(r * 2 + 1);
+                        TEVStage s1 = new TEVStage();
 
-                        s1.rawColEnv = grp->oClrEnv.Data.Value;
-                        s1.rawAlphaEnv = grp->oAlpEnv.Data.Value;
-                        s1.rawCMD = grp->oCMD.Data.Value;
+                        s1._colorEnv = grp->oClrEnv.Data;
+                        s1._alphaEnv = grp->oAlpEnv.Data;
+                        s1._cmd = grp->oCMD.Data;
 
-                        s1.kcsel = KSEL.KCSEL1;
-                        s1.kasel = KSEL.KASEL1;
+                        s1._kcSel = ksel.KCSel1;
+                        s1._kaSel = ksel.KASel1;
 
-                        s1.ti = TREF.TI1;
-                        s1.tc = TREF.TC1;
-                        s1.cc = TREF.CC1;
-                        s1.te = TREF.TE1;
+                        s1._texMapID = tref.TexMapID1;
+                        s1._texCoord = tref.TexCoord1;
+                        s1._colorChan = tref.ColorChannel1;
+                        s1._texEnabled = tref.TexEnabled1;
 
-                        s1.getValues();
                         AddChild(s1, false);
                     }
                 }
@@ -434,14 +415,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                     grp->SetGroup(i / 2);
                     grp->SetStage(i);
 
-                    grp->eClrEnv.Data.Value = c.rawColEnv;
-                    grp->eAlpEnv.Data.Value = c.rawAlphaEnv;
-                    grp->eCMD.Data.Value = c.rawCMD;
+                    grp->eClrEnv.Data = c._colorEnv;
+                    grp->eAlpEnv.Data = c._alphaEnv;
+                    grp->eCMD.Data = c._cmd;
 
                     if (i == Children.Count - 1) //Last stage is even, odd stage isn't used
                     {
-                        grp->ksel.Data.Value = KSel.Shift(0, 0, c.kcsel, c.kasel, 0, 0);
-                        grp->tref.Data.Value = RAS1_TRef.Shift(c.ti, c.tc, c.te ? 1 : 0, c.cc, 7, 7, 0, 7);
+                        grp->ksel.Data = new KSel(0, 0, c._kcSel, c._kaSel, 0, 0);
+                        grp->tref.Data = new RAS1_TRef(c._texMapID, c._texCoord, c._texEnabled, c._colorChan, TexMapID.TexMap7, TexCoordID.TexCoord7, false, ColorSelChan.Zero);
                     }
                 }
                 else //Odd Stage
@@ -450,12 +431,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     grp->SetStage(i);
 
-                    grp->oClrEnv.Data.Value = c.rawColEnv;
-                    grp->oAlpEnv.Data.Value = c.rawAlphaEnv;
-                    grp->oCMD.Data.Value = c.rawCMD;
+                    grp->oClrEnv.Data = c._colorEnv;
+                    grp->oAlpEnv.Data = c._alphaEnv;
+                    grp->oCMD.Data = c._cmd;
 
-                    grp->ksel.Data.Value = KSel.Shift(0, 0, p.kcsel, p.kasel, c.kcsel, c.kasel);
-                    grp->tref.Data.Value = RAS1_TRef.Shift(p.ti, p.tc, p.te ? 1 : 0, p.cc, c.ti, c.tc, c.te ? 1 : 0, c.cc);
+                    grp->ksel.Data = new KSel(0, 0, p._kcSel, p._kaSel, c._kcSel, c._kaSel);
+                    grp->tref.Data = new RAS1_TRef(p._texMapID, p._texCoord, p._texEnabled, p._colorChan, c._texMapID, c._texCoord, c._texEnabled, c._colorChan);
 
                     grp = grp->Next;
                 }
@@ -469,7 +450,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 switch (Model._importOptions._mdlType)
                 {
-                    case 0: //Character
+                    case Modeling.Collada.ImportOptions.MDLType.Character:
 
                         struct0->SetStage(0);
                         struct0->SetStage(1);
@@ -496,7 +477,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                         break;
 
-                    case 1: //Stage/Item
+                    case Modeling.Collada.ImportOptions.MDLType.Stage:
 
                         struct0->SetStage(0);
 

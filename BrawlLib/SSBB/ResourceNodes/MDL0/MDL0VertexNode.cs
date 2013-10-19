@@ -129,7 +129,5 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
             header->_index = Index;
         }
-
-        //public VertexGroup GetVertices(string Name, Vector3[] Vertices) { return new VertexGroup() { _name = Name, Vertices = VertexCodec.ExtractVertices(Header) }; }
     }
 }

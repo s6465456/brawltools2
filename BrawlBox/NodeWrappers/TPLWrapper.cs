@@ -26,7 +26,6 @@ namespace BrawlBox.NodeWrappers
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUpAction, Keys.Control | Keys.Up));
             _menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDownAction, Keys.Control | Keys.Down));
-            _menu.Items.Add(new ToolStripMenuItem("Re&name", null, RenameAction, Keys.Control | Keys.N));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("&Delete", null, DeleteAction, Keys.Control | Keys.Delete));
             _menu.Opening += MenuOpening;
@@ -35,12 +34,12 @@ namespace BrawlBox.NodeWrappers
         protected static void NewEntryAction(object sender, EventArgs e) { GetInstance<TPLWrapper>().ImportTexture(); }
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            _menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[10].Enabled = true;
+            _menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[9].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             TPLWrapper w = GetInstance<TPLWrapper>();
-            _menu.Items[3].Enabled = _menu.Items[10].Enabled = w.Parent != null;
+            _menu.Items[3].Enabled = _menu.Items[9].Enabled = w.Parent != null;
             _menu.Items[4].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
             _menu.Items[6].Enabled = w.PrevNode != null;
             _menu.Items[7].Enabled = w.NextNode != null;
@@ -59,17 +58,7 @@ namespace BrawlBox.NodeWrappers
             if (index == 8)
             {
                 TPLTextureNode t = new TPLTextureNode() { Name = "Texture" };
-                TPLGroupNode g = new TPLGroupNode() { Name = _resource.FindName("Texture") };
-                _resource.AddChild(g);
-                g.AddChild(t);
-                //if (_paletteData != null)
-                //{
-                //    _origTPLPlt = new TPLPaletteNode() { Name = "Palette" };
-                //    g.AddChild(_origTPLPlt);
-                //    _origTPLPlt.ReplaceRaw(_paletteData);
-                //}
-                g._texture = t;
-                //g._palette = _origTPLPlt;
+                _resource.AddChild(t);
                 t.Replace(path);
 
                 BaseWrapper w = this.FindResource(t, true);
@@ -93,6 +82,48 @@ namespace BrawlBox.NodeWrappers
     [NodeWrapper(ResourceType.TPLTexture)]
     class TPLTextureNodeWrapper : GenericWrapper
     {
+        private static ContextMenuStrip _menu;
+        static TPLTextureNodeWrapper()
+        {
+            _menu = new ContextMenuStrip();
+            _menu.Items.Add(new ToolStripMenuItem("&Re-Encode", null, ReEncodeAction));
+            _menu.Items.Add(new ToolStripSeparator());
+            _menu.Items.Add(new ToolStripMenuItem("&Export", null, ExportAction, Keys.Control | Keys.E));
+            _menu.Items.Add(new ToolStripMenuItem("&Replace", null, ReplaceAction, Keys.Control | Keys.R));
+            _menu.Items.Add(new ToolStripMenuItem("Res&tore", null, RestoreAction, Keys.Control | Keys.T));
+            _menu.Items.Add(new ToolStripSeparator());
+            _menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUpAction, Keys.Control | Keys.Up));
+            _menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDownAction, Keys.Control | Keys.Down));
+            _menu.Items.Add(new ToolStripSeparator());
+            _menu.Items.Add(new ToolStripMenuItem("&Delete", null, DeleteAction, Keys.Control | Keys.Delete));
+            _menu.Opening += MenuOpening;
+            _menu.Closing += MenuClosing;
+        }
+        protected static void ReEncodeAction(object sender, EventArgs e) { GetInstance<TPLTextureNodeWrapper>().ReEncode(); }
+        private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
+        {
+            _menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[9].Enabled = true;
+        }
+        private static void MenuOpening(object sender, CancelEventArgs e)
+        {
+            TPLTextureNodeWrapper w = GetInstance<TPLTextureNodeWrapper>();
+            _menu.Items[3].Enabled = _menu.Items[9].Enabled = w.Parent != null;
+            _menu.Items[4].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
+            _menu.Items[6].Enabled = w.PrevNode != null;
+            _menu.Items[7].Enabled = w.NextNode != null;
+        }
+
+        public TPLTextureNodeWrapper() { ContextMenuStrip = _menu; }
+
+        public void ReEncode()
+        {
+            using (TextureConverterDialog dlg = new TextureConverterDialog())
+            {
+                dlg.LoadImages((ResourceNode as TPLTextureNode).GetImage(0));
+                dlg.ShowDialog(MainForm.Instance, ResourceNode as TPLTextureNode);
+            }
+        }
+
         public override string ExportFilter { get { return FileFilters.Images; } }
 
         public override void OnReplace(string inStream, int filterIndex)

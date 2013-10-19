@@ -38,6 +38,10 @@ namespace System.Windows.Forms
             this.chkAmbClr = new System.Windows.Forms.CheckBox();
             this.Lights = new System.Windows.Forms.TabPage();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.lightCut = new System.Windows.Forms.Button();
+            this.lightPaste = new System.Windows.Forms.Button();
+            this.lightCopy = new System.Windows.Forms.Button();
+            this.lightClear = new System.Windows.Forms.Button();
             this.label25 = new System.Windows.Forms.Label();
             this.label26 = new System.Windows.Forms.Label();
             this.numSpotBright = new System.Windows.Forms.NumericInputBox();
@@ -122,10 +126,6 @@ namespace System.Windows.Forms
             this.nodeType = new System.Windows.Forms.Label();
             this.nodeList = new System.Windows.Forms.ComboBox();
             this.btnRename = new System.Windows.Forms.Button();
-            this.lightCut = new System.Windows.Forms.Button();
-            this.lightPaste = new System.Windows.Forms.Button();
-            this.lightCopy = new System.Windows.Forms.Button();
-            this.lightClear = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.LightSets.SuspendLayout();
             this.AmbLights.SuspendLayout();
@@ -444,6 +444,47 @@ namespace System.Windows.Forms
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Light Keyframes";
             // 
+            // lightCut
+            // 
+            this.lightCut.FlatAppearance.BorderColor = System.Drawing.Color.DimGray;
+            this.lightCut.Location = new System.Drawing.Point(162, 73);
+            this.lightCut.Name = "lightCut";
+            this.lightCut.Size = new System.Drawing.Size(59, 20);
+            this.lightCut.TabIndex = 39;
+            this.lightCut.Text = "Cut";
+            this.lightCut.UseVisualStyleBackColor = true;
+            this.lightCut.Click += new System.EventHandler(this.lightCut_Click);
+            // 
+            // lightPaste
+            // 
+            this.lightPaste.Location = new System.Drawing.Point(104, 73);
+            this.lightPaste.Name = "lightPaste";
+            this.lightPaste.Size = new System.Drawing.Size(59, 20);
+            this.lightPaste.TabIndex = 41;
+            this.lightPaste.Text = "Paste";
+            this.lightPaste.UseVisualStyleBackColor = true;
+            this.lightPaste.Click += new System.EventHandler(this.lightPaste_Click);
+            // 
+            // lightCopy
+            // 
+            this.lightCopy.Location = new System.Drawing.Point(46, 73);
+            this.lightCopy.Name = "lightCopy";
+            this.lightCopy.Size = new System.Drawing.Size(59, 20);
+            this.lightCopy.TabIndex = 40;
+            this.lightCopy.Text = "Copy";
+            this.lightCopy.UseVisualStyleBackColor = true;
+            this.lightCopy.Click += new System.EventHandler(this.lightCopy_Click);
+            // 
+            // lightClear
+            // 
+            this.lightClear.Location = new System.Drawing.Point(220, 73);
+            this.lightClear.Name = "lightClear";
+            this.lightClear.Size = new System.Drawing.Size(59, 20);
+            this.lightClear.TabIndex = 42;
+            this.lightClear.Text = "Clear";
+            this.lightClear.UseVisualStyleBackColor = true;
+            this.lightClear.Click += new System.EventHandler(this.lightClear_Click);
+            // 
             // label25
             // 
             this.label25.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -470,13 +511,17 @@ namespace System.Windows.Forms
             // numSpotBright
             // 
             this.numSpotBright.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numSpotBright.Integral = false;
             this.numSpotBright.Location = new System.Drawing.Point(348, 34);
             this.numSpotBright.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numSpotBright.MaximumValue = 3.402823E+38F;
+            this.numSpotBright.MinimumValue = -3.402823E+38F;
             this.numSpotBright.Name = "numSpotBright";
             this.numSpotBright.Size = new System.Drawing.Size(70, 20);
             this.numSpotBright.TabIndex = 38;
             this.numSpotBright.Text = "0";
             this.numSpotBright.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numSpotBright.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label24
             // 
@@ -504,35 +549,47 @@ namespace System.Windows.Forms
             // numStartZ
             // 
             this.numStartZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numStartZ.Integral = false;
             this.numStartZ.Location = new System.Drawing.Point(210, 34);
             this.numStartZ.Margin = new System.Windows.Forms.Padding(0);
+            this.numStartZ.MaximumValue = 3.402823E+38F;
+            this.numStartZ.MinimumValue = -3.402823E+38F;
             this.numStartZ.Name = "numStartZ";
             this.numStartZ.Size = new System.Drawing.Size(70, 20);
             this.numStartZ.TabIndex = 26;
             this.numStartZ.Text = "0";
             this.numStartZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numStartZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numRefBright
             // 
             this.numRefBright.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRefBright.Integral = false;
             this.numRefBright.Location = new System.Drawing.Point(348, 72);
             this.numRefBright.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numRefBright.MaximumValue = 3.402823E+38F;
+            this.numRefBright.MinimumValue = -3.402823E+38F;
             this.numRefBright.Name = "numRefBright";
             this.numRefBright.Size = new System.Drawing.Size(70, 20);
             this.numRefBright.TabIndex = 36;
             this.numRefBright.Text = "0";
             this.numRefBright.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numRefBright.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numSpotCut
             // 
             this.numSpotCut.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numSpotCut.Integral = false;
             this.numSpotCut.Location = new System.Drawing.Point(348, 15);
             this.numSpotCut.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numSpotCut.MaximumValue = 3.402823E+38F;
+            this.numSpotCut.MinimumValue = -3.402823E+38F;
             this.numSpotCut.Name = "numSpotCut";
             this.numSpotCut.Size = new System.Drawing.Size(70, 20);
             this.numSpotCut.TabIndex = 34;
             this.numSpotCut.Text = "0";
             this.numSpotCut.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numSpotCut.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label19
             // 
@@ -548,13 +605,17 @@ namespace System.Windows.Forms
             // numEndY
             // 
             this.numEndY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numEndY.Integral = false;
             this.numEndY.Location = new System.Drawing.Point(141, 53);
             this.numEndY.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numEndY.MaximumValue = 3.402823E+38F;
+            this.numEndY.MinimumValue = -3.402823E+38F;
             this.numEndY.Name = "numEndY";
             this.numEndY.Size = new System.Drawing.Size(70, 20);
             this.numEndY.TabIndex = 28;
             this.numEndY.Text = "0";
             this.numEndY.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numEndY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label20
             // 
@@ -570,13 +631,17 @@ namespace System.Windows.Forms
             // numEndX
             // 
             this.numEndX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numEndX.Integral = false;
             this.numEndX.Location = new System.Drawing.Point(72, 53);
             this.numEndX.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numEndX.MaximumValue = 3.402823E+38F;
+            this.numEndX.MinimumValue = -3.402823E+38F;
             this.numEndX.Name = "numEndX";
             this.numEndX.Size = new System.Drawing.Size(70, 20);
             this.numEndX.TabIndex = 27;
             this.numEndX.Text = "0";
             this.numEndX.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numEndX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label21
             // 
@@ -592,13 +657,17 @@ namespace System.Windows.Forms
             // numRefDist
             // 
             this.numRefDist.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRefDist.Integral = false;
             this.numRefDist.Location = new System.Drawing.Point(348, 53);
             this.numRefDist.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numRefDist.MaximumValue = 3.402823E+38F;
+            this.numRefDist.MinimumValue = -3.402823E+38F;
             this.numRefDist.Name = "numRefDist";
             this.numRefDist.Size = new System.Drawing.Size(70, 20);
             this.numRefDist.TabIndex = 35;
             this.numRefDist.Text = "0";
             this.numRefDist.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numRefDist.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label22
             // 
@@ -614,35 +683,47 @@ namespace System.Windows.Forms
             // numStartX
             // 
             this.numStartX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numStartX.Integral = false;
             this.numStartX.Location = new System.Drawing.Point(72, 34);
             this.numStartX.Margin = new System.Windows.Forms.Padding(0);
+            this.numStartX.MaximumValue = 3.402823E+38F;
+            this.numStartX.MinimumValue = -3.402823E+38F;
             this.numStartX.Name = "numStartX";
             this.numStartX.Size = new System.Drawing.Size(70, 20);
             this.numStartX.TabIndex = 23;
             this.numStartX.Text = "0";
             this.numStartX.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numStartX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numStartY
             // 
             this.numStartY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numStartY.Integral = false;
             this.numStartY.Location = new System.Drawing.Point(141, 34);
             this.numStartY.Margin = new System.Windows.Forms.Padding(0);
+            this.numStartY.MaximumValue = 3.402823E+38F;
+            this.numStartY.MinimumValue = -3.402823E+38F;
             this.numStartY.Name = "numStartY";
             this.numStartY.Size = new System.Drawing.Size(70, 20);
             this.numStartY.TabIndex = 25;
             this.numStartY.Text = "0";
             this.numStartY.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numStartY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numEndZ
             // 
             this.numEndZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numEndZ.Integral = false;
             this.numEndZ.Location = new System.Drawing.Point(210, 53);
             this.numEndZ.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numEndZ.MaximumValue = 3.402823E+38F;
+            this.numEndZ.MinimumValue = -3.402823E+38F;
             this.numEndZ.Name = "numEndZ";
             this.numEndZ.Size = new System.Drawing.Size(70, 20);
             this.numEndZ.TabIndex = 30;
             this.numEndZ.Text = "0";
             this.numEndZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numEndZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label23
             // 
@@ -846,24 +927,32 @@ namespace System.Windows.Forms
             // numFogEndZ
             // 
             this.numFogEndZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numFogEndZ.Integral = false;
             this.numFogEndZ.Location = new System.Drawing.Point(183, 15);
             this.numFogEndZ.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numFogEndZ.MaximumValue = 3.402823E+38F;
+            this.numFogEndZ.MinimumValue = -3.402823E+38F;
             this.numFogEndZ.Name = "numFogEndZ";
             this.numFogEndZ.Size = new System.Drawing.Size(70, 20);
             this.numFogEndZ.TabIndex = 10;
             this.numFogEndZ.Text = "0";
             this.numFogEndZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numFogEndZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numFogStartZ
             // 
             this.numFogStartZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numFogStartZ.Integral = false;
             this.numFogStartZ.Location = new System.Drawing.Point(60, 15);
             this.numFogStartZ.Margin = new System.Windows.Forms.Padding(0);
+            this.numFogStartZ.MaximumValue = 3.402823E+38F;
+            this.numFogStartZ.MinimumValue = -3.402823E+38F;
             this.numFogStartZ.Name = "numFogStartZ";
             this.numFogStartZ.Size = new System.Drawing.Size(70, 20);
             this.numFogStartZ.TabIndex = 9;
             this.numFogStartZ.Text = "0";
             this.numFogStartZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numFogStartZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label17
             // 
@@ -1035,13 +1124,17 @@ namespace System.Windows.Forms
             // numPosZ
             // 
             this.numPosZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numPosZ.Integral = false;
             this.numPosZ.Location = new System.Drawing.Point(197, 30);
             this.numPosZ.Margin = new System.Windows.Forms.Padding(0);
+            this.numPosZ.MaximumValue = 3.402823E+38F;
+            this.numPosZ.MinimumValue = -3.402823E+38F;
             this.numPosZ.Name = "numPosZ";
             this.numPosZ.Size = new System.Drawing.Size(70, 20);
             this.numPosZ.TabIndex = 5;
             this.numPosZ.Text = "0";
             this.numPosZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numPosZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // btnCut
             // 
@@ -1087,57 +1180,77 @@ namespace System.Windows.Forms
             // numAimX
             // 
             this.numAimX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numAimX.Integral = false;
             this.numAimX.Location = new System.Drawing.Point(59, 68);
             this.numAimX.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numAimX.MaximumValue = 3.402823E+38F;
+            this.numAimX.MinimumValue = -3.402823E+38F;
             this.numAimX.Name = "numAimX";
             this.numAimX.Size = new System.Drawing.Size(70, 20);
             this.numAimX.TabIndex = 11;
             this.numAimX.Text = "0";
             this.numAimX.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numAimX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numFarZ
             // 
             this.numFarZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numFarZ.Integral = false;
             this.numFarZ.Location = new System.Drawing.Point(428, 30);
             this.numFarZ.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numFarZ.MaximumValue = 3.402823E+38F;
+            this.numFarZ.MinimumValue = -3.402823E+38F;
             this.numFarZ.Name = "numFarZ";
             this.numFarZ.Size = new System.Drawing.Size(70, 20);
             this.numFarZ.TabIndex = 29;
             this.numFarZ.Text = "0";
             this.numFarZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numFarZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numRotY
             // 
             this.numRotY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotY.Integral = false;
             this.numRotY.Location = new System.Drawing.Point(128, 49);
             this.numRotY.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numRotY.MaximumValue = 3.402823E+38F;
+            this.numRotY.MinimumValue = -3.402823E+38F;
             this.numRotY.Name = "numRotY";
             this.numRotY.Size = new System.Drawing.Size(70, 20);
             this.numRotY.TabIndex = 7;
             this.numRotY.Text = "0";
             this.numRotY.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numRotY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numNearZ
             // 
             this.numNearZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numNearZ.Integral = false;
             this.numNearZ.Location = new System.Drawing.Point(428, 11);
             this.numNearZ.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numNearZ.MaximumValue = 3.402823E+38F;
+            this.numNearZ.MinimumValue = -3.402823E+38F;
             this.numNearZ.Name = "numNearZ";
             this.numNearZ.Size = new System.Drawing.Size(70, 20);
             this.numNearZ.TabIndex = 28;
             this.numNearZ.Text = "0";
             this.numNearZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numNearZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numRotX
             // 
             this.numRotX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotX.Integral = false;
             this.numRotX.Location = new System.Drawing.Point(59, 49);
             this.numRotX.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numRotX.MaximumValue = 3.402823E+38F;
+            this.numRotX.MinimumValue = -3.402823E+38F;
             this.numRotX.Name = "numRotX";
             this.numRotX.Size = new System.Drawing.Size(70, 20);
             this.numRotX.TabIndex = 6;
             this.numRotX.Text = "0";
             this.numRotX.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numRotX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label12
             // 
@@ -1154,13 +1267,17 @@ namespace System.Windows.Forms
             // numTwist
             // 
             this.numTwist.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numTwist.Integral = false;
             this.numTwist.Location = new System.Drawing.Point(312, 11);
             this.numTwist.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numTwist.MaximumValue = 3.402823E+38F;
+            this.numTwist.MinimumValue = -3.402823E+38F;
             this.numTwist.Name = "numTwist";
             this.numTwist.Size = new System.Drawing.Size(70, 20);
             this.numTwist.TabIndex = 12;
             this.numTwist.Text = "0";
             this.numTwist.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numTwist.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label13
             // 
@@ -1177,57 +1294,77 @@ namespace System.Windows.Forms
             // numPosX
             // 
             this.numPosX.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numPosX.Integral = false;
             this.numPosX.Location = new System.Drawing.Point(59, 30);
             this.numPosX.Margin = new System.Windows.Forms.Padding(0);
+            this.numPosX.MaximumValue = 3.402823E+38F;
+            this.numPosX.MinimumValue = -3.402823E+38F;
             this.numPosX.Name = "numPosX";
             this.numPosX.Size = new System.Drawing.Size(70, 20);
             this.numPosX.TabIndex = 3;
             this.numPosX.Text = "0";
             this.numPosX.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numPosX.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numAspect
             // 
             this.numAspect.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numAspect.Integral = false;
             this.numAspect.Location = new System.Drawing.Point(312, 68);
             this.numAspect.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numAspect.MaximumValue = 3.402823E+38F;
+            this.numAspect.MinimumValue = -3.402823E+38F;
             this.numAspect.Name = "numAspect";
             this.numAspect.Size = new System.Drawing.Size(70, 20);
             this.numAspect.TabIndex = 25;
             this.numAspect.Text = "0";
             this.numAspect.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numAspect.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numRotZ
             // 
             this.numRotZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numRotZ.Integral = false;
             this.numRotZ.Location = new System.Drawing.Point(197, 49);
             this.numRotZ.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numRotZ.MaximumValue = 3.402823E+38F;
+            this.numRotZ.MinimumValue = -3.402823E+38F;
             this.numRotZ.Name = "numRotZ";
             this.numRotZ.Size = new System.Drawing.Size(70, 20);
             this.numRotZ.TabIndex = 8;
             this.numRotZ.Text = "0";
             this.numRotZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numRotZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numHeight
             // 
             this.numHeight.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numHeight.Integral = false;
             this.numHeight.Location = new System.Drawing.Point(312, 49);
             this.numHeight.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numHeight.MaximumValue = 3.402823E+38F;
+            this.numHeight.MinimumValue = -3.402823E+38F;
             this.numHeight.Name = "numHeight";
             this.numHeight.Size = new System.Drawing.Size(70, 20);
             this.numHeight.TabIndex = 24;
             this.numHeight.Text = "0";
             this.numHeight.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numHeight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // numPosY
             // 
             this.numPosY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numPosY.Integral = false;
             this.numPosY.Location = new System.Drawing.Point(128, 30);
             this.numPosY.Margin = new System.Windows.Forms.Padding(0);
+            this.numPosY.MaximumValue = 3.402823E+38F;
+            this.numPosY.MinimumValue = -3.402823E+38F;
             this.numPosY.Name = "numPosY";
             this.numPosY.Size = new System.Drawing.Size(70, 20);
             this.numPosY.TabIndex = 4;
             this.numPosY.Text = "0";
             this.numPosY.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numPosY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label10
             // 
@@ -1266,13 +1403,17 @@ namespace System.Windows.Forms
             // numAimY
             // 
             this.numAimY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numAimY.Integral = false;
             this.numAimY.Location = new System.Drawing.Point(128, 68);
             this.numAimY.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numAimY.MaximumValue = 3.402823E+38F;
+            this.numAimY.MinimumValue = -3.402823E+38F;
             this.numAimY.Name = "numAimY";
             this.numAimY.Size = new System.Drawing.Size(70, 20);
             this.numAimY.TabIndex = 21;
             this.numAimY.Text = "0";
             this.numAimY.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numAimY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label2
             // 
@@ -1288,13 +1429,17 @@ namespace System.Windows.Forms
             // numAimZ
             // 
             this.numAimZ.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numAimZ.Integral = false;
             this.numAimZ.Location = new System.Drawing.Point(197, 68);
             this.numAimZ.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numAimZ.MaximumValue = 3.402823E+38F;
+            this.numAimZ.MinimumValue = -3.402823E+38F;
             this.numAimZ.Name = "numAimZ";
             this.numAimZ.Size = new System.Drawing.Size(70, 20);
             this.numAimZ.TabIndex = 19;
             this.numAimZ.Text = "0";
             this.numAimZ.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numAimZ.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // label3
             // 
@@ -1321,13 +1466,17 @@ namespace System.Windows.Forms
             // numFovY
             // 
             this.numFovY.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numFovY.Integral = false;
             this.numFovY.Location = new System.Drawing.Point(312, 30);
             this.numFovY.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
+            this.numFovY.MaximumValue = 3.402823E+38F;
+            this.numFovY.MinimumValue = -3.402823E+38F;
             this.numFovY.Name = "numFovY";
             this.numFovY.Size = new System.Drawing.Size(70, 20);
             this.numFovY.TabIndex = 13;
             this.numFovY.Text = "0";
             this.numFovY.ValueChanged += new System.EventHandler(this.BoxChanged);
+            this.numFovY.MouseDown += new System.Windows.Forms.MouseEventHandler(this.box_MouseDown);
             // 
             // panel1
             // 
@@ -1443,47 +1592,6 @@ namespace System.Windows.Forms
             this.btnRename.Text = "Rename";
             this.btnRename.UseVisualStyleBackColor = true;
             this.btnRename.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // lightCut
-            // 
-            this.lightCut.FlatAppearance.BorderColor = System.Drawing.Color.DimGray;
-            this.lightCut.Location = new System.Drawing.Point(162, 73);
-            this.lightCut.Name = "lightCut";
-            this.lightCut.Size = new System.Drawing.Size(59, 20);
-            this.lightCut.TabIndex = 39;
-            this.lightCut.Text = "Cut";
-            this.lightCut.UseVisualStyleBackColor = true;
-            this.lightCut.Click += new System.EventHandler(this.lightCut_Click);
-            // 
-            // lightPaste
-            // 
-            this.lightPaste.Location = new System.Drawing.Point(104, 73);
-            this.lightPaste.Name = "lightPaste";
-            this.lightPaste.Size = new System.Drawing.Size(59, 20);
-            this.lightPaste.TabIndex = 41;
-            this.lightPaste.Text = "Paste";
-            this.lightPaste.UseVisualStyleBackColor = true;
-            this.lightPaste.Click += new System.EventHandler(this.lightPaste_Click);
-            // 
-            // lightCopy
-            // 
-            this.lightCopy.Location = new System.Drawing.Point(46, 73);
-            this.lightCopy.Name = "lightCopy";
-            this.lightCopy.Size = new System.Drawing.Size(59, 20);
-            this.lightCopy.TabIndex = 40;
-            this.lightCopy.Text = "Copy";
-            this.lightCopy.UseVisualStyleBackColor = true;
-            this.lightCopy.Click += new System.EventHandler(this.lightCopy_Click);
-            // 
-            // lightClear
-            // 
-            this.lightClear.Location = new System.Drawing.Point(220, 73);
-            this.lightClear.Name = "lightClear";
-            this.lightClear.Size = new System.Drawing.Size(59, 20);
-            this.lightClear.TabIndex = 42;
-            this.lightClear.Text = "Clear";
-            this.lightClear.UseVisualStyleBackColor = true;
-            this.lightClear.Click += new System.EventHandler(this.lightClear_Click);
             // 
             // SCN0Editor
             // 
@@ -1727,16 +1835,35 @@ namespace System.Windows.Forms
         //    set { grpTransform.Enabled = grpTransAll.Enabled = (_mainWindow.EnableTransformEdit = value) && (TargetBone != null); }
         //}
 
+        private ISCN0KeyframeHolder Entry
+        {
+            get
+            {
+                switch (tabIndex)
+                {
+                    case 2: return _light;
+                    case 3: return _fog;
+                    case 4: return _camera;
+                }
+                return null;
+            }
+        }
+
         public void UpdatePropDisplay()
         {
             if (!Enabled)
                 return;
 
-            //int temp = tabIndex;
-            //for (tabIndex = 0; tabIndex < 3; tabIndex++)
-                for (int i = 0; i < (tabIndex == 2 ? 10 : tabIndex == 3 ? 2 : tabIndex == 4 ? 15 : 0); i++)
-                    ResetBox(i);
-            //tabIndex = temp;
+            for (int i = 0; i < (tabIndex == 2 ? 10 : tabIndex == 3 ? 2 : tabIndex == 4 ? 15 : 0); i++)
+                ResetBox(i);
+
+            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor.Visible)
+            {
+                ISCN0KeyframeHolder entry = Entry;
+                if (entry != null)
+                    if (entry != null && (SelectedAnimation != null) && (CurrentFrame > 0) && _mainWindow.InterpolationEditor._targetNode != entry)
+                        _mainWindow.InterpolationEditor.SetTarget(entry as ResourceNode);
+            }
         }
 
         public unsafe void ResetBox(int index)
@@ -1797,6 +1924,7 @@ namespace System.Windows.Forms
             }
 
             ResetBox(index);
+            _mainWindow.KeyframePanel.UpdateKeyframe(CurrentFrame - 1);
 
             _mainWindow.SetFrame(CurrentFrame);
         }
@@ -1823,6 +1951,8 @@ namespace System.Windows.Forms
             }
             else if (btnRename.Enabled == false)
                 btnRename.Enabled = true;
+
+            _mainWindow.KeyframePanel.TargetSequence = nodeList.SelectedItem as ResourceNode;
 
             switch (tabIndex)
             {
@@ -1878,15 +2008,11 @@ namespace System.Windows.Forms
 
                     UpdateSelectedLightSets();
 
-                    _mainWindow.KeyframePanel.SetEditType(-1);
-
                     break;
                 case 1:
                     _ambLight = nodeList.SelectedItem as SCN0AmbientLightNode;
                     chkAmbClr.Checked = _ambLight.ColorEnabled;
                     chkAmbAlpha.Checked = _ambLight.AlphaEnabled;
-
-                    _mainWindow.KeyframePanel.SetEditType(2);
 
                     break;
                 case 2:
@@ -1898,21 +2024,16 @@ namespace System.Windows.Forms
                     lstDistFunc.SelectedIndex = (int)_light.DistanceFunction;
                     lstSpotFunc.SelectedIndex = (int)_light.SpotFunction;
 
-                    _mainWindow.KeyframePanel.SetEditTypes2(true, true, true, true, true);
                     break;
                 case 3:
                     _fog = nodeList.SelectedItem as SCN0FogNode;
                     comboBox3.SelectedIndex = Array.IndexOf(fogEnum, _fog.Type);
-
-                    _mainWindow.KeyframePanel.SetEditTypes(true, true, false, true);
 
                     break;
                 case 4:
                     _camera = nodeList.SelectedItem as SCN0CameraNode;
                     lstCamType.SelectedIndex = (int)_camera.Type;
                     lstCamProj.SelectedIndex = (int)_camera.ProjectionType;
-
-                    _mainWindow.KeyframePanel.SetEditType(0);
 
                     break;
             }
@@ -1962,8 +2083,12 @@ namespace System.Windows.Forms
                 case 0:
                     nodeType.Text = "LightSet:";
                     if (SelectedAnimation != null)
-                        foreach (SCN0LightSetNode s in SelectedAnimation.GetFolder<SCN0LightSetNode>().Children)
-                            nodeList.Items.Add(s);
+                    {
+                        SCN0GroupNode g = SelectedAnimation.GetFolder<SCN0LightSetNode>();
+                        if (g != null)
+                            foreach (SCN0LightSetNode s in g.Children)
+                                nodeList.Items.Add(s);
+                    }
                     _mainWindow.AnimEditors.Height =
                     _mainWindow.AnimCtrlPnl.Height = 70;
                     _mainWindow.AnimCtrlPnl.Width = 626;
@@ -1971,8 +2096,12 @@ namespace System.Windows.Forms
                 case 1:
                     nodeType.Text = "AmbLight:";
                     if (SelectedAnimation != null)
-                        foreach (SCN0AmbientLightNode s in SelectedAnimation.GetFolder<SCN0AmbientLightNode>().Children)
-                            nodeList.Items.Add(s);
+                    {
+                        SCN0GroupNode g = SelectedAnimation.GetFolder<SCN0AmbientLightNode>();
+                        if (g != null)
+                            foreach (SCN0AmbientLightNode s in g.Children)
+                                nodeList.Items.Add(s);
+                    }
                     _mainWindow.AnimEditors.Height =
                     _mainWindow.AnimCtrlPnl.Height = 72;
                     _mainWindow.AnimCtrlPnl.Width = 566;
@@ -1980,8 +2109,12 @@ namespace System.Windows.Forms
                 case 2:
                     nodeType.Text = "Light:";
                     if (SelectedAnimation != null)
-                        foreach (SCN0LightNode s in SelectedAnimation.GetFolder<SCN0LightNode>().Children)
-                            nodeList.Items.Add(s);
+                    {
+                        SCN0GroupNode g = SelectedAnimation.GetFolder<SCN0LightNode>();
+                        if (g != null)
+                            foreach (SCN0LightNode s in g.Children)
+                                nodeList.Items.Add(s);
+                    }
                     _mainWindow.AnimEditors.Height =
                     _mainWindow.AnimCtrlPnl.Height = 128;
                     _mainWindow.AnimCtrlPnl.Width = 634;
@@ -1989,8 +2122,12 @@ namespace System.Windows.Forms
                 case 3:
                     nodeType.Text = "Fog:";
                     if (SelectedAnimation != null)
-                        foreach (SCN0FogNode s in SelectedAnimation.GetFolder<SCN0FogNode>().Children)
-                            nodeList.Items.Add(s);
+                    {
+                        SCN0GroupNode g = SelectedAnimation.GetFolder<SCN0FogNode>();
+                        if (g != null)
+                            foreach (SCN0FogNode s in g.Children)
+                                nodeList.Items.Add(s);
+                    }
                     _mainWindow.AnimEditors.Height =
                     _mainWindow.AnimCtrlPnl.Height = 70;
                     _mainWindow.AnimCtrlPnl.Width = 566;
@@ -1998,8 +2135,12 @@ namespace System.Windows.Forms
                 case 4:
                     nodeType.Text = "Camera:";
                     if (SelectedAnimation != null)
-                        foreach (SCN0CameraNode s in SelectedAnimation.GetFolder<SCN0CameraNode>().Children)
-                            nodeList.Items.Add(s);
+                    {
+                        SCN0GroupNode g = SelectedAnimation.GetFolder<SCN0CameraNode>();
+                        if (g != null)
+                            foreach (SCN0CameraNode s in g.Children)
+                                nodeList.Items.Add(s);
+                    }
                     _mainWindow.AnimEditors.Height =
                     _mainWindow.AnimCtrlPnl.Height = 120;
                     _mainWindow.AnimCtrlPnl.Width = 660;
@@ -2087,15 +2228,9 @@ namespace System.Windows.Forms
             }
             else
             {
+                //TODO: calculate depth
+
                 Vector3 cam = _mainWindow.ModelPanel._camera.GetPoint();
-
-                Vector3 aim = new Vector3(
-                    _camera.GetFrameValue(CameraKeyframeMode.AimX, _mainWindow.CurrentFrame - 1),
-                    _camera.GetFrameValue(CameraKeyframeMode.AimY, _mainWindow.CurrentFrame - 1),
-                    _camera.GetFrameValue(CameraKeyframeMode.AimZ, _mainWindow.CurrentFrame - 1));
-
-                float dist = cam.DistanceTo(aim);
-
                 Vector3 point = _mainWindow.ModelPanel.UnProject(_mainWindow.ModelPanel.Width / 2, _mainWindow.ModelPanel.Height / 2, 100);
 
                 numAimX.Value = point._x;
@@ -2293,6 +2428,36 @@ namespace System.Windows.Forms
             {
                 _transBoxes[0][i].Value = float.NaN;
                 BoxChanged(_transBoxes[0][i], null);
+            }
+        }
+
+        public void UpdateInterpolationEditor(NumericInputBox box)
+        {
+            if (_mainWindow.InterpolationEditor == null || !_mainWindow.InterpolationEditor.Visible)
+                return;
+
+            _mainWindow.InterpolationEditor.interpolationViewer._updating = true;
+            if (box.BackColor == Color.Yellow)
+            {
+                KeyframeEntry kfe = Entry.GetKeys((int)box.Tag).GetKeyframe(CurrentFrame - 1);
+                if (kfe != null)
+                    _mainWindow.InterpolationEditor.SelectedKeyframe = kfe;
+            }
+            else
+                _mainWindow.InterpolationEditor.SelectedKeyframe = null;
+            _mainWindow.InterpolationEditor.interpolationViewer._updating = false;
+        }
+
+        private void box_MouseDown(object sender, MouseEventArgs e)
+        {
+            NumericInputBox box = sender as NumericInputBox;
+
+            int type = (int)box.Tag;
+            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor.Visible)
+            {
+                if (_mainWindow.InterpolationEditor.SelectedMode != type)
+                    _mainWindow.InterpolationEditor.SelectedMode = type;
+                UpdateInterpolationEditor(box);
             }
         }
     }

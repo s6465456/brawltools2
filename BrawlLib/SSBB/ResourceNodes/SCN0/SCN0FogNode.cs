@@ -28,6 +28,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public string PrimaryColorName(int id) { return null; }
         [Browsable(false)]
+        public int TypeCount { get { return 1; } }
+        [Browsable(false)]
         public int ColorCount(int id) { return (_numEntries == 0) ? 1 : _numEntries; }
         public ARGBPixel GetColor(int index, int id) { return (_numEntries == 0) ? _solidColor : _colors[index]; }
         public void SetColor(int index, int id, ARGBPixel color)
@@ -37,6 +39,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 _colors[index] = color;
             SignalPropertyChange();
+        }
+        public bool GetClrConstant(int id)
+        {
+            return ConstantColor;
+        }
+        public void SetClrConstant(int id, bool constant)
+        {
+            ConstantColor = constant;
         }
 
         #endregion
@@ -61,6 +71,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        #region ISCN0KeyframeHolder Members
+        public int KeyArrayCount { get { return 2; } }
         public KeyframeArray GetKeys(int i)
         {
             switch (i)
@@ -70,7 +82,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             return null;
         }
-
         public void SetKeys(int i, KeyframeArray value)
         {
             switch (i)
@@ -79,6 +90,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 case 1: _endKeys = value; break;
             }
         }
+        #endregion
 
         [Category("Fog")]
         public FogType Type { get { return (FogType)type; } set { type = (int)value; SignalPropertyChange(); } }
@@ -142,8 +154,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             NumEntries = entries;
         }
 
-        public int DataOffset { get { return !_constant ? ((int)Data->colorEntries - (int)Parent.Parent.WorkingUncompressed.Address) : 0; } }
-
         public override bool OnInitialize()
         {
             base.OnInitialize();
@@ -160,20 +170,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (flags.HasFlag(SCN0FogFlags.FixedStart))
                     _startKeys[0] = Data->_start;
                 else if (!_replaced)
-                {
                     DecodeFrames(_startKeys, Data->startKeyframes);
-
-                    //SCN0Node.strings[(int)(Data->startKeyframes - Parent.Parent.WorkingUncompressed.Address)] = "Fog" +Index+" Keys Start";
-                }
                 
                 if (flags.HasFlag(SCN0FogFlags.FixedEnd))
                     _endKeys[0] = Data->_end;
                 else if (!_replaced)
-                {
                     DecodeFrames(_endKeys, Data->endKeyframes);
-
-                    //SCN0Node.strings[(int)(Data->endKeyframes - Parent.Parent.WorkingUncompressed.Address)] = "Fog" + Index + " Keys End";
-                }
                 
                 if (flags.HasFlag(SCN0FogFlags.FixedColor))
                 {
@@ -188,18 +190,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                     RGBAPixel* addr = Data->colorEntries;
                     for (int i = 0; i <= FrameCount; i++)
                         _colors.Add((ARGBPixel)(*addr++));
-
-                    //SCN0Node.strings[(int)(Data->colorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Fog" + Index + " Pixels Color";
                 }
             }
 
             return false;
         }
 
-        SCN0FogNode match;
+        SCN0FogNode _match;
         public override int OnCalculateSize(bool force)
         {
-            match = null;
+            _match = null;
             _keyLen = 0;
             _lightLen = 0;
             _visLen = 0;
@@ -223,33 +223,33 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 if (n._colors[i] != _colors[i])
                                     break;
                                 if (i == FrameCount)
-                                    match = n;
+                                    _match = n;
                             }
                         }
 
-                        if (match != null)
+                        if (_match != null)
                             break;
                     }
-                    if (match == null)
+                    if (_match == null)
                         _lightLen += 4 * (FrameCount + 1);
                 }
             }
             return SCN0Fog.Size;
         }
-        VoidPtr matchAddr;
+        VoidPtr _matchAddr;
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
 
-            matchAddr = null;
+            _matchAddr = null;
 
             SCN0Fog* header = (SCN0Fog*)address;
 
             flags = SCN0FogFlags.None;
             if (_colors.Count > 1)
             {
-                matchAddr = lightAddr;
-                if (match == null)
+                _matchAddr = lightAddr;
+                if (_match == null)
                 {
                     *((bint*)header->_color.Address) = (int)lightAddr - (int)header->_color.Address;
                     for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
@@ -259,7 +259,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             *lightAddr++ = new RGBAPixel();
                 }
                 else
-                    *((bint*)header->_color.Address) = (int)match.matchAddr - (int)header->_color.Address;
+                    *((bint*)header->_color.Address) = (int)_match._matchAddr - (int)header->_color.Address;
             }
             else
             {
@@ -302,12 +302,20 @@ namespace BrawlLib.SSBB.ResourceNodes
             base.PostProcess(scn0Address, dataAddress, stringTable);
         }
 
+        public static bool _generateTangents = true;
+        public static bool _linear = true;
+
         internal FogAnimationFrame GetAnimFrame(int index)
         {
             FogAnimationFrame frame;
             float* dPtr = (float*)&frame;
             for (int x = 0; x < 2; x++)
-                *dPtr++ = GetKeys(x).GetFrameValue(index);
+            {
+                KeyframeArray a = GetKeys(x);
+                *dPtr++ = a.GetFrameValue(index);
+                frame.SetBools(x, a.GetKeyframe(index) != null);
+                frame.Index = index;
+            }
             return frame;
         }
 
@@ -319,7 +327,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal void RemoveKeyframe(int keyFrameMode, int index)
         {
             KeyframeEntry k = GetKeys(keyFrameMode).Remove(index);
-            if (k != null)
+            if (k != null && _generateTangents)
             {
                 k._prev.GenerateTangent();
                 k._next.GenerateTangent();
@@ -329,10 +337,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         internal void SetKeyframe(int keyFrameMode, int index, float value)
         {
-            KeyframeEntry k = GetKeys(keyFrameMode).SetFrameValue(index, value);
-            k.GenerateTangent();
-            k._prev.GenerateTangent();
-            k._next.GenerateTangent();
+            KeyframeArray keys = GetKeys(keyFrameMode);
+            bool exists = keys.GetKeyframe(index) != null;
+            KeyframeEntry k = keys.SetFrameValue(index, value);
+
+            if (!exists && !_generateTangents)
+                k.GenerateTangent();
+
+            if (_generateTangents)
+            {
+                k.GenerateTangent();
+                k._prev.GenerateTangent();
+                k._next.GenerateTangent();
+            }
 
             SignalPropertyChange();
         }
@@ -349,7 +366,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public bool hasS;
         public bool hasE;
 
-        public bool forKF;
+        public bool HasKeys { get { return hasS || hasE; } }
 
         public void SetBools(int index, bool val)
         {
@@ -394,7 +411,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             End = end;
             Index = 0;
             hasS = hasE = false;
-            forKF = true;
         }
 
         public int Index;
@@ -402,13 +418,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         static string empty = new String('_', len);
         public override string ToString()
         {
-            return String.Format("[{0}] StartZ={1}, EndZ={2}", Index + 1,
+            return String.Format("[{0}] StartZ={1}, EndZ={2}", (Index + 1).ToString().PadLeft(5),
             !hasS ? empty : Start.ToString().TruncateAndFill(len, ' '),
             !hasE ? empty : End.ToString().TruncateAndFill(len, ' '));
         }
-        //public override string ToString()
-        //{
-        //    return String.Format("{0}\r\n{1}\r\n{2}", Scale, Rotation, Translation);
-        //}
     }
 }

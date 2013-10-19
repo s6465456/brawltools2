@@ -9,9 +9,9 @@ namespace BrawlLib.SSBBTypes
     [Flags]
     public enum VIS0Flags : int
     {
-        None = 0x00,
-        Enabled = 0x01,
-        Constant = 0x02
+        None = 0,
+        Enabled = 1,
+        Constant = 2
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

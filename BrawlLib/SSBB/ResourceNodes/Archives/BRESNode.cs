@@ -8,6 +8,7 @@ using System.Drawing;
 using BrawlLib.IO;
 using System.Windows.Forms;
 using BrawlLib.Wii.Textures;
+using Gif.Components;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -342,6 +343,35 @@ namespace BrawlLib.SSBB.ResourceNodes
             _stringTable.Clear();
         }
 
+        public static BRESNode FromGIF(string file)
+        {
+            string s = Path.GetFileNameWithoutExtension(file);
+            BRESNode b = new BRESNode() { _name = s };
+            PAT0Node p = new PAT0Node() { _name = s };
+            p.CreateEntry();
+
+            PAT0TextureNode t = p.Children[0].Children[0] as PAT0TextureNode;
+
+            GifDecoder d = new GifDecoder();
+            d.Read(file);
+
+            int f = d.GetFrameCount();
+            using (TextureConverterDialog dlg = new TextureConverterDialog())
+            {
+                dlg.Source = (Bitmap)d.GetFrame(0);
+                if (dlg.ShowDialog(null, b) == DialogResult.OK)
+                {
+                    for (int i = 1; i < f; i++)
+                    {
+                        dlg.Source = (Bitmap)d.GetFrame(i);
+                        dlg.EncodeSource();
+                    }
+                }
+            }
+
+            return b;
+        }
+
         internal static ResourceNode TryParse(DataSource source) { return ((BRESHeader*)source.Address)->_tag == BRESHeader.Tag ? new BRESNode() : null; }
     }
 
@@ -481,7 +511,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public BRESNode BRESNode { get { return ((_parent != null) && (Parent.Parent is BRESNode)) ? Parent.Parent as BRESNode : null; } }
 
-        
         public override bool OnInitialize()
         {
             SetSizeInternal(CommonHeader->_size);

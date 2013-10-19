@@ -9,6 +9,7 @@ using System.Drawing.Imaging;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Security.Permissions;
+using System.ComponentModel;
 
 namespace BrawlLib.OpenGL
 {
@@ -65,7 +66,8 @@ namespace BrawlLib.OpenGL
             _ctx = new TKContext(this);
             _text = new ScreenTextHandler(this);
 
-            GL.ClearColor(1.0f, 1.0f, 1.0f, 0.0f);
+            Vector3 v = (Vector3)BackColor;
+            GL.ClearColor(v._x, v._y, v._z, 0.0f);
             GL.ClearDepth(1.0f);
 
             Capture();
@@ -105,7 +107,23 @@ namespace BrawlLib.OpenGL
             return val;
         }
 
+        public override Color BackColor
+        {
+            get { return base.BackColor; }
+            set
+            {
+                if (base.BackColor != value)
+                {
+                    base.BackColor = Color.FromArgb(0, value.R, value.G, value.B);
+                    _bgColorChanged = true;
+                    Invalidate();
+                }
+            }
+        }
+
+        bool _bgColorChanged = false;
         public bool _textEnabled = false;
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ScreenTextHandler ScreenText { get { return _text; } }
         private ScreenTextHandler _text;
 
@@ -132,12 +150,20 @@ namespace BrawlLib.OpenGL
                     Capture();
 
                     //Render background image
-                    if (BGImage != null)
+                    if (BackgroundImage != null)
                         RenderBackground();
                     else if (_updateImage && _bgImage != null)
                     {
                         _bgImage.Delete();
                         _bgImage = null;
+                        _updateImage = false;
+                    }
+
+                    if (_bgColorChanged)
+                    {
+                        Vector3 v = (Vector3)BackColor;
+                        GL.ClearColor(v._x, v._y, v._z, 0.0f);
+                        _bgColorChanged = false;
                     }
 
                     //Set projection
@@ -241,23 +267,12 @@ namespace BrawlLib.OpenGL
 
                 GL.ClearColor(Color.Black);
 
-                Bitmap bmp = BGImage as Bitmap;
+                Bitmap bmp = BackgroundImage as Bitmap;
 
                 _bgImage = new GLTexture(bmp);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
                 _bgImage.Bind();
 
-                //BitmapData data = bmp.LockBits(new Rectangle(0, 0, _bgImage.Width, _bgImage.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                //try
-                //{
-                //    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.GenerateMipmap, 1);
-                //    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Four, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-                //}
-                //finally
-                //{
-                //    bmp.UnlockBits(data);
-                //    bmp.Dispose();
-                //}
                 _updateImage = false;
             }
             else
@@ -492,8 +507,7 @@ namespace BrawlLib.OpenGL
             if (_ortho)
             {
                 _projectionMatrix = Matrix.OrthographicMatrix(Width, Height, _nearZ, _farZ);
-                //_projectionInverse = Matrix.ReverseOrthographicMatrix(Width, Height, _nearZ, _farZ);
-                _projectionInverse = Matrix.Invert(_projectionMatrix);
+                _projectionInverse = Matrix.ReverseOrthographicMatrix(Width, Height, _nearZ, _farZ);
             }
             else
             {
@@ -506,7 +520,7 @@ namespace BrawlLib.OpenGL
         {
             _projectionChanged = true;
 
-            if (BGImage != null)
+            if (BackgroundImage != null)
                 GL.Viewport(0, 0, Width, Height);
 
             if (_ctx != null)
@@ -532,7 +546,22 @@ namespace BrawlLib.OpenGL
                 GL.LoadMatrix((float*)p);
         }
 
-        public Image BGImage;
+        public override Image BackgroundImage
+        {
+            get { return base.BackgroundImage; }
+            set
+            {
+                if (base.BackgroundImage != null)
+                    base.BackgroundImage.Dispose();
+
+                base.BackgroundImage = value;
+
+                _updateImage = true;
+
+                Invalidate();
+            }
+        }
+
         public void RenderSelection()
         {
             if (_selecting)

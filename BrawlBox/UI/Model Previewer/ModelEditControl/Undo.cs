@@ -26,6 +26,17 @@ namespace System.Windows.Forms
         public int _saveIndex = -1;
         bool _undoing = true;
 
+        private void Undo(object sender, EventArgs e)
+        {
+            if (btnUndo.Enabled)
+                btnUndo_Click(null, null);
+        }
+        private void Redo(object sender, EventArgs e)
+        {
+            if (btnRedo.Enabled)
+                btnRedo_Click(null, null);
+        }
+
         private void AddUndo(SaveState save)
         {
             int i = _saveIndex + 1;
@@ -97,7 +108,7 @@ namespace System.Windows.Forms
         {
             if (CanUndo)
             {
-                modelPanel.BeginUpdate();
+                ModelPanel.BeginUpdate();
 
                 if (!_undoing) 
                     _saveIndex--;
@@ -110,8 +121,8 @@ namespace System.Windows.Forms
 
                 UpdateUndoButtons();
 
-                modelPanel.EndUpdate();
-                modelPanel.Invalidate();
+                ModelPanel.EndUpdate();
+                ModelPanel.Invalidate();
             }
         }
 
@@ -119,7 +130,7 @@ namespace System.Windows.Forms
         {
             if (CanRedo)
             {
-                modelPanel.BeginUpdate();
+                ModelPanel.BeginUpdate();
 
                 if (_undoing) 
                     _saveIndex++;
@@ -132,8 +143,8 @@ namespace System.Windows.Forms
 
                 UpdateUndoButtons();
 
-                modelPanel.EndUpdate();
-                modelPanel.Invalidate();
+                ModelPanel.EndUpdate();
+                ModelPanel.Invalidate();
             }
         }
 

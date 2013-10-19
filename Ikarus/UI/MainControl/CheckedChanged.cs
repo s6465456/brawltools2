@@ -25,7 +25,7 @@ namespace Ikarus.UI
             if (_updating) return;
             BrawlLib.Properties.Settings.Default.External = storeSettingsExternallyToolStripMenuItem.Checked;
 
-            BBVS settings = new BBVS();
+            BrawlBoxViewerSettings settings = new BrawlBoxViewerSettings();
             if (BrawlLib.Properties.Settings.Default.External)
             {
                 settings = BrawlLib.Properties.Settings.Default.ViewerSettings;
@@ -33,12 +33,12 @@ namespace Ikarus.UI
                 {
                     CompactStringTable s = new CompactStringTable();
                     s.Add(ScreenCapBgLocText.Text);
-                    stream.SetLength((long)BBVS.Size + s.TotalSize);
+                    stream.SetLength((long)BrawlBoxViewerSettings.Size + s.TotalSize);
                     using (FileMap map = FileMap.FromStream(stream))
                     {
-                        *(BBVS*)map.Address = settings;
-                        s.WriteTable(map.Address + BBVS.Size);
-                        ((BBVS*)map.Address)->_screenCapPathOffset = (uint)s[ScreenCapBgLocText.Text] - (uint)map.Address;
+                        *(BrawlBoxViewerSettings*)map.Address = settings;
+                        s.WriteTable(map.Address + BrawlBoxViewerSettings.Size);
+                        ((BrawlBoxViewerSettings*)map.Address)->_screenCapPathOffset = (uint)s[ScreenCapBgLocText.Text] - (uint)map.Address;
                     }
                 }
             }
@@ -46,8 +46,8 @@ namespace Ikarus.UI
             {
                 if (File.Exists(Application.StartupPath + "/brawlbox.settings"))
                     using (FileMap map = FileMap.FromFile(Application.StartupPath + "/brawlbox.settings", FileMapProtect.Read))
-                        if (*(uint*)map.Address == BBVS.Tag)
-                            settings = *(BBVS*)map.Address;
+                        if (*(uint*)map.Address == BrawlBoxViewerSettings.Tag)
+                            settings = *(BrawlBoxViewerSettings*)map.Address;
 
                 BrawlLib.Properties.Settings.Default.ViewerSettings = settings;
                 BrawlLib.Properties.Settings.Default.ScreenCapBgLocText = ScreenCapBgLocText.Text;
@@ -359,7 +359,7 @@ namespace Ikarus.UI
         {
             _loop = pnlPlayback.chkLoop.Checked;
             if (syncLoopToAnimationToolStripMenuItem.Checked && !_updating)
-                GetSelectedBRRESFile(TargetAnimType).Loop = _loop;
+                GetAnimation(TargetAnimType).Loop = _loop;
         }
 
         private void FileChanged(object sender, EventArgs e)
@@ -415,7 +415,7 @@ namespace Ikarus.UI
 
         public void numTotalFrames_ValueChanged(object sender, EventArgs e)
         {
-            if ((GetSelectedBRRESFile(TargetAnimType) == null) || (_updating))
+            if ((GetAnimation(TargetAnimType) == null) || (_updating))
                 return;
 
             _maxFrame = (int)pnlPlayback.numTotalFrames.Value;
@@ -423,18 +423,18 @@ namespace Ikarus.UI
             AnimationNode n;
             if (alwaysSyncFrameCountsToolStripMenuItem.Checked)
                 for (int i = 0; i < 5; i++)
-                    if ((n = GetSelectedBRRESFile((AnimType)i)) != null) 
+                    if ((n = GetAnimation((AnimType)i)) != null) 
                         //if (i == 5) ((BRESEntryNode)n).tFrameCount = _maxFrame - 1; else 
                         n.FrameCount = _maxFrame;
                     else { }
             else
             {
-                if ((n = GetSelectedBRRESFile(TargetAnimType)) != null)
+                if ((n = GetAnimation(TargetAnimType)) != null)
                     n.FrameCount = _maxFrame;
                 if (displayFrameCountDifferencesToolStripMenuItem.Checked)
                     if (MessageBox.Show("Do you want to update the frame counts of the other animation types?", "Update Frame Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     for (int i = 0; i < 5; i++)
-                        if (i != (int)TargetAnimType && (n = GetSelectedBRRESFile((AnimType)i)) != null)
+                        if (i != (int)TargetAnimType && (n = GetAnimation((AnimType)i)) != null)
                             n.FrameCount = _maxFrame;
             }
 

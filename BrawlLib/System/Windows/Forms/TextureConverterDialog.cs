@@ -14,10 +14,13 @@ namespace System.Windows.Forms
 {
     public partial class TextureConverterDialog : Form
     {
-        private Bitmap _source, _preview, _indexed;
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Bitmap Source { get { return _source; } set { _source = value; SourceChanged(); } }
+
+        private Bitmap _base = null, _source, _preview, _indexed;
         private ColorInformation _colorInfo;
         private UnsafeBuffer _cmprBuffer;
-        private ColorPalette _tempPalette;
+        //private ColorPalette _tempPalette;
         private bool _previewing = true, _updating = false;
 
         private string _imageSource;
@@ -52,6 +55,13 @@ namespace System.Windows.Forms
         public TPLPaletteNode TPLPaletteNode { get { return _origTPLPlt; } }
         
         private FileMap _textureData;
+        private Label label11;
+        private NumericUpDown numH;
+        private NumericUpDown numW;
+        private Label label10;
+        private Button btnApplyDims;
+        private CheckBox chkConstrainProps;
+    
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public FileMap TextureData { get { return _textureData; } }
 
@@ -62,6 +72,8 @@ namespace System.Windows.Forms
         public TextureConverterDialog()
         {
             InitializeComponent();
+
+            numH.Maximum = numW.Maximum = decimal.MaxValue;
 
             dlgOpen.Filter = FileFilters.Images;
 
@@ -183,19 +195,20 @@ namespace System.Windows.Forms
         {
             base.OnShown(e);
 
-            if (_imageSource == null)
-            {
-                if (!LoadImages())
+            if (_base == null)
+                if (_imageSource == null)
+                {
+                    if (!LoadImages())
+                    {
+                        Close();
+                        return;
+                    }
+                }
+                else if (!LoadImages(_imageSource))
                 {
                     Close();
                     return;
                 }
-            }
-            else if (!LoadImages(_imageSource))
-            {
-                Close();
-                return;
-            }
 
             if (_origTEX0 != null)
             {
@@ -250,31 +263,33 @@ namespace System.Windows.Forms
                 Recommend();
         }
 
-        private bool LoadImages()
+        public bool LoadImages(string path)
+        {
+            txtPath.Text = path;
+            if (path.EndsWith(".tga"))
+                return LoadImages(TGA.FromFile(path));
+            else
+                return LoadImages((Bitmap)Bitmap.FromFile(path));
+        }
+
+        public bool LoadImages()
         {
             if (dlgOpen.ShowDialog(this) != DialogResult.OK)
                 return false;
             return LoadImages(dlgOpen.FileName);
         }
 
-        private bool LoadImages(string path)
+        public bool LoadImages(Bitmap bmp)
         {
             DisposeImages();
+            Source = _base = bmp;
 
-            if (path.EndsWith(".tga"))
-                _source = TGA.FromFile(path);
-            else
-                _source = (Bitmap)Bitmap.FromFile(path);
+            return true;
+        }
 
-            //if (_source.PixelFormat != PixelFormat.Format32bppArgb)
-            //    using (Bitmap bmp = _source)
-            //        _source = bmp.Clone(new Rectangle(0, 0, bmp.Width, bmp.Height), PixelFormat.Format32bppArgb);
-
-            //_source.SetResolution(96.0f, 96.0f);
-
+        private void SourceChanged()
+        {
             _preview = new Bitmap(_source.Width, _source.Height, PixelFormat.Format32bppArgb);
-
-            txtPath.Text = path;
             lblSize.Text = String.Format("{0} x {1}", _source.Width, _source.Height);
 
             _colorInfo = _source.GetColorInformation();
@@ -286,15 +301,34 @@ namespace System.Windows.Forms
             for (int w = _source.Width, h = _source.Height; (w != 1) && (h != 1); w >>= 1, h >>= 1, maxLOD++) ;
             numLOD.Maximum = maxLOD;
 
-            return true;
+            if (_updating)
+                return;
+
+            numW.Value = _source.Width;
+            numH.Value = _source.Height;
         }
 
         private void DisposeImages()
         {
             pictureBox1.Picture = null;
+            if (_base != null) { _base.Dispose(); _base = null; }
             if (_preview != null) { _preview.Dispose(); _preview = null; }
             if (_source != null) { _source.Dispose(); _source = null; }
             if (_indexed != null) { _indexed.Dispose(); _indexed = null; }
+        }
+
+        public static Bitmap ResizeImage(Image i, int width, int height)
+        {
+            Bitmap r = new Bitmap(width, height);
+            r.SetResolution(i.HorizontalResolution, i.VerticalResolution);
+            using (Graphics graphics = Graphics.FromImage(r))
+            {
+                graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                graphics.DrawImage(i, 0, 0, r.Width, r.Height);
+            }
+            return r;
         }
 
         private void CopyPreview(Bitmap src)
@@ -479,7 +513,7 @@ namespace System.Windows.Forms
 
         private void btnCancel_Click(object sender, EventArgs e) { Close(); }
 
-        private void btnOkay_Click(object sender, EventArgs e)
+        public void EncodeSource()
         {
             TextureConverter format = TextureConverter.Get((WiiPixelFormat)cboFormat.SelectedItem);
             if (format.IsIndexed)
@@ -520,22 +554,18 @@ namespace System.Windows.Forms
                     _origPLT0.ReplaceRaw(_paletteData);
                 }
                 _origTEX0.ReplaceRaw(_textureData);
-            } 
+            }
             else if (_tplParent != null)
             {
                 _origTPL = new TPLTextureNode() { Name = "Texture" };
-                TPLGroupNode g = new TPLGroupNode() { Name = _tplParent.FindName("Texture") };
-                _tplParent.AddChild(g);
-                g.AddChild(_origTPL);
+                _tplParent.AddChild(_origTPL);
+                _origTPL.ReplaceRaw(_textureData);
                 if (_paletteData != null)
                 {
                     _origTPLPlt = new TPLPaletteNode() { Name = "Palette" };
-                    g.AddChild(_origTPLPlt);
+                    _origTPL.AddChild(_origTPLPlt);
                     _origTPLPlt.ReplaceRaw(_paletteData);
                 }
-                g._texture = _origTPL;
-                g._palette = _origTPLPlt;
-                _origTPL.ReplaceRaw(_textureData);
             }
             else if (_reftParent != null)
             {
@@ -575,10 +605,14 @@ namespace System.Windows.Forms
                 _origREFT.ReplaceRaw(_textureData);
             else if (_origTPL != null)
             {
+                _origTPL.ReplaceRaw(_textureData);
                 if (_origTPLPlt != null)
                 {
                     if (_paletteData != null)
+                    {
+                        _origTPL.AddChild(_origTPLPlt);
                         _origTPLPlt.ReplaceRaw(_paletteData);
+                    }
                     else
                     {
                         _origTPLPlt.Remove();
@@ -594,14 +628,17 @@ namespace System.Windows.Forms
                     }
                     else
                     {
-                        TPLGroupNode g = _origTPL.Parent as TPLGroupNode;
                         _origTPLPlt = new TPLPaletteNode() { _name = "Palette" };
-                        (g._palette = _origTPLPlt).Parent = g;
+                        _origTPL.AddChild(_origTPLPlt);
                         _origTPLPlt.ReplaceRaw(_paletteData);
                     }
                 }
-                _origTPL.ReplaceRaw(_textureData);
             }
+        }
+
+        private void btnOkay_Click(object sender, EventArgs e)
+        {
+            EncodeSource();
             
             DialogResult = DialogResult.OK;
             Close();
@@ -670,18 +707,26 @@ namespace System.Windows.Forms
             this.cboPaletteFormat = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.pictureBox1 = new System.Windows.Forms.GoodPictureBox();
+            this.chkConstrainProps = new System.Windows.Forms.CheckBox();
+            this.btnApplyDims = new System.Windows.Forms.Button();
+            this.label11 = new System.Windows.Forms.Label();
+            this.numH = new System.Windows.Forms.NumericUpDown();
+            this.numW = new System.Windows.Forms.NumericUpDown();
+            this.label10 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.txtPath = new System.Windows.Forms.TextBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.button1 = new System.Windows.Forms.Button();
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
+            this.pictureBox1 = new System.Windows.Forms.GoodPictureBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numLOD)).BeginInit();
             this.groupBox2.SuspendLayout();
             this.grpPalette.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numPaletteCount)).BeginInit();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numH)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numW)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -700,8 +745,8 @@ namespace System.Windows.Forms
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.numLOD);
             this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.cboFormat);
@@ -715,8 +760,8 @@ namespace System.Windows.Forms
             // 
             // numLOD
             // 
-            this.numLOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numLOD.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numLOD.Location = new System.Drawing.Point(75, 42);
             this.numLOD.Minimum = new decimal(new int[] {
             1,
@@ -744,8 +789,8 @@ namespace System.Windows.Forms
             // 
             // cboFormat
             // 
-            this.cboFormat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.cboFormat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cboFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboFormat.FormattingEnabled = true;
             this.cboFormat.Location = new System.Drawing.Point(75, 15);
@@ -765,8 +810,8 @@ namespace System.Windows.Forms
             // 
             // btnRecommend
             // 
-            this.btnRecommend.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRecommend.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnRecommend.Location = new System.Drawing.Point(75, 14);
             this.btnRecommend.Name = "btnRecommend";
             this.btnRecommend.Size = new System.Drawing.Size(98, 21);
@@ -777,8 +822,8 @@ namespace System.Windows.Forms
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.label9);
             this.groupBox2.Controls.Add(this.lblTransparencies);
             this.groupBox2.Controls.Add(this.lblDataSize);
@@ -805,8 +850,8 @@ namespace System.Windows.Forms
             // 
             // lblTransparencies
             // 
-            this.lblTransparencies.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTransparencies.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblTransparencies.Location = new System.Drawing.Point(97, 51);
             this.lblTransparencies.Name = "lblTransparencies";
             this.lblTransparencies.Size = new System.Drawing.Size(76, 20);
@@ -815,8 +860,8 @@ namespace System.Windows.Forms
             // 
             // lblDataSize
             // 
-            this.lblDataSize.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblDataSize.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDataSize.Location = new System.Drawing.Point(97, 71);
             this.lblDataSize.Name = "lblDataSize";
             this.lblDataSize.Size = new System.Drawing.Size(76, 20);
@@ -825,8 +870,8 @@ namespace System.Windows.Forms
             // 
             // lblColors
             // 
-            this.lblColors.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblColors.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblColors.Location = new System.Drawing.Point(97, 31);
             this.lblColors.Name = "lblColors";
             this.lblColors.Size = new System.Drawing.Size(76, 20);
@@ -835,8 +880,8 @@ namespace System.Windows.Forms
             // 
             // lblSize
             // 
-            this.lblSize.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblSize.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblSize.Location = new System.Drawing.Point(94, 11);
             this.lblSize.Name = "lblSize";
             this.lblSize.Size = new System.Drawing.Size(79, 20);
@@ -873,9 +918,9 @@ namespace System.Windows.Forms
             // btnOkay
             // 
             this.btnOkay.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnOkay.Location = new System.Drawing.Point(8, 95);
+            this.btnOkay.Location = new System.Drawing.Point(8, 111);
             this.btnOkay.Name = "btnOkay";
-            this.btnOkay.Size = new System.Drawing.Size(79, 23);
+            this.btnOkay.Size = new System.Drawing.Size(80, 23);
             this.btnOkay.TabIndex = 3;
             this.btnOkay.Text = "Okay";
             this.btnOkay.UseVisualStyleBackColor = true;
@@ -884,9 +929,9 @@ namespace System.Windows.Forms
             // btnCancel
             // 
             this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnCancel.Location = new System.Drawing.Point(92, 95);
+            this.btnCancel.Location = new System.Drawing.Point(94, 111);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(79, 23);
+            this.btnCancel.Size = new System.Drawing.Size(80, 23);
             this.btnCancel.TabIndex = 4;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -894,8 +939,8 @@ namespace System.Windows.Forms
             // 
             // grpPalette
             // 
-            this.grpPalette.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpPalette.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpPalette.Controls.Add(this.cboAlgorithm);
             this.grpPalette.Controls.Add(this.label8);
             this.grpPalette.Controls.Add(this.numPaletteCount);
@@ -912,8 +957,8 @@ namespace System.Windows.Forms
             // 
             // cboAlgorithm
             // 
-            this.cboAlgorithm.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.cboAlgorithm.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cboAlgorithm.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboAlgorithm.FormattingEnabled = true;
             this.cboAlgorithm.Location = new System.Drawing.Point(75, 68);
@@ -933,8 +978,8 @@ namespace System.Windows.Forms
             // 
             // numPaletteCount
             // 
-            this.numPaletteCount.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.numPaletteCount.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.numPaletteCount.Increment = new decimal(new int[] {
             16,
             0,
@@ -972,8 +1017,8 @@ namespace System.Windows.Forms
             // 
             // cboPaletteFormat
             // 
-            this.cboPaletteFormat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.cboPaletteFormat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.cboPaletteFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboPaletteFormat.FormattingEnabled = true;
             this.cboPaletteFormat.Location = new System.Drawing.Point(75, 15);
@@ -993,28 +1038,117 @@ namespace System.Windows.Forms
             // 
             // groupBox4
             // 
-            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox4.Controls.Add(this.chkConstrainProps);
+            this.groupBox4.Controls.Add(this.btnApplyDims);
+            this.groupBox4.Controls.Add(this.label11);
+            this.groupBox4.Controls.Add(this.numH);
+            this.groupBox4.Controls.Add(this.numW);
+            this.groupBox4.Controls.Add(this.label10);
             this.groupBox4.Controls.Add(this.btnOkay);
             this.groupBox4.Controls.Add(this.btnRecommend);
             this.groupBox4.Controls.Add(this.chkPreview);
             this.groupBox4.Controls.Add(this.btnCancel);
             this.groupBox4.Location = new System.Drawing.Point(3, 290);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(179, 124);
+            this.groupBox4.Size = new System.Drawing.Size(179, 143);
             this.groupBox4.TabIndex = 7;
             this.groupBox4.TabStop = false;
             // 
-            // pictureBox1
+            // chkConstrainProps
             // 
-            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pictureBox1.Location = new System.Drawing.Point(0, 20);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Picture = null;
-            this.pictureBox1.Size = new System.Drawing.Size(379, 397);
-            this.pictureBox1.TabIndex = 8;
+            this.chkConstrainProps.AutoSize = true;
+            this.chkConstrainProps.Checked = true;
+            this.chkConstrainProps.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkConstrainProps.Location = new System.Drawing.Point(9, 87);
+            this.chkConstrainProps.Name = "chkConstrainProps";
+            this.chkConstrainProps.Size = new System.Drawing.Size(126, 17);
+            this.chkConstrainProps.TabIndex = 15;
+            this.chkConstrainProps.Text = "Constrain Proportions";
+            this.chkConstrainProps.UseVisualStyleBackColor = true;
+            this.chkConstrainProps.CheckedChanged += new System.EventHandler(this.chkConstrainProps_CheckedChanged);
+            // 
+            // btnApplyDims
+            // 
+            this.btnApplyDims.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnApplyDims.Location = new System.Drawing.Point(125, 60);
+            this.btnApplyDims.Name = "btnApplyDims";
+            this.btnApplyDims.Size = new System.Drawing.Size(48, 21);
+            this.btnApplyDims.TabIndex = 14;
+            this.btnApplyDims.Text = "Apply";
+            this.btnApplyDims.UseVisualStyleBackColor = true;
+            this.btnApplyDims.Click += new System.EventHandler(this.btnApplyDims_Click);
+            // 
+            // label11
+            // 
+            this.label11.Location = new System.Drawing.Point(58, 60);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(15, 21);
+            this.label11.TabIndex = 13;
+            this.label11.Text = "X";
+            this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // numH
+            // 
+            this.numH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.numH.Location = new System.Drawing.Point(73, 60);
+            this.numH.Maximum = new decimal(new int[] {
+            1024,
+            0,
+            0,
+            0});
+            this.numH.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numH.Name = "numH";
+            this.numH.Size = new System.Drawing.Size(46, 20);
+            this.numH.TabIndex = 12;
+            this.numH.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numH.ValueChanged += new System.EventHandler(this.numH_ValueChanged);
+            // 
+            // numW
+            // 
+            this.numW.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.numW.Location = new System.Drawing.Point(9, 61);
+            this.numW.Maximum = new decimal(new int[] {
+            1024,
+            0,
+            0,
+            0});
+            this.numW.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numW.Name = "numW";
+            this.numW.Size = new System.Drawing.Size(46, 20);
+            this.numW.TabIndex = 11;
+            this.numW.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numW.ValueChanged += new System.EventHandler(this.numW_ValueChanged);
+            // 
+            // label10
+            // 
+            this.label10.Location = new System.Drawing.Point(6, 38);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(81, 20);
+            this.label10.TabIndex = 10;
+            this.label10.Text = "Dimensions:";
+            this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panel1
             // 
@@ -1026,7 +1160,7 @@ namespace System.Windows.Forms
             this.panel1.Location = new System.Drawing.Point(379, 0);
             this.panel1.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(185, 417);
+            this.panel1.Size = new System.Drawing.Size(185, 436);
             this.panel1.TabIndex = 9;
             // 
             // txtPath
@@ -1059,15 +1193,25 @@ namespace System.Windows.Forms
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox1.Location = new System.Drawing.Point(0, 20);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Picture = null;
+            this.pictureBox1.Size = new System.Drawing.Size(379, 416);
+            this.pictureBox1.TabIndex = 8;
+            // 
             // TextureConverterDialog
             // 
             this.AcceptButton = this.btnOkay;
-            this.ClientSize = new System.Drawing.Size(564, 417);
+            this.ClientSize = new System.Drawing.Size(564, 436);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.MinimumSize = new System.Drawing.Size(0, 435);
+            this.MinimumSize = new System.Drawing.Size(0, 470);
             this.Name = "TextureConverterDialog";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
@@ -1079,6 +1223,9 @@ namespace System.Windows.Forms
             this.grpPalette.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.numPaletteCount)).EndInit();
             this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numH)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numW)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
@@ -1087,5 +1234,53 @@ namespace System.Windows.Forms
         }
 
         #endregion
+
+        private void btnApplyDims_Click(object sender, EventArgs e)
+        {
+            _updating = true;
+            int w = (int)Math.Round(numW.Value, 0);
+            int h = (int)Math.Round(numH.Value, 0);
+            if (w == _base.Width && h == _base.Height)
+                Source = _base;
+            else
+                Source = ResizeImage(_base, w, h);
+            UpdatePreview();
+            _updating = false;
+        }
+
+        private void chkConstrainProps_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkConstrainProps.Checked)
+            {
+                numH.Value = _base.Height;
+                numW.Value = _base.Width;
+            }
+        }
+
+        private void numW_ValueChanged(object sender, EventArgs e)
+        {
+            if (_updating)
+                return;
+
+            if (chkConstrainProps.Checked)
+            {
+                _updating = true;
+                numH.Value = numW.Value / (decimal)_base.Width * (decimal)_base.Height;
+                _updating = false;
+            }
+        }
+
+        private void numH_ValueChanged(object sender, EventArgs e)
+        {
+            if (_updating)
+                return;
+
+            if (chkConstrainProps.Checked)
+            {
+                _updating = true;
+                numW.Value = numH.Value / (decimal)_base.Height * (decimal)_base.Width;
+                _updating = false;
+            }
+        }
     }
 }

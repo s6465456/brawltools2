@@ -8,6 +8,7 @@ using System.IO;
 using System.Drawing;
 using BrawlLib.IO;
 using System.PowerPcAssembly;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -17,11 +18,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         ModuleSectionNode[] Sections { get { return (_parentRelocation._section.Root as ModuleNode).Sections; } }
 
         [Category("Relocation Command"), Browsable(false)]
-        public bool IsBranchSet { get { return (_command >= RELLinkType.SetBranchDestination && _command <= RELLinkType.SetBranchConditionDestination3); } }
+        public bool IsBranchSet { get { return (_command >= RELCommandType.SetBranchDestination && _command <= RELCommandType.SetBranchConditionDestination3); } }
         [Category("Relocation Command"), Browsable(false)]
-        public bool IsHalf { get { return (_command >= RELLinkType.WriteLowerHalf1 && _command <= RELLinkType.WriteUpperHalfandBit1); } }
+        public bool IsHalf { get { return (_command >= RELCommandType.WriteLowerHalf1 && _command <= RELCommandType.WriteUpperHalfandBit1); } }
 
-        [Category("Relocation Command"), Description("The offset into the target section.")]
+        [Category("Relocation Command"), Description("The offset relative to the start of the target section.")]
         public string TargetOffset 
         {
             get { return "0x" + _addend.ToString("X"); }
@@ -32,22 +33,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (uint.TryParse(s, System.Globalization.NumberStyles.HexNumber, null, out offset))
                 {
                     ModuleSectionNode section = Sections[TargetSectionID];
+                    int x = (section.Relocations.Count * 4) - 2;
+                    offset = offset.Clamp(0, (uint)(x < 0 ? 0 : x)); 
 
-                    offset = offset.RoundDown(4).Clamp(0, (uint)(section._relocations.Length - 1) * 4);
-                    
-                    Relocation r = section.GetRelocationAtOffset((int)offset);
-
-                    if (r != null)
-                    {
-                        _addend = offset;
-                        _targetRelocation = r;
-                        _parentRelocation._section.SignalPropertyChange();
-                    }
+                    _addend = offset;
+                    _parentRelocation._section.SignalPropertyChange();
                 }
             }
         }
-        [Category("Relocation Command"), Description("Determines how the offset should be applied to this section.")]
-        public RELLinkType Command { get { return _command; } set { _command = value; _parentRelocation._section.SignalPropertyChange(); } }
+        [Category("Relocation Command"), Description("Determines how the offset should be written.")]
+        public RELCommandType Command { get { return _command; } set { _command = value; _parentRelocation._section.SignalPropertyChange(); } }
 
         [Category("Relocation Command"), Description("The index of the section to retrieve data from.")]
         public uint TargetSectionID 
@@ -56,12 +51,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             set 
             {
                 _targetSectionId = value.Clamp(0, (uint)Sections.Length - 1);
-                TargetOffset = _addend.ToString("X");
+                ModuleSectionNode section = Sections[TargetSectionID];
+                int x = (section.Relocations.Count * 4) - 2;
+                _addend = _addend.Clamp(0, (uint)(x < 0 ? 0 : x)); 
                 _parentRelocation._section.SignalPropertyChange(); 
             } 
         }
 
-        public RELLinkType _command;
+        public RELCommandType _command;
         public int _modifiedSectionId;
         public uint _targetSectionId;
         public uint _moduleID;
@@ -79,7 +76,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public RelCommand _prev = null;
 
         public Relocation _parentRelocation;
-        public Relocation _targetRelocation;
 
         public void Remove()
         {
@@ -109,88 +105,73 @@ namespace BrawlLib.SSBB.ResourceNodes
             _moduleID = fileId;
             _modifiedSectionId = section;
             _targetSectionId = link._section;
-            _command = link._type;
+            _command = (RELCommandType)(int)link._type;
             _addend = link._value;
         }
 
-        [Browsable(false)]
-        public Relocation TargetRelocation 
-        {
-            get { return _targetRelocation; }
-            set
-            {
-                if ((_targetRelocation = value) != null)
-                    _addend = (uint)_targetRelocation._index * 4;
-            }
-        }
-
-        private void GetTargetRelocation()
+        public Relocation GetTargetRelocation()
         {
             if (_parentRelocation == null)
-                _targetRelocation = null;
-            else if (_targetSectionId > 0 && _targetSectionId < Sections.Length)
-                _targetRelocation = Sections[_targetSectionId].GetRelocationAtOffset((int)_addend);
+                return null;
+            RELNode r = (_parentRelocation._section.Root as ModuleNode).AppliedModule;
+            if (r != null && _targetSectionId > 0 && _targetSectionId < r.Sections.Length)
+                return r.Sections[_targetSectionId].GetRelocationAtOffset((int)_addend);
+            return null;
         }
 
-        public void SetRelocationParent(Relocation r)
+        public void SetTargetRelocation(Relocation e)
         {
-            _parentRelocation = r;
-            GetTargetRelocation();
+            if (e != null)
+                _addend = (uint)e._index * 4;
         }
 
         public uint Apply(bool absolute)
         {
             uint newValue = _parentRelocation.RawValue;
-            uint param = _addend + (absolute ? _parentRelocation._section._offset : 0);
+            uint addend = _addend + (absolute ? _parentRelocation._section._offset : 0);
 
             switch (_command)
             {
-                case RELLinkType.Nop:
-                case RELLinkType.IncrementOffset:
-                case RELLinkType.End:
+                case RELCommandType.WriteWord: //0x1
+                    newValue = addend;
                     break;
 
-                case RELLinkType.WriteWord:
-                    newValue = param;
-                    break;
-
-                case RELLinkType.SetBranchOffset:
+                case RELCommandType.SetBranchOffset: //0x2
                     newValue &= 0xFC000003;
-                    newValue |= (param & 0x03FFFFFC);
+                    newValue |= (addend & 0x03FFFFFC);
                     break;
 
-                case RELLinkType.WriteLowerHalf1:
-                case RELLinkType.WriteLowerHalf2:
+                case RELCommandType.WriteLowerHalf1: //0x3
+                case RELCommandType.WriteLowerHalf2: //0x4
                     newValue &= 0xFFFF0000;
-                    newValue |= (ushort)(param & 0xFFFF);
+                    newValue |= (ushort)(addend & 0xFFFF);
                     break;
 
-                case RELLinkType.WriteUpperHalf:
+                case RELCommandType.WriteUpperHalf: //0x5
                     newValue &= 0xFFFF0000;
-                    newValue |= (ushort)(param >> 16);
+                    newValue |= (ushort)(addend >> 16);
                     break;
 
-                case RELLinkType.WriteUpperHalfandBit1:
+                case RELCommandType.WriteUpperHalfandBit1: //0x6
                     newValue &= 0xFFFF0000;
-                    newValue |= (ushort)((param >> 16) | (param & 0x1));
+                    newValue |= (ushort)((addend >> 16) | (addend & 0x1));
                     break;
 
-                case RELLinkType.SetBranchConditionOffset1:
-                case RELLinkType.SetBranchConditionOffset2:
-                case RELLinkType.SetBranchConditionOffset3:
+                case RELCommandType.SetBranchConditionOffset1: //0x7
+                case RELCommandType.SetBranchConditionOffset2: //0x8
+                case RELCommandType.SetBranchConditionOffset3: //0x9
                     newValue &= 0xFFFF0003;
-                    newValue |= (param & 0xFFFC);
+                    newValue |= (addend & 0xFFFC);
                     break;
 
-                case RELLinkType.SetBranchDestination:
+                case RELCommandType.SetBranchDestination: //0xA
+                    Console.WriteLine();
                     break;
 
-                case RELLinkType.SetBranchConditionDestination1:
-                case RELLinkType.SetBranchConditionDestination2:
-                case RELLinkType.SetBranchConditionDestination3:
-                    break;
-
-                case RELLinkType.MrkRef:
+                case RELCommandType.SetBranchConditionDestination1: //0xB
+                case RELCommandType.SetBranchConditionDestination2: //0xC
+                case RELCommandType.SetBranchConditionDestination3: //0xD
+                    Console.WriteLine();
                     break;
 
                 default:
@@ -198,54 +179,23 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             return newValue;
         }
+    }
 
-        //public void Execute()
-        //{
-        //    if (_modifiedSection == null)
-        //        return;
-
-        //    uint param = _addend + ((_targetSection == null) ? 0 : (uint)_targetSection.Offset);
-        //    VoidPtr address = _modifiedSection._dataBuffer.Address + _offset;
-
-        //    switch (_command)
-        //    {
-        //        case 0x00: //Nop
-        //        case 0xC9:
-        //        case 0xCB: //End
-        //            break;
-        //        case 0x01: //Write Word
-        //            *(buint*)address = param;
-        //            break;
-        //        case 0x02: //Set Branch Offset
-        //            *(buint*)address &= 0xFC000003;
-        //            *(buint*)address |= (param & 0x03FFFFFC);
-        //            break;
-        //        case 0x3: //Write Lower Half
-        //        case 0x4:
-        //            *(bushort*)address = (ushort)(param & 0xFFFF);
-        //            break;
-        //        case 0x5: //Write Upper Half
-        //            *(bushort*)address = (ushort)(param >> 16);
-        //            break;
-        //        case 0x6: //Write Upper Half + bit 1
-        //            *(bushort*)address = (ushort)((param >> 16) | (param & 0x1));
-        //            break;
-        //        case 0x7: //Set Branch Condition Offset
-        //        case 0x8:
-        //        case 0x9:
-        //            *(buint*)address &= 0xFFFF0003;
-        //            *(buint*)address |= (param & 0xFFFC);
-        //            break;
-        //        case 0xA: //Set Branch Destination
-        //            break;
-        //        case 0xB: //Set Branch Condition Destination
-        //        case 0xC:
-        //        case 0xD:
-        //            break;
-        //        default:
-        //            throw new Exception("Unknown Relocation Command.");
-        //    }
-        //    _initialized = true;
-        //}
+    public enum RELCommandType : byte
+    {
+        Nop = 0x0,
+        WriteWord = 0x1,
+        SetBranchOffset = 0x2,
+        WriteLowerHalf1 = 0x3,
+        WriteLowerHalf2 = 0x4,
+        WriteUpperHalf = 0x5,
+        WriteUpperHalfandBit1 = 0x6,
+        SetBranchConditionOffset1 = 0x7,
+        SetBranchConditionOffset2 = 0x8,
+        SetBranchConditionOffset3 = 0x9,
+        SetBranchDestination = 0xA,
+        SetBranchConditionDestination1 = 0xB,
+        SetBranchConditionDestination2 = 0xC,
+        SetBranchConditionDestination3 = 0xD,
     }
 }

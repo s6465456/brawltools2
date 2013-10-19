@@ -40,9 +40,9 @@ namespace System.Windows.Forms
             // 
             // btnPlay
             // 
-            this.btnPlay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnPlay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnPlay.Location = new System.Drawing.Point(69, 28);
             this.btnPlay.Margin = new System.Windows.Forms.Padding(1);
             this.btnPlay.Name = "btnPlay";
@@ -125,8 +125,8 @@ namespace System.Windows.Forms
             // 
             // btnPrevFrame
             // 
-            this.btnPrevFrame.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnPrevFrame.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.btnPrevFrame.Enabled = false;
             this.btnPrevFrame.Location = new System.Drawing.Point(36, 28);
             this.btnPrevFrame.Margin = new System.Windows.Forms.Padding(1);
@@ -139,8 +139,8 @@ namespace System.Windows.Forms
             // 
             // btnNextFrame
             // 
-            this.btnNextFrame.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnNextFrame.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnNextFrame.Enabled = false;
             this.btnNextFrame.Location = new System.Drawing.Point(220, 28);
             this.btnNextFrame.Margin = new System.Windows.Forms.Padding(1);
@@ -153,8 +153,8 @@ namespace System.Windows.Forms
             // 
             // btnFirst
             // 
-            this.btnFirst.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnFirst.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.btnFirst.Enabled = false;
             this.btnFirst.Location = new System.Drawing.Point(3, 28);
             this.btnFirst.Margin = new System.Windows.Forms.Padding(1);
@@ -167,8 +167,8 @@ namespace System.Windows.Forms
             // 
             // btnLast
             // 
-            this.btnLast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnLast.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.btnLast.Enabled = false;
             this.btnLast.Location = new System.Drawing.Point(253, 28);
             this.btnLast.Margin = new System.Windows.Forms.Padding(1);

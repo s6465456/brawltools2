@@ -8,64 +8,88 @@ using System.Text;
 using System.Windows.Forms;
 using BrawlLib.SSBB.ResourceNodes;
 using System.PowerPcAssembly;
+using System.Windows.Controls;
 
 namespace System.Windows.Forms
 {
     public partial class PPCDisassembler : UserControl
     {
-        public ModuleDataNode _targetNode;
-        [Browsable(false)]
-        public ModuleDataNode TargetNode
-        {
-            get { return _targetNode; }
-            set { SetTarget(value); }
-        }
+        internal SectionEditor _editor;
 
-        public void SetTarget(ModuleDataNode value)
+        public List<Relocation> _relocations = new List<Relocation>();
+        public void SetTarget(List<Relocation> relocations)
         {
-            if ((_targetNode = value) == null) 
-                return;
+            foreach (Relocation r in _relocations)
+                r.Color = Color.Transparent;
 
-            //_baseOffset = _targetNode.ASMOffset;
-            _baseOffset = 0;
+            _relocations = relocations;
+            if (_relocations.Count > 0)
+                _baseOffset = (uint)_relocations[0]._index * 4;
+
+            foreach (Relocation r in _relocations)
+                r.Color = Color.FromArgb(255, 255, 200, 200);
+
             Display();
         }
 
         public PPCDisassembler() { InitializeComponent(); }
 
         public uint _baseOffset;
-        
+
+        public void Update(Relocation r)
+        {
+            if (r == null)
+                return;
+            int index = _relocations.IndexOf(r);
+            if (index < 0)
+                return;
+            UpdateRow(index);
+        }
+
+        void UpdateRow(int i)
+        {
+            DataGridViewRow row = grdDisassembler.Rows[i];
+            PPCOpCode opcode = _relocations[i].Code;
+
+            row.Cells[0].Value = PPCFormat.Offset(_baseOffset + (uint)i * 4);
+            row.Cells[1].Value = opcode.Name;
+            row.Cells[2].Value = opcode.GetFormattedOperands();
+
+            row.DefaultCellStyle.BackColor = _relocations[i]._section.GetStatusColorFromIndex(_relocations[i]._index);
+        }
+
         void Display()
         {
             grdDisassembler.Rows.Clear();
-            if (_targetNode == null || !_targetNode.HasCode) return;
-            for (int i = 0; i < _targetNode._relocations.Length; i++)
+            for (int i = 0; i < _relocations.Count; i++)
             {
-                DataGridViewRow row = grdDisassembler.Rows[grdDisassembler.Rows.Add()];
-                PPCOpCode opcode = _targetNode[i].Code;
-
-                row.Cells[0].Value = PPCFormat.Offset(_baseOffset + (uint)i * 4);
-                row.Cells[1].Value = opcode.FormName();
-                row.Cells[2].Value = opcode.FormOps();
-                row.Cells[3].Value = _targetNode[i].Description;
-
-                row.DefaultCellStyle.BackColor = TargetNode.GetStatusColorFromIndex(i);
+                grdDisassembler.Rows.Add();
+                UpdateRow(i);
             }
-        }
-
-        private void grdDisassembler_Scroll(object sender, ScrollEventArgs e)
-        {
-
-        }
-
-        private void grdDisassembler_SizeChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void grdDisassembler_DoubleClick(object sender, EventArgs e)
         {
+            new PPCOpCodeEditor().ShowDialog(_relocations[grdDisassembler.SelectedRows[0].Index], _editor);
+        }
 
+        public bool _updating = false;
+        private void grdDisassembler_SelectionChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void grdDisassembler_RowEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            if (_updating)
+                return;
+
+            if (grdDisassembler.SelectedRows.Count > 0)
+            {
+                _updating = true;
+                _editor.Position = _relocations[grdDisassembler.SelectedRows[0].Index]._index * 4;
+                _updating = false;
+            }
         }
     }
 }

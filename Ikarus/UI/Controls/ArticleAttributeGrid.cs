@@ -110,9 +110,9 @@ namespace System.Windows.Forms
         private Splitter splitter1;
         public bool called = false;
 
-        private MoveDefSectionParamNode _targetNode;
+        private RawParamList _targetNode;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefSectionParamNode TargetNode
+        public RawParamList TargetNode
         {
             get { return _targetNode; }
             set { _targetNode = value; TargetChanged(); }
@@ -157,9 +157,9 @@ namespace System.Windows.Forms
             string value = attributes.Rows[index][1].ToString();
 
             string name = attributes.Rows[index][0].ToString();
-            if (AttributeArray[index]._name != name && TargetNode.Root.Params.ContainsKey(TargetNode.OldName))
+            if (AttributeArray[index]._name != name && TargetNode._root.Params.ContainsKey(TargetNode.OldName))
             {
-                AttributeArray[index]._name = _targetNode._info[index]._name = TargetNode.Root.Params[TargetNode.OldName]._attributes[index]._name = name;
+                AttributeArray[index]._name = _targetNode._info[index]._name = TargetNode._root.Params[TargetNode.OldName]._attributes[index]._name = name;
                 FileManager._dictionaryChanged = true;
                 return;
             }
@@ -233,9 +233,9 @@ namespace System.Windows.Forms
             if (index >= 0)
             {
                 AttributeArray[index]._description = _targetNode._info[index]._description = description.Text;
-                if (TargetNode.Root.Params.ContainsKey(TargetNode.OldName))
+                if (TargetNode._root.Params.ContainsKey(TargetNode.OldName))
                 {
-                    TargetNode.Root.Params[TargetNode.OldName]._attributes[index]._description = AttributeArray[index]._description;
+                    TargetNode._root.Params[TargetNode.OldName]._attributes[index]._description = AttributeArray[index]._description;
                     FileManager._dictionaryChanged = true;
                 }
             }

@@ -810,7 +810,7 @@ namespace System.Windows.Forms
                 MessageBox.Show("Please open the model you want to port the animations to.\nThen open the model the animations work normally for.");
                 OpenFileDialog dlgOpen = new OpenFileDialog();
                 OpenFileDialog dlgOpen2 = new OpenFileDialog();
-                dlgOpen.Filter = dlgOpen2.Filter = "MDL0 Raw Model (*.mdl0)|*.mdl0";
+                dlgOpen.Filter = dlgOpen2.Filter = "MDL0 Model (*.mdl0)|*.mdl0";
                 dlgOpen.Title = "Select the model to port the animations to...";
                 dlgOpen2.Title = "Select the model the animations are for...";
                 if (dlgOpen.ShowDialog() == DialogResult.OK)

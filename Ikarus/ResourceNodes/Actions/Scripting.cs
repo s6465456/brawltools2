@@ -15,7 +15,7 @@ using System.Threading;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe partial class MoveDefActionNode : MoveDefExternalNode
+    public unsafe partial class ActionScript : ReferenceEntry
     {
         public int _attachedArticleIndex = -1;
 
@@ -162,8 +162,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _currentIf = -1;
         }
 
-        public MoveDefActionNode subRoutine = null;
-        public MoveDefActionNode _actionReferencedBy = null;
+        public ActionScript subRoutine = null;
+        public ActionScript _actionReferencedBy = null;
         public int _subRoutineSetAt = 0;
 
         public List<MoveDefEventParameterNode> _cases = null;
@@ -201,14 +201,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return;
             
             int list, index, type;
-            MoveDefEventNode e = Children[eventIndex] as MoveDefEventNode;
+            Event e = Children[eventIndex] as Event;
             uint eventId = e._event;
 
             if (!_runEvents && !_runExceptions.Contains(eventId)) 
                 return;
 
             //Get an array of the raw parameter values
-            Param[] p = e.EventData._parameters;
+            ParameterData[] p = e.EventData._parameters;
             
             //Code what to do for each event here.
             switch (eventId)
@@ -251,7 +251,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         {
                             if (ei1 < Children.Count)
                             {
-                                MoveDefEventNode eventNode = Children[ei1] as MoveDefEventNode;
+                                Event eventNode = Children[ei1] as Event;
                                 if (eventNode._event == 0x000B0100 ||
                                     eventNode._event == 0x000B0200 ||
                                     eventNode._event == 0x000B0300 ||
@@ -308,7 +308,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                             {
                                 if (ei2 < Children.Count)
                                 {
-                                    MoveDefEventNode eventNode = Children[ei2] as MoveDefEventNode;
+                                    Event eventNode = Children[ei2] as Event;
                                     if (eventNode._event == 0x000B0100 ||
                                         eventNode._event == 0x000B0200 ||
                                         eventNode._event == 0x000B0300 ||
@@ -388,9 +388,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     break;
                 case 0x06080200: //Bone Collision
                     int id = p[0];
-                    if (Root._model != null && Root._model._linker.BoneCache.Length > id && id >= 0)
+                    if (_root._model != null && _root._model._linker.BoneCache.Length > id && id >= 0)
                     {
-                        MDL0BoneNode bone = Root._model._linker.BoneCache[id] as MDL0BoneNode;
+                        MDL0BoneNode bone = _root._model._linker.BoneCache[id] as MDL0BoneNode;
                         switch ((int)p[1])
                         {
                             case 0:
@@ -506,8 +506,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _eventIndex = Children.Count;
                     break;
                 case 0x00090100: //Go to and do not return unless called
-                    Root.GetLocation(p[0], out list, out type, out index);
-                    MoveDefActionNode a = Root.GetAction(list, type, index);
+                    _root.GetActionLocation(p[0], out list, out type, out index);
+                    ActionScript a = _root.GetAction(list, type, index);
                     if (a != null)
                     {
                         //if (RunTime.ScriptWindow.scriptEditor1.TargetNode == this)
@@ -598,14 +598,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                     else
                     {
                         //Check if we have data to work with
-                        if (Root._model._objList == null) break;
-                        if (Root._data.mdlVisibility.Children.Count == 0) break;
+                        if (_root._model._objList == null) break;
+                        if (_root._data.mdlVisibility.Children.Count == 0) break;
 
-                        visNode = Root._data.mdlVisibility;
+                        visNode = _root._data.mdlVisibility;
                     }
 
                     //Get the target reference
-                    MoveDefModelVisRefNode refEntry = Root._data.mdlVisibility.Children[((int)(eventId >> 16 & 1))] as MoveDefModelVisRefNode;
+                    MoveDefModelVisRefNode refEntry = _root._data.mdlVisibility.Children[((int)(eventId >> 16 & 1))] as MoveDefModelVisRefNode;
 
                     //Check if the reference and switch id is usable
                     if (refEntry.Children.Count == 0 || p[0] < 0 || p[0] >= refEntry.Children.Count) break;
@@ -631,7 +631,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     break;
                 case 0x0B020100: //Model visibility
                     if (_attachedArticleIndex < 0)
-                        Root._model._visible = p[0] != 0;
+                        _root._model._visible = p[0] != 0;
                     else if (_attachedArticleIndex < RunTime._articles.Length && RunTime._articles[_attachedArticleIndex]._model != null)
                         RunTime._articles[_attachedArticleIndex]._model._visible = p[0] != 0;
                     break;

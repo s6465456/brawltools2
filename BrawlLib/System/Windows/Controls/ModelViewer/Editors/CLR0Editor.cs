@@ -124,8 +124,13 @@ namespace System.Windows.Forms
             listBox1.Items.Clear();
             listBox1.BeginUpdate();
             if (_mainWindow.SelectedCLR0 != null)
+            {
                 foreach (CLR0MaterialNode n in _mainWindow.SelectedCLR0.Children)
                     listBox1.Items.Add(n);
+                Enabled = true;
+            }
+            else
+                Enabled = false;
             listBox1.EndUpdate();
             if (listBox1.Items.Count > 0)
                 listBox1.SelectedIndex = 0;

@@ -398,22 +398,17 @@ namespace Gif.Components
 				image = temp;
 				g.Dispose();
 			}
-			/*
-				ToDo:
-				improve performance: use unsafe code 
-			*/
 			pixels = new UnsafeBuffer(3 * image.Width * image.Height);
             byte* addr = (byte*)pixels.Address;
-			int count = 0;
 			Bitmap tempBitmap = new Bitmap( image );
 			for (int th = 0; th < image.Height; th++)
 			{
 				for (int tw = 0; tw < image.Width; tw++)
 				{
 					Color color = tempBitmap.GetPixel(tw, th);
-                    addr[count++] = color.R;
-                    addr[count++] = color.G;
-                    addr[count++] = color.B;
+                    *addr++ = color.R;
+                    *addr++ = color.G;
+                    *addr++ = color.B;
 				}
 			}
 

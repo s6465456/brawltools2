@@ -11,7 +11,7 @@ namespace BrawlLib.SSBBTypes
         public ModuleInfo _info;
 
         //0x20
-        public buint _bssSize; //Size of command list for this module
+        public buint _bssSize; //Size of bss section
         public buint _relOffset; //Offset to relocations
         public buint _impOffset; //Offset to imports
         public buint _impSize; //Size of import entry headers
@@ -34,18 +34,17 @@ namespace BrawlLib.SSBBTypes
         public buint _bssAlign; //Alignment of the command list for this module (8 bytes)
         public buint _commandOffset; //Offset to the command list for this module (not to the entry, but directly to the array)
 
-        //Data Order
+        //Data Order:
+        //-Header
+        //-Section Info
+        //-Section Data
+        //-Imports
+        //-Relocations
 
-        //Header
-        //Section Info
-        //Section Data
-        //Imports
-        //Relocations
-
-        //Imports order
-        //Smallest to largest module IDs
-        //This module
-        //Static module 0
+        //Imports order:
+        //-Smallest to largest module IDs
+        //-This module
+        //-Static module 0
 
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
 

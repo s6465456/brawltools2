@@ -12,15 +12,13 @@ using BrawlLib.Modeling;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefEventNode : MoveDefEntryNode
+    public unsafe class Event : MoveDefEntry
     {
         internal FDefEvent* Header { get { return (FDefEvent*)WorkingUncompressed.Address; } }
         internal FDefEventArgument* ArgumentHeader { get { return (FDefEventArgument*)(BaseAddress + Header->_argumentOffset); } }
 
         internal byte nameSpace, id, numArguments, unk1;
         internal List<FDefEventArgument> arguments = new List<FDefEventArgument>();
-
-        public override ResourceType ResourceType { get { return ResourceType.Event; } }
 
         public override int OnCalculateSize(bool force)
         {
@@ -36,9 +34,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         [Browsable(false)]
         public ActionEventInfo EventInfo 
-        { 
+        {
             get
-            { 
+            {
                 if (FileManager.EventDictionary.ContainsKey(_event)) 
                     return FileManager.EventDictionary[_event]; 
                 else 
@@ -103,7 +101,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             return s;
         }
 
-        public static MoveDefEventNode Deserialize(string s, MoveDefNode node)
+        public static Event Deserialize(string s, MoveDefNode node)
         {
             if (String.IsNullOrEmpty(s))
                 return null;
@@ -115,7 +113,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (lines[0].Length != 8)
                     return null;
 
-                MoveDefEventNode newEv = new MoveDefEventNode() { _parent = node };
+                Event newEv = new Event() { _parent = node };
 
                 string id = lines[0];
                 uint idNumber = Convert.ToUInt32(id, 16);
@@ -162,9 +160,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 NewParam(i, 0, -1);
         }
 
-        public MoveDefEntryNode NewParam(int i, int value, int typeOverride)
+        public MoveDefEntry NewParam(int i, int value, int typeOverride)
         {
-            MoveDefEntryNode child = null;
+            MoveDefEntry child = null;
             ActionEventInfo info = EventInfo;
             ArgVarType type = ArgVarType.Value;
             if (typeOverride >= 0)
@@ -223,14 +221,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 MoveDefEventRequirementNode r = new MoveDefEventRequirementNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Requirement") { _value = value };
                 child = r;
-                r._parent = Root;
+                r._parent = _root;
                 r._val = r.GetRequirement(r._value);
             }
             else if ((ArgVarType)(int)type == ArgVarType.Variable)
             {
                 MoveDefEventVariableNode v = new MoveDefEventVariableNode(info != null && i < info._parameters.Length ? info._parameters[i] : "Variable") { _value = value };
                 child = v;
-                v._parent = Root;
+                v._parent = _root;
                 v.val = v.ResolveVariable(v._value);
             }
             else if ((ArgVarType)(int)type == ArgVarType.Offset)
@@ -335,13 +333,10 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else _name = Helpers.Hex8(_event);
             }
 
-            _extOverride = Index == 0;
-            base.OnInitialize();
-
-            if (!Root._events.ContainsKey(_event))
-                Root._events.Add(_event, new List<MoveDefEventNode>() { this });
+            if (!_root._events.ContainsKey(_event))
+                _root._events.Add(_event, new List<Event>() { this });
             else
-                Root._events[_event].Add(this);
+                _root._events[_event].Add(this);
 
             if (_name == "FADEF00D" || _name == "FADE0D8A")
             {
@@ -387,34 +382,34 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else if ((ArgVarType)(int)e._type == ArgVarType.Offset)
                 {
                     int offset = -1;
-                    MoveDefExternalNode ext;
+                    ReferenceEntry ext;
                     int paramOffset = e._data;
 
                     if (paramOffset == -1)
-                        ext = Root.IsExternal((int)ArgumentOffset + i * 8 + 4);
+                        ext = _root.TryGetExternal((int)ArgumentOffset + i * 8 + 4);
                     else
-                        ext = Root.IsExternal(paramOffset);
+                        ext = _root.TryGetExternal(paramOffset);
 
                     if (ext == null)
                         offset = e._data;
 
                     if (offset > 0)
                     {
-                        MoveDefActionNode a;
+                        ActionScript a;
                         int list, index, type;
-                        Root.GetLocation(offset, out list, out type, out index);
+                        _root.GetActionLocation(offset, out list, out type, out index);
 
                         if (list == 4) //Offset not found in existing nodes
                         {
-                            Root._subRoutines[offset] = (a = new MoveDefActionNode("SubRoutine" + Root._subRoutineList.Count, false, null));
-                            a.Initialize(Root._subRoutineGroup, new DataSource((sbyte*)BaseAddress + offset, 8));
+                            _root._subRoutines[offset] = (a = new ActionScript("SubRoutine" + _root._subRoutines.Count, false, null));
+                            a.Initialize(_root._subRoutineGroup, new DataSource((sbyte*)BaseAddress + offset, 8));
                             //if (offset != (Parent as MoveDefEntryNode)._offset)
                             //    a.Populate();
                             a._actionRefs.Add(this);
                         }
                         else
                         {
-                            MoveDefActionNode n = Root.GetAction(list, type, index);
+                            ActionScript n = _root.GetAction(list, type, index);
                             if (n != null)
                                 n._actionRefs.Add(this);
                         }
@@ -423,9 +418,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     //Add ID node
                     if (ext != null)
                     {
-                        MoveDefEventOffsetNode x = new MoveDefEventOffsetNode(param) { _name = ext.Name, _extNode = ext, _extOverride = true };
+                        MoveDefEventOffsetNode x = new MoveDefEventOffsetNode(param) { _name = ext.Name, _externalEntry = ext, _extOverride = true };
                         x.Initialize(this, header, 8);
-                        ext._refs.Add(x);
+                        ext._references.Add(x);
                     }
                     else
                         new MoveDefEventOffsetNode(param).Initialize(this, header, 8);
@@ -446,7 +441,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             foreach (MoveDefEventParameterNode p in Children)
                 if (p.External)
-                    p._extNode._refs.Remove(p);
+                    p._externalEntry._refs.Remove(p);
             
             base.Remove();
         }
@@ -456,9 +451,9 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         //A seperate class for rendering hitboxes.
         //This allows the values to be modified by other events.
-        public HitBox(MoveDefEventNode ev, int articleIndex)
+        public HitBox(Event ev, int articleIndex)
         {
-            Root = ev.Root;
+            Root = ev._root;
             _event = ev._event;
             EventData = ev.EventData;
             if (_event != 0x060A0800)

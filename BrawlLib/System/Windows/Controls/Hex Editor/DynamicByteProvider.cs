@@ -41,7 +41,7 @@ namespace Be.Windows.Forms
 		{
 			_hasChanges = true;
 
-			if(Changed != null)
+			if (Changed != null)
 				Changed(this, e);
 		}
 
@@ -50,7 +50,7 @@ namespace Be.Windows.Forms
 		/// </summary>
 		void OnLengthChanged(EventArgs e)
 		{
-			if(LengthChanged != null)
+			if (LengthChanged != null)
 				LengthChanged(this, e);
 		}
 
@@ -95,8 +95,7 @@ namespace Be.Windows.Forms
 		/// </summary>
 		/// <param name="index">the index of the byte to read</param>
 		/// <returns>the byte</returns>
-		public byte ReadByte(long index)
-		{ return _bytes[(int)index]; }
+		public byte ReadByte(long index) { return _bytes[(int)index]; }
 
 		/// <summary>
 		/// Write a byte into the byte collection.
@@ -109,13 +108,18 @@ namespace Be.Windows.Forms
 			OnChanged(EventArgs.Empty);
 		}
 
+        public bool _supportsInsDel = true;
+
 		/// <summary>
 		/// Deletes bytes from the byte collection.
 		/// </summary>
 		/// <param name="index">the start index of the bytes to delete.</param>
 		/// <param name="length">the length of bytes to delete.</param>
 		public void DeleteBytes(long index, long length)
-		{ 
+		{
+            if (!_supportsInsDel)
+                return;
+
 			int internal_index = (int)Math.Max(0, index);
 			int internal_length = (int)Math.Min((int)Length, length);
 			_bytes.RemoveRange(internal_index, internal_length); 
@@ -130,7 +134,10 @@ namespace Be.Windows.Forms
 		/// <param name="index">the start index of the bytes in the byte collection</param>
 		/// <param name="bs">the byte array to insert</param>
 		public void InsertBytes(long index, byte[] bs)
-		{ 
+		{
+            if (!_supportsInsDel)
+                return;
+
 			_bytes.InsertRange((int)index, bs); 
 
 			OnLengthChanged(EventArgs.Empty);
@@ -161,7 +168,7 @@ namespace Be.Windows.Forms
 		/// </summary>
 		public bool SupportsInsertBytes()
 		{
-			return true;
+            return _supportsInsDel;
 		}
 
 		/// <summary>
@@ -169,7 +176,7 @@ namespace Be.Windows.Forms
 		/// </summary>
 		public bool SupportsDeleteBytes()
 		{
-			return true;
+            return _supportsInsDel;
 		}
 		#endregion
 

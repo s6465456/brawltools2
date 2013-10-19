@@ -210,6 +210,16 @@ namespace System
             p[14] = z;
             return m;
         }
+        public static Matrix ReverseTranslationMatrix(Vector3 v) { return ReverseTranslationMatrix(v._x, v._y, v._z); }
+        public static Matrix ReverseTranslationMatrix(float x, float y, float z)
+        {
+            Matrix m = Identity;
+            float* p = (float*)&m;
+            p[12] = -x - y - z;
+            p[13] = -x - y - z;
+            p[14] = -x - y - z;
+            return m;
+        }
 
         public static Matrix RotationAboutX(float angle)
         {

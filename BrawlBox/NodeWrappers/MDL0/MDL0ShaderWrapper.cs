@@ -59,7 +59,7 @@ namespace BrawlBox.NodeWrappers
         {
             if (_resource.Children.Count < 16)
             {
-                TEVStage stage = new TEVStage(_resource.Children.Count);
+                TEVStage stage = new TEVStage();
                 _resource.AddChild(stage, true);
                 stage.Default();
 
@@ -70,7 +70,7 @@ namespace BrawlBox.NodeWrappers
             }
         }
 
-        public void MoveUp()
+        public new void MoveUp()
         {
             if (PrevNode == null)
                 return;
@@ -90,7 +90,7 @@ namespace BrawlBox.NodeWrappers
             }
         }
 
-        public void MoveDown()
+        public new void MoveDown()
         {
             if (NextNode == null)
                 return;

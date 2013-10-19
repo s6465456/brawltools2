@@ -104,9 +104,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public string PrimaryColorName(int id) { return null; }
         [Browsable(false)]
+        public int TypeCount { get { return 1; } }
+        [Browsable(false)]
         public int ColorCount(int id) { return Palette.Entries.Length; }
         public ARGBPixel GetColor(int index, int id) { return (ARGBPixel)Palette.Entries[index]; }
         public void SetColor(int index, int id, ARGBPixel color) { Palette.Entries[index] = (Color)color; SignalPropertyChange(); }
+        public bool GetClrConstant(int id)
+        {
+            return false;
+        }
+        public void SetClrConstant(int id, bool constant)
+        {
+
+        }
 
         #endregion
 

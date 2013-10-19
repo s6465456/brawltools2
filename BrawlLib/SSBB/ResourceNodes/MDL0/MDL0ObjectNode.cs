@@ -426,7 +426,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int _primSize;
         public int _primOffset;
         public int _flag = 0;
-        public int _index;
 
         internal short[] _elementIndices = new short[14];
 
@@ -440,7 +439,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public VertexAttributeFormat[] _fmtList;
         public int _fpStride = 0;
         public Facepoint[] _facepoints;
-        //public List<PrimitiveGroup> Primitives { get { return groups; } }
+        
         public List<PrimitiveGroup> _primGroups = new List<PrimitiveGroup>();
         public List<Triangle> Triangles = new List<Triangle>();
         public List<Tristrip> Tristrips = new List<Tristrip>();
@@ -575,9 +574,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_opaMaterial == value)
                     return;
                 if (_opaMaterial != null)
-                    _opaMaterial._polygons.Remove(this);
+                    _opaMaterial._objects.Remove(this);
                 if ((_opaMaterial = value) != null)
-                    _opaMaterial._polygons.Add(this);
+                    _opaMaterial._objects.Add(this);
             }
         }
         [Browsable(false)]
@@ -589,9 +588,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_xluMaterial == value)
                     return;
                 if (_xluMaterial != null)
-                    _xluMaterial._polygons.Remove(this);
+                    _xluMaterial._objects.Remove(this);
                 if ((_xluMaterial = value) != null)
-                    _xluMaterial._polygons.Add(this);
+                    _xluMaterial._objects.Add(this);
             }
         }
         [Browsable(true), TypeConverter(typeof(DropDownListOpaMaterials))]
@@ -696,37 +695,55 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (header->_vertexId >= 0)
                 foreach (MDL0VertexNode v in Model._vertList)
                     if (header->_vertexId == v.ID)
+                    {
                         (_vertexNode = v)._objects.Add(this);
+                        break;
+                    }
 
             if (header->_normalId >= 0)
                 foreach (MDL0NormalNode n in Model._normList)
                     if (header->_normalId == n.ID)
+                    {
                         (_normalNode = n)._objects.Add(this);
+                        break;
+                    }
 
             int id;
             for (int i = 0; i < 2; i++)
                 if ((id = ((bshort*)header->_colorIds)[i]) >= 0)
                     foreach (MDL0ColorNode c in Model._colorList)
                         if (id == c.ID)
+                        {
                             (_colorSet[i] = c)._objects.Add(this);
+                            break;
+                        }
 
             for (int i = 0; i < 8; i++)
                 if ((id = ((bshort*)header->_uids)[i]) >= 0)
                     foreach (MDL0UVNode u in Model._uvList)
                         if (id == u.ID)
+                        {
                             (_uvSet[i] = u)._objects.Add(this);
+                            break;
+                        }
 
             if (Model._version > 9)
             {
                 if (header->_furVectorId >= 0)
                     foreach (MDL0FurVecNode v in Model._furVecList)
                         if (header->_furVectorId == v.ID)
+                        {
                             (_furVecNode = v)._objects.Add(this);
+                            break;
+                        }
 
                 if (header->_furLayerCoordId >= 0)
                     foreach (MDL0FurPosNode n in Model._furPosList)
                         if (header->_furLayerCoordId == n.ID)
+                        {
                             (_furPosNode = n)._objects.Add(this);
+                            break;
+                        }
             }
 
             //Link element indices for rebuild
@@ -774,13 +791,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             }
 
-            //Debug stuff
-            if (header->_primitives._bufferSize != header->_primitives._size)
-                Console.WriteLine("DataLen deviation!");
-            if (header->_flag != 0)
-                Console.WriteLine("Flag is not 0!");
-            if (header->_totalLength - header->_primitives._offset - header->_primitives._bufferSize != 0x24)
-                Console.WriteLine("Improper data offsets!");
+            //Check for errors
             if (header->_totalLength % 0x20 != 0)
             {
                 Model._errors.Add("Object " + Index + " has an improper data length.");
@@ -789,6 +800,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             if ((int)(0x24 + header->_primitives._offset) % 0x20 != 0)
             {
                 Model._errors.Add("Object " + Index + " has an improper primitives start offset.");
+                SignalPropertyChange(); _rebuild = true;
+            }
+            if (CheckVertexFormat())
+            {
+                Model._errors.Add("Object " + Index + " has a facepoint descriptor that does not match its linked nodes.");
                 SignalPropertyChange(); _rebuild = true;
             }
 
@@ -809,6 +825,40 @@ namespace BrawlLib.SSBB.ResourceNodes
             _elementIndices[13] = (short)(_furPosNode != null ? _furPosNode.Index : _elementIndices[1]);
         }
 
+        /// <summary>
+        /// Returns true if the facepoint descriptor does not match the linked nodes, meaning this object must be rebuilt.
+        /// </summary>
+        public bool CheckVertexFormat()
+        {
+            bool b1 = _vertexFormat.PosFormat != XFDataFormat.None;
+            bool b2 = _elementIndices[0] != -1;
+            if (b1 != b2)
+                return true;
+
+            b1 = _vertexFormat.NormalFormat != XFDataFormat.None;
+            b2 = _elementIndices[1] != -1;
+            if (b1 != b2)
+                return true;
+            
+            for (int i = 0; i < 2; i++)
+            {
+                b1 = _vertexFormat.GetColorFormat(i) != XFDataFormat.None;
+                b2 = _elementIndices[i + 2] != -1;
+                if (b1 != b2)
+                    return true;
+            }
+
+            for (int i = 0; i < 8; i++)
+            {
+                b1 = _vertexFormat.GetUVFormat(i) != XFDataFormat.None;
+                b2 = _elementIndices[i + 4] != -1;
+                if (b1 != b2)
+                    return true;
+            }
+
+            return false;
+        }
+
         //This should be done after node indices have been assigned
         public override int OnCalculateSize(bool force)
         {
@@ -819,6 +869,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _fpStride =
             _triCount =
             _stripCount = 0;
+
+            MDL0Node model = Model;
 
             //Create node table
             HashSet<int> nodes = new HashSet<int>();
@@ -831,17 +883,22 @@ namespace BrawlLib.SSBB.ResourceNodes
             nodes.CopyTo(_nodeCache);
             Array.Sort(_nodeCache);
 
-            //Rebuild only under certain circumstances
-            if (Model._rebuildAllObj || Model._isImport || _rebuild)
-            {
-                //RecalcIndices();
+            //Recollect indices of linked nodes
+            RecalcIndices();
 
+            //Check that the facepoint descriptor matches the linked nodes
+            if (!_rebuild)
+                _rebuild = CheckVertexFormat();
+
+            //Rebuild only under certain circumstances
+            if (model._rebuildAllObj || model._isImport || _rebuild)
+            {
                 int size = (int)MDL0Object.Size;
 
-                if (Model._version >= 10)
+                if (model._version >= 10)
                     size += 4; //Add extra -1 value
 
-                if (Model._isImport)
+                if (model._isImport)
                 {
                     //Continue checking for single bind
                     if (_nodeId == -2 && _matrixNode == null)
@@ -852,8 +909,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                             if (first)
                             {
                                 if (v._matrixNode != null)
-                                    MatrixNode = Model._linker.NodeCache[v._matrixNode.NodeIndex];
-                                
+                                    MatrixNode = model._linker.NodeCache[v._matrixNode.NodeIndex];
+
                                 first = false;
                             }
                             v.MatrixNode = null;
@@ -862,7 +919,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
 
                 //Set vertex descriptor
-                _descList = _manager.SetVertexDescList(this, Model._linker._forceDirectAssets);
+                _descList = _manager.SetVertexDescList(this, model._linker._forceDirectAssets);
 
                 //Add table length
                 size += _nodeCache.Length * 2 + 4;
@@ -871,7 +928,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Add def length
                 size = _primitiveStart = _tableLen + 0xE0;
 
-                if (Model._isImport)
+                if (model._isImport)
                 {
                     _primGroups.Clear();
                     Triangles.Clear();
@@ -888,7 +945,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         {
                             Tri = new Triangle();
 
-                            if (!Model._importOptions._forceCCW)
+                            if (!model._importOptions._forceCCW)
                             {
                                 //Indices are written in reverse for each triangle, 
                                 //so they need to be set to a triangle in reverse
@@ -914,7 +971,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Build display list
                 foreach (PrimitiveGroup g in _primGroups)
                 {
-                    if (Model._isImport)
+                    if (model._isImport)
                     {
                         if (g._tristrips.Count != 0)
                             foreach (Tristrip strip in g._tristrips)
@@ -958,6 +1015,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             MDL0Object* header = (MDL0Object*)address;
 
+            MDL0Node model = Model;
+
             if (_uvSet[7] != null)
                 _defSize = 224;
             else if (_uvSet[5] != null)
@@ -967,7 +1026,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 _defSize = 128;
 
-            if (Model._rebuildAllObj || Model._isImport || _rebuild)
+            if (model._rebuildAllObj || model._isImport || _rebuild)
             {
                 //Set Header
                 header->_totalLength = length;
@@ -991,7 +1050,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 header->_flag = _flag;
                 header->_index = _entryIndex;
 
-                if (Model._version < 10)
+                if (model._version < 10)
                     header->_nodeTableOffset = 0x64;
                 else
                 {
@@ -1009,12 +1068,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                     header->_nodeId = _nodeId = -1;
 
                 //Set asset ids
-                header->_vertexId = Model._isImport && Model._linker._forceDirectAssets[0] ? (short)-1 : (short)(_elementIndices[0] >= 0 ? _elementIndices[0] : -1);
-                header->_normalId = Model._isImport && Model._linker._forceDirectAssets[1] ? (short)-1 : (short)(_elementIndices[1] >= 0 ? _elementIndices[1] : -1);
+                header->_vertexId = model._isImport && model._linker._forceDirectAssets[0] ? (short)-1 : (short)(_elementIndices[0] >= 0 ? _elementIndices[0] : -1);
+                header->_normalId = model._isImport && model._linker._forceDirectAssets[1] ? (short)-1 : (short)(_elementIndices[1] >= 0 ? _elementIndices[1] : -1);
                 for (int i = 2; i < 4; i++)
-                    *(bshort*)&header->_colorIds[i - 2] = Model._isImport && Model._linker._forceDirectAssets[i] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
+                    *(bshort*)&header->_colorIds[i - 2] = model._isImport && model._linker._forceDirectAssets[i] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
                 for (int i = 4; i < 12; i++)
-                    *(bshort*)&header->_uids[i - 4] = Model._isImport && Model._linker._forceDirectAssets[i] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
+                    *(bshort*)&header->_uids[i - 4] = model._isImport && model._linker._forceDirectAssets[i] ? (short)-1 : (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
 
                 //Write def list
                 MDL0PolygonDefs* Defs = (MDL0PolygonDefs*)header->DefList;
@@ -1044,7 +1103,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (_matrixNode == null)
                 {
                     //Write weight table
-                    bushort* ptr = (bushort*)header->WeightIndices(Model._version);
+                    bushort* ptr = (bushort*)header->WeightIndices(model._version);
                     *(buint*)ptr = (uint)_nodeCache.Length; ptr += 2;
                     foreach (int n in _nodeCache)
                         *ptr++ = (ushort)n;
@@ -1058,16 +1117,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Move raw data over
                 base.OnRebuild(address, length, force);
 
-                CorrectNodeIds(header); 
+                CorrectNodeIds(header);
                 
-                RecalcIndices();
                 header->_vertexId = _elementIndices[0];
                 header->_normalId = _elementIndices[1];
                 for (int i = 2; i < 4; i++)
                     *(bshort*)&header->_colorIds[i - 2] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
                 for (int i = 4; i < 12; i++)
                     *(bshort*)&header->_uids[i - 4] = (short)(_elementIndices[i] >= 0 ? _elementIndices[i] : -1);
-                if (Model._version >= 10)
+                if (model._version >= 10)
                 {
                     *(bshort*)((byte*)header + 0x60) = _elementIndices[12];
                     *(bshort*)((byte*)header + 0x62) = _elementIndices[13];
@@ -1125,81 +1183,81 @@ namespace BrawlLib.SSBB.ResourceNodes
             min = new Vector3(float.MaxValue);
             max = new Vector3(float.MinValue);
 
-            if (_manager._vertices != null)
-            foreach (Vertex3 vertex in _manager._vertices)
-            {
-                Vector3 v = vertex.WeightedPosition;
+            if (_manager != null && _manager._vertices != null)
+                foreach (Vertex3 vertex in _manager._vertices)
+                {
+                    Vector3 v = vertex.WeightedPosition;
 
-                min.Min(v);
-                max.Max(v);
-            }
+                    min.Min(v);
+                    max.Max(v);
+                }
         }
 
-        public void UpdateProgram(ModelPanel mainWindow)
-        {
-            bool temp = false;
-            bool force = true;
-            bool updateProgram = force || _renderUpdate || UsableMaterialNode._renderUpdate || UsableMaterialNode.ShaderNode._renderUpdate;
-            if (updateProgram)
-            {
-                temp = true;
+        //public void UpdateProgram(ModelPanel mainWindow)
+        //{
+        //    bool temp = false;
+        //    bool force = true;
+        //    bool updateProgram = force || _renderUpdate || UsableMaterialNode._renderUpdate || UsableMaterialNode.ShaderNode._renderUpdate;
+        //    if (updateProgram)
+        //    {
+        //        temp = true;
 
-                if (_programHandle > 0)
-                    GL.DeleteProgram(_programHandle);
+        //        if (_programHandle > 0)
+        //            GL.DeleteProgram(_programHandle);
 
-                _programHandle = GL.CreateProgram();
+        //        _programHandle = GL.CreateProgram();
 
-                int status;
-                string info;
+        //        int status;
+        //        string info;
 
-                if (_renderUpdate)
-                {
-                    vertexShaderSource = ShaderGenerator.GenerateVertexShader(this);
+        //        if (_renderUpdate)
+        //        {
+        //            vertexShaderSource = ShaderGenerator.GenerateVertexShader(this);
 
-                    GL.ShaderSource(vertexShaderHandle, vertexShaderSource);
-                    GL.CompileShader(vertexShaderHandle);
+        //            GL.ShaderSource(vertexShaderHandle, vertexShaderSource);
+        //            GL.CompileShader(vertexShaderHandle);
 
-                    GL.GetShaderInfoLog(vertexShaderHandle, out info);
-                    GL.GetShader(vertexShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status);
+        //            GL.GetShaderInfoLog(vertexShaderHandle, out info);
+        //            GL.GetShader(vertexShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status);
 
-                    if (status != 1)
-                        Console.WriteLine(info + "\n\n" + vertexShaderSource + "\n\n");
-                    else
-                        GL.AttachShader(_programHandle, vertexShaderHandle);
-                }
-                if (_renderUpdate || UsableMaterialNode._renderUpdate || UsableMaterialNode.ShaderNode._renderUpdate)
-                {
-                    _fragShaderSource = ShaderGenerator.GeneratePixelShader(this);
+        //            if (status != 1)
+        //                Console.WriteLine(info + "\n\n" + vertexShaderSource + "\n\n");
+        //            else
+        //                GL.AttachShader(_programHandle, vertexShaderHandle);
+        //        }
+        //        if (_renderUpdate || UsableMaterialNode._renderUpdate || UsableMaterialNode.ShaderNode._renderUpdate)
+        //        {
+        //            _fragShaderSource = ShaderGenerator.GeneratePixelShader(this);
 
-                    GL.ShaderSource(_fragShaderHandle, _fragShaderSource);
-                    GL.CompileShader(_fragShaderHandle);
+        //            GL.ShaderSource(_fragShaderHandle, _fragShaderSource);
+        //            GL.CompileShader(_fragShaderHandle);
 
-                    GL.GetShaderInfoLog(_fragShaderHandle, out info);
-                    GL.GetShader(_fragShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status);
+        //            GL.GetShaderInfoLog(_fragShaderHandle, out info);
+        //            GL.GetShader(_fragShaderHandle, OpenTK.Graphics.OpenGL.ShaderParameter.CompileStatus, out status);
 
-                    if (status != 1)
-                        Console.WriteLine(info + "\n\n" + _fragShaderSource + "\n\n");
-                    else
-                        GL.AttachShader(_programHandle, _fragShaderHandle);
+        //            if (status != 1)
+        //                Console.WriteLine(info + "\n\n" + _fragShaderSource + "\n\n");
+        //            else
+        //                GL.AttachShader(_programHandle, _fragShaderHandle);
 
-                    UsableMaterialNode._renderUpdate = UsableMaterialNode.ShaderNode._renderUpdate = false;
-                }
+        //            UsableMaterialNode._renderUpdate = UsableMaterialNode.ShaderNode._renderUpdate = false;
+        //        }
 
-                _renderUpdate = false;
+        //        _renderUpdate = false;
 
-                GL.LinkProgram(_programHandle);
-            }
+        //        GL.LinkProgram(_programHandle);
+        //    }
 
-            GL.UseProgram(_programHandle);
+        //    GL.UseProgram(_programHandle);
 
-            if (temp)
-            {
-                SetUniforms(_programHandle, mainWindow);
-                //UsableMaterialNode.SetUniforms(_programHandle);
-            }
-            //if (UsableMaterialNode._lightSet != null)
-            //    SetLightUniforms(_programHandle);
-        }
+        //    if (temp)
+        //    {
+        //        SetUniforms(_programHandle, mainWindow);
+        //        //UsableMaterialNode.SetUniforms(_programHandle);
+        //    }
+        //    //if (UsableMaterialNode._lightSet != null)
+        //    //    SetLightUniforms(_programHandle);
+        //}
 
         public bool _render = true;
         internal void Render(TKContext ctx, bool wireframe, ModelPanel mainWindow)
@@ -1222,54 +1280,54 @@ namespace BrawlLib.SSBB.ResourceNodes
                 return;
             }
 
-            if (useShaders)
-            {
-                UpdateProgram(mainWindow);
+            //if (useShaders)
+            //{
+            //    UpdateProgram(mainWindow);
 
-                _manager.PrepareStreamNew(_programHandle);
+            //    _manager.PrepareStreamNew(_programHandle);
 
-                if (material != null)
-                {
-                    switch ((int)material.CullMode)
-                    {
-                        case 0: //None
-                            GL.Disable(EnableCap.CullFace);
-                            break;
-                        case 1: //Outside
-                            GL.Enable(EnableCap.CullFace);
-                            GL.CullFace(CullFaceMode.Front);
-                            break;
-                        case 2: //Inside
-                            GL.Enable(EnableCap.CullFace);
-                            GL.CullFace(CullFaceMode.Back);
-                            break;
-                        case 3: //Double
-                            GL.Enable(EnableCap.CullFace);
-                            GL.CullFace(CullFaceMode.FrontAndBack);
-                            break;
-                    }
+            //    if (material != null)
+            //    {
+            //        switch ((int)material.CullMode)
+            //        {
+            //            case 0: //None
+            //                GL.Disable(EnableCap.CullFace);
+            //                break;
+            //            case 1: //Outside
+            //                GL.Enable(EnableCap.CullFace);
+            //                GL.CullFace(CullFaceMode.Front);
+            //                break;
+            //            case 2: //Inside
+            //                GL.Enable(EnableCap.CullFace);
+            //                GL.CullFace(CullFaceMode.Back);
+            //                break;
+            //            case 3: //Double
+            //                GL.Enable(EnableCap.CullFace);
+            //                GL.CullFace(CullFaceMode.FrontAndBack);
+            //                break;
+            //        }
 
-                    if (material.Children.Count == 0)
-                        _manager.RenderMesh();
-                    else
-                    {
-                        foreach (MDL0MaterialRefNode mr in material.Children)
-                        {
-                            if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
-                                continue;
+            //        if (material.Children.Count == 0)
+            //            _manager.RenderMesh();
+            //        else
+            //        {
+            //            foreach (MDL0MaterialRefNode mr in material.Children)
+            //            {
+            //                if (mr._texture != null && (!mr._texture.Enabled || mr._texture.Rendered))
+            //                    continue;
 
-                            mr.Bind(ctx, _programHandle);
-                        }
-                        GL.BindVertexArray(_manager._arrayHandle);
-                        _manager.RenderMesh();
-                    }
-                }
-                else
-                    _manager.RenderMesh();
+            //                mr.Bind(ctx, _programHandle);
+            //            }
+            //            GL.BindVertexArray(_manager._arrayHandle);
+            //            _manager.RenderMesh();
+            //        }
+            //    }
+            //    else
+            //        _manager.RenderMesh();
 
-                _manager.DetachStreamsNew();
-            }
-            else
+            //    _manager.DetachStreamsNew();
+            //}
+            //else
             {
                 GL.Enable(EnableCap.Texture2D);
                 _manager.PrepareStream();
@@ -1295,6 +1353,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                             GL.CullFace(CullFaceMode.FrontAndBack);
                             break;
                     }
+
+                    //if (material.EnableBlend)
+                    //{
+                    //    GL.Enable(EnableCap.Blend);
+                    //}
+                    //else
+                    //    GL.Disable(EnableCap.Blend);
 
                     if (material.Children.Count == 0)
                     {
@@ -1324,7 +1389,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                             GL.MatrixMode(MatrixMode.Modelview);
 
-                            mr.Bind(ctx, _programHandle);
+                            mr.Bind(ctx, -1);
 
                             _manager.ApplyTexture(mr);
                             _manager.RenderMesh();
@@ -1350,44 +1415,28 @@ namespace BrawlLib.SSBB.ResourceNodes
             Vector3 min, max;
             GetBox(out min, out max);
 
+            GL.Begin(BeginMode.LineStrip);
+            GL.Vertex3(max._x, max._y, max._z);
+            GL.Vertex3(max._x, max._y, min._z);
+            GL.Vertex3(min._x, max._y, min._z);
+            GL.Vertex3(min._x, min._y, min._z);
+            GL.Vertex3(min._x, min._y, max._z);
+            GL.Vertex3(max._x, min._y, max._z);
+            GL.Vertex3(max._x, max._y, max._z);
+            GL.End();
             GL.Begin(BeginMode.Lines);
-
-            GL.Vertex3(min._x, min._y, min._z);
-            GL.Vertex3(max._x, min._y, min._z);
-
-            GL.Vertex3(min._x, min._y, min._z);
-            GL.Vertex3(min._x, max._y, min._z);
-
-            GL.Vertex3(min._x, min._y, min._z);
-            GL.Vertex3(min._x, min._y, max._z);
-
-            GL.Vertex3(max._x, max._y, max._z);
-            GL.Vertex3(max._x, max._y, min._z);
-
+            GL.Vertex3(min._x, max._y, max._z);
             GL.Vertex3(max._x, max._y, max._z);
             GL.Vertex3(min._x, max._y, max._z);
-
-            GL.Vertex3(max._x, max._y, max._z);
-            GL.Vertex3(max._x, min._y, max._z);
-
-            GL.Vertex3(max._x, min._y, max._z);
-            GL.Vertex3(min._x, min._y, max._z);
-
-            GL.Vertex3(max._x, min._y, max._z);
-            GL.Vertex3(max._x, min._y, min._z);
-
-            GL.Vertex3(min._x, max._y, min._z);
-            GL.Vertex3(min._x, max._y, max._z);
-
-            GL.Vertex3(min._x, max._y, min._z);
-            GL.Vertex3(max._x, max._y, min._z);
-
             GL.Vertex3(min._x, min._y, max._z);
             GL.Vertex3(min._x, max._y, max._z);
-
+            GL.Vertex3(min._x, max._y, min._z);
+            GL.Vertex3(max._x, min._y, min._z);
+            GL.Vertex3(min._x, min._y, min._z);
             GL.Vertex3(max._x, min._y, min._z);
             GL.Vertex3(max._x, max._y, min._z);
-
+            GL.Vertex3(max._x, min._y, min._z);
+            GL.Vertex3(max._x, min._y, max._z);
             GL.End();
         }
 
@@ -1396,35 +1445,39 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string vertexShaderSource;
         public int vertexShaderHandle;
 
-        internal void WeightVertices() { _manager.Weight(); }
+        internal void WeightVertices() 
+        {
+            if (_manager != null) 
+                _manager.Weight();
+        }
 
         internal override void Bind(TKContext ctx) 
         {
             _render = (_bone != null ? _bone._flags1.HasFlag(BoneFlags.Visible) ? true : false : true);
 
-            if (ctx != null && ctx._shadersEnabled)
-            {
-                vertexShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.VertexShader);
-                _fragShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
+            //if (ctx != null && ctx._shadersEnabled)
+            //{
+            //    vertexShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.VertexShader);
+            //    _fragShaderHandle = GL.CreateShader(OpenTK.Graphics.OpenGL.ShaderType.FragmentShader);
 
-                _renderUpdate = true;
+            //    _renderUpdate = true;
 
-                if (_manager != null)
-                    _manager.Bind();
-            }
+            //    if (_manager != null)
+            //        _manager.Bind();
+            //}
         }
         internal override void Unbind() 
         {
             _render = false;
 
-            if (vertexShaderHandle != 0)
-                GL.DeleteShader(vertexShaderHandle);
+            //if (vertexShaderHandle != 0)
+            //    GL.DeleteShader(vertexShaderHandle);
 
-            if (_fragShaderHandle != 0)
-                GL.DeleteShader(_fragShaderHandle);
+            //if (_fragShaderHandle != 0)
+            //    GL.DeleteShader(_fragShaderHandle);
 
-            if (_programHandle != 0)
-                GL.DeleteProgram(_programHandle);
+            //if (_programHandle != 0)
+            //    GL.DeleteProgram(_programHandle);
 
             if (_manager != null)
                 _manager.Unbind();

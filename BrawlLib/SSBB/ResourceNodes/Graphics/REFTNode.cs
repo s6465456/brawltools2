@@ -9,6 +9,7 @@ using BrawlLib.Imaging;
 using System.Drawing;
 using BrawlLib.IO;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -129,7 +130,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal uint _magFltr;
 
         [Browsable(false)]
-        public bool hasPlt { get { return Header->_colorCount > 0; } }
+        public bool HasPlt { get { return Header->_colorCount > 0; } }
 
         //[Category("REFT Image")]
         //public uint Unknown { get { return _unk; } }
@@ -167,7 +168,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             try
             {
-                if (hasPlt == true)
+                if (HasPlt == true)
                     return TextureConverter.DecodeIndexed((byte*)Header + 0x20, Width, Height, Palette, index + 1, _format);
                 else
                     return TextureConverter.Decode((byte*)Header + 0x20, Width, Height, index + 1, _format);
@@ -182,7 +183,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public ColorPalette Palette
         {
-            get { return hasPlt ? _palette == null ? _palette = TextureConverter.DecodePalette((VoidPtr)((byte*)Header + 0x20 + Header->_imagelen), Colors, _pltFormat) : _palette : null; }
+            get { return HasPlt ? _palette == null ? _palette = TextureConverter.DecodePalette((VoidPtr)((byte*)Header + 0x20 + Header->_imagelen), Colors, _pltFormat) : _palette : null; }
             set { _palette = value; SignalPropertyChange(); }
         }
 
@@ -194,9 +195,18 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public string PrimaryColorName(int id) { return null; }
         [Browsable(false)]
+        public int TypeCount { get { return 1; } }
+        [Browsable(false)]
         public int ColorCount(int id) { return Palette != null ? Palette.Entries.Length : 0; }
         public ARGBPixel GetColor(int index, int id) { return Palette != null ? (ARGBPixel)Palette.Entries[index] : new ARGBPixel(); }
         public void SetColor(int index, int id, ARGBPixel color) { if (Palette != null) { Palette.Entries[index] = (Color)color; SignalPropertyChange(); } }
+        public bool GetClrConstant(int id)
+        {
+            return false;
+        }
+        public void SetClrConstant(int id, bool constant)
+        {
+        }
 
         #endregion
 
@@ -219,11 +229,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
-        //public void Replace(Bitmap bmp)
-        //{
-        //    ReplaceRaw(TextureConverter.Get(_format).EncodeREFTTexture(bmp, 1, PaletteFormat, _format == WiiPixelFormat.CI4 || _format == WiiPixelFormat.CI8));
-        //}
-
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
@@ -235,7 +240,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void Replace(Bitmap bmp)
         {
             FileMap tMap;
-            if (hasPlt)
+            if (HasPlt)
                 tMap = TextureConverter.Get(_format).EncodeREFTTextureIndexed(bmp, LevelOfDetail, Palette.Entries.Length, PaletteFormat, QuantizationAlgorithm.MedianCut);
             else
                 tMap = TextureConverter.Get(_format).EncodeREFTTexture(bmp, LevelOfDetail, WiiPaletteFormat.IA8);
@@ -244,14 +249,18 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override unsafe void Replace(string fileName)
         {
+            string ext = Path.GetExtension(fileName);
             Bitmap bmp;
-            if (fileName.EndsWith(".tga"))
+            if (String.Equals(ext, ".tga", StringComparison.OrdinalIgnoreCase))
                 bmp = TGA.FromFile(fileName);
-            else if (fileName.EndsWith(".png") ||
-                fileName.EndsWith(".tiff") || fileName.EndsWith(".tif") ||
-                fileName.EndsWith(".bmp") ||
-                fileName.EndsWith(".jpg") || fileName.EndsWith(".jpeg") ||
-                fileName.EndsWith(".gif"))
+            else if (
+                String.Equals(ext, ".png", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".tif", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".tiff", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".bmp", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".jpg", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".gif", StringComparison.OrdinalIgnoreCase))
                 bmp = (Bitmap)Bitmap.FromFile(fileName);
             else
             {

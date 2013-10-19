@@ -13,83 +13,122 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefDataCommonNode : MoveDefEntryNode
+    public unsafe class MoveDefDataCommonNode : SectionEntry
     {
-        internal CommonMovesetHeader* Header { get { return (CommonMovesetHeader*)WorkingUncompressed.Address; } }
+        CommonMovesetHeader hdr;
+        
+        [Category("Data Offsets")]
+        public int GlobalICBasics { get { return hdr.GlobalICs; } }
+        [Category("Data Offsets")]
+        public int GlobalICBasicsSSE { get { return hdr.SSEGlobalICs; } }
+        [Category("Data Offsets")]
+        public int ICBasics { get { return hdr.ICs; } }
+        [Category("Data Offsets")]
+        public int ICBasicsSSE { get { return hdr.SSEICs; } }
+        [Category("Data Offsets")]
+        public int EntryActions { get { return hdr.EntryActions; } }
+        [Category("Data Offsets")]
+        public int ExitActions { get { return hdr.ExitActions; } }
+        [Category("Data Offsets")]
+        public int FlashOverlaysList { get { return hdr.FlashOverlayArray; } }
+        [Category("Data Offsets")]
+        public int Unk7 { get { return hdr.Unknown7; } }
+        [Category("Data Offsets")]
+        public int Unk8 { get { return hdr.Unknown8; } }
+        [Category("Data Offsets")]
+        public int Unk9 { get { return hdr.Unknown9; } }
+        [Category("Data Offsets")]
+        public int Unk10 { get { return hdr.Unknown10; } }
+        [Category("Data Offsets")]
+        public int Unk11 { get { return hdr.Unknown11; } }
+        [Category("Data Offsets")]
+        public int Unk12 { get { return hdr.Unknown12; } }
+        [Category("Data Offsets")]
+        public int Unk13 { get { return hdr.Unknown13; } }
+        [Category("Data Offsets")]
+        public int Unk14 { get { return hdr.Unknown14; } }
+        [Category("Data Offsets")]
+        public int Unk15 { get { return hdr.Unknown15; } }
+        [Category("Data Offsets")]
+        public int Unk16 { get { return hdr.Unknown16; } }
+        [Category("Data Offsets")]
+        public int Unk17 { get { return hdr.Unknown17; } }
+        [Category("Data Offsets")]
+        public int RGBAColor { get { return hdr.Unknown18; } }
+        [Category("Data Offsets")]
+        public int FlashOverlays { get { return hdr.Unknown19; } }
+        [Category("Data Offsets")]
+        public int ScreenTints { get { return hdr.ScreenTints; } }
+        [Category("Data Offsets")]
+        public int LegBoneNames { get { return hdr.LegBones; } }
+        [Category("Data Offsets")]
+        public int Unk22 { get { return hdr.Unknown22; } }
+        [Category("Data Offsets")]
+        public int Unk23 { get { return hdr.Unknown23; } }
+        [Category("Data Offsets")]
+        public int Unk24 { get { return hdr.Unknown24; } }
+        [Category("Data Offsets")]
+        public int Unk25 { get { return hdr.Unknown25; } }
 
-        public List<SpecialOffset> specialOffsets = new List<SpecialOffset>();
-        internal uint DataLen;
+        public List<CommonAction> _flashOverlays, _screenTints;
 
-        [Category("Data Offsets")]
-        public int GlobalICBasics { get { return Header->GlobalICs; } }
-        [Category("Data Offsets")]
-        public int GlobalICBasicsSSE { get { return Header->SSEGlobalICs; } }
-        [Category("Data Offsets")]
-        public int ICBasics { get { return Header->ICs; } }
-        [Category("Data Offsets")]
-        public int ICBasicsSSE { get { return Header->SSEICs; } }
-        [Category("Data Offsets")]
-        public int EntryActions { get { return Header->EntryActions; } }
-        [Category("Data Offsets")]
-        public int ExitActions { get { return Header->ExitActions; } }
-        [Category("Data Offsets")]
-        public int FlashOverlaysList { get { return Header->FlashOverlayArray; } }
-        [Category("Data Offsets")]
-        public int Unk7 { get { return Header->Unknown7; } }
-        [Category("Data Offsets")]
-        public int Unk8 { get { return Header->Unknown8; } }
-        [Category("Data Offsets")]
-        public int Unk9 { get { return Header->Unknown9; } }
-        [Category("Data Offsets")]
-        public int Unk10 { get { return Header->Unknown10; } }
-        [Category("Data Offsets")]
-        public int Unk11 { get { return Header->Unknown11; } }
-        [Category("Data Offsets")]
-        public int Unk12 { get { return Header->Unknown12; } }
-        [Category("Data Offsets")]
-        public int Unk13 { get { return Header->Unknown13; } }
-        [Category("Data Offsets")]
-        public int Unk14 { get { return Header->Unknown14; } }
-        [Category("Data Offsets")]
-        public int Unk15 { get { return Header->Unknown15; } }
-        [Category("Data Offsets")]
-        public int Unk16 { get { return Header->Unknown16; } }
-        [Category("Data Offsets")]
-        public int Unk17 { get { return Header->Unknown17; } }
-        [Category("Data Offsets")]
-        public int RGBAColor { get { return Header->Unknown18; } }
-        [Category("Data Offsets")]
-        public int FlashOverlays { get { return Header->Unknown19; } }
-        [Category("Data Offsets")]
-        public int ScreenTints { get { return Header->ScreenTints; } }
-        [Category("Data Offsets")]
-        public int LegBoneNames { get { return Header->LegBones; } }
-        [Category("Data Offsets")]
-        public int Unk22 { get { return Header->Unknown22; } }
-        [Category("Data Offsets")]
-        public int Unk23 { get { return Header->Unknown23; } }
-        [Category("Data Offsets")]
-        public int Unk24 { get { return Header->Unknown24; } }
-        [Category("Data Offsets")]
-        public int Unk25 { get { return Header->Unknown25; } }
-
-        [Category("Special Offsets Node")]
-        public SpecialOffset[] Offsets { get { return specialOffsets.ToArray(); } }
-
-        public MoveDefDataCommonNode(uint dataLen, string name) { DataLen = dataLen; _name = name; }
-
-        public MoveDefActionsSkipNode _flashOverlay, _screenTint;
-
-        public override bool OnInitialize()
+        public RawParamList _globalICs;
+        public RawParamList _globalsseICs;
+        public RawParamList _ICs;
+        public RawParamList _sseICs;
+        
+        public override void Parse(VoidPtr address)
         {
-            base.OnInitialize();
-            bint* current = (bint*)Header;
-            for (int i = 0; i < 25; i++)
-                specialOffsets.Add(new SpecialOffset() { Index = i, Offset = *current++ });
-            CalculateDataLen();
+            hdr = *(CommonMovesetHeader*)address;
+            bint* h = (bint*)address;
+            for (int x = 0; x < 27; x++)
+            {
+                if (h[x] > 0)
+                    switch (x)
+                    {
+                        case 0:
+                            _globalICs = Parse<RawParamList>(_root, h[x]);
+                            break;
+                        case 1:
+                            _globalsseICs = Parse<RawParamList>(_root, h[x]);
+                            break;
+                        case 2:
+                            _ICs = Parse<RawParamList>(_root, h[x]);
+                            break;
+                        case 3:
+                            _sseICs = Parse<RawParamList>(_root, h[x]);
+                            break;
+                        case 4:
+                        case 5:
+                            int i = x - 4;
 
-            return true;
+                            break;
+                        case 6:
+                            break;
+                        case 7:
+                            break;
+                        case 8:
+
+                            break;
+                        case 9:
+
+                            break;
+                        case 10:
+
+                            break;
+
+                        case 20: //Screen tints
+
+                            break;
+                    }
+                for (int i = 0; i < WorkingUncompressed.Length / 8; i++)
+                {
+                    ActionOffsets.Add(h[i * 2]);
+                    Flags.Add(h[i * 2 + 1]);
+                }
+            }
         }
+
         public VoidPtr dataHeaderAddr;
         public override void OnPopulate()
         {
@@ -124,7 +163,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         //Value at 0x64 in Global IC-Basics is not an IC; it is the offset to Unknown32's data.
                         //Value at 0x72C in IC-Basics is not an IC; it is the value of Params24.
 
-                        new MoveDefSectionParamNode(r) { _name = name }.Initialize(this, BaseAddress + s.Offset, 0);
+                        new RawParamList(r) { _name = name }.Initialize(this, BaseAddress + s.Offset, 0);
                     }
                     r++;
                 }
@@ -134,28 +173,28 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //    new MoveDefActionsNode("Flash Overlay Actions") { offsetID = 6 }.Initialize(this, BaseAddress + specialOffsets[6].Offset, 0);
 
                 if (specialOffsets[7].Size != 0)
-                    new MoveDefCommonUnk7ListNode() { _name = "Unknown7", offsetID = 7 }.Initialize(this, BaseAddress + specialOffsets[7].Offset, 0);
+                    new MoveDefCommonUnk7ListNode() { _name = "Unknown7", _offsetID = 7 }.Initialize(this, BaseAddress + specialOffsets[7].Offset, 0);
 
                 if (specialOffsets[11].Size != 0)
-                    new MoveDefUnk11Node() { _name = "Unknown11", offsetID = 11 }.Initialize(this, BaseAddress + specialOffsets[11].Offset, 0);
+                    new MoveDefUnk11Node() { _name = "Unknown11", _offsetID = 11 }.Initialize(this, BaseAddress + specialOffsets[11].Offset, 0);
 
                 if (specialOffsets[19].Size != 0)
-                    (_flashOverlay = new MoveDefActionsSkipNode("Flash Overlay Actions") { offsetID = 19 }).Initialize(this, BaseAddress + specialOffsets[19].Offset, 0);
+                    (_flashOverlay = new MoveDefActionsSkipNode("Flash Overlay Actions") { _offsetID = 19 }).Initialize(this, BaseAddress + specialOffsets[19].Offset, 0);
 
                 if (specialOffsets[20].Size != 0)
-                    (_screenTint = new MoveDefActionsSkipNode("Screen Tint Actions") { offsetID = 20 }).Initialize(this, BaseAddress + specialOffsets[20].Offset, 0);
+                    (_screenTint = new MoveDefActionsSkipNode("Screen Tint Actions") { _offsetID = 20 }).Initialize(this, BaseAddress + specialOffsets[20].Offset, 0);
 
                 if (specialOffsets[21].Size != 0)
-                    new MoveDefCommonUnk21Node() { offsetID = 21 }.Initialize(this, BaseAddress + specialOffsets[21].Offset, 0);
+                    new MoveDefCommonUnk21Node() { _offsetID = 21 }.Initialize(this, BaseAddress + specialOffsets[21].Offset, 0);
 
                 if (specialOffsets[22].Size != 0)
-                    new MoveDefParamListNode() { _name = "Unknown22", offsetID = 22 }.Initialize(this, BaseAddress + specialOffsets[22].Offset, 0);
+                    new MoveDefParamListNode() { _name = "Unknown22", _offsetID = 22 }.Initialize(this, BaseAddress + specialOffsets[22].Offset, 0);
 
                 if (specialOffsets[23].Size != 0)
-                    new MoveDefParamsOffsetNode() { _name = "Unknown23", offsetID = 23 }.Initialize(this, BaseAddress + specialOffsets[23].Offset, 0);
+                    new MoveDefParamsOffsetNode() { _name = "Unknown23", _offsetID = 23 }.Initialize(this, BaseAddress + specialOffsets[23].Offset, 0);
 
                 if (specialOffsets[17].Size != 0)
-                    new MoveDefPatternPowerMulNode() { _name = "Unknown17", offsetID = 17 }.Initialize(this, BaseAddress + specialOffsets[17].Offset, 0);
+                    new MoveDefPatternPowerMulNode() { _name = "Unknown17", _offsetID = 17 }.Initialize(this, BaseAddress + specialOffsets[17].Offset, 0);
 
                 if (specialOffsets[4].Size != 0 || specialOffsets[5].Size != 0)
                 {
@@ -170,7 +209,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     
                     //Set up groups
                     for (int i = 0; i < count; i++)
-                        actions.AddChild(new MoveDefActionGroupNode() { _name = "Action" + i }, false);
+                        actions.AddChild(new ActionGroup() { _name = "Action" + i }, false);
 
                     //Add children
                     for (int i = 0; i < 2; i++)
@@ -180,7 +219,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     //Add to children (because the parent was set before initialization)
                     Children.Add(actions);
 
-                    Root._actions = actions;
+                    _root._actions = actions;
                 }
             //}
             #endregion
@@ -230,15 +269,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //        g.Children.Add(new MoveDefGroupNode() { _name = "Extra" + i, _parent = g });
 
                 if (offset > 0)
-                    new MoveDefActionNode(innerName, false, g.Children[i]).Initialize(g.Children[i], new DataSource(BaseAddress + offset, 0));
+                    new ActionScript(innerName, false, g.Children[i]).Initialize(g.Children[i], new DataSource(BaseAddress + offset, 0));
                 else
-                    g.Children[i].Children.Add(new MoveDefActionNode(innerName, true, g.Children[i]));
+                    g.Children[i].Children.Add(new ActionScript(innerName, true, g.Children[i]));
                 i++;
             }
         }
     }
 
-    public unsafe class MoveDefCommonUnk21Node : MoveDefEntryNode
+    public unsafe class MoveDefCommonUnk21Node : MoveDefEntry
     {
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         internal int i = 0;
@@ -262,9 +301,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnPopulate()
         {
             if (DataOffset1 > 0)
-                new MoveDefRawDataNode("Left") { offsetID = 0 }.Initialize(this, BaseAddress + DataOffset1, 0);
+                new MoveDefRawDataNode("Left") { _offsetID = 0 }.Initialize(this, BaseAddress + DataOffset1, 0);
             if (DataOffset2 > 0)
-                new MoveDefRawDataNode("Right") { offsetID = 1 }.Initialize(this, BaseAddress + DataOffset2, 0);
+                new MoveDefRawDataNode("Right") { _offsetID = 1 }.Initialize(this, BaseAddress + DataOffset2, 0);
 
             foreach (MoveDefRawDataNode d in Children)
             {
@@ -299,14 +338,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             FDefListOffset* header = (FDefListOffset*)addr;
             foreach (MoveDefHitDataListNode d in Children)
             {
-                (&header[d.offsetID])->_listCount = d.Children.Count;
-                (&header[d.offsetID])->_startOffset = (int)d._rebuildAddr - (int)RebuildBase;
-                _lookupOffsets.Add((&header[d.offsetID])->_startOffset.Address);
+                (&header[d._offsetID])->_listCount = d.Children.Count;
+                (&header[d._offsetID])->_startOffset = (int)d._rebuildAddr - (int)RebuildBase;
+                _lookupOffsets.Add((&header[d._offsetID])->_startOffset.Address);
             }
         }
     }
 
-    public unsafe class MoveDefCommonUnk7ListNode : MoveDefEntryNode
+    public unsafe class MoveDefCommonUnk7ListNode : MoveDefEntry
     {
         internal FDefCommonUnk7Entry* First { get { return (FDefCommonUnk7Entry*)WorkingUncompressed.Address; } }
 
@@ -337,7 +376,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefCommonUnk7EntryNode : MoveDefEntryNode
+    public unsafe class MoveDefCommonUnk7EntryNode : MoveDefEntry
     {
         internal FDefCommonUnk7Entry* Header { get { return (FDefCommonUnk7Entry*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -391,7 +430,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefCommonUnk7EntryListEntryNode : MoveDefEntryNode
+    public unsafe class MoveDefCommonUnk7EntryListEntryNode : MoveDefEntry
     {
         internal FDefCommonUnk7EntryListEntry* Header { get { return (FDefCommonUnk7EntryListEntry*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
@@ -430,7 +469,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefUnk11Node : MoveDefEntryNode
+    public unsafe class MoveDefUnk11Node : MoveDefEntry
     {
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         internal int i = 0;
@@ -457,7 +496,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _lookupCount = (Children.Count > 0 ? 1 : 0);
             _entryLength = 8;
             _childLength = 0;
-            foreach (MoveDefSectionParamNode p in Children)
+            foreach (RawParamList p in Children)
                 _childLength += p.CalculateSize(true);
             return _entryLength + _childLength;
         }
@@ -465,7 +504,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address;
-            foreach (MoveDefSectionParamNode p in Children)
+            foreach (RawParamList p in Children)
             {
                 p.Rebuild(addr, p._calcSize, true);
                 addr += p._calcSize;
@@ -481,7 +520,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefUnk11EntryNode : MoveDefEntryNode
+    public unsafe class MoveDefUnk11EntryNode : MoveDefEntry
     {
         internal FDefCommonUnk11Entry* Header { get { return (FDefCommonUnk11Entry*)WorkingUncompressed.Address; } }
         internal int unk;
@@ -507,7 +546,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefActionsSkipNode : MoveDefEntryNode
+    public unsafe class MoveDefActionsSkipNode : MoveDefEntry
     {
         internal buint* Header { get { return (buint*)WorkingUncompressed.Address; } }
 
@@ -533,9 +572,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (int offset in ActionOffsets)
             {
                 if (offset > 0)
-                    new MoveDefCommonActionNode("Action" + i, false, this, Flags[i]).Initialize(this, new DataSource(BaseAddress + offset, 0));
+                    new CommonAction("Action" + i, false, this, Flags[i]).Initialize(this, new DataSource(BaseAddress + offset, 0));
                 else
-                    Children.Add(new MoveDefCommonActionNode("Action" + i, true, this, Flags[i]));
+                    Children.Add(new CommonAction("Action" + i, true, this, Flags[i]));
 
                 i++;
             }
@@ -558,11 +597,11 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnPopulate()
         {
-            new MoveDefSectionParamNode(0) { _name = "Data" }.Initialize(this, BaseAddress + DataOffset, 168);
+            new RawParamList(0) { _name = "Data" }.Initialize(this, BaseAddress + DataOffset, 168);
         }
     }
 
-    public unsafe class MoveDefCommonActionNode : MoveDefActionNode
+    public unsafe class CommonAction : ActionScript
     {
         public byte Unk1 { get { return _unk1; } set { _unk1 = value; SignalPropertyChange(); } }
         [TypeConverter(typeof(Bin8StringConverter))]
@@ -572,7 +611,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         public byte _unk1, _unk2, _unk3, _unk4;
 
-        public MoveDefCommonActionNode(string name, bool blank, ResourceNode parent, uint flags) : base(name, blank, parent) 
+        public CommonAction(string name, bool blank, ResourceNode parent, uint flags) : base(name, blank, parent) 
         {
             _unk1 = (byte)((flags >> 24) & 0xFF);
             _unk2 = (byte)((flags >> 16) & 0xFF);

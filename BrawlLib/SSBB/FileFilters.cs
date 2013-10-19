@@ -10,34 +10,35 @@ namespace BrawlLib
             "Tagged Image File Format (*.tif, *.tiff)|*.tif;*.tiff|" +
             "Bitmap (*.bmp)|*.bmp|" +
             "Jpeg (*.jpg,*.jpeg)|*.jpg;*.jpeg|" +
-            "Gif (*.gif)|*.gif|";
+            "Gif (*.gif)|*.gif";
 
         public static string TEX0 =
             "All Image Formats (*.png,*.tga,*.tif,*.tiff,*.bmp,*.jpg,*.jpeg,*.gif,*.tex0)|*.png;*.tga;*.tif;*.tiff;*.bmp;*.jpg;*.jpeg,*.gif;*.tex0|" +
-            i +
-            "TEX0 Raw Texture (*.tex0)|*.tex0";
+            i + "|" +
+            "TEX0 Texture (*.tex0)|*.tex0";
 
         public static string MDL0Import =
-            "All Model Formats (*.mdl0, *.pmd, *.dae)|*.mdl0;*.pmd;*.dae|" +
+            "All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             "Collada Scene (*.dae)|*.dae|" +
-            "MMD Model (*.pmd)|*.pmd|" +
-            "MDL0 Raw Model (*.mdl0)|*.mdl0";
+            //"MMD Model (*.pmd)|*.pmd|" +
+            "MDL0 Model (*.mdl0)|*.mdl0";
         
         public static string MDL0Export =
             "All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
             "Collada Scene (*.dae)|*.dae|" +
-            "MDL0 Raw Model (*.mdl0)|*.mdl0";
+            "MDL0 Model (*.mdl0)|*.mdl0";
 
         public static string CHR0 =
-            "All Formats (*.chr0, *.dae)|*.chr0;*.dae|" +
-            "CHR0 Raw Animation (*.chr0)|*.chr0|" +
-            "Collada Scene (*.dae)|*.dae";
+            "All Formats (*.chr0, *.anim)|*.chr0;*.anim|" +
+            "CHR0 Animation (*.chr0)|*.chr0|" +
+            "Maya Animation (*.anim)|*.anim";
+            //"Collada Scene (*.dae)|*.dae";
 
         public static string PLT0 =
-            "PLT0 Raw Palette (*.plt0)|*.plt0";
+            "PLT0 Palette (*.plt0)|*.plt0";
 
         public static string PAT0 =
-            "PAT0 Raw Texture Pattern (*.pat0)|*.pat0";
+            "PAT0 Texture Pattern (*.pat0)|*.pat0";
 
         public static string MSBin =
             "MSBin Message List (*.msbin)|*.msbin";
@@ -47,7 +48,7 @@ namespace BrawlLib
 
         public static string RSTM =
             "All Audio Formats (*.brstm, *.wav)|*.brstm;*.wav|" +
-            "BRSTM Raw Audio (*.brstm)|*.brstm|" + 
+            "BRSTM Audio (*.brstm)|*.brstm|" + 
             "Uncompressed PCM (*.wav)|*.wav";
 
         public static string RWSD =
@@ -91,7 +92,10 @@ namespace BrawlLib
             "Collision Definition (*.coll)|*.coll";
 
         public static string REL =
-            "REL (*.rel)|*.rel";
+            "Relocatable Module (*.rel)|*.rel";
+
+        public static string DOL =
+            "Static Module (*.dol)|*.dol";
 
         public static string Object =
             "Object (*.obj)|*.obj|" +
