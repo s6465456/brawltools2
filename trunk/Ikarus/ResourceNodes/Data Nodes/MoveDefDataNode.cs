@@ -14,10 +14,8 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefDataNode : MoveDefEntryNode
+    public unsafe class MoveDefDataNode : SectionEntry
     {
-        internal MovesetHeader* Header { get { return (MovesetHeader*)WorkingUncompressed.Address; } }
-
         public List<SpecialOffset> specialOffsets = new List<SpecialOffset>();
         internal uint DataLen;
 
@@ -122,6 +120,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public MoveDefBoneIndicesNode boneRef1;
         public MoveDefBoneRef2Node boneRef2;
 
+        public List<SubActionGroup> _subActions;
+
         //Character Specific Nodes
         //Popo
         public MoveDefActionListNode nanaSubActions;
@@ -134,8 +134,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Wario6 warioParams6;
         public int warioSwing4StringOffset = -1;
 
-        public List<MoveDefEntryNode> _extraEntries;
-        public SortedList<int, MoveDefEntryNode> _articles;
+        public List<MoveDefEntry> _extraEntries;
+        public SortedList<int, MoveDefEntry> _articles;
 
         public override bool OnInitialize()
         {
@@ -144,9 +144,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             flags1 = Header->Flags1;
             flags2 = Header->Flags2;
             hdr = *Header;
-            _extraEntries = new List<MoveDefEntryNode>();
-            _articles = new SortedList<int, MoveDefEntryNode>();
-            //base.OnInitialize();
+            _extraEntries = new List<MoveDefEntry>();
+            _articles = new SortedList<int, MoveDefEntry>();
+            
             bint* current = (bint*)Header;
             for (int i = 0; i < 27; i++)
                 specialOffsets.Add(new SpecialOffset() { Index = i, Offset = (*(current++) + (i == 2 ? 1 : 0)) });
@@ -186,9 +186,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
 
             if (specialOffsets[4].Size != 0)
-                (_misc = new MoveDefMiscNode("Misc Section") { offsetID = 4 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[4].Offset, 0));
+                (_misc = new MoveDefMiscNode("Misc Section") { _offsetID = 4 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[4].Offset, 0));
 
-            CharFolder character = (CharFolder)(int)Root._character;
+            CharFolder character = (CharFolder)(int)_root._character;
 
             //The only way to compute the amount of extra offsets is broken by PSA.
             //Using the exact amount will work for now until REL editing is available.
@@ -261,15 +261,15 @@ namespace BrawlLib.SSBB.ResourceNodes
             //        ExtraDataOffsets._count = (Size - 124) / 4; break;
             //}
 
-            (_attributes = new MoveDefAttributeNode("Attributes") { offsetID = 2 }).Initialize(this, new DataSource(BaseAddress + 0, 0x2E4));
-            (_sseAttributes = new MoveDefAttributeNode("SSE Attributes") { offsetID = 3 }).Initialize(this, new DataSource(BaseAddress + 0x2E4, 0x2E4));
+            (_attributes = new MoveDefAttributeNode("Attributes") { _offsetID = 2 }).Initialize(this, new DataSource(BaseAddress + 0, 0x2E4));
+            (_sseAttributes = new MoveDefAttributeNode("SSE Attributes") { _offsetID = 3 }).Initialize(this, new DataSource(BaseAddress + 0x2E4, 0x2E4));
             if (specialOffsets[5].Size != 0)
-                (_commonActionFlags = new MoveDefActionFlagsNode("Common Action Flags", commonActionFlagsCount = ((Unknown7 - CommonActionFlagsStart) / 16)) { offsetID = 5 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[5].Offset, commonActionFlagsCount * 16));
+                (_commonActionFlags = new MoveDefActionFlagsNode("Common Action Flags", commonActionFlagsCount = ((Unknown7 - CommonActionFlagsStart) / 16)) { _offsetID = 5 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[5].Offset, commonActionFlagsCount * 16));
             if (specialOffsets[6].Size != 0)
-                (_actionFlags = new MoveDefActionFlagsNode("Action Flags", actionFlagsCount = ((EntryActionsStart - ActionFlagsStart) / 16)) { offsetID = 6 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[6].Offset, actionFlagsCount * 16));
+                (_actionFlags = new MoveDefActionFlagsNode("Action Flags", actionFlagsCount = ((EntryActionsStart - ActionFlagsStart) / 16)) { _offsetID = 6 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[6].Offset, actionFlagsCount * 16));
             totalActionCount = commonActionFlagsCount + actionFlagsCount;
             if (specialOffsets[7].Size != 0)
-                (_unk7 = new MoveDefUnk7Node(totalActionCount) { offsetID = 7 }).Initialize(this, BaseAddress + specialOffsets[7].Offset, totalActionCount * 8);
+                (_unk7 = new MoveDefUnk7Node(totalActionCount) { _offsetID = 7 }).Initialize(this, BaseAddress + specialOffsets[7].Offset, totalActionCount * 8);
             if (specialOffsets[9].Size != 0 || specialOffsets[10].Size != 0)
             {
                 int count;
@@ -278,15 +278,15 @@ namespace BrawlLib.SSBB.ResourceNodes
                 else
                     count = specialOffsets[9].Size / 4;
 
-                if (Root.GetSize(specialOffsets[10].Offset) != Root.GetSize(specialOffsets[9].Offset))
-                    Console.WriteLine(Root.GetSize(specialOffsets[10].Offset) + " " + Root.GetSize(specialOffsets[9].Offset));
+                if (_root.GetSize(specialOffsets[10].Offset) != _root.GetSize(specialOffsets[9].Offset))
+                    Console.WriteLine(_root.GetSize(specialOffsets[10].Offset) + " " + _root.GetSize(specialOffsets[9].Offset));
 
                 //Initialize using first offset so the node is sorted correctly
                 actions.Initialize(this, BaseAddress + specialOffsets[9].Offset, 0);
 
                 //Set up groups
                 for (int i = 0; i < count; i++)
-                    actions.AddChild(new MoveDefActionGroupNode() { _name = "Action" + (i + 274), offsetID = i }, false);
+                    actions.AddChild(new ActionGroup() { _name = "Action" + (i + 274), _offsetID = i }, false);
 
                 //Add children
                 for (int i = 0; i < 2; i++)
@@ -298,12 +298,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 //actions.Children.Sort(MoveDefEntryNode.ActionCompare);
 
-                Root._actions = actions;
+                _root._actions = actions;
             }
             if (specialOffsets[11].Size != 0)
                 (_actionPre = new MoveDefActionPreNode(totalActionCount)).Initialize(this, new DataSource(BaseAddress + specialOffsets[11].Offset, totalActionCount * 4));
             if (specialOffsets[0].Size != 0)
-                (_animFlags = new MoveDefFlagsNode() { offsetID = 0, _parent = this }).Initialize(this, BaseAddress + specialOffsets[0].Offset, specialOffsets[0].Size);
+                (_animFlags = new MoveDefFlagsNode() { _offsetID = 0, _parent = this }).Initialize(this, BaseAddress + specialOffsets[0].Offset, specialOffsets[0].Size);
             if (specialOffsets[12].Size != 0 || specialOffsets[13].Size != 0 || specialOffsets[14].Size != 0 || specialOffsets[15].Size != 0)
             {
                 string name;
@@ -325,7 +325,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         name = _animFlags._names[i];
                     else
                         name = "<null>";
-                    subActions.AddChild(new MoveDefSubActionGroupNode() { _name = name, _flags = _animFlags._flags[i]._Flags, _inTransTime = _animFlags._flags[i]._InTranslationTime }, false);
+                    subActions.AddChild(new SubActionGroup() { _name = name, _flags = _animFlags._flags[i]._Flags, _inTransTime = _animFlags._flags[i]._InTranslationTime }, false);
                 }
 
                 //Add children
@@ -336,34 +336,34 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Add to children (because the parent was set before initialization)
                 Children.Add(subActions);
 
-                Root._subActions = subActions;
+                _root._subActions = subActions;
             }
             if (specialOffsets[1].Size != 0)
-                (mdlVisibility = new MoveDefModelVisibilityNode() { offsetID = 1 }).Initialize(this, BaseAddress + specialOffsets[1].Offset, 0);
+                (mdlVisibility = new MoveDefModelVisibilityNode() { _offsetID = 1 }).Initialize(this, BaseAddress + specialOffsets[1].Offset, 0);
             if (specialOffsets[19].Size != 0)
-                (boneRef2 = new MoveDefBoneRef2Node() { offsetID = 19 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[19].Offset, 0));
+                (boneRef2 = new MoveDefBoneRef2Node() { _offsetID = 19 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[19].Offset, 0));
             if (specialOffsets[24].Size != 0)
-                (unk24 = new MoveDefUnk24Node() { offsetID = 24 }).Initialize(this, BaseAddress + specialOffsets[24].Offset, 8);
+                (unk24 = new MoveDefUnk24Node() { _offsetID = 24 }).Initialize(this, BaseAddress + specialOffsets[24].Offset, 8);
             if (specialOffsets[22].Size != 0)
-                (_unk22 = new MoveDefUnk22Node() { offsetID = 22 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[22].Offset, 0));
+                (_unk22 = new MoveDefUnk22Node() { _offsetID = 22 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[22].Offset, 0));
             if (specialOffsets[25].Size != 0)
-                (staticArticles = new MoveDefStaticArticleGroupNode() { _name = "Static Articles", offsetID = 25 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[25].Offset, 8));
+                (staticArticles = new MoveDefStaticArticleGroupNode() { _name = "Static Articles", _offsetID = 25 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[25].Offset, 8));
             if (specialOffsets[26].Size != 0)
-                (entryArticle = new MoveDefArticleNode() { Static = true, _name = "Entry Article", offsetID = 26 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[26].Offset, 0));
+                (entryArticle = new MoveDefArticleNode() { Static = true, _name = "Entry Article", _offsetID = 26 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[26].Offset, 0));
             if (specialOffsets[8].Size != 0)
-                (actionInterrupts = new MoveDefActionInterruptsNode() { offsetID = 8 }).Initialize(this, BaseAddress + specialOffsets[8].Offset, 8);
+                (actionInterrupts = new MoveDefActionInterruptsNode() { _offsetID = 8 }).Initialize(this, BaseAddress + specialOffsets[8].Offset, 8);
             if (specialOffsets[16].Size != 0)
-                (boneFloats1 = new MoveDefItemAnchorListNode() { _name = "Anchored Item Placements", offsetID = 16 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[16].Offset, 0));
+                (boneFloats1 = new MoveDefItemAnchorListNode() { _name = "Anchored Item Placements", _offsetID = 16 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[16].Offset, 0));
             if (specialOffsets[17].Size != 0)
-                (boneFloats2 = new MoveDefItemAnchorListNode() { _name = "Gooey Bomb Placements", offsetID = 17 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[17].Offset, 0));
+                (boneFloats2 = new MoveDefItemAnchorListNode() { _name = "Gooey Bomb Placements", _offsetID = 17 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[17].Offset, 0));
             if (specialOffsets[23].Size != 0)
-                (boneFloats3 = new MoveDefItemAnchorListNode() { _name = "Bone Floats 3", offsetID = 23 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[23].Offset, 0));
+                (boneFloats3 = new MoveDefItemAnchorListNode() { _name = "Bone Floats 3", _offsetID = 23 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[23].Offset, 0));
             if (specialOffsets[18].Size != 0)
-                (boneRef1 = new MoveDefBoneIndicesNode("Bone References", (_misc.BoneRefOffset - specialOffsets[18].Offset) / 4) { offsetID = 18 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[18].Offset, 0));
+                (boneRef1 = new MoveDefBoneIndicesNode("Bone References", (_misc.BoneRefOffset - specialOffsets[18].Offset) / 4) { _offsetID = 18 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[18].Offset, 0));
             if (specialOffsets[20].Size != 0)
-                (_override1 = new MoveDefActionOverrideNode() { offsetID = 20 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[20].Offset, 0));
+                (_override1 = new MoveDefActionOverrideNode() { _offsetID = 20 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[20].Offset, 0));
             if (specialOffsets[21].Size != 0)
-                (_override2 = new MoveDefActionOverrideNode() { offsetID = 21 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[21].Offset, 0));
+                (_override2 = new MoveDefActionOverrideNode() { _offsetID = 21 }).Initialize(this, new DataSource(BaseAddress + specialOffsets[21].Offset, 0));
 
             if (_articleGroup == null)
                 AddChild(_articleGroup = new MoveDefGroupNode() { _name = "Articles" });
@@ -699,9 +699,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             foreach (int offset in ActionOffsets)
             {
                 if (offset > 0)
-                    new MoveDefActionNode(name, false, g.Children[i]).Initialize(g.Children[i], new DataSource(BaseAddress + offset, 0));
+                    new ActionScript(name, false, g.Children[i]).Initialize(g.Children[i], new DataSource(BaseAddress + offset, 0));
                 else
-                    g.Children[i].Children.Add(new MoveDefActionNode(name, true, g.Children[i]));
+                    g.Children[i].Children.Add(new ActionScript(name, true, g.Children[i]));
                 i++;
 
                 if ((subactions && i == _animFlags._names.Count) || i == g.Children.Count)
@@ -724,7 +724,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override int OnCalculateSize(bool force)
         {
             zssFirstOffset = warioSwing4StringOffset = -1;
-            _entryLength = 124 + ExtraDataOffsets.GetOffsets(Root._character).Count * 4;
+            _entryLength = 124 + ExtraDataOffsets.GetOffsets(_root._character).Count * 4;
             _childLength = MoveDefNode.Builder.CalcDataSize(this);
             return (_entryLength + _childLength);
         }

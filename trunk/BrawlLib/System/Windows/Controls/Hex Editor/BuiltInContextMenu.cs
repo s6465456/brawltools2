@@ -24,7 +24,7 @@ namespace Be.Windows.Forms
         /// <summary>
         /// Contains the "Cut"-ToolStripMenuItem object.
         /// </summary>
-        ToolStripMenuItem _cutToolStripMenuItem;
+        //ToolStripMenuItem _cutToolStripMenuItem;
         /// <summary>
         /// Contains the "Copy"-ToolStripMenuItem object.
         /// </summary>
@@ -66,8 +66,8 @@ namespace Be.Windows.Forms
             if (this._contextMenuStrip == null)
             {
                 ContextMenuStrip cms = new ContextMenuStrip();
-                _cutToolStripMenuItem = new ToolStripMenuItem(CutMenuItemTextInternal, CutMenuItemImage, new EventHandler(CutMenuItem_Click));
-                cms.Items.Add(_cutToolStripMenuItem);
+                //_cutToolStripMenuItem = new ToolStripMenuItem(CutMenuItemTextInternal, CutMenuItemImage, new EventHandler(CutMenuItem_Click));
+                //cms.Items.Add(_cutToolStripMenuItem);
                 _copyToolStripMenuItem = new ToolStripMenuItem(CopyMenuItemTextInternal, CopyMenuItemImage, new EventHandler(CopyMenuItem_Click));
                 cms.Items.Add(_copyToolStripMenuItem);
                 _pasteToolStripMenuItem = new ToolStripMenuItem(PasteMenuItemTextInternal, PasteMenuItemImage, new EventHandler(PasteMenuItem_Click));
@@ -94,7 +94,7 @@ namespace Be.Windows.Forms
         /// <param name="e">the event data</param>
         void BuildInContextMenuStrip_Opening(object sender, CancelEventArgs e)
         {
-            _cutToolStripMenuItem.Enabled = this._hexBox.CanCut();
+            //_cutToolStripMenuItem.Enabled = this._hexBox.CanCut();
             _copyToolStripMenuItem.Enabled = this._hexBox.CanCopy();
             _pasteToolStripMenuItem.Enabled = this._hexBox.CanPaste();
             _selectAllToolStripMenuItem.Enabled = this._hexBox.CanSelectAll();

@@ -129,9 +129,9 @@
     <Compile Include="UI\MainForm.designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ResourceNodes\Actions\ActionEventNode.cs" />
-    <Compile Include="ResourceNodes\Actions\EventParameterNodes.cs" />
-    <Compile Include="ResourceNodes\Actions\MoveDefActionNode.cs" />
+    <Compile Include="ResourceNodes\Actions\Event.cs" />
+    <Compile Include="ResourceNodes\Actions\Parameter.cs" />
+    <Compile Include="ResourceNodes\Actions\Action.cs" />
     <Compile Include="ResourceNodes\Common Nodes\MoveDefDataCommonNode.cs" />
     <Compile Include="ResourceNodes\Common Nodes\MoveDefPatternPowerMulNode.cs" />
     <Compile Include="ResourceNodes\Data Nodes\DataActionFlags.cs" />
@@ -144,7 +144,6 @@
     <Compile Include="ResourceNodes\Data Nodes\DataBoneRef2Node.cs" />
     <Compile Include="ResourceNodes\Data Nodes\DataMdlVisNode.cs" />
     <Compile Include="ResourceNodes\Data Nodes\DataMiscNode.cs" />
-    <Compile Include="ResourceNodes\Data Nodes\DataReferenceNode.cs" />
     <Compile Include="ResourceNodes\Data Nodes\DataUnk22Node.cs" />
     <Compile Include="ResourceNodes\Data Nodes\DataUnk24Node.cs" />
     <Compile Include="ResourceNodes\Data Nodes\DataUnk7Node.cs" />

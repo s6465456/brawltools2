@@ -10,7 +10,7 @@ namespace Ikarus
     public interface OffsetHolder
     {
         void Parse(MoveDefDataNode node, VoidPtr address);
-        void Write(List<MoveDefEntryNode> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address);
+        void Write(List<MoveDefEntry> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address);
         int Count { get; }
     }
     public unsafe class ExtraDataOffsets
@@ -62,22 +62,22 @@ namespace Ikarus
                 Offsets* addr = (Offsets*)address;
                 for (int i = 0; i < 5; i++)
                 {
-                    MoveDefSectionParamNode d = new MoveDefSectionParamNode(i) { offsetID = i, isExtra = true };
+                    RawParamList d = new RawParamList(i) { _offsetID = i, isExtra = true };
                     d.Initialize(node, node.BaseAddress + addr->Entries[i], 0);
                 }
                 for (int i = 5; i < 10; i++)
                 {
-                    MoveDefArticleNode entry = new MoveDefArticleNode() { offsetID = i, isExtra = true, Static = true, extraOffset = true };
+                    MoveDefArticleNode entry = new MoveDefArticleNode() { _offsetID = i, isExtra = true, Static = true, extraOffset = true };
                     entry.Initialize(node._articleGroup, node.BaseAddress + addr->Entries[i], 0);
                     node._articles.Add(entry._offset, entry);
                 }
             }
 
-            public void Write(List<MoveDefEntryNode> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)
+            public void Write(List<MoveDefEntry> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)
             {
                 Offsets* addr = (Offsets*)address;
                 int i = 0;
-                foreach (MoveDefEntryNode e in entries)
+                foreach (MoveDefEntry e in entries)
                 {
                     addr->Entries[i] = (uint)e._rebuildAddr - (uint)basePtr;
                     lookup.Add(&addr->Entries[i++]);
@@ -124,21 +124,21 @@ namespace Ikarus
                 Offsets* addr = (Offsets*)address;
                 for (int i = 0; i < 7; i++)
                 {
-                    MoveDefSectionParamNode d = new MoveDefSectionParamNode(i) { offsetID = i, isExtra = true };
+                    RawParamList d = new RawParamList(i) { _offsetID = i, isExtra = true };
                     d.Initialize(node, node.BaseAddress + addr->Entries[i], 0);
                 }
                 for (int i = 11; i < 20; i++)
                 {
                     if (i != 12 && i != 14)
                     {
-                        MoveDefArticleNode entry = new MoveDefArticleNode() { offsetID = i, isExtra = true, Static = true, extraOffset = true };
+                        MoveDefArticleNode entry = new MoveDefArticleNode() { _offsetID = i, isExtra = true, Static = true, extraOffset = true };
                         entry.Initialize(node._articleGroup, node.BaseAddress + addr->Entries[i], 0);
                         node._articles.Add(entry._offset, entry);
                     }
                 }
             }
 
-            public void Write(List<MoveDefEntryNode> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)
+            public void Write(List<MoveDefEntry> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)
             {
 
             }
@@ -174,13 +174,13 @@ namespace Ikarus
                 Offsets* addr = (Offsets*)address;
                 for (int i = 4; i < 8; i++)
                 {
-                    MoveDefArticleNode entry = new MoveDefArticleNode() { offsetID = i, isExtra = true, Static = true, extraOffset = true };
+                    MoveDefArticleNode entry = new MoveDefArticleNode() { _offsetID = i, isExtra = true, Static = true, extraOffset = true };
                     entry.Initialize(node._articleGroup, node.BaseAddress + addr->Entries[i], 0);
                     node._articles.Add(entry._offset, entry);
                 }
             }
 
-            public void Write(List<MoveDefEntryNode> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)
+            public void Write(List<MoveDefEntry> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)
             {
 
             }
@@ -218,7 +218,7 @@ namespace Ikarus
 
             }
 
-            public void Write(List<MoveDefEntryNode> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)
+            public void Write(List<MoveDefEntry> entries, LookupManager lookup, VoidPtr basePtr, VoidPtr address)
             {
 
             }

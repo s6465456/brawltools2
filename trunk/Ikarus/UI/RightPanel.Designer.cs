@@ -74,7 +74,7 @@ namespace Ikarus.UI
             // pnlKeyframes
             // 
             this.pnlKeyframes.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlKeyframes.FrameCount = -1;
+            this.pnlKeyframes.FrameIndex = -1;
             this.pnlKeyframes.Location = new System.Drawing.Point(0, 0);
             this.pnlKeyframes.Name = "pnlKeyframes";
             this.pnlKeyframes.Size = new System.Drawing.Size(262, 484);

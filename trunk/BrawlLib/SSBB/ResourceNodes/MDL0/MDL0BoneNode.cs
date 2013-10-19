@@ -711,12 +711,18 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             CHR0EntryNode e;
 
-            if ((node == null) || (index == 0)) //Reset to bind pose
-                _frameState = _bindState;
-            else if ((e = node.FindChild(Name, false) as CHR0EntryNode) != null) //Set to anim pose
-                _frameState = new FrameState(e.GetAnimFrame(index - 1, linear));
-            else //Set to neutral pose
-                _frameState = _bindState;
+            _frameState = _bindState;
+
+            if (node != null && index > 0 && (e = node.FindChild(Name, false) as CHR0EntryNode) != null) //Set to anim pose
+                fixed (FrameState* v = &_frameState)
+                {
+                    float* f = (float*)v;
+                    for (int i = 0; i < 9; i++)
+                        if (e.Keyframes[(KeyFrameMode)(i + 0x10)] > 0)
+                            f[i] = e.GetFrameValue((KeyFrameMode)(i + 0x10), index - 1, linear, node.Loop);
+
+                    _frameState.CalcTransforms();
+                }
 
             foreach (MDL0BoneNode b in Children)
                 b.ApplyCHR0(node, index, linear);
@@ -771,5 +777,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         public Vector3 _overrideTranslate;
+
+        //public FrameState BindState 
+        //{
+        //    get { return _bindState; }
+        //    set
+        //    {
+        //        _bindState = value;
+        //        _bindState.CalcTransforms();
+        //        RecalcBindState();
+        //        SignalPropertyChange();
+
+        //        //Apply bindmatrix difference to vertex positions bound to only this bone
+        //    }
+        //}
     }
 }

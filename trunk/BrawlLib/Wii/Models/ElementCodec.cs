@@ -582,12 +582,15 @@ namespace BrawlLib.Wii.Models
                                 tIn = pAssets[pDef->Type] + (index * outSize);
                                 tOut = pOut[pDef->Type];
 
-                                //Copy data to output
-                                while (outSize-- > 0)
-                                    *tOut++ = *tIn++;
+                                if (tIn != null && tOut != null)
+                                {
+                                    //Copy data to output
+                                    while (outSize-- > 0)
+                                        *tOut++ = *tIn++;
 
-                                //Increment element output pointer
-                                pOut[pDef->Type] = tOut;
+                                    //Increment element output pointer
+                                    pOut[pDef->Type] = tOut;
+                                }
                             }
 
                             pDef++;

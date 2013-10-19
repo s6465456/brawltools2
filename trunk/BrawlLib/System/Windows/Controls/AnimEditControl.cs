@@ -31,7 +31,7 @@ namespace System.Windows.Forms
         }
 
         public AnimEditControl() 
-        { 
+        {
             InitializeComponent();
             _boxes[0] = numScaleX;
             _boxes[1] = numScaleY;
@@ -56,30 +56,9 @@ namespace System.Windows.Forms
                 if (_target.FrameCount > 0)
                 {
                     AnimationFrame a;
-                    bool check = false;
-                    for (int x = 0; x < _target.FrameCount; x++) //Loop thru each frame
-                    {
-                        a = _target.GetAnimFrame(x); //Get the frame to check
-                        a.Index = x;
-                        a.ResetBools();
-                        for (int i = 0x10; i < 0x19; i++) //Loop thru trans, rotate and scale
-                        {
-                            if (_target.GetKeyframe((KeyFrameMode)i, x) != null) //Check for a keyframe
-                            {
-                                check = true; //Keyframe found
-                                a.SetBool(i, true); //Make sure the anim frame displays this
-                            }
-                        }
-                        if (check == true)
-                        {
-                            //Only add the frame if it has a keyframe
-                            a.forKeyframeCHR = true;
+                    for (int x = 0; x < _target.FrameCount; x++)
+                        if ((a = _target.GetAnimFrame(x)).HasKeys)
                             listKeyframes.Items.Add(a);
-                            check = false; //Reset the check for the loop
-                        }
-                    }
-                    //foreach (AnimationKeyframe f in _target.Keyframes.Keyframes)
-                    //    listKeyframes.Items.Add(f);
 
                     _numFrames = _target.FrameCount;
 
@@ -173,7 +152,7 @@ namespace System.Windows.Forms
                     {
                         kf = (AnimationFrame)listKeyframes.Items[kfIndex];
                         kf.forKeyframeCHR = true;
-                        kf.SetBool(index + 0x10, false);
+                        kf.SetBool(index, false);
                         pkf[index] = val;
                         for (x = 0; (x < 9) && float.IsNaN(pkf[x]); x++) ;
                         if (x == 9)
@@ -195,7 +174,7 @@ namespace System.Windows.Forms
                     {
                         kf = (AnimationFrame)listKeyframes.Items[kfIndex];
                         kf.forKeyframeCHR = true;
-                        kf.SetBool(index + 0x10, true);
+                        kf.SetBool(index, true);
                         pkf[index] = val;
                         listKeyframes.Items[kfIndex] = kf;
                     }
@@ -203,7 +182,7 @@ namespace System.Windows.Forms
                     {
                         kf = AnimationFrame.Empty;
                         kf.forKeyframeCHR = true;
-                        kf.SetBool(index + 0x10, true);
+                        kf.SetBool(index, true);
                         kf.Index = _currentPage;
                         pkf[index] = val;
 

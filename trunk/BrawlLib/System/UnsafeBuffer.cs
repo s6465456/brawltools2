@@ -9,7 +9,7 @@ namespace System
         public VoidPtr Address { get { return _data; } }
 
         private int _length;
-        public int Length { get { return _length; } }
+        public int Length { get { return _length; } set { _length = value; } }
 
         public UnsafeBuffer(int size) { _data = Marshal.AllocHGlobal(size); _length = size; }
         ~UnsafeBuffer() { Dispose(); }
@@ -20,9 +20,16 @@ namespace System
         {
             if (_data)
             {
-                Marshal.FreeHGlobal(_data);
-                _data = null;
-                GC.SuppressFinalize(this);
+                try
+                {
+                    Marshal.FreeHGlobal(_data);
+                    _data = null;
+                    GC.SuppressFinalize(this);
+                }
+                catch
+                {
+
+                }
             }
         }
     }

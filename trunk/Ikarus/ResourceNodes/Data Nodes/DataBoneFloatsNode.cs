@@ -8,7 +8,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefItemAnchorListNode : MoveDefEntryNode
+    public unsafe class MoveDefItemAnchorListNode : MoveDefEntry
     {
         internal FDefItemAnchor* First { get { return (FDefItemAnchor*)WorkingUncompressed.Address; } }
         int Count = 0;
@@ -29,9 +29,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             FDefItemAnchor* addr = First;
             for (int i = 0; i < Count; i++)
-                new MoveDefItemAnchorNode() { _hasName = offsetID == 16 }.Initialize(this, addr++, 28);
+                new MoveDefItemAnchorNode() { _hasName = _offsetID == 16 }.Initialize(this, addr++, 28);
 
-            if (offsetID == 16)
+            if (_offsetID == 16)
             {
                 Children[0]._name = "FranklinBadge/ScrewAttack";
                 Children[1]._name = "LipStickFlower/BunnyHood";
@@ -62,7 +62,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefItemAnchorNode : MoveDefEntryNode
+    public unsafe class MoveDefItemAnchorNode : MoveDefEntry
     {
         internal FDefItemAnchor* Header { get { return (FDefItemAnchor*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }

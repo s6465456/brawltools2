@@ -72,7 +72,7 @@ namespace System.Windows.Forms
         {
             InitializeComponent(); 
             _dlgColor = new GoodColorDialog(); 
-            maxUndoCount.Integral = true;
+            maxUndoCount._integral = true;
             _boxes[0] = ax;
             _boxes[1] = ay;
             _boxes[2] = az;
@@ -99,14 +99,16 @@ namespace System.Windows.Forms
             for (int i = 0; i < 15; i++)
                 if (i < 4 || i > 6)
                 {
-                    _boxes[i].MaxValue = 255;
-                    _boxes[i].MinValue = 0;
+                    _boxes[i]._maxValue = 255;
+                    _boxes[i]._minValue = 0;
                 }
         }
 
         private NumericInputBox[] _boxes = new NumericInputBox[22];
         private float[] _origValues = new float[22];
-        
+
+        private Color _origNode, _origBone, _origFloor;
+
         public void Show(IMainWindow owner)
         {
             _form = owner;
@@ -148,6 +150,10 @@ namespace System.Windows.Forms
                 _origValues[i] = _boxes[i].Value;
                 _boxes[i].Tag = i;
             }
+
+            _origBone = MDL0BoneNode.DefaultBoneColor;
+            _origNode = MDL0BoneNode.DefaultNodeColor;
+            _origFloor = StaticMainWindow._floorHue;
 
             UpdateOrb();
             UpdateLine();
@@ -244,6 +250,10 @@ namespace System.Windows.Forms
             _form.ModelPanel._farZ = _origValues[20];
 
             _form.AllowedUndos = (uint)Math.Abs(_origValues[21]);
+
+            StaticMainWindow._floorHue = _origFloor;
+            MDL0BoneNode.DefaultBoneColor = _origBone;
+            MDL0BoneNode.DefaultNodeColor = _origNode;
 
             DialogResult = DialogResult.Cancel; 
             Close(); 
@@ -1044,10 +1054,10 @@ namespace System.Windows.Forms
 
         private void lblCol1Color_Click(object sender, EventArgs e)
         {
-            _dlgColor.Color = MainWindowStaticVars._floorHue;
+            _dlgColor.Color = StaticMainWindow._floorHue;
             if (_dlgColor.ShowDialog(this) == DialogResult.OK)
             {
-                MainWindowStaticVars._floorHue = _dlgColor.Color;
+                StaticMainWindow._floorHue = _dlgColor.Color;
                 UpdateCol1();
             }
         }
@@ -1056,16 +1066,19 @@ namespace System.Windows.Forms
         {
             lblOrbText.Text = ((ARGBPixel)MDL0BoneNode.DefaultNodeColor).ToString();
             lblOrbColor.BackColor = Color.FromArgb(MDL0BoneNode.DefaultNodeColor.R, MDL0BoneNode.DefaultNodeColor.G, MDL0BoneNode.DefaultNodeColor.B);
+            _form.ModelPanel.Invalidate();
         }
         private void UpdateLine()
         {
             lblLineText.Text = ((ARGBPixel)MDL0BoneNode.DefaultBoneColor).ToString();
             lblLineColor.BackColor = Color.FromArgb(MDL0BoneNode.DefaultBoneColor.R, MDL0BoneNode.DefaultBoneColor.G, MDL0BoneNode.DefaultBoneColor.B);
+            _form.ModelPanel.Invalidate();
         }
         private void UpdateCol1()
         {
-            lblCol1Text.Text = ((ARGBPixel)MainWindowStaticVars._floorHue).ToString();
-            lblCol1Color.BackColor = Color.FromArgb(MainWindowStaticVars._floorHue.R, MainWindowStaticVars._floorHue.G, MainWindowStaticVars._floorHue.B);
+            lblCol1Text.Text = ((ARGBPixel)StaticMainWindow._floorHue).ToString();
+            lblCol1Color.BackColor = Color.FromArgb(StaticMainWindow._floorHue.R, StaticMainWindow._floorHue.G, StaticMainWindow._floorHue.B);
+            _form.ModelPanel.Invalidate();
         }
         private void UpdateAmb()
         {

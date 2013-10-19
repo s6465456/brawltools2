@@ -5,6 +5,7 @@ using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -83,8 +84,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             VIS0EntryNode entry = new VIS0EntryNode();
             entry._entryCount = -1;
-            entry.EntryCount = _numFrames + 1;
-            entry.Name = this.FindName(null);
+            entry.EntryCount = FrameCount;
+            entry.Name = FindName(null);
             AddChild(entry);
             return entry;
         }
@@ -230,6 +231,149 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((VIS0v3*)source.Address)->_header._tag == VIS0v3.Tag ? new VIS0Node() : null; }
+
+        #region Extra Functions
+        /// <summary>
+        /// Stretches or compresses all frames of the animation to fit a new frame count specified by the user.
+        /// </summary>
+        public void Resize()
+        {
+            FrameCountChanger f = new FrameCountChanger();
+            if (f.ShowDialog(FrameCount) == DialogResult.OK)
+                Resize(f.NewValue);
+        }
+        /// <summary>
+        /// Stretches or compresses all frames of the animation to fit a new frame count.
+        /// </summary>
+        public void Resize(int newFrameCount)
+        {
+            float ratio = (float)newFrameCount / (float)FrameCount;
+            int oldFrameCount = FrameCount;
+
+            bool[][] bools = new bool[Children.Count][];
+
+            foreach (VIS0EntryNode e in Children)
+                if (!e.Constant)
+                {
+                    bool[] newBools = new bool[newFrameCount];
+                    for (int i = 0; i < FrameCount; i++)
+                        if (e.GetEntry(i))
+                        {
+                            int start = i;
+                            int z = i;
+                            while ((e.GetEntry(++z))) ;
+                            int span = z - start;
+
+                            int newSpan = (int)((float)span * ratio + 0.5f);
+                            int newStart = (int)((float)start * ratio + 0.5f);
+
+                            for (int w = 0; w < newSpan; w++)
+                                newBools[newStart + w] = true;
+
+                            i = z + 1;
+                        }
+
+                    bools[e.Index] = newBools;
+                }
+
+            FrameCount = newFrameCount;
+
+            int o = -1;
+            foreach (bool[] b in bools)
+            {
+                o++;
+                if (b == null)
+                    continue;
+                
+                VIS0EntryNode e = Children[o] as VIS0EntryNode;
+                
+                e._data = new byte[e._data.Length];
+                int u = 0;
+                int byteIndex = 0;
+                foreach (bool i in b)
+                {
+                    if (u % 8 == 0)
+                        byteIndex = u / 8;
+
+                    e._data[byteIndex] |= (byte)((i ? 1 : 0) << (7 - (u % 8)));
+
+                    u++;
+                }
+            }
+        }
+        /// <summary>
+        /// Adds an animation opened by the user to the end of this one
+        /// </summary>
+        public void Append()
+        {
+            VIS0Node external = null;
+            OpenFileDialog o = new OpenFileDialog();
+            o.Filter = "VIS0 Animation (*.vis0)|*.vis0";
+            o.Title = "Please select an animation to append.";
+            if (o.ShowDialog() == DialogResult.OK)
+                if ((external = (VIS0Node)NodeFactory.FromFile(null, o.FileName)) != null)
+                    Append(external);
+        }
+        /// <summary>
+        /// Adds an animation to the end of this one
+        /// </summary>
+        public void Append(VIS0Node external)
+        {
+            int origIntCount = FrameCount;
+            FrameCount += external.FrameCount;
+
+            foreach (VIS0EntryNode _extEntry in external.Children)
+            {
+                VIS0EntryNode _intEntry = null;
+                if ((_intEntry = (VIS0EntryNode)FindChild(_extEntry.Name, false)) == null)
+                {
+                    VIS0EntryNode newIntEntry = new VIS0EntryNode() { Name = _extEntry.Name };
+
+                    newIntEntry._entryCount = -1;
+                    newIntEntry.EntryCount = _extEntry.EntryCount + origIntCount;
+                    newIntEntry._flags = 0;
+
+                    if (_extEntry.Constant)
+                    {
+                        if (_extEntry.Enabled)
+                            for (int i = origIntCount.Align(8) / 8; i < newIntEntry.EntryCount; i++)
+                                newIntEntry._data[i] = 0xFF;
+                    }
+                    else
+                        Array.Copy(_extEntry._data, 0, newIntEntry._data, origIntCount.Align(8) / 8, _extEntry.EntryCount.Align(8) / 8);
+
+                    AddChild(newIntEntry);
+                }
+                else
+                {
+                    if (!_extEntry.Constant && !_intEntry.Constant)
+                        Array.Copy(_extEntry._data, 0, _intEntry._data, origIntCount.Align(8) / 8, _extEntry.EntryCount.Align(8) / 8);
+                    else
+                    {
+                        byte[] d = new byte[_extEntry._data.Length];
+                        if (_intEntry.Constant)
+                        {
+                            if (_intEntry.Enabled)
+                                for (int i = 0; i < origIntCount.Align(8) / 8; i++)
+                                    d[i] = 0xFF;
+                        }
+                        else
+                            Array.Copy(_extEntry._data, 0, _intEntry._data, origIntCount.Align(8) / 8, _extEntry.EntryCount.Align(8) / 8);
+                        _intEntry.Constant = false;
+                        if (_extEntry.Constant)
+                        {
+                            if (_extEntry.Enabled)
+                                for (int i = origIntCount.Align(8) / 8; i < _intEntry.EntryCount; i++)
+                                    d[i] = 0xFF;
+                        }
+                        else
+                            Array.Copy(_extEntry._data, 0, d, origIntCount.Align(8) / 8, _extEntry.EntryCount.Align(8) / 8);
+                        _intEntry._data = d;
+                    }
+                }
+            }
+        }
+        #endregion
     }
 
     public unsafe class VIS0EntryNode : ResourceNode, IBoolArrayNode
@@ -262,8 +406,37 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
+        //[Category("VIS0 Entry")]
+        //public VIS0Flags Flags { get { return _flags; } set { _flags = value; SignalPropertyChange(); } }
+
         [Category("VIS0 Entry")]
-        public VIS0Flags Flags { get { return _flags; } set { _flags = value; SignalPropertyChange(); } }
+        public bool Enabled
+        {
+            get { return _flags.HasFlag(VIS0Flags.Enabled); }
+            set 
+            {
+                if (value)
+                    _flags |= VIS0Flags.Enabled;
+                else
+                    _flags &= ~VIS0Flags.Enabled;
+                SignalPropertyChange();
+            }
+        }
+        [Category("VIS0 Entry")]
+        public bool Constant
+        {
+            get { return _flags.HasFlag(VIS0Flags.Constant); }
+            set
+            {
+                if (value)
+                    MakeConstant(Enabled);
+                else
+                    MakeAnimated();
+
+                SignalPropertyChange();
+                UpdateCurrentControl();
+            }
+        }
 
         public override int OnCalculateSize(bool force)
         {
@@ -289,7 +462,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             if ((_flags & VIS0Flags.Constant) == 0)
             {
-                _entryCount = ((VIS0Node)_parent)._numFrames + 1;
+                _entryCount = ((VIS0Node)_parent).FrameCount;
                 int numBytes = _entryCount.Align(32) / 8;
 
                 SetSizeInternal(numBytes + 8);
@@ -332,18 +505,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
         public void MakeAnimated()
         {
-            bool enabled = false;
-
-            if (_flags.HasFlag(VIS0Flags.Enabled))
-                enabled = true;
-
             _flags = VIS0Flags.None;
             _entryCount = -1;
-            EntryCount = ((VIS0Node)_parent)._numFrames + 1;
+            EntryCount = ((VIS0Node)_parent).FrameCount;
 
-            if (enabled)
-                for (int i = 0; i < _entryCount; i++)
-                    SetEntry(i, true);
+            //bool e = Enabled;
+            //for (int i = 0; i < _entryCount; i++)
+            //    SetEntry(i, e);
 
             SignalPropertyChange();
         }

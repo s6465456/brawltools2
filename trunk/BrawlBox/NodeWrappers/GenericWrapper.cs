@@ -165,10 +165,10 @@ namespace BrawlBox
                     {
                         string tempPath = Path.GetTempFileName();
 
-                        _resource.Export(tempPath);
+                        node.Export(tempPath);
                         _resource.Replace(tempPath, FileMapProtect.ReadWrite, FileOptions.SequentialScan | FileOptions.DeleteOnClose);
-
                         _resource.SignalPropertyChange();
+                        node.Dispose();
                     }
                     else
                     {

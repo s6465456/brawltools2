@@ -65,18 +65,18 @@ namespace BrawlLib.SSBB.ResourceNodes
             public UnsafeBuffer _values;
             public STPMValueManager(VoidPtr address)
             {
-                _values = new UnsafeBuffer(64 * 4);
+                _values = new UnsafeBuffer(256);
                 if (address == null)
                 {
                     byte* pOut = (byte*)_values.Address;
-                    for (int i = 0; i < 64 * 4; i++)
+                    for (int i = 0; i < 256; i++)
                         *pOut++ = 0;
                 }
                 else
                 {
                     byte* pIn = (byte*)address;
                     byte* pOut = (byte*)_values.Address;
-                    for (int i = 0; i < 64 * 4; i++)
+                    for (int i = 0; i < 256; i++)
                         *pOut++ = *pIn++;
                 }
             }
@@ -153,19 +153,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("STPM Values")]
         public float PauseCamAngle { get { return _values.GetFloat(26); } set { _values.SetFloat(26, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value28 { get { return _values.GetFloat(27); } set { _values.SetFloat(27, value); SignalPropertyChange(); } }
+        public float PauseCamZoomIn { get { return _values.GetFloat(27); } set { _values.SetFloat(27, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value29 { get { return _values.GetFloat(28); } set { _values.SetFloat(28, value); SignalPropertyChange(); } }
+        public float PauseCamZoomDefault { get { return _values.GetFloat(28); } set { _values.SetFloat(28, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value30 { get { return _values.GetFloat(29); } set { _values.SetFloat(29, value); SignalPropertyChange(); } }
+        public float PauseCamZoomOut { get { return _values.GetFloat(29); } set { _values.SetFloat(29, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value31 { get { return _values.GetFloat(30); } set { _values.SetFloat(30, value); SignalPropertyChange(); } }
+        public float PauseCamRotYMin { get { return _values.GetFloat(30); } set { _values.SetFloat(30, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value32 { get { return _values.GetFloat(31); } set { _values.SetFloat(31, value); SignalPropertyChange(); } }
+        public float PauseCamRotYMax { get { return _values.GetFloat(31); } set { _values.SetFloat(31, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value33 { get { return _values.GetFloat(32); } set { _values.SetFloat(32, value); SignalPropertyChange(); } }
+        public float PauseCamRotXMin { get { return _values.GetFloat(32); } set { _values.SetFloat(32, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
-        public float Value34 { get { return _values.GetFloat(33); } set { _values.SetFloat(33, value); SignalPropertyChange(); } }
+        public float PauseCamRotXMax { get { return _values.GetFloat(33); } set { _values.SetFloat(33, value); SignalPropertyChange(); } }
         [Category("STPM Values")]
         public float FixedCamX { get { return _values.GetFloat(34); } set { _values.SetFloat(34, value); SignalPropertyChange(); } }
         [Category("STPM Values")]

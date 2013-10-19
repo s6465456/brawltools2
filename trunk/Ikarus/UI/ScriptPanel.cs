@@ -528,7 +528,7 @@ namespace Ikarus.UI
             else
                 comboActionEntry.SelectedIndex = _subActionIndex;
 
-            MoveDefSubActionGroupNode grp = RunTime.CurrentSubaction;
+            SubActionGroup grp = RunTime.CurrentSubaction;
             inTransTime.Value = grp._inTransTime;
             chkNoOutTrans.Checked = grp._flags.HasFlag(AnimationFlags.NoOutTransition);
             chkTransOutStart.Checked = grp._flags.HasFlag(AnimationFlags.TransitionOutFromStart);
@@ -557,12 +557,12 @@ namespace Ikarus.UI
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefEventNode SelectedEvent
+        public Event SelectedEvent
         {
             get { return _selectedEvent; }
             set { _selectedEvent = value; }
         }
-        private MoveDefEventNode _selectedEvent;
+        private Event _selectedEvent;
 
         public bool _updating = false;
 
@@ -641,13 +641,13 @@ namespace Ikarus.UI
                 if (ScriptType == UI.ScriptType.Subactions)
                 {
                     if (RunTime.CurrentSubaction != null)
-                        scriptEditor1.TargetNode = RunTime.CurrentSubaction.Children[comboActionEntry.SelectedIndex] as MoveDefActionNode;
+                        scriptEditor1.TargetNode = RunTime.CurrentSubaction.Children[comboActionEntry.SelectedIndex] as ActionScript;
                     _subActionIndex = comboActionEntry.SelectedIndex;
                 }
                 else
                 {
                     if (RunTime.CurrentAction != null)
-                        scriptEditor1.TargetNode = RunTime.CurrentAction.Children[comboActionEntry.SelectedIndex] as MoveDefActionNode;
+                        scriptEditor1.TargetNode = RunTime.CurrentAction.Children[comboActionEntry.SelectedIndex] as ActionScript;
                     _actionIndex = comboActionEntry.SelectedIndex;
                 }
         }
@@ -686,7 +686,7 @@ namespace Ikarus.UI
 
             btnRunScript.Text = "Run Script";
 
-            //If we have any sounds still playing, stop them and dispose of them.
+            //If we have any sounds still playing, stop and dispose of them.
             //This should only be necessary if the user manually stops the timer,
             //as the timer will not stop automatically until all sounds are completed and disposed of.
             if (RunTime._playingSounds.Count != 0)
@@ -698,6 +698,7 @@ namespace Ikarus.UI
                         {
                             info._buffer.Stop();
                             info._buffer.Dispose();
+                            info._stream.Dispose();
                         }
                 RunTime._playingSounds.Clear();
             }
@@ -705,7 +706,7 @@ namespace Ikarus.UI
 
         public void StopScript() { RunTime.Stop(); }
 
-        public void UpdateScriptEditor(MoveDefActionNode a)
+        public void UpdateScriptEditor(ActionScript a)
         {
             if (a == scriptEditor1.TargetNode && a._eventIndex - 1 < scriptEditor1.EventList.Items.Count)
             {

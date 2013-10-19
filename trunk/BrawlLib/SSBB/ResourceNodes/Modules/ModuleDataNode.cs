@@ -7,6 +7,7 @@ using System.IO;
 using System.ComponentModel;
 using System.PowerPcAssembly;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {   
@@ -19,6 +20,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public virtual uint ASMOffset { get { return _offset; } }
 
+        public SectionEditor _linkedEditor = null;
         internal UnsafeBuffer _dataBuffer;
         public List<string>[] _tags;
         public RelCommand _firstCommand = null;
@@ -33,8 +35,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             base.Dispose();
         }
 
-        public Relocation[] _relocations;
-
+        public List<Relocation> _relocations;
+        [Browsable(false)]
+        public List<Relocation> Relocations { get { return _linkedEditor != null ? _linkedEditor._relocations : _relocations; } set { _relocations = value; } }
+        
         [Browsable(false)]
         public buint* BufferAddress { get { return (buint*)_dataBuffer.Address; } }
 
@@ -42,34 +46,44 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             get
             {
-                if (index < _relocations.Length && index >= 0) 
-                    return _relocations[index]; 
+                List<Relocation> l = _linkedEditor != null ? _linkedEditor._relocations : _relocations;
+
+                if (index < l.Count && index >= 0)
+                    return l[index]; 
                 return null;
             }
             set
             {
-                if (index < _relocations.Length && index >= 0)
-                    _relocations[index] = value;
+                List<Relocation> l = _linkedEditor != null ? _linkedEditor._relocations : _relocations;
+
+                if (index < l.Count && index >= 0)
+                    l[index] = value;
             }
         }
 
+        /// <summary>
+        /// Fills the data buffer with the specified amount of data from an address.
+        /// </summary>
         public void InitBuffer(uint size, VoidPtr address)
         {
             _dataBuffer = new UnsafeBuffer((int)size.RoundUp(4));
-            _relocations = new Relocation[_dataBuffer.Length / 4];
+            _relocations = new List<Relocation>();
 
-            for (int x = 0; x < _relocations.Length; x++)
-                _relocations[x] = new Relocation(this, x);
+            for (int x = 0; x < _dataBuffer.Length / 4; x++)
+                _relocations.Add(new Relocation(this, x));
 
             Memory.Move(_dataBuffer.Address, address, size);
         }
+        /// <summary>
+        /// Fills the data buffer with the specified amount of zerobytes.
+        /// </summary>
         public void InitBuffer(uint size)
         {
             _dataBuffer = new UnsafeBuffer((int)size.RoundUp(4));
-            _relocations = new Relocation[_dataBuffer.Length / 4];
+            _relocations = new List<Relocation>();
 
-            for (int x = 0; x < _relocations.Length; x++)
-                _relocations[x] = new Relocation(this, x);
+            for (int x = 0; x < _dataBuffer.Length / 4; x++)
+                _relocations.Add(new Relocation(this, x));
 
             Memory.Fill(_dataBuffer.Address, size, 0);
         }
@@ -78,7 +92,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             List<byte> bytes = new List<byte>();
             uint value;
-            foreach (Relocation loc in _relocations)
+            foreach (Relocation loc in Relocations)
             {
                 value = loc.SectionOffset;
                 bytes.Add((byte)((value >> 24) & 0xFF));
@@ -89,39 +103,110 @@ namespace BrawlLib.SSBB.ResourceNodes
             return bytes.ToArray();
         }
 
-        private void ApplyTags()
-        {
-            if (HasCode)
-            {
-                int i = 0;
-                foreach (Relocation r in _relocations)
-                {
-                    PPCOpCode op = r.Code;
-                    if (op is BranchOpcode)
-                    {
-                        BranchOpcode b = op as BranchOpcode;
-                        if (!b.Absolute)
-                        {
-                            int offset = b.Offset;
-                            int iOff = offset.RoundDown(4) / 4;
-                            int index = i + iOff;
-                            if (index >= 0 && index < _relocations.Length)
-                                _relocations[index].Tags.Add(String.Format("Sub 0x{0}", PPCFormat.Hex(ASMOffset + (uint)i * 4)));
-                        }
-                    }
-                    i++;
-                }
-            }
-        }
+        //private void ApplyTags()
+        //{
+        //    if (HasCode)
+        //    {
+        //        int i = 0;
+        //        foreach (Relocation r in Relocations)
+        //        {
+        //            PPCOpCode op = r.Code;
+        //            if (op is BranchOpcode)
+        //            {
+        //                BranchOpcode b = op as BranchOpcode;
+        //                if (!b.Absolute)
+        //                {
+        //                    int offset = b.Offset;
+        //                    int iOff = offset.RoundDown(4) / 4;
+        //                    int index = i + iOff;
+        //                    if (index >= 0 && index < _relocations.Count)
+        //                        Relocations[index].Tags.Add(String.Format("Sub 0x{0}", PPCFormat.Hex(ASMOffset + (uint)i * 4)));
+        //                }
+        //            }
+        //            i++;
+        //        }
+        //    }
+        //}
+
+        //public void RemoveAtIndex(int index)
+        //{
+        //    if (_dataBuffer.Length < 4)
+        //        return;
+
+        //    UnsafeBuffer newBuffer = new UnsafeBuffer(_dataBuffer.Length - 4);
+        //    _relocations.RemoveAt(index);
+
+        //    for (int i = index; i < _relocations.Count; i++)
+        //    {
+        //        Relocation r = _relocations[i];
+        //        foreach (Relocation l in r.Linked)
+        //            if (l.Command != null && l.Command.TargetRelocation._section == this)
+        //                l.Command._addend -= 4;
+        //        r._index--;
+        //    }
+
+        //    int offset = index * 4;
+
+        //    //Move memory before the removed value
+        //    if (offset > 0)
+        //        Memory.Move(newBuffer.Address, _dataBuffer.Address, (uint)offset);
+
+        //    //Move memory after the removed value
+        //    if (offset + 4 < _dataBuffer.Length)
+        //        Memory.Move(newBuffer.Address + offset, _dataBuffer.Address + offset + 4, (uint)_dataBuffer.Length - (uint)(offset + 4));
+
+        //    _dataBuffer.Dispose();
+        //    _dataBuffer = newBuffer;
+        //}
+
+        //public void InsertAtIndex(int index, Relocation r)
+        //{
+        //    UnsafeBuffer newBuffer = new UnsafeBuffer(_dataBuffer.Length + 4);
+        //    _relocations.Insert(index, r);
+        //    r._index = index;
+
+        //    for (int i = index + 1; i < _relocations.Count; i++)
+        //    {
+        //        Relocation e = _relocations[i];
+        //        foreach (Relocation l in e.Linked)
+        //            if (l.Command != null && l.Command.TargetRelocation._section == this)
+        //                l.Command._addend += 4;
+        //        e._index++;
+        //    }
+
+        //    int offset = index * 4;
+
+        //    //Move memory before the inserted value
+        //    if (offset > 0)
+        //        Memory.Move(newBuffer.Address, _dataBuffer.Address, (uint)offset);
+
+        //    //Move memory after the inserted value
+        //    if (offset + 4 < _dataBuffer.Length)
+        //        Memory.Move(newBuffer.Address + offset + 4, _dataBuffer.Address + offset + 4, (uint)_dataBuffer.Length - (uint)(offset + 4));
+
+        //    //Clear the new value
+        //    *(uint*)(newBuffer.Address + offset) = 0;
+
+        //    _dataBuffer.Dispose();
+        //    _dataBuffer = newBuffer;
+        //}
 
         public void Resize(int newSize)
         {
-            int count = newSize.RoundDown(4) / 4;
-            Array.Resize(ref _relocations, count);
+            int diff = (newSize.RoundDown(4) - _dataBuffer.Length) / 4;
+            if (diff == 0)
+                return;
+            if (diff > 0)
+                for (int i = 0; i < diff; i++)
+                    _relocations.Add(new Relocation(this, _relocations.Count));
+            else if (diff < 0)
+                _relocations.RemoveRange(_relocations.Count + diff, -diff);
+            
             UnsafeBuffer newBuffer = new UnsafeBuffer(newSize);
             int max = Math.Min(_dataBuffer.Length, newBuffer.Length);
             if (max > 0)
                 Memory.Move(newBuffer.Address, _dataBuffer.Address, (uint)max);
+
             _dataBuffer.Dispose();
             _dataBuffer = newBuffer;
         }
@@ -130,7 +215,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void ClearCommands()
         {
-            
+            RelCommand c = _firstCommand;
+            while (c != null)
+            {
+                c._parentRelocation.Command = null;
+                c = c._next;
+            }
         }
 
         public void GetFirstCommand() { _firstCommand = GetCommandAfter(-1); }
@@ -138,16 +228,16 @@ namespace BrawlLib.SSBB.ResourceNodes
         public RelCommand GetCommandAfter(int startIndex)
         {
             int i = GetIndexOfCommandAfter(startIndex);
-            if (i >= 0 && i < _relocations.Length)
-                return _relocations[i].Command;
+            if (i >= 0 && i < Relocations.Count)
+                return Relocations[i].Command;
             return null;
         }
 
         public RelCommand GetCommandBefore(int startIndex)
         {
             int i = GetIndexOfCommandBefore(startIndex);
-            if (i >= 0 && i < _relocations.Length)
-                return _relocations[i].Command;
+            if (i >= 0 && i < Relocations.Count)
+                return Relocations[i].Command;
             return null;
         }
 
@@ -156,11 +246,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (startIndex < 0)
                 return -1;
 
-            if (startIndex > _relocations.Length)
-                startIndex = _relocations.Length;
+            if (startIndex > Relocations.Count)
+                startIndex = Relocations.Count;
 
             for (int i = startIndex - 1; i >= 0; i--)
-                if (i < _relocations.Length && _relocations[i].Command != null)
+                if (i < Relocations.Count && Relocations[i].Command != null)
                     return i;
 
             return -1;
@@ -168,31 +258,29 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public int GetIndexOfCommandAfter(int startIndex)
         {
-            if (startIndex >= _relocations.Length || startIndex < -1)
+            if (startIndex >= Relocations.Count || startIndex < -1)
                 return -1;
 
-            for (int i = startIndex + 1; i < _relocations.Length - 1; i++)
-                if (i < _relocations.Length && _relocations[i].Command != null)
+            for (int i = startIndex + 1; i < Relocations.Count - 1; i++)
+                if (i < Relocations.Count && Relocations[i].Command != null)
                     return i;
 
             return -1;
         }
 
-        public RelCommand GetCommandFromAddress(VoidPtr address) { return GetCommandFromOffset((int)(address - _dataBuffer.Address)); }
         public RelCommand GetCommandFromOffset(int offset) { return GetCommandFromIndex(offset.RoundDown(4) / 4); }
-        public RelCommand GetCommandFromIndex(int index) { if (index < _relocations.Length && index >= 0) return _relocations[index].Command; return null; }
+        public RelCommand GetCommandFromIndex(int index) { if (index < Relocations.Count && index >= 0) return _relocations[index].Command; return null; }
 
-        public void SetCommandAtAddress(VoidPtr address, RelCommand cmd) { SetCommandAtOffset((int)(address - _dataBuffer.Address), cmd); }
         public void SetCommandAtOffset(int offset, RelCommand cmd) { SetCommandAtIndex(offset.RoundDown(4) / 4, cmd); }
         public void SetCommandAtIndex(int index, RelCommand cmd)
         {
-            if (index >= _relocations.Length || index < 0)
+            if (index >= Relocations.Count || index < 0)
                 return;
 
-            if (_relocations[index].Command != null)
-                _relocations[index].Command.Remove();
+            if (Relocations[index].Command != null)
+                Relocations[index].Command.Remove();
 
-            _relocations[index].Command = cmd;
+            Relocations[index].Command = cmd;
 
             RelCommand c = GetCommandBefore(index);
             if (c != null)
@@ -208,32 +296,30 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #endregion
 
-        public Relocation GetRelocationAtAddress(VoidPtr address) { return GetRelocationAtOffset((int)(address - _dataBuffer.Address)); }
+        #region Relocation Functions
+
         public Relocation GetRelocationAtOffset(int offset) { return this[offset.RoundDown(4) / 4]; }
         public Relocation GetRelocationAtIndex(int index) { return this[index]; }
 
-        public void SetRelocationAtAddress(VoidPtr address, Relocation value) { SetRelocationAtOffset((int)(address - _dataBuffer.Address), value); }
         public void SetRelocationAtOffset(int offset, Relocation value) { this[offset.RoundDown(4) / 4] = value; }
         public void SetRelocationAtIndex(int index, Relocation value) { this[index] = value; }
 
         public static Color clrNotRelocated = Color.FromArgb(255, 255, 255);
         public static Color clrRelocated = Color.FromArgb(200, 255, 200);
         public static Color clrBadRelocate = Color.FromArgb(255, 200, 200);
-        public static Color clrBlr = Color.FromArgb(255, 255, 0);
+        public static Color clrBlr = Color.FromArgb(255, 255, 100);
 
-        public Color GetStatusColorFromAddress(VoidPtr address) { return GetStatusColorFromOffset(address - _dataBuffer.Address); }
         public Color GetStatusColorFromOffset(int offset) { return GetStatusColorFromIndex(offset.RoundDown(4) / 4); }
-        public Color GetStatusColorFromIndex(int index) 
-        {
-            if (this[index].Code is OpBlr)
-                return clrBlr;
-            return GetStatusColor(_relocations[index]); 
-        }
+        public Color GetStatusColorFromIndex(int index) { return GetStatusColor(this[index]); }
         public Color GetStatusColor(Relocation c)
         {
+            if (c.Code is PPCblr)
+                return clrBlr;
             if (c.Command == null)
                 return clrNotRelocated;
             return clrRelocated;
         }
+
+        #endregion
     }
 }

@@ -10,6 +10,7 @@ using BrawlLib.IO;
 using System.IO;
 using System.Drawing;
 using BrawlLib.Properties;
+using System.Runtime.InteropServices;
 
 namespace BrawlBox
 {
@@ -34,8 +35,10 @@ namespace BrawlBox
             this.modelEditControl1.Name = "modelEditControl1";
             this.modelEditControl1.Size = new System.Drawing.Size(639, 528);
             this.modelEditControl1.TabIndex = 0;
+            this.modelEditControl1.TargetAnimation = null;
             this.modelEditControl1.TargetAnimType = System.Windows.Forms.AnimType.CHR;
             this.modelEditControl1.TargetModelChanged += new System.EventHandler(this.TargetModelChanged);
+            this.modelEditControl1.ModelViewerChanged += new System.EventHandler(this.ModelViewerChanged);
             // 
             // ModelForm
             // 
@@ -55,7 +58,7 @@ namespace BrawlBox
         private List<MDL0Node> _models = new List<MDL0Node>();
 
         public DialogResult ShowDialog(List<MDL0Node> models) { return ShowDialog(null, models); }
-        public DialogResult ShowDialog(IWin32Window owner, List<MDL0Node> models) 
+        public DialogResult ShowDialog(IWin32Window owner, List<MDL0Node> models)
         {
             _models = models;
             try { return base.ShowDialog(owner); }
@@ -84,107 +87,37 @@ namespace BrawlBox
 
         public unsafe void ReadSettings()
         {
-            BBVS settings = new BBVS();
-            string ScreenCapBgLocText = "";
+            string t = BrawlBox.Properties.Settings.Default.ScreenCapBgLocText;
+            if (!String.IsNullOrEmpty(t))
+                modelEditControl1.ScreenCapBgLocText.Text = t;
+            else
+                modelEditControl1.ScreenCapBgLocText.Text = Application.StartupPath + "\\ScreenCaptures";
 
-            modelEditControl1._updating = true;
-            modelEditControl1.storeSettingsExternallyToolStripMenuItem.Checked = BrawlLib.Properties.Settings.Default.External;
-            modelEditControl1._updating = false;
+            BrawlBoxViewerSettings? s;
 
-            bool ext = File.Exists(Application.StartupPath + "/brawlbox.settings") && modelEditControl1.storeSettingsExternallyToolStripMenuItem.Checked;
-            if (ext)
+            if (!BrawlBox.Properties.Settings.Default.ViewerSettingsSet)
             {
-                using (FileMap map = FileMap.FromFile(Application.StartupPath + "/brawlbox.settings", FileMapProtect.Read))
-                {
-                    if (*(uint*)map.Address == BBVS.Tag)
-                    {
-                        settings = *(BBVS*)map.Address;
-                        ScreenCapBgLocText = new String((sbyte*)map.Address + ((BBVS*)map.Address)->_screenCapPathOffset);
-                    }
-                    else
-                        ext = false;
-                }
+                s = BrawlBoxViewerSettings.Default;
+                BrawlBox.Properties.Settings.Default.ViewerSettingsSet = true;
             }
-            
-            if (!ext)
-            {
-                settings = BrawlLib.Properties.Settings.Default.ViewerSettings;
-                ScreenCapBgLocText = BrawlLib.Properties.Settings.Default.ScreenCapBgLocText;
-            }
+            else
+                s = BrawlBox.Properties.Settings.Default.ViewerSettings;
 
-            if (!settings.UseModelViewerSettings)
-            {
-                modelEditControl1.clearSavedSettingsToolStripMenuItem.Enabled = false;
+            if (s == null)
                 return;
-            }
-            else
-                modelEditControl1.clearSavedSettingsToolStripMenuItem.Enabled = true;
 
-            modelEditControl1.modelPanel.BeginUpdate();
-
-            modelEditControl1.syncAnimationsTogetherToolStripMenuItem.Checked = settings.RetrieveCorrAnims;
-            modelEditControl1.syncLoopToAnimationToolStripMenuItem.Checked = settings.SyncLoopToAnim;
-            modelEditControl1.syncTexObjToolStripMenuItem.Checked = settings.SyncTexToObj;
-            modelEditControl1.syncObjectsListToVIS0ToolStripMenuItem.Checked = settings.SyncObjToVIS0;
-            modelEditControl1.disableBonesWhenPlayingToolStripMenuItem.Checked = settings.DisableBonesOnPlay;
-
-            modelEditControl1.modelPanel._ambient = settings._amb;
-            modelEditControl1.modelPanel._position = settings._pos;
-            modelEditControl1.modelPanel._diffuse = settings._diff;
-            modelEditControl1.modelPanel._specular = settings._spec;
-
-            modelEditControl1.modelPanel._fovY = settings._yFov;
-            modelEditControl1.modelPanel._nearZ = settings._nearZ;
-            modelEditControl1.modelPanel._farZ = settings._farz;
-
-            modelEditControl1.modelPanel.ZoomScale = settings._zScale;
-            modelEditControl1.modelPanel.TranslationScale = settings._tScale;
-            modelEditControl1.modelPanel.RotationScale = settings._rScale;
-
-            MDL0BoneNode.DefaultNodeColor = (Color)settings._orbColor;
-            MDL0BoneNode.DefaultBoneColor = (Color)settings._lineColor;
-            ModelEditControl._floorHue = (Color)settings._floorColor;
-            if (settings.CameraSet)
-            {
-                modelEditControl1.btnSaveCam.Text = "Clear Camera";
-                modelEditControl1.modelPanel._defaultTranslate = settings._defaultCam;
-                modelEditControl1.modelPanel._defaultRotate = settings._defaultRot;
-            }
-
-            modelEditControl1._allowedUndos = settings._undoCount;
-            modelEditControl1.modelPanel._emission = settings._emis;
-            modelEditControl1.ImgExtIndex = settings.ImageCapFmt;
-
-            modelEditControl1.RenderBones = settings.Bones;
-            modelEditControl1.RenderWireframe = settings.Wireframe;
-            modelEditControl1.RenderPolygons = settings.Polys;
-            modelEditControl1.RenderVertices = settings.Vertices;
-            modelEditControl1.RenderBox = settings.BoundingBox;
-            modelEditControl1.RenderNormals = settings.Normals;
-            modelEditControl1.DontRenderOffscreen = settings.HideOffscreen;
-            modelEditControl1.showCameraCoordinatesToolStripMenuItem.Checked = settings.ShowCamCoords;
-            modelEditControl1.RenderFloor = settings.Floor;
-            modelEditControl1.enablePointAndLineSmoothingToolStripMenuItem.Checked = settings.EnableSmoothing;
-            modelEditControl1.enableTextOverlaysToolStripMenuItem.Checked = settings.EnableText;
-
-            if (!String.IsNullOrEmpty(ScreenCapBgLocText))
-                modelEditControl1.ScreenCapBgLocText.Text = ScreenCapBgLocText;
-            else
-                modelEditControl1.ScreenCapBgLocText.Text = Application.StartupPath;
-            //modelEditControl1.orthographicToolStripMenuItem.Checked = settings.OrthoCam;
+            BrawlBoxViewerSettings settings = (BrawlBoxViewerSettings)s;
+            modelEditControl1.DistributeSettings(settings);
+            modelEditControl1.ModelPanel.ResetCamera();
 
             if (settings.Maximize)
                 WindowState = FormWindowState.Maximized;
-
-            modelEditControl1.modelPanel.EndUpdate();
-
-            modelEditControl1.modelPanel.ResetCamera();
         }
 
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
-            
+
             if (_models.Count != 0)
             {
                 for (int i = 0; i < _models.Count; i++)
@@ -193,17 +126,27 @@ namespace BrawlBox
                 modelEditControl1.TargetModel = _models[0];
                 modelEditControl1.ResetBoneColors();
             }
+            else
+                modelEditControl1.TargetModel = null;
 
             ReadSettings();
-
-            modelEditControl1.modelPanel.Capture();
+            modelEditControl1.ModelPanel.Capture();
 
             GenericWrapper._modelViewerOpen = true;
+            MainForm.Instance.Visible = false;
         }
 
-        private void ModelForm_FormClosing(object sender, FormClosingEventArgs e) 
+        protected override void OnClosed(EventArgs e)
         {
-            if (!(e.Cancel = !modelEditControl1.CloseFiles()))
+            MainForm.Instance.Visible = true;
+            GenericWrapper._modelViewerOpen = false;
+            MainForm.Instance.modelPanel1.Capture();
+            MainForm.Instance.resourceTree_SelectionChanged(this, null);
+        }
+
+        private void ModelForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!(e.Cancel = !modelEditControl1.Close()))
             {
                 try
                 {
@@ -213,23 +156,72 @@ namespace BrawlBox
                     if (modelEditControl1._targetModels != null)
                         modelEditControl1._targetModels = null;
 
-                    modelEditControl1.modelPanel.ClearAll();
+                    modelEditControl1.ModelPanel.ClearAll();
                     modelEditControl1.models.Items.Clear();
-
-                    MainForm.Instance.modelPanel1.Capture();
-                    MainForm.Instance.resourceTree_SelectionChanged(this, null);
                 }
                 catch { }
             }
-
-            GenericWrapper._modelViewerOpen = false;
         }
+
+        private void ModelViewerChanged(object sender, EventArgs e)
+        {
+            //Ain't nobody got time fo dis fancy mdi stuff
+            if (modelEditControl1.ModelViewerForm != null)
+            {
+                //IsMdiContainer = true;
+                //modelEditControl1.ModelViewerForm.MdiParent = this;
+                Application.AddMessageFilter(mouseMessageFilter = new MouseMoveMessageFilter() { TargetForm = this });
+            }
+            else
+            {
+                //IsMdiContainer = false;
+                Application.RemoveMessageFilter(mouseMessageFilter);
+            }
+        }
+
         private void TargetModelChanged(object sender, EventArgs e)
         {
             if (modelEditControl1.TargetModel != null)
-                Text = String.Format("Advanced Model Editor - {0}", modelEditControl1.TargetModel.Name);
+                Text = String.Format("{1} - Advanced Model Editor - {0}", modelEditControl1.TargetModel.Name, Program.AssemblyTitle);
             else
-                Text = "Advanced Model Editor";
+                Text = Text = Program.AssemblyTitle + " - Advanced Model Editor";
+        }
+
+        private MouseMoveMessageFilter mouseMessageFilter;
+        class MouseMoveMessageFilter : IMessageFilter
+        {
+            public ModelForm TargetForm { get; set; }
+            bool _mainWindowFocused = false;
+            public bool PreFilterMessage(ref Message m)
+            {
+                int numMsg = m.Msg;
+                if (numMsg == 0x0200) //WM_MOUSEMOVE
+                {
+                    if (TargetForm.modelEditControl1.ModelViewerForm != null)
+                    if (InForm(TargetForm.modelEditControl1.ModelViewerForm, Control.MousePosition))
+                    {
+                        if (_mainWindowFocused)
+                        {
+                            TargetForm.modelEditControl1.ModelViewerForm.Focus();
+                            _mainWindowFocused = false;
+                        }
+                    }
+                    else if (InForm(TargetForm, Control.MousePosition))
+                    {
+                        if (!_mainWindowFocused)
+                        {
+                            TargetForm.Focus();
+                            _mainWindowFocused = true;
+                        }
+                    }
+                }
+                return false;
+            }
+            private bool InForm(Form f, Point screenPoint)
+            {
+                Point p = f.PointToClient(screenPoint);
+                return p.X > 0 && p.X < f.Size.Width && p.Y > 0 && p.Y < f.Size.Height;
+            }
         }
     }
 }

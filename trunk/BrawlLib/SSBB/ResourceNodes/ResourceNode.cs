@@ -194,7 +194,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         //Can be any of the following: children have branched, children have changed, current has changed
         //Node needs to be rebuilt.
-        [Browsable(true)]
+        [Browsable(false)]
         public bool IsDirty
         {
             get

@@ -15,9 +15,9 @@ namespace Ikarus.UI.Controls
         public HurtboxEditor()
         {
             InitializeComponent();
-            numRegion.Integral = true;
-            numRegion.MaxValue = 3;
-            numRegion.MinValue = 0;
+            numRegion._integral = true;
+            numRegion._maxValue = 3;
+            numRegion._minValue = 0;
             SelectedZone.Items.AddRange(Enum.GetNames(typeof(HurtBoxZone)));
         }
 

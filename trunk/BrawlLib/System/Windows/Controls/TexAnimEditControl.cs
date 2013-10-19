@@ -67,7 +67,7 @@ namespace System.Windows.Forms
                             if (_target.GetKeyframe((KeyFrameMode)i, x) != null)
                             {
                                 check = true;
-                                a.SetBool(i, true);
+                                a.SetBool(i - 0x10, true);
                             }
                         }
                         if (check == true)
@@ -177,7 +177,7 @@ namespace System.Windows.Forms
                     {
                         kf = (AnimationFrame)listKeyframes.Items[kfIndex];
                         kf.forKeyframeSRT = true;
-                        kf.SetBool(index + 0x10, false);
+                        kf.SetBool(index, false);
                         pkf[index] = val;
                         for (x = 0; (x < 10) && float.IsNaN(pkf[x]); x++) ;
                         if (x == 10)
@@ -198,7 +198,7 @@ namespace System.Windows.Forms
                     if (kfIndex >= 0)
                     {
                         kf = (AnimationFrame)listKeyframes.Items[kfIndex];
-                        kf.SetBool(index + 0x10, true);
+                        kf.SetBool(index, true);
                         pkf[index] = val;
                         kf.forKeyframeSRT = true;
                         listKeyframes.Items[kfIndex] = kf;
@@ -208,7 +208,7 @@ namespace System.Windows.Forms
                         kf = AnimationFrame.Empty;
                         kf.forKeyframeSRT = true;
                         kf.Index = _currentPage;
-                        kf.SetBool(index + 0x10, true);
+                        kf.SetBool(index, true);
                         pkf[index] = val;
 
                         int count = listKeyframes.Items.Count;

@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace BrawlLib.Wii.Animations
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct AnimationFrame
     {
@@ -28,27 +29,32 @@ namespace BrawlLib.Wii.Animations
         public bool hasTy;
         public bool hasTz;
 
+        public bool HasKeys
+        {
+            get { return hasSx || hasSy || hasSz || hasRx || hasRy || hasRz || hasTx || hasTy || hasTz; }
+        }
+
         public void SetBool(int index, bool val)
         {
             switch (index)
             {
-                case 0x10:
+                case 0:
                     hasSx = val; break;
-                case 0x11:
+                case 1:
                     hasSy = val; break;
-                case 0x12:
+                case 2:
                     hasSz = val; break;
-                case 0x13:
+                case 3:
                     hasRx = val; break;
-                case 0x14:
+                case 4:
                     hasRy = val; break;
-                case 0x15:
+                case 5:
                     hasRz = val; break;
-                case 0x16:
+                case 6:
                     hasTx = val; break;
-                case 0x17:
+                case 7:
                     hasTy = val; break;
-                case 0x18:
+                case 8:
                     hasTz = val; break;
             }
         }
@@ -133,7 +139,7 @@ namespace BrawlLib.Wii.Animations
         {
             if (forKeyframeCHR)
             {
-                return String.Format("[{0}]({1},{2},{3})({4},{5},{6})({7},{8},{9})", Index + 1,
+                return String.Format("[{0}]({1},{2},{3})({4},{5},{6})({7},{8},{9})", (Index + 1).ToString().PadLeft(5),
                 !hasSx ? empty : Scale._x.ToString().TruncateAndFill(len, ' '),
                 !hasSy ? empty : Scale._y.ToString().TruncateAndFill(len, ' '),
                 !hasSz ? empty : Scale._z.ToString().TruncateAndFill(len, ' '),
@@ -146,7 +152,7 @@ namespace BrawlLib.Wii.Animations
             }
             else if (forKeyframeSRT)
             {
-                return String.Format("[{0}]({1},{2})({3})({4},{5})", Index + 1,
+                return String.Format("[{0}]({1},{2})({3})({4},{5})", (Index + 1).ToString().PadLeft(5),
                 !hasSx ? empty : Scale._x.ToString().TruncateAndFill(len, ' '),
                 !hasSy ? empty : Scale._y.ToString().TruncateAndFill(len, ' '),
                 !hasRx ? empty : Rotation._x.ToString().TruncateAndFill(len, ' '),

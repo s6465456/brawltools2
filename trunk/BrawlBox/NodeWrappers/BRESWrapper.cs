@@ -153,11 +153,11 @@ namespace BrawlBox
                     if ((node as MDL0Node)._reopen == true)
                     {
                         string tempPath = Path.GetTempFileName();
-                     
-                        _resource.Export(tempPath);
-                        _resource.Replace(tempPath, FileMapProtect.ReadWrite, FileOptions.SequentialScan | FileOptions.DeleteOnClose);
-                        
-                        _resource.SignalPropertyChange();
+
+                        node.Export(tempPath);
+                        node.Replace(tempPath, FileMapProtect.ReadWrite, FileOptions.SequentialScan | FileOptions.DeleteOnClose);
+
+                        node.SignalPropertyChange();
                     }
                 }
             }

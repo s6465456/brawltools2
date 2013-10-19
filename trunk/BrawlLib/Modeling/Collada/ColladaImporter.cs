@@ -13,97 +13,63 @@ using BrawlLib.Wii.Graphics;
 using System.Globalization;
 using System.Threading;
 using System.Drawing;
+using System.ComponentModel;
+using System.Reflection;
 
 namespace BrawlLib.Modeling
 {
     public unsafe partial class Collada : Form
     {
-        public Collada()
-        {
-            InitializeComponent(); r.MaxValue = 255;
-            r.MinValue = 0;
-            r.Integral = true;
-
-            g.MaxValue = 255;
-            g.MinValue = 0;
-            g.Integral = true;
-
-            b.MaxValue = 255;
-            b.MinValue = 0;
-            b.Integral = true;
-
-            a.MaxValue = 255;
-            a.MinValue = 0;
-            a.Integral = true;
-
-            _dlgColor = new GoodColorDialog();
-        }
+        public Collada() { InitializeComponent(); }
         public Collada(Form owner, string title) : this()
         {
             Owner = owner;
             Text = title;
         }
-
-        private CheckBox fltVerts;
-        private CheckBox fltNrms;
-        private CheckBox fltUVs;
-        private CheckBox addClrs;
-        private CheckBox rmpClrs;
-        private CheckBox forceTriangles;
-        private CheckBox CCW;
-        private CheckBox rmpMats;
         private Button button1;
         private Button button2;
         private Panel panel1;
-        private Label label1;
-        private ComboBox mdlType;
 
         private Label Status;
-        private Button button3;
-        private NumericInputBox b;
-        private NumericInputBox a;
-        private NumericInputBox g;
-        private NumericInputBox r;
-        private Label clr;
-        private Label label24;
+        private PropertyGrid propertyGrid1;
+        private Panel panel2;
         public string _filePath;
-
-        public void Finish()
-        {
-            if (Owner != null)
-                Owner.Enabled = true;
-
-            //Close();
-        }
-        public void Cancel()
-        {
-            Close();
-        }
 
         public void Say(string text)
         {
             Status.Text = text;
             Update();
         }
-        
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+
+            var info = propertyGrid1.GetType().GetProperty("Controls");
+            var collection = (Control.ControlCollection)info.GetValue(propertyGrid1, null);
+
+            foreach (var control in collection)
+            {
+                var type = control.GetType();
+                if ("DocComment" == type.Name)
+                {
+                    const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    var field = type.BaseType.GetField("userSized", Flags);
+                    field.SetValue(control, true);
+
+                    info = type.GetProperty("Lines");
+                    info.SetValue(control, 5, null);
+
+                    propertyGrid1.HelpVisible = true;
+                    break;
+                }
+            }
+        }
+
         public MDL0Node ShowDialog(string filePath)
         {
             ImportOptions settings = BrawlLib.Properties.Settings.Default.ColladaImportOptions;
-
-            mdlType.SelectedIndex = settings._mdlType;
-            fltVerts.Checked = settings._fltVerts;
-            fltNrms.Checked = settings._fltNrms;
-            fltUVs.Checked = settings._fltUVs;
-            addClrs.Checked = settings._addClrs;
-            rmpClrs.Checked = settings._rmpClrs;
-            rmpMats.Checked = settings._rmpMats;
-            forceTriangles.Checked = settings._forceTriangles;
-            CCW.Checked = settings._forceCCW;
-            r.Value = settings._dfltClr.R;
-            g.Value = settings._dfltClr.G;
-            b.Value = settings._dfltClr.B;
-            a.Value = settings._dfltClr.A;
-            r_ValueChanged(null, null);
+            propertyGrid1.SelectedObject = settings;
 
             if (base.ShowDialog() == DialogResult.OK)
             {
@@ -114,6 +80,7 @@ namespace BrawlLib.Modeling
                 Show();
                 Update();
                 MDL0Node model = ImportModel(filePath);
+                BrawlLib.Properties.Settings.Default.Save();
                 Close();
                 return model;
             }
@@ -122,50 +89,70 @@ namespace BrawlLib.Modeling
 
         public class ImportOptions
         {
-            public int _mdlType = 0;
+            public enum MDLType
+            {
+                Character,
+                Stage
+            }
+            
+            [Category("Misc"), Description("Determines the default settings for materials and shaders.")]
+            public MDLType ModelType { get { return _mdlType; } set { _mdlType = value; } }
+            [Category("Assets"), Description("If true, vertex arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices or SHP0 animations.")]
+            public bool ForceFloatVertices { get { return _fltVerts; } set { _fltVerts = value; } }
+            [Category("Assets"), Description("If true, normal arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices or SHP0 animations.")]
+            public bool ForceFloatNormals { get { return _fltNrms; } set { _fltNrms = value; } }
+            [Category("Assets"), Description("If true, texture coordinate arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices or SHP0 animations.")]
+            public bool ForceFloatUVs { get { return _fltUVs; } set { _fltUVs = value; } }
+            [Category("Color Nodes"), Description("If true, color arrays read from the file will be ignored.")]
+            public bool IgnoreOriginalColors { get { return _ignoreColors; } set { _ignoreColors = value; } }
+            [Category("Color Nodes"), Description("If true, color arrays will be added to objects that do not have any. The array will be filled with only the default color.")]
+            public bool AddColors { get { return _addClrs; } set { _addClrs = value; } }
+            [Category("Color Nodes"), Description("If true, color arrays will be remapped. This means there will not be any color nodes that have the same entries as another, saving file space.")]
+            public bool RemapColors { get { return _rmpClrs; } set { _rmpClrs = value; } }
+            [Category("Misc"), Description("If true, materials will be remapped. This means there will be no redundant materials with the same settings, saving file space.")]
+            public bool RemapMaterials { get { return _rmpMats; } set { _rmpMats = value; } }
+            [Category("Misc"), Description("If true, object primitives will be culled in reverse. This means the outside of the object will be the inside, and the inside will be the outside. It is not recommended to change this to true as you can change the culling later using the object's material.")]
+            public bool ForceCounterClockwisePrimitives { get { return _forceCCW; } set { _forceCCW = value; } }
+            [Category("Color Nodes"), Description("If true, objects without color arrays will use a constant color (set to the default color) in its material for the whole mesh instead of a color node that specifies a color for every vertex. This saves a lot of file space.")]
+            public bool UseRegisterColor { get { return _useReg; } set { _useReg = value; } }
+            [Category("Misc"), Description("The default setting to use for material culling. Culling determines what side of the mesh is invisible.")]
+            public CullMode MaterialCulling { get { return _culling; } set { _culling = value; } }
+            [Category("Color Nodes"), TypeConverter(typeof(RGBAStringConverter)), Description("The default color to use for generated color arrays.")]
+            public RGBAPixel DefaultColor { get { return _dfltClr; } set { _dfltClr = value; } }
+            
+            public MDLType _mdlType = MDLType.Character;
             public bool _forceTriangles = true;
             public bool _fltVerts = false;
             public bool _fltNrms = false;
             public bool _fltUVs = false;
-            public bool _addClrs = true;
+            public bool _addClrs = false;
             public bool _rmpClrs = true;
             public bool _rmpMats = true;
             public bool _forceCCW = false;
+            public bool _useReg = true;
+            public bool _ignoreColors = false;
+            public CullMode _culling = CullMode.Cull_None;
             public RGBAPixel _dfltClr = new RGBAPixel(100, 100, 100, 255);
         }
 
         public static string Error;
-
-        public static int index = 0;
-        public float current = 0;
         public MDL0Node ImportModel(string filePath)
         {
             MDL0Node model = new MDL0Node() { _name = Path.GetFileNameWithoutExtension(filePath), /*_originalPath = filePath*/ };
             model.InitGroups();
 
-            model._importOptions._mdlType = mdlType.SelectedIndex;
-            model._importOptions._forceTriangles = forceTriangles.Checked;
-            model._importOptions._fltVerts = fltVerts.Checked;
-            model._importOptions._fltNrms = fltNrms.Checked;
-            model._importOptions._fltUVs = fltUVs.Checked;
-            model._importOptions._addClrs = addClrs.Checked;
-            model._importOptions._rmpClrs = rmpClrs.Checked;
-            model._importOptions._rmpMats = rmpMats.Checked;
-            model._importOptions._forceCCW = CCW.Checked;
-            model._importOptions._dfltClr = new RGBAPixel((byte)r.Value, (byte)g.Value, (byte)b.Value, (byte)a.Value);
+            model._importOptions = BrawlLib.Properties.Settings.Default.ColladaImportOptions;
 
+            //Parse the collada file and use the data to create an MDL0
             using (DecoderShell shell = DecoderShell.Import(filePath))
             try
             {
-                current = 0;
-                float count = 1;
+                model._version = 9; //The user can change the version later
+                model._needsNrmMtxArray = 1;
+                if (model._importOptions._mdlType == 0)
+                    model._needsTexMtxArray = 1;
 
-                count += shell._images.Count;
-                count += shell._materials.Count;
-                count += shell._scenes.Count;
-
-                Say("Extracting textures...");
-                Error = "There was a problem reading the textures.";
+                Error = "There was a problem reading the model.";
 
                 //Extract images, removing duplicates
                 foreach (ImageEntry img in shell._images)
@@ -181,9 +168,6 @@ namespace BrawlLib.Modeling
                     tex = model.FindOrCreateTexture(name);
                     img._node = tex;
                 }
-
-                Say("Extracting materials...");
-                Error = "There was a problem reading the materials.";
 
                 //Extract materials and create shaders
                 int tempNo = -1;
@@ -206,6 +190,7 @@ namespace BrawlLib.Modeling
                     matNode.ShaderNode = (MDL0ShaderNode)model._shadGroup.Children[0];
 
                     mat._node = matNode;
+                    matNode._cull = model._importOptions._culling;
 
                     //Find effect
                     if (mat._effect != null)
@@ -245,16 +230,6 @@ namespace BrawlLib.Modeling
                     foreach (NodeEntry node in nodes)
                         EnumNode(node, model._boneGroup, scene, model, shell);
                 }
-
-                //Clean up and set everything left
-                model._version = 9; //The user can change the version later
-
-                if (model._importOptions._mdlType == 0)
-                    model._needNrmMtxArray = model._needTexMtxArray = 1;
-                else
-                    model._needNrmMtxArray = 1;
-
-                Say("Building model...");
 
                 //If there are no bones, rig all objects to a single bind.
                 if (model._boneGroup._children.Count == 0)
@@ -327,44 +302,114 @@ namespace BrawlLib.Modeling
                         }
                 }
 
-                Error = "There was a problem adding color nodes.";
-
-                //Check for color nodes
-                if (model._importOptions._addClrs && model._colorGroup._children.Count == 0)
+                //Remove original color buffers if option set
+                if (model._importOptions._ignoreColors)
                 {
-                    model._noColors = true;
-                    RGBAPixel pixel = model._importOptions._dfltClr;
-
-                    //Color nodes will be remapped later
                     if (model._objList != null && model._objList.Count != 0)
                         foreach (MDL0ObjectNode p in model._objList)
-                        {
-                            p._elementIndices[2] = 0;
-                            RGBAPixel* pIn = (RGBAPixel*)(p._manager._faceData[2] = new UnsafeBuffer(4 * p._manager._pointCount)).Address;
-                            for (int i = 0; i < p._manager._pointCount; i++)
-                                *pIn++ = pixel;
-                        }
+                            for (int x = 2; x < 4; x++)
+                                if (p._manager._faceData[x] != null)
+                                {
+                                    p._manager._faceData[x].Dispose();
+                                    p._manager._faceData[x] = null;
+                                }
                 }
 
-                Error = "There was a problem remapping the materials.";
-                if (model._importOptions._rmpMats && model._matList != null)
+                //Add color buffers if option set
+                if (model._importOptions._addClrs)
                 {
-                    //Remap materials
-                    if (model._objList != null)
-                        foreach (MDL0ObjectNode p in model._objList)
-                            foreach (MDL0MaterialNode m in model._matList)
-                                if (m.Children.Count > 0 && 
-                                    m.Children[0] != null &&
-                                    p.OpaMaterialNode != null &&
-                                    p.OpaMaterialNode.Children.Count > 0 &&
-                                    p.OpaMaterialNode.Children[0] != null &&
-                                    m.Children[0].Name == p.OpaMaterialNode.Children[0].Name)
-                                    p.OpaMaterialNode = m;
+                    RGBAPixel pixel = model._importOptions._dfltClr;
 
-                    //Clean up materials
+                    //Add a color buffer to objects that don't have one
+                    if (model._objList != null && model._objList.Count != 0)
+                        foreach (MDL0ObjectNode p in model._objList)
+                            if (p._manager._faceData[2] == null)
+                            {
+                                RGBAPixel* pIn = (RGBAPixel*)(p._manager._faceData[2] = new UnsafeBuffer(4 * p._manager._pointCount)).Address;
+                                for (int i = 0; i < p._manager._pointCount; i++)
+                                    *pIn++ = pixel;
+                            }
+                }
+
+                //Apply defaults to materials
+                if (model._matList != null)
+                    foreach (MDL0MaterialNode p in model._matList)
+                    {
+                        if (model._importOptions._mdlType == 0)
+                        {
+                            p._lSet = 20;
+                            p._fSet = 4;
+                            p._ssc = 3;
+
+                            p.C1ColorEnabled = true;
+                            p.C1AlphaMaterialSource = GXColorSrc.Vertex;
+                            p.C1ColorMaterialSource = GXColorSrc.Vertex;
+                            p.C1ColorDiffuseFunction = GXDiffuseFn.Clamped;
+                            p.C1ColorAttenuation = GXAttnFn.Spotlight;
+                            p.C1AlphaEnabled = true;
+                            p.C1AlphaDiffuseFunction = GXDiffuseFn.Clamped;
+                            p.C1AlphaAttenuation = GXAttnFn.Spotlight;
+
+                            p.C2ColorDiffuseFunction = GXDiffuseFn.Disabled;
+                            p.C2ColorAttenuation = GXAttnFn.None;
+                            p.C2AlphaDiffuseFunction = GXDiffuseFn.Disabled;
+                            p.C2AlphaAttenuation = GXAttnFn.None;
+                        }
+                        else
+                        {
+                            p._lSet = 0;
+                            p._fSet = 0;
+                            p._ssc = 1;
+
+                            p._chan1.Color = new LightChannelControl(1795);
+                            p._chan1.Alpha = new LightChannelControl(1795);
+                            p._chan2.Color = new LightChannelControl(1795);
+                            p._chan2.Alpha = new LightChannelControl(1795);
+                        }
+                    }
+
+                //Set materials to use register color if option set
+                if (model._importOptions._useReg && model._objList != null)
+                    foreach (MDL0ObjectNode p in model._objList)
+                    {
+                        MDL0MaterialNode m = p.OpaMaterialNode;
+                        if (m != null && p._manager._faceData[2] == null && p._manager._faceData[3] == null)
+                        {
+                            m.C1MaterialColor = model._importOptions._dfltClr;
+                            m.C1ColorMaterialSource = GXColorSrc.Register;
+                        }
+                    }
+
+                //Remap materials if option set
+                if (model._importOptions._rmpMats && model._matList != null && model._objList != null)
+                {
+                    foreach (MDL0ObjectNode p in model._objList)
+                        foreach (MDL0MaterialNode m in model._matList)
+                            if (m.Children.Count > 0 &&
+                                m.Children[0] != null &&
+                                p.OpaMaterialNode != null &&
+                                p.OpaMaterialNode.Children.Count > 0 &&
+                                p.OpaMaterialNode.Children[0] != null &&
+                                m.Children[0].Name == p.OpaMaterialNode.Children[0].Name &&
+                                m.C1ColorMaterialSource == p.OpaMaterialNode.C1ColorMaterialSource)
+                            {
+                                p.OpaMaterialNode = m;
+                                break;
+                            }
+
+                    //Remove unused materials
                     for (int i = 0; i < model._matList.Count; i++)
-                        if (((MDL0MaterialNode)model._matList[i])._polygons.Count == 0)
+                        if (((MDL0MaterialNode)model._matList[i])._objects.Count == 0)
                             model._matList.RemoveAt(i--);
+                }
+
+                Error = "There was a problem writing the model.";
+
+                //Clean the model and then build it!
+                if (model != null)
+                {
+                    model.CleanGroups();
+                    model.BuildFromScratch(this);
                 }
             }
             catch (Exception x)
@@ -377,17 +422,9 @@ namespace BrawlLib.Modeling
             {
                 //Clean up the mess we've made
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-
-                //Clean the model and then build it!
-                if (model != null)
-                {
-                    model.CleanGroups();
-                    model.BuildFromScratch(this);
-                }
             }
             return model;
         }
-        static int tempNo = 0;
         private void EnumNode(NodeEntry node, ResourceNode parent, SceneEntry scene, MDL0Node model, DecoderShell shell)
         {
             MDL0BoneNode bone = null;
@@ -399,8 +436,6 @@ namespace BrawlLib.Modeling
 
                 bone = new MDL0BoneNode();
                 bone._name = node._name != null ? node._name : node._id;
-
-                Say("Parsing bone: \"" + bone._name + "\"");
 
                 bone._bindState = node._transform;
                 node._node = bone;
@@ -483,16 +518,14 @@ namespace BrawlLib.Modeling
                     foreach (MaterialEntry mat in shell._materials)
                         if (mat._id == inst._material._target)
                         {
-                            (poly._opaMaterial = (mat._node as MDL0MaterialNode))._polygons.Add(poly);
+                            (poly._opaMaterial = (mat._node as MDL0MaterialNode))._objects.Add(poly);
                             break;
                         }
 
                 model._numFaces += poly._numFaces = manager._faceCount = manager._pointCount / 3;
                 model._numFacepoints += poly._numFacepoints = manager._pointCount;
-
+                
                 poly._parent = model._objGroup;
-                poly._index = tempNo++;
-
                 model._objList.Add(poly);
             }
         }
@@ -1589,27 +1622,13 @@ namespace BrawlLib.Modeling
         private void InitializeComponent()
         {
             this.Status = new System.Windows.Forms.Label();
-            this.fltVerts = new System.Windows.Forms.CheckBox();
-            this.fltNrms = new System.Windows.Forms.CheckBox();
-            this.fltUVs = new System.Windows.Forms.CheckBox();
-            this.addClrs = new System.Windows.Forms.CheckBox();
-            this.rmpClrs = new System.Windows.Forms.CheckBox();
-            this.forceTriangles = new System.Windows.Forms.CheckBox();
-            this.CCW = new System.Windows.Forms.CheckBox();
-            this.rmpMats = new System.Windows.Forms.CheckBox();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.b = new System.Windows.Forms.NumericInputBox();
-            this.a = new System.Windows.Forms.NumericInputBox();
-            this.g = new System.Windows.Forms.NumericInputBox();
-            this.r = new System.Windows.Forms.NumericInputBox();
-            this.clr = new System.Windows.Forms.Label();
-            this.label24 = new System.Windows.Forms.Label();
-            this.button3 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.mdlType = new System.Windows.Forms.ComboBox();
+            this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
+            this.panel2 = new System.Windows.Forms.Panel();
             this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // Status
@@ -1622,102 +1641,12 @@ namespace BrawlLib.Modeling
             this.Status.Text = "Parsing DAE model...";
             this.Status.UseWaitCursor = true;
             // 
-            // fltVerts
-            // 
-            this.fltVerts.AutoSize = true;
-            this.fltVerts.Location = new System.Drawing.Point(12, 12);
-            this.fltVerts.Name = "fltVerts";
-            this.fltVerts.Size = new System.Drawing.Size(116, 17);
-            this.fltVerts.TabIndex = 1;
-            this.fltVerts.Text = "Force float vertices";
-            this.fltVerts.UseVisualStyleBackColor = true;
-            // 
-            // fltNrms
-            // 
-            this.fltNrms.AutoSize = true;
-            this.fltNrms.Location = new System.Drawing.Point(12, 35);
-            this.fltNrms.Name = "fltNrms";
-            this.fltNrms.Size = new System.Drawing.Size(115, 17);
-            this.fltNrms.TabIndex = 2;
-            this.fltNrms.Text = "Force float normals";
-            this.fltNrms.UseVisualStyleBackColor = true;
-            // 
-            // fltUVs
-            // 
-            this.fltUVs.AutoSize = true;
-            this.fltUVs.Location = new System.Drawing.Point(12, 58);
-            this.fltUVs.Name = "fltUVs";
-            this.fltUVs.Size = new System.Drawing.Size(99, 17);
-            this.fltUVs.TabIndex = 3;
-            this.fltUVs.Text = "Force float UVs";
-            this.fltUVs.UseVisualStyleBackColor = true;
-            // 
-            // addClrs
-            // 
-            this.addClrs.AutoSize = true;
-            this.addClrs.Checked = true;
-            this.addClrs.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.addClrs.Location = new System.Drawing.Point(12, 81);
-            this.addClrs.Name = "addClrs";
-            this.addClrs.Size = new System.Drawing.Size(141, 17);
-            this.addClrs.TabIndex = 4;
-            this.addClrs.Text = "Add color nodes, if none";
-            this.addClrs.UseVisualStyleBackColor = true;
-            this.addClrs.CheckedChanged += new System.EventHandler(this.addClrs_CheckedChanged);
-            // 
-            // rmpClrs
-            // 
-            this.rmpClrs.AutoSize = true;
-            this.rmpClrs.Checked = true;
-            this.rmpClrs.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.rmpClrs.Location = new System.Drawing.Point(12, 104);
-            this.rmpClrs.Name = "rmpClrs";
-            this.rmpClrs.Size = new System.Drawing.Size(196, 17);
-            this.rmpClrs.TabIndex = 5;
-            this.rmpClrs.Text = "Remap all objects to one color node";
-            this.rmpClrs.UseVisualStyleBackColor = true;
-            // 
-            // forceTriangles
-            // 
-            this.forceTriangles.AutoSize = true;
-            this.forceTriangles.Checked = true;
-            this.forceTriangles.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.forceTriangles.Enabled = false;
-            this.forceTriangles.Location = new System.Drawing.Point(220, 35);
-            this.forceTriangles.Name = "forceTriangles";
-            this.forceTriangles.Size = new System.Drawing.Size(162, 17);
-            this.forceTriangles.TabIndex = 6;
-            this.forceTriangles.Text = "Force Triangle primitives only";
-            this.forceTriangles.UseVisualStyleBackColor = true;
-            // 
-            // CCW
-            // 
-            this.CCW.AutoSize = true;
-            this.CCW.Location = new System.Drawing.Point(220, 58);
-            this.CCW.Name = "CCW";
-            this.CCW.Size = new System.Drawing.Size(141, 17);
-            this.CCW.TabIndex = 7;
-            this.CCW.Text = "Force CCW primitive cull";
-            this.CCW.UseVisualStyleBackColor = true;
-            // 
-            // rmpMats
-            // 
-            this.rmpMats.AutoSize = true;
-            this.rmpMats.Checked = true;
-            this.rmpMats.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.rmpMats.Location = new System.Drawing.Point(220, 81);
-            this.rmpMats.Name = "rmpMats";
-            this.rmpMats.Size = new System.Drawing.Size(104, 17);
-            this.rmpMats.TabIndex = 8;
-            this.rmpMats.Text = "Remap materials";
-            this.rmpMats.UseVisualStyleBackColor = true;
-            // 
             // button1
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(220, 149);
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Location = new System.Drawing.Point(231, 6);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(79, 23);
+            this.button1.Size = new System.Drawing.Size(65, 23);
             this.button1.TabIndex = 9;
             this.button1.Text = "Okay";
             this.button1.UseVisualStyleBackColor = true;
@@ -1725,10 +1654,11 @@ namespace BrawlLib.Modeling
             // 
             // button2
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(303, 149);
+            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.button2.Location = new System.Drawing.Point(302, 6);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(79, 23);
+            this.button2.Size = new System.Drawing.Size(65, 23);
             this.button2.TabIndex = 10;
             this.button2.Text = "Cancel";
             this.button2.UseVisualStyleBackColor = true;
@@ -1736,141 +1666,51 @@ namespace BrawlLib.Modeling
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.b);
-            this.panel1.Controls.Add(this.a);
-            this.panel1.Controls.Add(this.g);
-            this.panel1.Controls.Add(this.r);
-            this.panel1.Controls.Add(this.clr);
-            this.panel1.Controls.Add(this.label24);
-            this.panel1.Controls.Add(this.button3);
-            this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.mdlType);
-            this.panel1.Controls.Add(this.fltVerts);
-            this.panel1.Controls.Add(this.fltNrms);
-            this.panel1.Controls.Add(this.fltUVs);
-            this.panel1.Controls.Add(this.addClrs);
-            this.panel1.Controls.Add(this.rmpClrs);
-            this.panel1.Controls.Add(this.forceTriangles);
-            this.panel1.Controls.Add(this.CCW);
-            this.panel1.Controls.Add(this.rmpMats);
-            this.panel1.Controls.Add(this.button1);
-            this.panel1.Controls.Add(this.button2);
+            this.panel1.Controls.Add(this.propertyGrid1);
+            this.panel1.Controls.Add(this.panel2);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(394, 184);
+            this.panel1.Size = new System.Drawing.Size(379, 371);
             this.panel1.TabIndex = 11;
             // 
-            // b
+            // propertyGrid1
             // 
-            this.b.Location = new System.Drawing.Point(114, 151);
-            this.b.Name = "b";
-            this.b.Size = new System.Drawing.Size(49, 20);
-            this.b.TabIndex = 22;
-            this.b.Text = "0";
-            this.b.ValueChanged += new System.EventHandler(this.r_ValueChanged);
+            this.propertyGrid1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.propertyGrid1.Location = new System.Drawing.Point(0, 0);
+            this.propertyGrid1.Name = "propertyGrid1";
+            this.propertyGrid1.Size = new System.Drawing.Size(379, 336);
+            this.propertyGrid1.TabIndex = 11;
+            this.propertyGrid1.ToolbarVisible = false;
             // 
-            // a
+            // panel2
             // 
-            this.a.Location = new System.Drawing.Point(165, 151);
-            this.a.Name = "a";
-            this.a.Size = new System.Drawing.Size(49, 20);
-            this.a.TabIndex = 20;
-            this.a.Text = "0";
-            this.a.ValueChanged += new System.EventHandler(this.r_ValueChanged);
-            // 
-            // g
-            // 
-            this.g.Location = new System.Drawing.Point(63, 151);
-            this.g.Name = "g";
-            this.g.Size = new System.Drawing.Size(49, 20);
-            this.g.TabIndex = 18;
-            this.g.Text = "0";
-            this.g.ValueChanged += new System.EventHandler(this.r_ValueChanged);
-            // 
-            // r
-            // 
-            this.r.Location = new System.Drawing.Point(12, 151);
-            this.r.Name = "r";
-            this.r.Size = new System.Drawing.Size(49, 20);
-            this.r.TabIndex = 16;
-            this.r.Text = "0";
-            this.r.ValueChanged += new System.EventHandler(this.r_ValueChanged);
-            // 
-            // clr
-            // 
-            this.clr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.clr.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.clr.Location = new System.Drawing.Point(112, 124);
-            this.clr.Name = "clr";
-            this.clr.Size = new System.Drawing.Size(102, 20);
-            this.clr.TabIndex = 14;
-            this.clr.Click += new System.EventHandler(this.clr_Click);
-            // 
-            // label24
-            // 
-            this.label24.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label24.Location = new System.Drawing.Point(12, 124);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(101, 20);
-            this.label24.TabIndex = 15;
-            this.label24.Text = "Default Color:";
-            this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // button3
-            // 
-            this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(220, 120);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(162, 23);
-            this.button3.TabIndex = 13;
-            this.button3.Text = "Save Settings";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(217, 13);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(34, 13);
-            this.label1.TabIndex = 12;
-            this.label1.Text = "Type:";
-            // 
-            // mdlType
-            // 
-            this.mdlType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.mdlType.FormattingEnabled = true;
-            this.mdlType.Items.AddRange(new object[] {
-            "Character",
-            "Stage/Item"});
-            this.mdlType.Location = new System.Drawing.Point(261, 10);
-            this.mdlType.Name = "mdlType";
-            this.mdlType.Size = new System.Drawing.Size(121, 21);
-            this.mdlType.TabIndex = 11;
-            this.mdlType.SelectedIndexChanged += new System.EventHandler(this.mdlType_SelectedIndexChanged);
+            this.panel2.Controls.Add(this.button1);
+            this.panel2.Controls.Add(this.button2);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panel2.Location = new System.Drawing.Point(0, 336);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(379, 35);
+            this.panel2.TabIndex = 12;
             // 
             // Collada
             // 
-            this.ClientSize = new System.Drawing.Size(394, 184);
+            this.AcceptButton = this.button1;
+            this.CancelButton = this.button2;
+            this.ClientSize = new System.Drawing.Size(379, 371);
             this.ControlBox = false;
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Status);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.MaximizeBox = false;
             this.Name = "Collada";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Import Settings";
             this.panel1.ResumeLayout(false);
-            this.panel1.PerformLayout();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
-        }
-
-        private void addClrs_CheckedChanged(object sender, EventArgs e)
-        {
-            rmpClrs.Enabled = addClrs.Checked;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -1884,56 +1724,6 @@ namespace BrawlLib.Modeling
             DialogResult = DialogResult.Cancel; 
             Close();
         }
-
-        private void mdlType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //if (mdlType.SelectedIndex == 0)
-            //    fltVerts.Checked = fltNrms.Checked = fltUVs.Checked = true;
-            //else
-            //    fltVerts.Checked = fltNrms.Checked = fltUVs.Checked = false;
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            ImportOptions o = new ImportOptions();
-            o._mdlType = mdlType.SelectedIndex;
-            o._forceTriangles = forceTriangles.Checked;
-            o._fltVerts = fltVerts.Checked;
-            o._fltNrms = fltNrms.Checked;
-            o._fltUVs = fltUVs.Checked;
-            o._addClrs = addClrs.Checked;
-            o._rmpClrs = rmpClrs.Checked;
-            o._rmpMats = rmpMats.Checked;
-            o._forceCCW = CCW.Checked;
-            o._dfltClr = new RGBAPixel((byte)r.Value, (byte)g.Value, (byte)b.Value, (byte)a.Value);
-
-            BrawlLib.Properties.Settings.Default.ColladaImportOptions = o;
-            BrawlLib.Properties.Settings.Default.Save();
-        }
-
-        private void r_ValueChanged(object sender, EventArgs e)
-        {
-            if (_updating)
-                return;
-
-            clr.BackColor = Color.FromArgb((int)a.Value, (int)r.Value, (int)g.Value, (int)b.Value);
-        }
-
         bool _updating = false;
-        private GoodColorDialog _dlgColor;
-        private void clr_Click(object sender, EventArgs e)
-        {
-            _dlgColor.Color = clr.BackColor;
-            if (_dlgColor.ShowDialog(this) == DialogResult.OK)
-            {
-                _updating = true;
-                r.Value = _dlgColor.Color.R;
-                g.Value = _dlgColor.Color.G;
-                b.Value = _dlgColor.Color.B;
-                a.Value = _dlgColor.Color.A;
-                _updating = false;
-                r_ValueChanged(null, null);
-            }
-        }
     }
 }

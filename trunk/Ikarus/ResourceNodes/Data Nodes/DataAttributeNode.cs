@@ -8,9 +8,8 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefAttributeNode : MoveDefEntryNode
+    public unsafe class MoveDefAttributeNode : MoveDefEntry
     {
-        internal FDefAttributes* Header { get { return (FDefAttributes*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
         private UnsafeBuffer attributeBuffer;
@@ -420,203 +419,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         #endregion
 
         #region OnInitRebuildCalc
-        public override bool OnInitialize()
+        public override void Parse(int offset)
         {
-            base.OnInitialize();
             attributeBuffer = new UnsafeBuffer(0x2E4);
             byte* pOut = (byte*)attributeBuffer.Address;
             byte* pIn = (byte*)Header;
             for (int i = 0; i < 0x2E4; i++)
                 *pOut++ = *pIn++;
-
-            //FDefAttributes* attributes = Header;
-
-            //_walkInitVelocity = attributes->_walkInitVelocity;
-            //_walkAcceleration = attributes->_walkAcceleration;
-            //_walkMaxVelocity = attributes->_walkMaxVelocity;
-            //_stopVelocity = attributes->_stopVelocity;
-            //_dashInitVelocity = attributes->_dashInitVelocity;
-            //_stopTurnDecel = attributes->_stopTurnDecel;
-            //_stopTurnAccel = attributes->_stopTurnAccel;
-            //_runInitVelocity = attributes->_runInitVelocity;
-            //_unk01 = attributes->_unk01;
-            //_unk02 = attributes->_unk02;
-            //_unk03 = attributes->_unk03;
-            //_unk04 = attributes->_unk04;
-            //_unk05 = attributes->_unk05;
-            //_unk06 = attributes->_unk06;
-            //_jumpYInitVelocity = attributes->_jumpYInitVelocity;
-            //_unk07 = attributes->_unk07;
-            //_jumpXInitVelocity = attributes->_jumpXInitVelocity;
-            //_hopYInitVelocity = attributes->_hopYInitVelocity;
-            //_airJumpMultiplier = attributes->_airJumpMultiplier;
-            //_unk08 = attributes->_unk08;
-            //_stoolYInitVelocity = attributes->_stoolYInitVelocity;
-            //_unk09 = attributes->_unk09;
-            //_unk10 = attributes->_unk10;
-            //_unk11 = attributes->_unk11;
-            //_unk12 = attributes->_unk12;
-            //_gravity = attributes->_gravity;
-            //_termVelocity = attributes->_termVelocity;
-            //_unk13 = attributes->_unk13;
-            //_unk14 = attributes->_unk14;
-            //_airMobility = attributes->_airMobility;
-            //_airStopMobility = attributes->_airStopMobility;
-            //_airMaxXVelocity = attributes->_airMaxXVelocity;
-            //_unk15 = attributes->_unk15;
-            //_unk16 = attributes->_unk16;
-            //_unk17 = attributes->_unk17;
-            //_unk18 = attributes->_unk18;
-            //_unk19 = attributes->_unk19;
-            //_unk20 = attributes->_unk20;
-            //_unk21 = attributes->_unk21;
-            //_unk22 = attributes->_unk22;
-            //_unk23 = attributes->_unk23;
-            //_unk24 = attributes->_unk24;
-            //_unk25 = attributes->_unk25;
-            //_unk26 = attributes->_unk26;
-            //_weight = attributes->_weight;
-            //_unk27 = attributes->_unk27;
-            //_unk28 = attributes->_unk28;
-            //_unk29 = attributes->_unk29;
-            //_unk30 = attributes->_unk30;
-            //_shieldSize = attributes->_shieldSize;
-            //_shieldBreakBounce = attributes->_shieldBreakBounce;
-            //_unk31 = attributes->_unk31;
-            //_unk32 = attributes->_unk32;
-            //_unk33 = attributes->_unk33;
-            //_unk34 = attributes->_unk34;
-            //_unk35 = attributes->_unk35;
-            //_unk36 = attributes->_unk36;
-            //_unk37 = attributes->_unk37;
-            //_unk38 = attributes->_unk38;
-            //_unk39 = attributes->_unk39;
-            //_unk40 = attributes->_unk40;
-            //_unk41 = attributes->_unk41;
-            //_edgeJumpYVelocity = attributes->_edgeJumpYVelocity;
-            //_edgeJumpXVelocity = attributes->_edgeJumpXVelocity;
-            //_unk42 = attributes->_unk42;
-            //_unk43 = attributes->_unk43;
-            //_unk44 = attributes->_unk44;
-            //_unk45 = attributes->_unk45;
-            //_unk46 = attributes->_unk46;
-            //_unk47 = attributes->_unk47;
-            //_itemThrowStrength = attributes->_itemThrowStrength;
-            //_unk48 = attributes->_unk48;
-            //_unk49 = attributes->_unk49;
-            //_unk50 = attributes->_unk50;
-            //_fireMoveSpeed = attributes->_fireMoveSpeed;
-            //_fireFDashSpeed = attributes->_fireFDashSpeed;
-            //_fireBDashSpeed = attributes->_fireBDashSpeed;
-            //_unk51 = attributes->_unk51;
-            //_unk52 = attributes->_unk52;
-            //_unk53 = attributes->_unk53;
-            //_unk54 = attributes->_unk54;
-            //_unk55 = attributes->_unk55;
-            //_unk56 = attributes->_unk56;
-            //_unk57 = attributes->_unk57;
-            //_unk58 = attributes->_unk58;
-            //_unk59 = attributes->_unk59;
-            //_unk60 = attributes->_unk60;
-            //_unk61 = attributes->_unk61;
-            //_unk62 = attributes->_unk62;
-            //_wallJumpYVelocity = attributes->_wallJumpYVelocity;
-            //_wallJumpXVelocity = attributes->_wallJumpXVelocity;
-            //_unk63 = attributes->_unk63;
-            //_unk64 = attributes->_unk64;
-            //_unk65 = attributes->_unk65;
-            //_unk66 = attributes->_unk66;
-            //_unk67 = attributes->_unk67;
-            //_unk68 = attributes->_unk68;
-            //_unk69 = attributes->_unk69;
-            //_unk70 = attributes->_unk70;
-            //_unk71 = attributes->_unk71;
-            //_unk72 = attributes->_unk72;
-            //_unk73 = attributes->_unk73;
-            //_unk74 = attributes->_unk74;
-            //_unk75 = attributes->_unk75;
-            //_unk76 = attributes->_unk76;
-            //_unk77 = attributes->_unk77;
-            //_unk78 = attributes->_unk78;
-            //_unk79 = attributes->_unk79;
-            //_unk80 = attributes->_unk80;
-            //_unk81 = attributes->_unk81;
-            //_unk82 = attributes->_unk82;
-            //_unk83 = attributes->_unk83;
-            //_unk84 = attributes->_unk84;
-            //_unk85 = attributes->_unk85;
-            //_unk86 = attributes->_unk86;
-
-            //_unk89 = attributes->_unk89;
-            //_unk90 = attributes->_unk90;
-            //_unk91 = attributes->_unk91;
-            //_unk92 = attributes->_unk92;
-            //_unk93 = attributes->_unk93;
-            //_unk94 = attributes->_unk94;
-            //_unk95 = attributes->_unk95;
-            //_unk96 = attributes->_unk96;
-            //_unk97 = attributes->_unk97;
-            //_unk98 = attributes->_unk98;
-            //_unk99 = attributes->_unk99;
-            //_unk100 = attributes->_unk100;
-            //_unk101 = attributes->_unk101;
-            //_unk102 = attributes->_unk102;
-            //_unk103 = attributes->_unk103;
-            //_unk104 = attributes->_unk104;
-            //_unk105 = attributes->_unk105;
-            //_unk106 = attributes->_unk106;
-            //_unk107 = attributes->_unk107;
-            //_unk108 = attributes->_unk108;
-            //_unk109 = attributes->_unk109;
-            //_unk110 = attributes->_unk110;
-            //_unk111 = attributes->_unk111;
-            //_unk112 = attributes->_unk112;
-            //_unk113 = attributes->_unk113;
-            //_unk114 = attributes->_unk114;
-            //_unk115 = attributes->_unk115;
-            //_unk116 = attributes->_unk116;
-            //_unk117 = attributes->_unk117;
-            //_unk118 = attributes->_unk118;
-            //_unk119 = attributes->_unk119;
-            //_unk120 = attributes->_unk120;
-            //_unk121 = attributes->_unk121;
-            //_unk122 = attributes->_unk122;
-            //_unk123 = attributes->_unk123;
-            //_unk124 = attributes->_unk124;
-            //_unk125 = attributes->_unk125;
-            //_unk126 = attributes->_unk126;
-            //_unk127 = attributes->_unk127;
-            //_unk128 = attributes->_unk128;
-            //_unk129 = attributes->_unk129;
-            //_unk130 = attributes->_unk130;
-            //_unk131 = attributes->_unk131;
-            //_unk132 = attributes->_unk132;
-            //_unk133 = attributes->_unk133;
-            //_unk134 = attributes->_unk134;
-            //_unk135 = attributes->_unk135;
-            //_unk136 = attributes->_unk136;
-            //_unk137 = attributes->_unk137;
-            //_unk138 = attributes->_unk138;
-            //_unk139 = attributes->_unk139;
-            //_unk140 = attributes->_unk140;
-            //_unk141 = attributes->_unk141;
-            //_unk142 = attributes->_unk142;
-            //_unk143 = attributes->_unk143;
-            //_unk144 = attributes->_unk144;
-            //_unk145 = attributes->_unk145;
-            //_unk146 = attributes->_unk146;
-            //_unk147 = attributes->_unk147;
-            //_unk148 = attributes->_unk148;
-            //_unk149 = attributes->_unk149;
-            //_unk150 = attributes->_unk150;
-            //_unk151 = attributes->_unk151;
-            //_unk152 = attributes->_unk152;
-            //_unk153 = attributes->_unk153;
-            //_unk154 = attributes->_unk154;
-            //_unk155 = attributes->_unk155;
-            //_unk156 = attributes->_unk156;
-            //_unk157 = attributes->_unk157;
-            //_unk158 = attributes->_unk158;
 
             return false;
         }

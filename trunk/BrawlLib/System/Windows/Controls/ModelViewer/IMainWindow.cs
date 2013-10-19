@@ -27,7 +27,7 @@ namespace System.Windows.Forms
         void GetFiles(AnimType focusType);
         void AnimChanged(AnimType type);
 
-        AnimationNode GetSelectedBRRESFile(AnimType type);
+        AnimationNode GetAnimation(AnimType type);
 
         ModelPlaybackPanel PlaybackPanel { get; }
         KeyframePanel KeyframePanel { get; }
@@ -43,6 +43,7 @@ namespace System.Windows.Forms
         Panel AnimCtrlPnl { get; }
         Panel AnimEditors { get; }
         InterpolationEditor InterpolationEditor { get; }
+        ModelViewerForm ModelViewerForm { get; }
 
         CHR0Node SelectedCHR0 { get; set; }
         SRT0Node SelectedSRT0 { get; set; }
@@ -57,6 +58,9 @@ namespace System.Windows.Forms
         int MaxFrame { get; set; }
         bool Playing { get; set; }
         bool Loop { get; set; }
+        bool Focused { get; }
+        Drawing.Point Location { get; set; }
+        Drawing.Size Size { get; set; }
 
         bool Updating { get; set; }
         bool EnableTransformEdit { get; set; }
@@ -64,7 +68,6 @@ namespace System.Windows.Forms
         bool RenderLightDisplay { get; set; }
         uint AllowedUndos { get; set; }
         bool LinearInterpolation { get; set; }
-        bool InterpolationEditorVisible { get; set; }
 
         MDL0Node TargetModel { get; set; }
         VIS0EntryNode TargetVisEntry { get; set; }
@@ -73,7 +76,7 @@ namespace System.Windows.Forms
         AnimType TargetAnimType { get; set; }
     }
 
-    public static class MainWindowStaticVars
+    public static class StaticMainWindow
     {
         public static Color _floorHue = Color.FromArgb(255, 128, 128, 191);
     }

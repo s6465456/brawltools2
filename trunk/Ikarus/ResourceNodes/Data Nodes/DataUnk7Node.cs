@@ -7,7 +7,7 @@ using System.ComponentModel;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefUnk7Node : MoveDefEntryNode
+    public unsafe class MoveDefUnk7Node : MoveDefEntry
     {
         internal long* Start { get { return (long*)WorkingUncompressed.Address; } }
         internal int Count = 0;
@@ -45,7 +45,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefUnk7EntryNode : MoveDefEntryNode
+    public unsafe class MoveDefUnk7EntryNode : MoveDefEntry
     {
         internal buint* _value1 { get { return (buint*)WorkingUncompressed.Address; } }
         internal buint* _value2 { get { return (buint*)(WorkingUncompressed.Address + 4); } }

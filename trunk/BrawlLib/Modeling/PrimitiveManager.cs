@@ -151,24 +151,24 @@ namespace BrawlLib.Modeling
             ElementDescriptor desc = new ElementDescriptor(polygon);
 
             //Grab asset lists in sequential order.
-            if ((id = polygon->_vertexId) >= 0 && desc.HasData[0])
+            if ((id = polygon->_vertexId) >= 0 && desc.HasData[0] && assets.Assets[0] != null)
             {
                 pOutList[0] = (byte*)(_faceData[0] = new UnsafeBuffer(12 * _pointCount)).Address;
                 pAssetList[0] = (byte*)assets.Assets[0][id].Address;
             }
-            if ((id = polygon->_normalId) >= 0 && desc.HasData[1])
+            if ((id = polygon->_normalId) >= 0 && desc.HasData[1] && assets.Assets[1] != null)
             {
                 pOutList[1] = (byte*)(_faceData[1] = new UnsafeBuffer(12 * _pointCount)).Address;
                 pAssetList[1] = (byte*)assets.Assets[1][id].Address;
             }
             for (int i = 0, x = 2; i < 2; i++, x++)
-                if ((id = ((bshort*)polygon->_colorIds)[i]) >= 0 && desc.HasData[x])
+                if ((id = ((bshort*)polygon->_colorIds)[i]) >= 0 && desc.HasData[x] && assets.Assets[2] != null)
                 {
                     pOutList[x] = (byte*)(_faceData[x] = new UnsafeBuffer(4 * _pointCount)).Address;
                     pAssetList[x] = (byte*)assets.Assets[2][id].Address;
                 }
             for (int i = 0, x = 4; i < 8; i++, x++)
-                if ((id = ((bshort*)polygon->_uids)[i]) >= 0 && desc.HasData[x])
+                if ((id = ((bshort*)polygon->_uids)[i]) >= 0 && desc.HasData[x] && assets.Assets[3] != null)
                 {
                     pOutList[x] = (byte*)(_faceData[x] = new UnsafeBuffer(8 * _pointCount)).Address;
                     pAssetList[x] = (byte*)assets.Assets[3][id].Address;

@@ -15,6 +15,8 @@ using System.Audio;
 using BrawlLib.Wii.Audio;
 using BrawlLib.OpenGL;
 using System.Diagnostics;
+using BrawlBox.Properties;
+using System.Collections.Specialized;
 
 namespace BrawlBox
 {
@@ -28,10 +30,13 @@ namespace BrawlBox
 
         private SettingsDialog _settings;
         private SettingsDialog Settings { get { return _settings == null ? _settings = new SettingsDialog() : _settings; } }
-        
+
+        RecentFileHandler RecentFileHandler;
+
         public MainForm()
         {
             InitializeComponent();
+
             Text = Program.AssemblyTitle;
 //#if _DEBUG
 //            Text += " - DEBUG";
@@ -49,7 +54,6 @@ namespace BrawlBox
             scN0CameraEditControl1.Dock =
             scN0LightEditControl1.Dock =
             scN0FogEditControl1.Dock =
-            ppcDisassembler1.Dock =
             modelPanel1.Dock =
             previewPanel2.Dock =
             videoPlaybackPanel1.Dock =
@@ -58,6 +62,9 @@ namespace BrawlBox
             _instance = this;
             modelPanel1._forceNoSelection = true;
             _currentControl = modelPanel1;
+
+            RecentFileHandler = new RecentFileHandler(this.components);
+            RecentFileHandler.RecentFileToolStripItem = this.recentFilesToolStripMenuItem;
         }
 
         private delegate bool DelegateOpenFile(String s);
@@ -127,7 +134,6 @@ namespace BrawlBox
             scN0CameraEditControl1.TargetSequence = null;
             scN0LightEditControl1.TargetSequence = null;
             scN0FogEditControl1.TargetSequence = null;
-            ppcDisassembler1.TargetNode = null;
             modelPanel1.ClearAll();
             
             Control newControl = null;
@@ -192,11 +198,6 @@ namespace BrawlBox
                     newControl = scN0FogEditControl1;
                     disable2nd = true;
                 }
-                //else if (node is ModuleDataNode && (node as ModuleDataNode).HasCode)
-                //{
-                //    ppcDisassembler1.TargetNode = node as ModuleDataNode;
-                //    newControl = ppcDisassembler1;
-                //}
                 else if (node is IAudioSource)
                 {
                     audioPlaybackPanel1.TargetSource = node as IAudioSource;
@@ -390,7 +391,8 @@ namespace BrawlBox
                         Reset();
                     }
                 }
-                else Program.Open(inFile);
+                else if (Program.Open(inFile))
+                    RecentFileHandler.AddFile(inFile);
             }
         }
 
@@ -489,6 +491,178 @@ namespace BrawlBox
         {
             GCTEditor c = new GCTEditor();
             c.Show();
+        }
+
+        private void recentFilesToolStripMenuItem_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            RecentFileHandler.FileMenuItem fmi = (RecentFileHandler.FileMenuItem)e.ClickedItem;
+            Program.Open(fmi.FileName);
+        }
+    }
+
+    public class RecentFileHandler : Component
+    {
+        private System.ComponentModel.IContainer components = null;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+        }
+        public class FileMenuItem : ToolStripMenuItem
+        {
+            string fileName;
+
+            public string FileName
+            {
+                get { return fileName; }
+                set { fileName = value; }
+            }
+
+            public FileMenuItem(string fileName)
+            {
+                this.fileName = fileName;
+            }
+
+            public override string Text
+            {
+                get
+                {
+                    ToolStripMenuItem parent = (ToolStripMenuItem)this.OwnerItem;
+                    int index = parent.DropDownItems.IndexOf(this);
+                    return string.Format("{0} {1}", index + 1, fileName);
+                }
+                set
+                {
+                }
+            }
+        }
+
+        public const int MaxRecentFiles = 24;
+
+        public RecentFileHandler()
+        {
+            InitializeComponent();
+
+            Init();
+        }
+
+        public RecentFileHandler(IContainer container)
+        {
+            container.Add(this);
+
+            InitializeComponent();
+
+            Init();
+        }
+
+        void Init()
+        {
+            Settings.Default.PropertyChanged += new PropertyChangedEventHandler(Default_PropertyChanged);
+        }
+
+        public void AddFile(string fileName)
+        {
+            try
+            {
+                if (this.recentFileToolStripItem == null)
+                    throw new OperationCanceledException("recentFileToolStripItem can not be null!");
+
+                // check if the file is already in the collection
+                int alreadyIn = GetIndexOfRecentFile(fileName);
+                if (alreadyIn != -1) // remove it
+                {
+                    Settings.Default.RecentFiles.RemoveAt(alreadyIn);
+                    if (recentFileToolStripItem.DropDownItems.Count > alreadyIn)
+                        recentFileToolStripItem.DropDownItems.RemoveAt(alreadyIn);
+                }
+                else if (alreadyIn == 0) // it´s the latest file so return
+                    return;
+
+                // insert the file on top of the list
+                Settings.Default.RecentFiles.Insert(0, fileName);
+                recentFileToolStripItem.DropDownItems.Insert(0, new FileMenuItem(fileName));
+
+                // remove the last one, if max size is reached
+                if (Settings.Default.RecentFiles.Count > MaxRecentFiles)
+                    Settings.Default.RecentFiles.RemoveAt(MaxRecentFiles);
+                if (Settings.Default.RecentFiles.Count > Settings.Default.RecentFilesMax)
+                    recentFileToolStripItem.DropDownItems.RemoveAt(Settings.Default.RecentFilesMax);
+
+                // enable the menu item if it´s disabled
+                if (!recentFileToolStripItem.Enabled)
+                    recentFileToolStripItem.Enabled = true;
+
+                // save the changes
+                Settings.Default.Save();
+            }
+            catch { }
+        }
+
+        int GetIndexOfRecentFile(string filename)
+        {
+            for (int i = 0; i < Settings.Default.RecentFiles.Count; i++)
+            {
+                string currentFile = Settings.Default.RecentFiles[i];
+                if (string.Equals(currentFile, filename, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            }
+            return -1;
+        }
+
+        ToolStripMenuItem recentFileToolStripItem;
+
+        public ToolStripMenuItem RecentFileToolStripItem
+        {
+            get { return recentFileToolStripItem; }
+            set
+            {
+                if (recentFileToolStripItem == value)
+                    return;
+
+                recentFileToolStripItem = value;
+
+                ReCreateItems();
+            }
+        }
+
+        void Default_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "RecentFilesMax")
+            {
+                ReCreateItems();
+            }
+        }
+
+        void ReCreateItems()
+        {
+            if (recentFileToolStripItem == null)
+                return;
+
+            if (Settings.Default.RecentFiles == null)
+                Settings.Default.RecentFiles = new StringCollection();
+
+            recentFileToolStripItem.DropDownItems.Clear();
+            recentFileToolStripItem.Enabled = (Settings.Default.RecentFiles.Count > 0);
+
+            int fileItemCount = Math.Min(Settings.Default.RecentFilesMax, Settings.Default.RecentFiles.Count);
+            for (int i = 0; i < fileItemCount; i++)
+            {
+                string file = Settings.Default.RecentFiles[i];
+                recentFileToolStripItem.DropDownItems.Add(new FileMenuItem(file));
+            }
+        }
+
+        public void Clear()
+        {
+            Settings.Default.RecentFiles.Clear();
+            ReCreateItems();
         }
     }
 }

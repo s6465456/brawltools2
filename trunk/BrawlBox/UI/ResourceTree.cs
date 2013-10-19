@@ -8,6 +8,7 @@ using System.Drawing;
 using BrawlBox.Properties;
 using System.Runtime.InteropServices;
 using System.Linq;
+using System.IO;
 
 namespace BrawlBox
 {
@@ -60,6 +61,7 @@ namespace BrawlBox
                         Resources.TPL,
                         Resources.Palette,
                         Resources.U8, //35
+                        Resources.REFFEntry,
                     });
                 }
                 return _imgList;
@@ -103,8 +105,8 @@ namespace BrawlBox
         {
             SetStyle(ControlStyles.UserMouse, true);
 
-            timer.Interval = 200;
-            timer.Tick += new EventHandler(timer_Tick);
+            _timer.Interval = 200;
+            _timer.Tick += new EventHandler(timer_Tick);
 
             AllowDrop = true;
 
@@ -114,6 +116,8 @@ namespace BrawlBox
             DragEnter += new DragEventHandler(treeView1_DragEnter);
             DragLeave += new EventHandler(treeView1_DragLeave);
             GiveFeedback += new GiveFeedbackEventHandler(treeView1_GiveFeedback);
+
+            m_DelegateOpenFile = new DelegateOpenFile(ImportFile);
         }
 
         public BaseWrapper FindResource(ResourceNode node)
@@ -190,27 +194,27 @@ namespace BrawlBox
 
         protected override void Dispose(bool disposing) { Clear(); base.Dispose(disposing); }
 
-        private TreeNode dragNode = null;
-        private TreeNode tempDropNode = null;
-        private Timer timer = new Timer();
+        private TreeNode _dragNode = null;
+        private TreeNode _tempDropNode = null;
+        private Timer _timer = new Timer();
 
         private ImageList imageListDrag = new ImageList();
 
         private void treeView_ItemDrag(object sender, ItemDragEventArgs e)
         {
-            dragNode = (TreeNode)e.Item;
-            SelectedNode = dragNode;
+            _dragNode = (TreeNode)e.Item;
+            SelectedNode = _dragNode;
 
             imageListDrag.Images.Clear();
-            imageListDrag.ImageSize = new Size(dragNode.Bounds.Size.Width + Indent + 7, dragNode.Bounds.Height);
+            imageListDrag.ImageSize = new Size(_dragNode.Bounds.Size.Width + Indent + 7, _dragNode.Bounds.Height);
 
-            Bitmap bmp = new Bitmap(dragNode.Bounds.Width + Indent + 7, dragNode.Bounds.Height);
+            Bitmap bmp = new Bitmap(_dragNode.Bounds.Width + Indent + 7, _dragNode.Bounds.Height);
 
             Graphics gfx = Graphics.FromImage(bmp);
 
             gfx.DrawImage(Images.Images[SelectedNode.ImageIndex], 0, 0);
 
-            gfx.DrawString(dragNode.Text,
+            gfx.DrawString(_dragNode.Text,
                 Font,
                 new SolidBrush(ForeColor),
                 (float)Indent + 7.0f, 4.0f);
@@ -219,8 +223,8 @@ namespace BrawlBox
 
             Point p = PointToClient(Control.MousePosition);
 
-            int dx = p.X + Indent - dragNode.Bounds.Left;
-            int dy = p.Y - dragNode.Bounds.Top - 25;
+            int dx = p.X + Indent - _dragNode.Bounds.Left;
+            int dy = p.Y - _dragNode.Bounds.Top - 25;
 
             if (DragHelper.ImageList_BeginDrag(imageListDrag.Handle, 0, dx, dy))
             {
@@ -229,13 +233,60 @@ namespace BrawlBox
             }
         }
 
+        private void ImportFile(string file, TreeNode t)
+        {
+            ResourceNode node = null;
+
+            if (t == null)
+                Program.Open(file);
+            else
+            {
+                ResourceNode dest = ((BaseWrapper)t).ResourceNode;
+                try
+                {
+                    if ((node = NodeFactory.FromFile(null, file)) != null)
+                    {
+                        bool ok = false;
+                        if (ModifierKeys == Keys.Shift || dest.Parent == null)
+                            ok = TryAddChild(node, dest);
+                        else
+                            ok = TryDrop(node, dest);
+                        if (!ok)
+                        {
+                            node.Dispose();
+                            node = null;
+                        }
+                        else
+                        {
+                            BaseWrapper b = FindResource(node);
+                            if (b != null)
+                            {
+                                b.EnsureVisible();
+                                SelectedNode = b;
+                            }
+                        }
+                    }
+                    else if (dest is TEX0Node || dest is REFTEntryNode || dest is TPLTextureNode)
+                        dest.Replace(file);
+                }
+                catch { }
+            }
+
+            _timer.Enabled = false;
+            _dragNode = null;
+        }
+
+        private delegate void DelegateOpenFile(String s, TreeNode t);
+        private DelegateOpenFile m_DelegateOpenFile;
         private void treeView1_DragOver(object sender, DragEventArgs e)
         {
+            Array a = (Array)e.Data.GetData(DataFormats.FileDrop);
+
             Point formP = PointToClient(new Point(e.X, e.Y));
             DragHelper.ImageList_DragMove(formP.X - Left, formP.Y - Top);
 
             TreeNode dropNode = GetNodeAt(PointToClient(new Point(e.X, e.Y)));
-            if (dropNode == null)
+            if (dropNode == null && a == null)
             {
                 e.Effect = DragDropEffects.None;
                 return;
@@ -243,25 +294,26 @@ namespace BrawlBox
 
             e.Effect = DragDropEffects.Move;
 
-            if (tempDropNode != dropNode)
+            if (_tempDropNode != dropNode)
             {
                 DragHelper.ImageList_DragShowNolock(false);
                 SelectedNode = dropNode;
                 DragHelper.ImageList_DragShowNolock(true);
-                tempDropNode = dropNode;
+                _tempDropNode = dropNode;
             }
 
             TreeNode tmpNode = dropNode;
+            if (tmpNode != null)
             while (tmpNode.Parent != null)
             {
-                if (tmpNode.Parent == dragNode) 
+                if (tmpNode.Parent == _dragNode)
                     e.Effect = DragDropEffects.None;
 
                 tmpNode = tmpNode.Parent;
             }
         }
 
-        public bool CompareToType(Type compared, Type to)
+        private static bool CompareToType(Type compared, Type to)
         {
             Type bType;
             if (compared == to)
@@ -279,11 +331,11 @@ namespace BrawlBox
             }
             return false;
         }
-        public bool CompareTypes(ResourceNode r1, ResourceNode r2)
+        private static bool CompareTypes(ResourceNode r1, ResourceNode r2)
         {
             return CompareTypes(r1.GetType(), r2.GetType());
         }
-        public bool CompareTypes(Type type1, Type type2)
+        private static bool CompareTypes(Type type1, Type type2)
         {
             Type bType1, bType2;
             if (type1 == type2)
@@ -306,88 +358,123 @@ namespace BrawlBox
             return false;
         }
 
+        private static bool TryDrop(ResourceNode dragging, ResourceNode dropping)
+        {
+            if (dropping.Parent == null)
+                return false;
+
+            bool good = false;
+            int destIndex = dropping.Index;
+
+            good = CompareTypes(dragging, dropping);
+
+            if (dropping.Parent is BRESGroupNode)
+                foreach (Type t in dropping.Parent.AllowedChildTypes)
+                    if (good = CompareToType(dragging.GetType(), t))
+                        break;
+
+            if (good)
+            {
+                if (dragging.Parent != null)
+                    dragging.Parent.RemoveChild(dragging);
+                if (destIndex < dropping.Parent.Children.Count)
+                    dropping.Parent.InsertChild(dragging, true, destIndex);
+                else
+                    dropping.Parent.AddChild(dragging, true);
+
+                if (dragging is MDL0BoneNode)
+                    ((MDL0BoneNode)dragging).Moved = true;
+            }
+
+            return good;
+        }
+
+        private static bool TryAddChild(ResourceNode dragging, ResourceNode dropping)
+        {
+            bool good = false;
+
+            Type dt = dragging.GetType();
+            if (dropping.Children.Count != 0)
+                good = CompareTypes(dropping.Children[0].GetType(), dt);
+            else
+                foreach (Type t in dropping.AllowedChildTypes)
+                    if (good = CompareToType(dt, t))
+                        break;
+
+            if (good)
+            {
+                if (dragging.Parent != null)
+                    dragging.Parent.RemoveChild(dragging);
+                dropping.AddChild(dragging);
+
+                if (dragging is MDL0BoneNode)
+                    ((MDL0BoneNode)dragging).Moved = true;
+            }
+
+            return good;
+        }
+
         private void treeView1_DragDrop(object sender, DragEventArgs e)
         {
+            Array a = (Array)e.Data.GetData(DataFormats.FileDrop);
+
             DragHelper.ImageList_DragLeave(Handle);
             TreeNode dropNode = GetNodeAt(PointToClient(new Point(e.X, e.Y)));
-            if (dragNode != dropNode)
+
+            if (a != null)
             {
-                BaseWrapper drag = ((BaseWrapper)dragNode);
-                BaseWrapper drop = ((BaseWrapper)dropNode);
-                ResourceNode dragging = drag.ResourceNode;
-                ResourceNode dropping = drop.ResourceNode;
-                int destIndex = dropping.Index;
-
-                if (dropping.Parent == null)
-                    goto End;
-
-                bool good = false;
-                if (ModifierKeys == Keys.Shift)
+                string s = null;
+                for (int i = 0; i < a.Length; i++)
                 {
-                    Type dt = dragging.GetType();
-                    if (dropping.Children.Count != 0)
-                        good = CompareTypes(dropping.Children[0].GetType(), dt);
+                    s = a.GetValue(i).ToString();
+                    this.BeginInvoke(m_DelegateOpenFile, s, dropNode);
+                }
+            }
+            else
+            {
+                if (_dragNode != dropNode)
+                {
+                    BaseWrapper drag = ((BaseWrapper)_dragNode);
+                    BaseWrapper drop = ((BaseWrapper)dropNode);
+                    ResourceNode dragging = drag.ResourceNode;
+                    ResourceNode dropping = drop.ResourceNode;
+
+                    if (dropping.Parent == null)
+                        goto End;
+
+                    bool ok = false;
+                    if (ModifierKeys == Keys.Shift)
+                        ok = TryAddChild(dragging, dropping);
                     else
-                        foreach (Type t in dropping.AllowedChildTypes)
-                            if (good = CompareToType(dt, t))
-                                break;
+                        ok = TryDrop(dragging, dropping);
 
-                    if (good)
+                    if (ok)
                     {
-                        if (dragging.Parent != null)
-                            dragging.Parent.RemoveChild(dragging);
-                        dropping.AddChild(dragging);
+                        BaseWrapper b = FindResource(dragging);
+                        if (b != null)
+                        {
+                            b.EnsureVisible();
+                            SelectedNode = b;
+                        }
                     }
-                }
-                else
-                {
-                    good = CompareTypes(dragging, dropping);
 
-                    if (dropping.Parent is BRESGroupNode)
-                        foreach (Type t in dropping.Parent.AllowedChildTypes)
-                            if (good = CompareToType(dragging.GetType(), t))
-                                break;
-
-                    if (good)
-                    {
-                        if (dragging.Parent != null)
-                            dragging.Parent.RemoveChild(dragging);
-                        if (destIndex < dropping.Parent.Children.Count)
-                            dropping.Parent.InsertChild(dragging, true, destIndex);
-                        else
-                            dropping.Parent.AddChild(dragging, true);
-                    }
+                End:
+                    _dragNode = null;
+                    _timer.Enabled = false;
                 }
-
-                if (good)
-                {
-                    if (dragging is MDL0BoneNode)
-                        ((MDL0BoneNode)dragging).Moved = true;
-                }
-                
-                BaseWrapper b = FindResource(dragging);
-                if (b != null)
-                {
-                    b.EnsureVisible();
-                    SelectedNode = b;
-                }
-
-            End:
-                dragNode = null;
-                timer.Enabled = false;
             }
         }
 
         private void treeView1_DragEnter(object sender, DragEventArgs e)
         {
             DragHelper.ImageList_DragEnter(Handle, e.X - Left, e.Y - Top);
-            timer.Enabled = true;
+            _timer.Enabled = true;
         }
 
         private void treeView1_DragLeave(object sender, EventArgs e)
         {
             DragHelper.ImageList_DragLeave(Handle);
-            timer.Enabled = false;
+            _timer.Enabled = false;
         }
 
         private void treeView1_GiveFeedback(object sender, GiveFeedbackEventArgs e)

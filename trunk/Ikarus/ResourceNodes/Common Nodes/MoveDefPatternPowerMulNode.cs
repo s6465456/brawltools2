@@ -8,7 +8,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefPatternPowerMulNode : MoveDefEntryNode
+    public unsafe class MoveDefPatternPowerMulNode : MoveDefEntry
     {
         internal patternPowerMul* Header { get { return (patternPowerMul*)WorkingUncompressed.Address; } }
         
@@ -62,15 +62,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnPopulate()
         {
-            MoveDefActionNode prev;
+            ActionScript prev;
             VoidPtr addr = &Header->_first;
 
             //Event parameters for events in this node are built elsewhere
-            (prev = new MoveDefActionNode("", false, this)).Initialize(this, addr, 0);
+            (prev = new ActionScript("", false, this)).Initialize(this, addr, 0);
             for (int i = 0; i < 3; i++)
             {
                 addr += prev.Children.Count * 8 + 8;
-                (prev = new MoveDefActionNode("", false, this)).Initialize(this, addr, 0);
+                (prev = new ActionScript("", false, this)).Initialize(this, addr, 0);
             }
         }
 
@@ -79,7 +79,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _lookupCount = 0;
             _entryLength = 40;
             _childLength = 0;
-            foreach (MoveDefActionNode p in Children)
+            foreach (ActionScript p in Children)
             {
                 _childLength += p.CalculateSize(true);
                 _lookupCount += p._lookupCount;
@@ -102,7 +102,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _unk8 = Header->_unk8;
             _unk9 = Header->_unk9;
             _unk10 = Header->_unk10;
-            foreach (MoveDefActionNode p in Children)
+            foreach (ActionScript p in Children)
             {
                 p.Rebuild(addr, p._calcSize, true);
                 _lookupOffsets.AddRange(p._lookupOffsets);
@@ -111,7 +111,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefPatternPowerMulEntryNode : MoveDefEntryNode
+    public unsafe class MoveDefPatternPowerMulEntryNode : MoveDefEntry
     {
         internal bint* Header { get { return (bint*)WorkingUncompressed.Address; } }
 
@@ -123,9 +123,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnPopulate()
         {
-            new MoveDefActionNode("1", false, this).Initialize(this, &Header[0], 8);
-            new MoveDefActionNode("2", false, this).Initialize(this, &Header[2], 8);
-            new MoveDefActionNode("3", false, this).Initialize(this, &Header[4], 8);
+            new ActionScript("1", false, this).Initialize(this, &Header[0], 8);
+            new ActionScript("2", false, this).Initialize(this, &Header[2], 8);
+            new ActionScript("3", false, this).Initialize(this, &Header[4], 8);
         }
 
         public override int OnCalculateSize(bool force)
@@ -133,7 +133,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _lookupCount = (Children.Count > 0 ? 1 : 0);
             _entryLength = 8;
             _childLength = 0;
-            foreach (MoveDefSectionParamNode p in Children)
+            foreach (RawParamList p in Children)
                 _childLength += p.CalculateSize(true);
             return _entryLength + _childLength;
         }
@@ -141,7 +141,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             VoidPtr addr = address;
-            foreach (MoveDefSectionParamNode p in Children)
+            foreach (RawParamList p in Children)
             {
                 p.Rebuild(addr, p._calcSize, true);
                 addr += p._calcSize;

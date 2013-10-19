@@ -121,7 +121,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             ARCFileHeader* entry = header->First;
             foreach (ARCEntryNode node in Children)
             {
-                *entry = new ARCFileHeader(node.FileType, node.FileIndex, node._calcSize, node.GroupID, node._fileId);
+                *entry = new ARCFileHeader(node.FileType, node.FileIndex, node._calcSize, node.GroupID, node._redirectIndex);
                 if (node.IsCompressed)
                     node.MoveRaw(entry->Data, entry->Length);
                 else
@@ -228,27 +228,20 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("ARC Entry")]
         public byte GroupID { get { return _group; } set { _group = value; SignalPropertyChange(); UpdateName(); } }
 
-        //internal byte _unk;
-        //[Category("ARC Entry")]
-        //public byte Unknown { get { return _unk; } set { _unk = value; SignalPropertyChange(); UpdateName(); } }
-
-        internal short _fileId = -1;
+        [Category("ARC Entry"), Browsable(true)]
+        public int AbsoluteIndex { get { return base.Index; } }
+        
+        internal short _redirectIndex = -1;
         [Category("ARC Entry"), TypeConverter(typeof(DropDownListARCEntry))]
-        public ARCEntryNode RedirectNode
+        public short RedirectIndex
         {
-            get 
-            {
-                if (_fileId <= 0 || _fileId >= Parent.Children.Count)
-                    return null;
-                else
-                    return Parent.Children[_fileId] as ARCEntryNode; 
-            } 
+            get { return _redirectIndex; }
             set
             {
-                if (value == null)
-                    _fileId = -1;
-                else
-                    _fileId = (short)value.Index; 
+                if (value == Index || value == _redirectIndex)
+                    return;
+
+                _redirectIndex = (short)((int)value).Clamp(0, Children.Count - 1);
 
                 SignalPropertyChange();
             } 
@@ -275,7 +268,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _fileIndex = (short)Parent._children.IndexOf(this);
                 _group = 0;
                 //_unk = 0;
-                _fileId = 0;
+                _redirectIndex = 0;
                 if (_name == null)
                     _name = GetName();
             }
@@ -286,7 +279,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _fileIndex = header->_index;
                 _group = header->_groupIndex;
                 //_unk = header->_padding;
-                _fileId = header->_redirectIndex;
+                _redirectIndex = header->_redirectIndex;
                 if (_name == null)
                     _name = GetName();
             }

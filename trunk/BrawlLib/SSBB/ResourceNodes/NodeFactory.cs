@@ -70,12 +70,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 else if ((node = FromSource(parent, source)) == null)
                 {
-                    if (Compressor.IsDataCompressed(source.Address, source.Length))
-                    {
-                        CompressionHeader* cmpr = (CompressionHeader*)source.Address;
-                        if (!Compressor.Supports(cmpr->Algorithm))
-                            MessageBox.Show("File uses unsupported " + cmpr->Algorithm.ToString() + " compression.");
-                    }
+                    //if (Compressor.IsDataCompressed(source.Address, source.Length))
+                    //{
+                    //    CompressionHeader* cmpr = (CompressionHeader*)source.Address;
+                    //    if (!Compressor.Supports(cmpr->Algorithm))
+                    //        MessageBox.Show("File uses unsupported " + cmpr->Algorithm.ToString() + " compression.");
+                    //}
                 }
             }
             finally { if (node == null) map.Dispose(); }

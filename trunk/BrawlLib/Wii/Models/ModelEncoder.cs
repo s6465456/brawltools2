@@ -7,6 +7,7 @@ using System.Collections;
 using BrawlLib.Imaging;
 using System.Windows.Forms;
 using BrawlLib.Wii.Graphics;
+using System.Linq;
 
 namespace BrawlLib.Wii.Models
 {
@@ -39,7 +40,8 @@ namespace BrawlLib.Wii.Models
             {
                 linker.NodeCache[i._index = index++] = i;
                 foreach (BoneWeight b in i._weights)
-                    b.Bone._weightCount++;
+                    if (b.Bone != null)
+                        b.Bone._weightCount++;
             }
 
             //Add remaining bones
@@ -105,7 +107,7 @@ namespace BrawlLib.Wii.Models
                         {
                             mixLen += 4;
                             foreach (BoneWeight w in i._weights)
-                                if (w.Weight != 0 && w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode)
+                                if (w.Bone != null && w.Weight != 0 && w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode)
                                     mixLen += 6;
                         }
                         foreach (MDL0BoneNode b in linker.BoneCache)
@@ -176,12 +178,40 @@ namespace BrawlLib.Wii.Models
                             for (int x = aInd; x < aLen; x++)
                                 if (p._manager._faceData[x] != null)
                                 {
-                                    if (model._importOptions._rmpClrs && model._importOptions._addClrs)
+                                    //Remap color nodes
+                                    if ((x == 2 || x == 3) && model._importOptions._rmpClrs)
                                     {
-                                        if (i > 0 && x == 2 && model._noColors == true)
-                                        { p._elementIndices[x] = 0; continue; }
-                                        else if (i >= 0 && x == 3 && model._noColors == true)
-                                        { p._elementIndices[x] = -1; break; }
+                                        p._elementIndices[x] = -1;
+                                        foreach (MDL0ObjectNode w in polyList)
+                                        {
+                                            //Only compare up to the current object
+                                            if (w == p)
+                                                break;
+
+                                            var o = w._manager.GetColors(x - 2, false);
+                                            var c = p._manager.GetColors(x - 2, false);
+                                            bool equals = true;
+                                            if (o.Length == c.Length)
+                                            {
+                                                for (int n = 0; n < o.Length; n++)
+                                                    if (o[n] != c[n])
+                                                    {
+                                                        equals = false;
+                                                        break;
+                                                    }
+                                            }
+                                            else
+                                                equals = false;
+
+                                            if (equals)
+                                            {
+                                                //Found a match
+                                                p._elementIndices[x] = w._elementIndices[x];
+                                                break;
+                                            }
+                                        }
+                                        if (p._elementIndices[x] != -1)
+                                            continue;
                                     }
 
                                     p._elementIndices[x] = (short)aList.Count;
@@ -421,7 +451,7 @@ namespace BrawlLib.Wii.Models
             linker.Finish();
 
             //Set new properties
-            *props = new MDL0Props(linker.Version, linker.Model._numFacepoints, linker.Model._numFaces, linker.Model._numNodes, linker.Model._scalingRule, linker.Model._texMtxMode, linker.Model._needNrmMtxArray, linker.Model._needTexMtxArray, linker.Model._enableExtents, linker.Model._envMtxMode, linker.Model.BoxMin, linker.Model.BoxMax);
+            *props = new MDL0Props(linker.Version, linker.Model._numFacepoints, linker.Model._numFaces, linker.Model._numNodes, linker.Model._scalingRule, linker.Model._texMtxMode, linker.Model._needsNrmMtxArray, linker.Model._needsTexMtxArray, linker.Model._enableExtents, linker.Model._envMtxMode, linker.Model.BoxMin, linker.Model.BoxMax);
         }
 
         private static void WriteNodeTable(ModelLinker linker)
@@ -512,12 +542,12 @@ namespace BrawlLib.Wii.Models
                     *(bushort*)&pData[1] = (ushort)i._index;
                     int g = 0;
                     foreach (BoneWeight w in i._weights)
-                        if (w.Weight != 0 && w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode) g++;
+                        if (w.Bone != null && w.Weight != 0 && w.Bone._nodeIndex < linker.NodeCache.Length && w.Bone._nodeIndex >= 0 && linker.NodeCache[w.Bone._nodeIndex] is MDL0BoneNode) g++;
                     pData[3] = (byte)g;
                     pData += 4; //Advance
                     foreach (BoneWeight w in i._weights)
                     {
-                        if (w.Weight == 0 && w.Bone._nodeIndex >= linker.NodeCache.Length || w.Bone._nodeIndex < 0)
+                        if (w.Bone == null || w.Weight == 0 || w.Bone._nodeIndex >= linker.NodeCache.Length || w.Bone._nodeIndex < 0)
                             continue;
 
                         *(bushort*)pData = (ushort)w.Bone._nodeIndex;

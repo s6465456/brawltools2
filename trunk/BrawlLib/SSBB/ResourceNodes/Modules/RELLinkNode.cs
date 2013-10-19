@@ -30,6 +30,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         internal byte _targetSection;
         internal uint _value;
 
+        public RELLinkNode() { }
+        public RELLinkNode(RELLinkType t) { _type = t; _name = Type.ToString(); }
+
         public override bool OnInitialize()
         {
             _prevOffset = Header->_prevOffset;

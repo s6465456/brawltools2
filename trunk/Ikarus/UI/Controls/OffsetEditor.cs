@@ -169,7 +169,7 @@ namespace System.Windows.Forms
 
             _updating = true;
 
-            if (_targetNode.Root._dataCommon != null)
+            if (_targetNode._root._dataCommon != null)
             {
                 listBox.Items.Clear();
                 listBox.Items.AddRange(new object[] {
@@ -223,7 +223,7 @@ namespace System.Windows.Forms
                 typeBox.Items.Add("Exit");
 
                 indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode.Root._actions.Children.ToArray());
+                indexBox.Items.AddRange(_targetNode._root._actions.Children.ToArray());
             }
             if (listBox.SelectedIndex == 1)
             {
@@ -234,8 +234,8 @@ namespace System.Windows.Forms
                 typeBox.Items.Add("Other");
 
                 indexBox.Items.Clear();
-                if (TargetNode.Root._subActions != null)
-                indexBox.Items.AddRange(_targetNode.Root._subActions.Children.ToArray());
+                if (TargetNode._root._subActions != null)
+                indexBox.Items.AddRange(_targetNode._root._subActions.Children.ToArray());
             }
 
             if (listBox.SelectedIndex >= 2)
@@ -251,22 +251,22 @@ namespace System.Windows.Forms
             if (listBox.SelectedIndex == 2)
             {
                 indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode.Root._subRoutineList.ToArray());
+                indexBox.Items.AddRange(_targetNode._root._subRoutines.ToArray());
             }
             if (listBox.SelectedIndex == 3)
             {
                 indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode.Root._externalRefs.ToArray());
+                indexBox.Items.AddRange(_targetNode._root._referenceList.ToArray());
             }
             if (listBox.SelectedIndex == 5)
             {
                 indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode.Root._dataCommon._screenTint.Children.ToArray());
+                indexBox.Items.AddRange(_targetNode._root._dataCommon._screenTint.Children.ToArray());
             }
             if (listBox.SelectedIndex == 6)
             {
                 indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode.Root._dataCommon._flashOverlay.Children.ToArray());
+                indexBox.Items.AddRange(_targetNode._root._dataCommon._flashOverlay.Children.ToArray());
             }
             if (!_updating)
                 UpdateText();
@@ -301,29 +301,29 @@ namespace System.Windows.Forms
             }
             if (listBox.SelectedIndex >= 3)
             {
-                if (listBox.SelectedIndex == 3 && indexBox.SelectedIndex >= 0 && indexBox.SelectedIndex < _targetNode.Root._externalRefs.Count)
+                if (listBox.SelectedIndex == 3 && indexBox.SelectedIndex >= 0 && indexBox.SelectedIndex < _targetNode._root._referenceList.Count)
                 {
-                    if (_targetNode._extNode != null)
+                    if (_targetNode._externalEntry != null)
                     {
-                        _targetNode._extNode._refs.Remove(_targetNode);
-                        _targetNode._extNode = null;
+                        _targetNode._externalEntry._refs.Remove(_targetNode);
+                        _targetNode._externalEntry = null;
                     }
-                    (_targetNode._extNode = _targetNode.Root._externalRefs[indexBox.SelectedIndex] as MoveDefExternalNode)._refs.Add(_targetNode);
-                    _targetNode.Name = _targetNode._extNode.Name;
+                    (_targetNode._externalEntry = _targetNode._root._referenceList[indexBox.SelectedIndex] as ReferenceEntry)._refs.Add(_targetNode);
+                    _targetNode.Name = _targetNode._externalEntry.Name;
                 }
             }
             else
             {
-                if (_targetNode._extNode != null)
+                if (_targetNode._externalEntry != null)
                 {
-                    _targetNode._extNode._refs.Remove(_targetNode);
-                    _targetNode._extNode = null;
+                    _targetNode._externalEntry._refs.Remove(_targetNode);
+                    _targetNode._externalEntry = null;
                 }
             }
             _targetNode.list = listBox.SelectedIndex;
             _targetNode.type = (listBox.SelectedIndex >= 2 ? -1 : typeBox.SelectedIndex);
             _targetNode.index = (listBox.SelectedIndex == 4 ? -1 : indexBox.SelectedIndex);
-            _targetNode.action = _targetNode.Root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
+            _targetNode.action = _targetNode._root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
             if (_targetNode.action != null)
                 _targetNode._value = _targetNode.action._offset;
             _targetNode.SignalPropertyChange();

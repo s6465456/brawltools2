@@ -51,31 +51,6 @@ namespace System.Windows.Forms
                 chr0Editor.BoxChanged(box, null);
             }
         }
-        private unsafe void ApplyScale2(int index, float offset)
-        {
-            NumericInputBox box = chr0Editor._transBoxes[index];
-
-            if (box._value == 0)
-                return;
-
-            float scale = (box._value + offset) / box._value;
-            
-            float value = (float)Math.Round(box._value * scale, 3);
-            if (value == 0) return;
-            box.Value = value;
-            chr0Editor.BoxChanged(box, null);
-        }
-
-        public BindingList<AnimType> AnimTypes = new BindingList<AnimType>()
-        {
-            AnimType.CHR,
-            AnimType.SRT,
-            AnimType.SHP,
-            AnimType.PAT,
-            AnimType.VIS,
-            AnimType.SCN,
-            AnimType.CLR
-        };
 
         public AnimType TargetAnimType
         {
@@ -120,8 +95,8 @@ namespace System.Windows.Forms
             }
             else
             {
-                if (weightEditor.Visible)
-                    ToggleWeightEditor();
+                //if (weightEditor.Visible)
+                //    ToggleWeightEditor();
 
                 prevHeight = animCtrlPnl.Height;
                 prevWidth = animCtrlPnl.Width;
@@ -136,39 +111,26 @@ namespace System.Windows.Forms
         public void SetCurrentControl()
         {
             Control newControl = null;
+            syncTexObjToolStripMenuItem.Checked = (TargetAnimType == AnimType.SRT || TargetAnimType == AnimType.PAT);
             switch (TargetAnimType)
             {
-                case AnimType.CHR:
-                    newControl = chr0Editor;
-                    break;
-                case AnimType.SRT:
-                    newControl = srt0Editor;
-                    syncTexObjToolStripMenuItem.Checked = true;
-                    break;
-                case AnimType.SHP:
-                    newControl = shp0Editor;
-                    break;
-                case AnimType.PAT:
-                    newControl = pat0Editor;
-                    syncTexObjToolStripMenuItem.Checked = true;
-                    break;
-                case AnimType.VIS:
-                    newControl = vis0Editor;
-                    break;
-                case AnimType.SCN:
-                    newControl = scn0Editor;
-                    break;
-                case AnimType.CLR:
-                    newControl = clr0Editor;
-                    break;
+                case AnimType.CHR: newControl = chr0Editor; break;
+                case AnimType.SHP: newControl = shp0Editor; break;
+                case AnimType.VIS: newControl = vis0Editor; break;
+                case AnimType.SCN: newControl = scn0Editor; break;
+                case AnimType.CLR: newControl = clr0Editor; break;
+                case AnimType.SRT: newControl = srt0Editor; break;
+                case AnimType.PAT: newControl = pat0Editor; break;
             }
             if (_currentControl != newControl)
             {
                 if (_currentControl != null)
                     _currentControl.Visible = false;
                 _currentControl = newControl;
+
                 if (!(_currentControl is SRT0Editor) && !(_currentControl is PAT0Editor))
                     syncTexObjToolStripMenuItem.Checked = false;
+
                 if (_currentControl != null)
                 {
                     _currentControl.Visible = true;
@@ -176,19 +138,16 @@ namespace System.Windows.Forms
                     {
                         animEditors.Height = 78;
                         animCtrlPnl.Width = 582;
-                        rightPanel.pnlKeyframes.SetEditType(0);
                     }
                     else if (_currentControl is SRT0Editor)
                     {
                         animEditors.Height = 78;
                         animCtrlPnl.Width = 483;
-                        rightPanel.pnlKeyframes.SetEditType(0);
                     }
                     else if (_currentControl is SHP0Editor)
                     {
                         animEditors.Height = 106;
                         animCtrlPnl.Width = 533;
-                        rightPanel.pnlKeyframes.SetEditType(0);
                     }
                     else if (_currentControl is PAT0Editor)
                     {
@@ -199,19 +158,14 @@ namespace System.Windows.Forms
                     {
                         animEditors.Height = 62;
                         animCtrlPnl.Width = 210;
-                        rightPanel.pnlKeyframes.SetEditType(1);
                     }
                     else if (_currentControl is CLR0Editor)
                     {
                         animEditors.Height = 62;
                         animCtrlPnl.Width = 168;
-                        rightPanel.pnlKeyframes.SetEditType(2);
                     }
                     else if (_currentControl is SCN0Editor)
-                    {
                         scn0Editor.GetDimensions();
-                        rightPanel.pnlKeyframes.SetEditType(3);
-                    }
                     else
                         animEditors.Height = animCtrlPnl.Width = 0;
                 }
@@ -233,11 +187,11 @@ namespace System.Windows.Forms
                 //case AnimType.CHR: chr0Editor.UpdatePropDisplay(); break;
                 case AnimType.SRT: srt0Editor.UpdatePropDisplay(); break;
                 case AnimType.VIS: 
-                    if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))
+                    if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Constant)
                     {
                         rightPanel.pnlKeyframes.visEditor._updating = true;
                         rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
-                        rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame;
+                        rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame - 1;
                         rightPanel.pnlKeyframes.visEditor._updating = false;
                     } 
                     break;
@@ -246,6 +200,7 @@ namespace System.Windows.Forms
                 case AnimType.SCN: scn0Editor.UpdatePropDisplay(); break;
                 case AnimType.CLR: clr0Editor.UpdatePropDisplay(); break;
             }
+            UpdateToolButtons();
         }
 
         public bool _editingAll { get { return (!(models.SelectedItem is MDL0Node) && models.SelectedItem != null && models.SelectedItem.ToString() == "All"); } }
@@ -263,47 +218,67 @@ namespace System.Windows.Forms
                 foreach (MDL0Node n in _targetModels)
                     UpdateModel(n);
 
-            if (!_playing) 
+            if (!_playing)
                 UpdatePropDisplay();
 
-            modelPanel.Invalidate();
+            ModelPanel.Invalidate();
         }
         private void UpdateModel(MDL0Node model)
         {
-            if (_chr0 != null && !(TargetAnimType != AnimType.CHR && !playCHR0ToolStripMenuItem.Checked))
+            if (_chr0 != null && playCHR0ToolStripMenuItem.Checked)
                 model.ApplyCHR(_chr0, _animFrame);
             else
                 model.ApplyCHR(null, 0);
-            if (_srt0 != null && !(TargetAnimType != AnimType.SRT && !playSRT0ToolStripMenuItem.Checked))
+            if (_srt0 != null && playSRT0ToolStripMenuItem.Checked)
                 model.ApplySRT(_srt0, _animFrame);
             else
                 model.ApplySRT(null, 0);
-            if (_shp0 != null && !(TargetAnimType != AnimType.SHP && !playSHP0ToolStripMenuItem.Checked))
+            if (_shp0 != null && playSHP0ToolStripMenuItem.Checked)
                 model.ApplySHP(_shp0, _animFrame);
             else
                 model.ApplySHP(null, 0);
-            if (_pat0 != null && !(TargetAnimType != AnimType.PAT && !playPAT0ToolStripMenuItem.Checked))
+            if (_pat0 != null && playPAT0ToolStripMenuItem.Checked)
                 model.ApplyPAT(_pat0, _animFrame);
             else
                 model.ApplyPAT(null, 0);
-            if (_vis0 != null && !(TargetAnimType != AnimType.VIS && !playVIS0ToolStripMenuItem.Checked))
+            if (_vis0 != null && playVIS0ToolStripMenuItem.Checked)
                 if (model == TargetModel)
                     ReadVIS0();
                 else
                     model.ApplyVIS(_vis0, _animFrame);
-            if (_scn0 != null/* && !(TargetFileType != FileType.SCN && !playSCN0ToolStripMenuItem.Checked)*/)
+            if (_scn0 != null)// && playSCN0ToolStripMenuItem.Checked)
                 model.SetSCN0Frame(_animFrame);
             else
                 model.SetSCN0Frame(0);
-            if (_clr0 != null && !(TargetAnimType != AnimType.CLR && !playCLR0ToolStripMenuItem.Checked))
+            if (_clr0 != null && playCLR0ToolStripMenuItem.Checked)
                 model.ApplyCLR(_clr0, _animFrame);
             else
                 model.ApplyCLR(null, 0);
         }
-        
-        public void AnimChanged(AnimType type)
+        public void UpdateKeyframePanel() { UpdateKeyframePanel(TargetAnimType); }
+        public void UpdateKeyframePanel(AnimType type)
         {
-            //Update animation editors
+            rightPanel.pnlKeyframes.TargetSequence = null;
+            btnRightToggle.Enabled = true;
+            switch (type)
+            {
+                case AnimType.CHR:
+                    if (_chr0 != null && SelectedBone != null)
+                        rightPanel.pnlKeyframes.TargetSequence = _chr0.FindChild(SelectedBone.Name, false);
+                    break;
+                case AnimType.SRT:
+                    if (_srt0 != null && TargetTexRef != null)
+                        rightPanel.pnlKeyframes.TargetSequence = srt0Editor.TexEntry;
+                    break;
+                case AnimType.SHP:
+                    if (_shp0 != null)
+                        rightPanel.pnlKeyframes.TargetSequence = shp0Editor.VertexSetDest;
+                    break;
+            }
+        }
+        public void UpdateEditor() { UpdateEditor(TargetAnimType); }
+        public void UpdateEditor(AnimType type)
+        {
             if (type != AnimType.SRT) leftPanel.UpdateSRT0Selection(null);
             if (type != AnimType.PAT) leftPanel.UpdatePAT0Selection(null);
             if (type != AnimType.SCN)
@@ -324,7 +299,7 @@ namespace System.Windows.Forms
                     pat0Editor.UpdateBoxes();
                     leftPanel.UpdatePAT0Selection(SelectedPAT0);
                     break;
-                case AnimType.VIS: 
+                case AnimType.VIS:
                     vis0Editor.UpdateAnimation();
                     break;
                 case AnimType.SCN:
@@ -332,56 +307,31 @@ namespace System.Windows.Forms
                     //    m.SetSCN0(_scn0);
                     scn0Editor.tabControl1_Selected(null, new TabControlEventArgs(null, scn0Editor.tabIndex, TabControlAction.Selected));
                     break;
-                case AnimType.CLR: 
+                case AnimType.CLR:
                     clr0Editor.UpdateAnimation();
                     break;
             }
+        }
 
-            //Update keyframe panel
-            rightPanel.pnlKeyframes.TargetSequence = null;
-            btnRightToggle.Enabled = true;
-            switch (TargetAnimType)
+        public void AnimChanged(AnimType type)
+        {
+            if (type == TargetAnimType)
             {
-                case AnimType.CHR:
-                    if (_chr0 != null && SelectedBone != null)
-                        rightPanel.pnlKeyframes.TargetSequence = _chr0.FindChild(SelectedBone.Name, false);
-                    break;
-                case AnimType.SRT:
-                    if (_srt0 != null && TargetTexRef != null)
-                        rightPanel.pnlKeyframes.TargetSequence = srt0Editor.TexEntry;
-                    break;
-                case AnimType.SHP:
-                    if (_shp0 != null)
-                        rightPanel.pnlKeyframes.TargetSequence = shp0Editor.VertexSetDest;
-                    break;
-                case AnimType.CLR:
-                case AnimType.VIS:
-                    //if (TargetVisEntry == null) break;
-                    //string name = TargetVisEntry.Name;
-                    //if (_vis0 != null)
-                    //{
-                    //    int i = 0;
-                    //    foreach (object s in vis0Editor.listBox1.Items)
-                    //        if (s.ToString() == name)
-                    //            vis0Editor.listBox1.SelectedIndex = i;
-                    //        else 
-                    //            i++;
-                    //}
-                    break;
-                default:
-                    if (rightPanel.pnlKeyframes.Visible)
-                        btnAnimToggle_Click(null, null);
-                    btnRightToggle.Enabled = false;
-                    break;
+                UpdateEditor();
+                UpdateKeyframePanel();
             }
 
-            if (GetSelectedBRRESFile(type) == null)
+            AnimationNode node = GetAnimation(type);
+            if (node == null)
             {
                 pnlPlayback.numFrameIndex.Maximum = _maxFrame = 0;
                 pnlPlayback.numTotalFrames.Minimum = 0;
+
                 _updating = true;
                 pnlPlayback.numTotalFrames.Value = 0;
+                selectedAnimationToolStripMenuItem.Enabled = false;
                 _updating = false;
+
                 pnlPlayback.btnPlay.Enabled =
                 pnlPlayback.numTotalFrames.Enabled =
                 pnlPlayback.numFrameIndex.Enabled = false;
@@ -393,9 +343,7 @@ namespace System.Windows.Forms
             }
             else
             {
-                int oldMax = _maxFrame;
-
-                _maxFrame = GetSelectedBRRESFile(type).FrameCount;
+                _maxFrame = node.FrameCount;
 
                 _updating = true;
                 pnlPlayback.btnPlay.Enabled =
@@ -403,31 +351,47 @@ namespace System.Windows.Forms
                 pnlPlayback.numTotalFrames.Enabled = true;
                 pnlPlayback.Enabled = true;
                 pnlPlayback.numTotalFrames.Value = _maxFrame;
-                if (syncLoopToAnimationToolStripMenuItem.Checked)
-                    pnlPlayback.chkLoop.Checked = GetSelectedBRRESFile(type).Loop;
+                pnlPlayback.chkLoop.Checked = node.Loop;
+                selectedAnimationToolStripMenuItem.Enabled = true;
                 _updating = false;
 
-                if (_maxFrame < oldMax)
-                {
-                    SetFrame(1);
-                    pnlPlayback.numFrameIndex.Maximum = _maxFrame;
-                }
-                else
-                {
-                    pnlPlayback.numFrameIndex.Maximum = _maxFrame;
-                    SetFrame(1);
-                }
+                pnlPlayback.numFrameIndex.Maximum = _maxFrame;
+                SetFrame(1);
 
                 EnableTransformEdit = !_playing;
+
+                UpdateToolButtons();
             }
         }
+
+        public void UpdateToolButtons()
+        {
+            AnimationNode node = TargetAnimation;
+
+            portToolStripMenuItem.Enabled = node is CHR0Node;
+            mergeToolStripMenuItem.Enabled = node != null && Array.IndexOf(Mergeable, node.GetType()) >= 0;
+            resizeToolStripMenuItem.Enabled = node != null && Array.IndexOf(Resizable, node.GetType()) >= 0;
+            appendToolStripMenuItem.Enabled = node != null && Array.IndexOf(Appendable, node.GetType()) >= 0;
+
+            int i = -1;
+            bool enabled = node != null && (i = Array.IndexOf(Interpolated, node.GetType())) >= 0 && (i == 0 ? SelectedBone != null : i == 1 ? TargetTexRef != null : shp0Editor.VertexSetDest != null);
+            if (averageboneStartendTangentsToolStripMenuItem.Enabled = enabled)
+                averageboneStartendTangentsToolStripMenuItem.Text = String.Format("Average {0} start/end keyframes", i == 0 ? SelectedBone.Name : i == 1 ? TargetTexRef.Name : shp0Editor.VertexSetDest.Name);
+            else
+                averageboneStartendTangentsToolStripMenuItem.Text = "Average entry start/end keyframes";
+
+            averageAllStartEndTangentsToolStripMenuItem.Enabled = node != null && Array.IndexOf(Interpolated, node.GetType()) >= 0;
+            syncStartendTangentsToolStripMenuItem.Enabled = node != null && Array.IndexOf(Interpolated, node.GetType()) >= 0;
+        }
+
+        private static readonly Type[] Mergeable = new Type[] { typeof(CHR0Node) };
+        private static readonly Type[] Appendable = new Type[] { typeof(CHR0Node), typeof(SRT0Node), typeof(SHP0Node), typeof(VIS0Node), typeof(PAT0Node) };
+        private static readonly Type[] Resizable = new Type[] { typeof(CHR0Node), typeof(SRT0Node), typeof(SHP0Node), typeof(VIS0Node), typeof(PAT0Node) };
+        private static readonly Type[] Interpolated = new Type[] { typeof(CHR0Node), typeof(SRT0Node), typeof(SHP0Node) };
 
         public bool _playing = false;
         public void SetFrame(int index)
         {
-            //if (_animFrame == index)
-            //    return;
-
             if (index > _maxFrame || index < 0)
                 return;
             
@@ -435,20 +399,20 @@ namespace System.Windows.Forms
 
             CurrentFrame = index;
 
-            if (firstPersonSCN0CamToolStripMenuItem.Checked && _scn0 != null && scn0Editor._camera != null)
+            if (stPersonToolStripMenuItem.Checked && _scn0 != null && scn0Editor._camera != null)
             {
                 SCN0CameraNode c = scn0Editor._camera;
                 CameraAnimationFrame f = c.GetAnimFrame(index - 1);
                 Vector3 r = f.GetRotate(index, c.Type);
                 Vector3 t = f.Pos;
-                modelPanel._camera.Reset();
-                modelPanel._camera.Translate(t._x, t._y, t._z);
-                modelPanel._camera.Rotate(r._x, r._y, r._z);
-                modelPanel._aspect = f.Aspect;
-                modelPanel._farZ = f.FarZ;
-                modelPanel._nearZ = f.NearZ;
-                modelPanel._fovY = f.FovY;
-                modelPanel.OnResized();
+                ModelPanel._camera.Reset();
+                ModelPanel._camera.Translate(t._x, t._y, t._z);
+                ModelPanel._camera.Rotate(r._x, r._y, r._z);
+                ModelPanel._aspect = f.Aspect;
+                ModelPanel._farZ = f.FarZ;
+                ModelPanel._nearZ = f.NearZ;
+                ModelPanel._fovY = f.FovY;
+                ModelPanel.OnResized();
             }
 
             pnlPlayback.btnNextFrame.Enabled = _animFrame < _maxFrame;
@@ -459,9 +423,16 @@ namespace System.Windows.Forms
 
             if (_animFrame <= pnlPlayback.numFrameIndex.Maximum)
                 pnlPlayback.numFrameIndex.Value = _animFrame;
+
+            if (!_playing)
+            {
+                if (InterpolationEditor != null && InterpolationEditor.Visible)
+                    InterpolationEditor.Frame = CurrentFrame;
+                KeyframePanel.numFrame_ValueChanged();
+            }
         }
-        private bool wasOff = false;
-        public bool runningAction = false;
+
+        private bool _bonesWereOff = false;
 
         CoolTimer _timer;
         void _timer_RenderFrame(object sender, FrameEventArgs e)
@@ -478,7 +449,7 @@ namespace System.Windows.Forms
                 SetFrame(_animFrame + 1);
 
             if (_capture)
-                images.Add(modelPanel.GrabScreenshot(false));
+                images.Add(ModelPanel.GrabScreenshot(false));
         }
 
         public void PlayAnim()
@@ -491,7 +462,7 @@ namespace System.Windows.Forms
             if (disableBonesWhenPlayingToolStripMenuItem.Checked)
             {
                 if (RenderBones == false)
-                    wasOff = true;
+                    _bonesWereOff = true;
 
                 RenderBones = false;
                 toggleBones.Checked = false;
@@ -516,17 +487,19 @@ namespace System.Windows.Forms
         }
         public void StopAnim()
         {
-            //animTimer.Stop();
+            if (!_playing && !_timer.IsRunning)
+                return;
+
             _timer.Stop();
 
             _playing = false;
 
             if (disableBonesWhenPlayingToolStripMenuItem.Checked)
             {
-                if (!wasOff)
+                if (!_bonesWereOff)
                     RenderBones = true;
 
-                wasOff = false;
+                _bonesWereOff = false;
             }
 
             pnlPlayback.btnPlay.Text = "Play";

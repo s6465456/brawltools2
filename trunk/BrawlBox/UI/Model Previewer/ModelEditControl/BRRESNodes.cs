@@ -45,7 +45,7 @@ namespace System.Windows.Forms
         }
         public bool GetSCN0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
+            BRESEntryNode focusFile = GetAnimation(focusType);
             if (focusFile == null)
             {
                 _scn0 = null;
@@ -59,7 +59,7 @@ namespace System.Windows.Forms
         }
         public bool GetCLR0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
+            BRESEntryNode focusFile = GetAnimation(focusType);
             if (focusFile == null)
             {
                 _clr0 = null;
@@ -73,7 +73,7 @@ namespace System.Windows.Forms
         }
         public bool GetVIS0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
+            BRESEntryNode focusFile = GetAnimation(focusType);
             if (focusFile == null)
             {
                 _vis0 = null;
@@ -87,7 +87,7 @@ namespace System.Windows.Forms
         }
         public bool GetPAT0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
+            BRESEntryNode focusFile = GetAnimation(focusType);
             if (focusFile == null)
             {
                 _pat0 = null;
@@ -101,7 +101,7 @@ namespace System.Windows.Forms
         }
         public bool GetSRT0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
+            BRESEntryNode focusFile = GetAnimation(focusType);
             if (focusFile == null)
             {
                 _srt0 = null;
@@ -115,7 +115,7 @@ namespace System.Windows.Forms
         }
         public bool GetSHP0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
+            BRESEntryNode focusFile = GetAnimation(focusType);
             if (focusFile == null)
             {
                 _shp0 = null;
@@ -129,7 +129,7 @@ namespace System.Windows.Forms
         }
         public bool GetCHR0(AnimType focusType)
         {
-            BRESEntryNode focusFile = GetSelectedBRRESFile(focusType);
+            BRESEntryNode focusFile = GetAnimation(focusType);
             if (focusFile == null)
             {
                 _chr0 = null;

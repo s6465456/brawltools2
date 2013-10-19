@@ -49,7 +49,7 @@ namespace System.Windows.Forms
                 {
                     for (int x = 0; x < _target.FrameCount; x++)
                         if ((kfe = _target.GetKeyframe(x)) != null)
-                            listKeyframes.Items.Add(new FloatKeyframe() { Value = kfe._value, Index = x });
+                            listKeyframes.Items.Add(new FloatKeyframe(kfe));
 
                     _numFrames = _target.FrameCount;
 
@@ -357,12 +357,18 @@ namespace System.Windows.Forms
     }
     public class FloatKeyframe
     {
-        public int Index;
-        public float Value;
+        KeyframeEntry _entry;
+
+        public FloatKeyframe() { _entry = new KeyframeEntry(-1, 0); }
+        public FloatKeyframe(KeyframeEntry e) { _entry = e; }
+
+        public int Index { get { return _entry._index; } set { _entry._index = value; } }
+        public float Value { get { return _entry._value; } set { _entry._value = value; } }
+        public float Tangent { get { return _entry._tangent; } set { _entry._tangent = value; } }
 
         public override string ToString()
         {
-            return String.Format("[{0}] {1}%", Index + 1, Value * 100.0f);
+            return String.Format("[{0}] {1}%", (_entry._index + 1).ToString().PadLeft(5), _entry._value * 100.0f);
         }
     }
 }

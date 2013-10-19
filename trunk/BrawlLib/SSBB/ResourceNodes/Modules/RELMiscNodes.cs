@@ -40,17 +40,17 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        [Browsable(false)]
-        public ModuleSectionNode Location
-        {
-            get
-            {
-                if (Root is RELNode)
-                    foreach (ModuleSectionNode s in (Root as RELNode)._sections)
-                        if (s.Offset <= _offset && s.Offset + s.Size > _offset)
-                            return s;
-                return null;
-            }
-        }
+        //[Browsable(false)]
+        //public ModuleSectionNode Location
+        //{
+        //    get
+        //    {
+        //        if (Root is RELNode)
+        //            foreach (ModuleSectionNode s in (Root as RELNode)._sections)
+        //                if (s.Offset <= _offset && s.Offset + s.Size > _offset)
+        //                    return s;
+        //        return null;
+        //    }
+        //}
     }
 }

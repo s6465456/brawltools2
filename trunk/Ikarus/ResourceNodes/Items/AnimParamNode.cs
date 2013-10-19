@@ -13,7 +13,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefAnimParamNode : MoveDefEntryNode
+    public unsafe class MoveDefAnimParamNode : MoveDefEntry
     {
         internal AnimParamHeader* Header { get { return (AnimParamHeader*)WorkingUncompressed.Address; } }
 
@@ -99,9 +99,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //        g.Children.Add(new MoveDefGroupNode() { _name = "Extra" + i, _parent = g });
 
                 if (offset > 0)
-                    new MoveDefActionNode(innerName, false, g.Children[i]).Initialize(g.Children[i], new DataSource(BaseAddress + offset, 0));
+                    new ActionScript(innerName, false, g.Children[i]).Initialize(g.Children[i], new DataSource(BaseAddress + offset, 0));
                 else
-                    g.Children[i].Children.Add(new MoveDefActionNode(innerName, true, g.Children[i]));
+                    g.Children[i].Children.Add(new ActionScript(innerName, true, g.Children[i]));
                 i++;
             }
         }

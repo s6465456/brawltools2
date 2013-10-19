@@ -68,6 +68,9 @@ namespace System.Windows.Forms
             this.panel4 = new System.Windows.Forms.Panel();
             this.pnlEdit = new System.Windows.Forms.Panel();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnSeekEnd = new System.Windows.Forms.Button();
+            this.btnLoopRW = new System.Windows.Forms.Button();
+            this.btnFFwd = new System.Windows.Forms.Button();
             this.chkLoop = new System.Windows.Forms.CheckBox();
             this.pnlLoop = new System.Windows.Forms.Panel();
             this.spltEnd = new System.Windows.Forms.Splitter();
@@ -86,9 +89,6 @@ namespace System.Windows.Forms
             this.chkLoopEnable = new System.Windows.Forms.CheckBox();
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
             this.tmrUpdate = new System.Windows.Forms.Timer(this.components);
-            this.btnFFwd = new System.Windows.Forms.Button();
-            this.btnLoopRW = new System.Windows.Forms.Button();
-            this.btnSeekEnd = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.pnlInfo.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -127,8 +127,8 @@ namespace System.Windows.Forms
             // 
             // txtPath
             // 
-            this.txtPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtPath.Location = new System.Drawing.Point(0, 0);
             this.txtPath.Name = "txtPath";
             this.txtPath.ReadOnly = true;
@@ -162,8 +162,8 @@ namespace System.Windows.Forms
             // 
             // lblSamples
             // 
-            this.lblSamples.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblSamples.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblSamples.Location = new System.Drawing.Point(84, 36);
             this.lblSamples.Name = "lblSamples";
             this.lblSamples.Size = new System.Drawing.Size(68, 20);
@@ -172,8 +172,8 @@ namespace System.Windows.Forms
             // 
             // lblFrequency
             // 
-            this.lblFrequency.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblFrequency.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblFrequency.Location = new System.Drawing.Point(84, 16);
             this.lblFrequency.Name = "lblFrequency";
             this.lblFrequency.Size = new System.Drawing.Size(68, 20);
@@ -200,8 +200,8 @@ namespace System.Windows.Forms
             // 
             // lblPlayTime
             // 
-            this.lblPlayTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblPlayTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblPlayTime.Location = new System.Drawing.Point(6, 63);
             this.lblPlayTime.Name = "lblPlayTime";
             this.lblPlayTime.Size = new System.Drawing.Size(314, 20);
@@ -281,10 +281,43 @@ namespace System.Windows.Forms
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Playback";
             // 
+            // btnSeekEnd
+            // 
+            this.btnSeekEnd.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.btnSeekEnd.Location = new System.Drawing.Point(229, 86);
+            this.btnSeekEnd.Name = "btnSeekEnd";
+            this.btnSeekEnd.Size = new System.Drawing.Size(26, 20);
+            this.btnSeekEnd.TabIndex = 13;
+            this.btnSeekEnd.Text = ">|";
+            this.btnSeekEnd.UseVisualStyleBackColor = true;
+            this.btnSeekEnd.Click += new System.EventHandler(this.btnSeekEnd_Click);
+            // 
+            // btnLoopRW
+            // 
+            this.btnLoopRW.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.btnLoopRW.Enabled = false;
+            this.btnLoopRW.Location = new System.Drawing.Point(99, 86);
+            this.btnLoopRW.Name = "btnLoopRW";
+            this.btnLoopRW.Size = new System.Drawing.Size(26, 20);
+            this.btnLoopRW.TabIndex = 12;
+            this.btnLoopRW.Text = "<";
+            this.btnLoopRW.UseVisualStyleBackColor = true;
+            this.btnLoopRW.Click += new System.EventHandler(this.btnLoopRW_Click);
+            // 
+            // btnFFwd
+            // 
+            this.btnFFwd.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.btnFFwd.Enabled = false;
+            this.btnFFwd.Location = new System.Drawing.Point(202, 86);
+            this.btnFFwd.Name = "btnFFwd";
+            this.btnFFwd.Size = new System.Drawing.Size(26, 20);
+            this.btnFFwd.TabIndex = 11;
+            this.btnFFwd.Text = ">";
+            this.btnFFwd.UseVisualStyleBackColor = true;
+            this.btnFFwd.Click += new System.EventHandler(this.btnFFwd_Click);
+            // 
             // chkLoop
             // 
-            this.chkLoop.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
             this.chkLoop.Enabled = false;
             this.chkLoop.Location = new System.Drawing.Point(10, 86);
             this.chkLoop.Name = "chkLoop";
@@ -296,8 +329,8 @@ namespace System.Windows.Forms
             // 
             // pnlLoop
             // 
-            this.pnlLoop.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlLoop.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pnlLoop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
             this.pnlLoop.Controls.Add(this.spltEnd);
             this.pnlLoop.Controls.Add(this.pnlLoopEnd);
@@ -354,8 +387,8 @@ namespace System.Windows.Forms
             // 
             // customTrackBar1
             // 
-            this.customTrackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.customTrackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.customTrackBar1.Location = new System.Drawing.Point(6, 19);
             this.customTrackBar1.Name = "customTrackBar1";
             this.customTrackBar1.Size = new System.Drawing.Size(314, 45);
@@ -469,49 +502,18 @@ namespace System.Windows.Forms
             this.tmrUpdate.Interval = 17;
             this.tmrUpdate.Tick += new System.EventHandler(this.tmrUpdate_Tick);
             // 
-            // btnFFwd
-            // 
-            this.btnFFwd.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.btnFFwd.Enabled = false;
-            this.btnFFwd.Location = new System.Drawing.Point(202, 86);
-            this.btnFFwd.Name = "btnFFwd";
-            this.btnFFwd.Size = new System.Drawing.Size(26, 20);
-            this.btnFFwd.TabIndex = 11;
-            this.btnFFwd.Text = ">";
-            this.btnFFwd.UseVisualStyleBackColor = true;
-            this.btnFFwd.Click += new System.EventHandler(this.btnFFwd_Click);
-            // 
-            // btnLoopRW
-            // 
-            this.btnLoopRW.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.btnLoopRW.Enabled = false;
-            this.btnLoopRW.Location = new System.Drawing.Point(99, 86);
-            this.btnLoopRW.Name = "btnLoopRW";
-            this.btnLoopRW.Size = new System.Drawing.Size(26, 20);
-            this.btnLoopRW.TabIndex = 12;
-            this.btnLoopRW.Text = "<";
-            this.btnLoopRW.UseVisualStyleBackColor = true;
-            this.btnLoopRW.Click += new System.EventHandler(this.btnLoopRW_Click);
-            // 
-            // btnSeekEnd
-            // 
-            this.btnSeekEnd.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.btnSeekEnd.Location = new System.Drawing.Point(229, 86);
-            this.btnSeekEnd.Name = "btnSeekEnd";
-            this.btnSeekEnd.Size = new System.Drawing.Size(26, 20);
-            this.btnSeekEnd.TabIndex = 13;
-            this.btnSeekEnd.Text = ">|";
-            this.btnSeekEnd.UseVisualStyleBackColor = true;
-            this.btnSeekEnd.Click += new System.EventHandler(this.btnSeekEnd_Click);
-            // 
             // BrstmConverterDialog
             // 
             this.ClientSize = new System.Drawing.Size(484, 182);
             this.Controls.Add(this.chkLoopEnable);
             this.Controls.Add(this.pnlEdit);
             this.Controls.Add(this.pnlInfo);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(500, 216);
             this.Name = "BrstmConverterDialog";
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.Text = "Brstm Import";
             this.groupBox1.ResumeLayout(false);
             this.pnlInfo.ResumeLayout(false);
@@ -553,6 +555,7 @@ namespace System.Windows.Forms
             InitializeComponent();
             tmrUpdate.Interval = 1000 / 60;
             dlgOpen.Filter = "PCM Audio (*.wav)|*.wav";
+            MaximumSize = new Drawing.Size(int.MaxValue, 216);
         }
 
         new public DialogResult ShowDialog(IWin32Window owner)

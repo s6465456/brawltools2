@@ -25,8 +25,6 @@ namespace Ikarus.UI
         {
             if (RenderFloor)
             {
-                //GL.ActiveTexture(TextureUnit.Texture0);
-
                 GLTexture _bgTex = ctx.FindOrCreate<GLTexture>("TexBG", GLTexturePanel.CreateBG);
 
                 float s = 10.0f, t = 10.0f;
@@ -35,16 +33,14 @@ namespace Ikarus.UI
                 GL.Disable(EnableCap.CullFace);
                 GL.Disable(EnableCap.Blend);
                 GL.Disable(EnableCap.Lighting);
-                //GL.Enable(EnableCap.DepthTest);
                 GL.PolygonMode(MaterialFace.Front, PolygonMode.Line);
                 GL.PolygonMode(MaterialFace.Back, PolygonMode.Fill);
 
                 GL.Enable(EnableCap.Texture2D);
 
-                _bgTex.Bind();
+                GL.Color4(Color.Black);
 
-                //GL.Color4(0.5f, 0.5f, 0.75f, 1.0f);
-                GL.Color4(MainWindowStaticVars._floorHue);
+                _bgTex.Bind();
 
                 GL.Begin(BeginMode.Quads);
 
@@ -97,7 +93,7 @@ namespace Ikarus.UI
             if (chkHurtboxes.Checked)
                 for (int i = 0; i < leftPanel.lstHurtboxes.Items.Count; i++)
                     if (leftPanel.lstHurtboxes.GetItemChecked(i))
-                        ((MoveDefHurtBoxNode)leftPanel.lstHurtboxes.Items[i]).Render(SelectedHurtbox != null && SelectedHurtbox.Index == i, MoveDefActionNode._hurtBoxType);
+                        ((MoveDefHurtBoxNode)leftPanel.lstHurtboxes.Items[i]).Render(SelectedHurtbox != null && SelectedHurtbox.Index == i, ActionScript._hurtBoxType);
 
             //Render hitboxes
             if (chkHitboxes.Checked && FileManager.Moveset != null)
@@ -106,7 +102,7 @@ namespace Ikarus.UI
                 GLDisplayList c = context.GetRingList();
                 GLDisplayList s = context.GetSphereList();
 
-                foreach (MoveDefActionNode a in RunTime._runningScripts)
+                foreach (ActionScript a in RunTime._runningScripts)
                 {
                     if (a.catchCollisions != null && a.catchCollisions.Count > 0)
                         foreach (HitBox e in a.catchCollisions)

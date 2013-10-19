@@ -7,6 +7,7 @@ using System.ComponentModel;
 using BrawlLib.Wii.Animations;
 using System.IO;
 using BrawlLib.IO;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -267,6 +268,140 @@ namespace BrawlLib.SSBB.ResourceNodes
             AddChild(new SRT0EntryNode() { Name = FindName("NewMaterial") });
         }
 
+        #region Extra Functions
+        /// <summary>
+        /// Stretches or compresses all frames of the animation to fit a new frame count specified by the user.
+        /// </summary>
+        public void Resize()
+        {
+            FrameCountChanger f = new FrameCountChanger();
+            if (f.ShowDialog(FrameCount) == DialogResult.OK)
+                Resize(f.NewValue);
+        }
+        /// <summary>
+        /// Stretches or compresses all frames of the animation to fit a new frame count.
+        /// </summary>
+        public void Resize(int newFrameCount)
+        {
+            KeyframeEntry kfe = null;
+            float ratio = (float)newFrameCount / (float)FrameCount;
+            foreach (SRT0EntryNode n in Children)
+                foreach (SRT0TextureNode e in n.Children)
+                {
+                    KeyframeCollection newCollection = new KeyframeCollection(newFrameCount);
+                    for (int x = 0; x < FrameCount; x++)
+                    {
+                        int newFrame = (int)((float)x * ratio + 0.5f);
+                        float frameRatio = newFrame == 0 ? 0 : (float)x / (float)newFrame;
+                        for (int i = 0x10; i < 0x19; i++)
+                            if ((kfe = e.GetKeyframe((KeyFrameMode)i, x)) != null)
+                                newCollection.SetFrameValue((KeyFrameMode)i, newFrame, kfe._value)._tangent = kfe._tangent * (float.IsNaN(frameRatio) ? 1 : frameRatio);
+                    }
+                    e._keyframes = newCollection;
+                }
+            FrameCount = newFrameCount;
+        }
+        /// <summary>
+        /// Adds an animation opened by the user to the end of this one
+        /// </summary>
+        public void Append()
+        {
+            SRT0Node external = null;
+            OpenFileDialog o = new OpenFileDialog();
+            o.Filter = "SRT0 Animation (*.srt0)|*.srt0";
+            o.Title = "Please select an animation to append.";
+            if (o.ShowDialog() == DialogResult.OK)
+                if ((external = (SRT0Node)NodeFactory.FromFile(null, o.FileName)) != null)
+                    Append(external);
+        }
+        /// <summary>
+        /// Adds an animation to the end of this one
+        /// </summary>
+        public void Append(SRT0Node external)
+        {
+            KeyframeEntry kfe;
+
+            int origIntCount = FrameCount;
+            FrameCount += external.FrameCount;
+
+            foreach (SRT0EntryNode w in external.Children)
+                foreach (SRT0TextureNode _extEntry in w.Children)
+                {
+                    SRT0TextureNode _intEntry = null;
+                    if ((_intEntry = (SRT0TextureNode)FindChild(w.Name + "/" + _extEntry.Name, false)) == null)
+                    {
+                        SRT0EntryNode wi = null;
+                        if ((wi = (SRT0EntryNode)FindChild(w.Name, false)) == null)
+                            AddChild(wi = new SRT0EntryNode() { Name = FindName(null) });
+
+                        SRT0TextureNode newIntEntry = new SRT0TextureNode(_extEntry.Index, _extEntry.Indirect) { Name = _extEntry.Name };
+                        newIntEntry._numFrames = _extEntry.FrameCount + origIntCount;
+                        for (int x = 0; x < _extEntry.FrameCount; x++)
+                            for (int i = 0x10; i < 0x19; i++)
+                                if ((kfe = _extEntry.GetKeyframe((KeyFrameMode)i, x)) != null)
+                                    newIntEntry.Keyframes.SetFrameValue((KeyFrameMode)i, x + origIntCount, kfe._value)._tangent = kfe._tangent;
+                        wi.AddChild(newIntEntry);
+                    }
+                    else
+                        for (int x = 0; x < _extEntry.FrameCount; x++)
+                            for (int i = 0x10; i < 0x19; i++)
+                                if ((kfe = _extEntry.GetKeyframe((KeyFrameMode)i, x)) != null)
+                                    _intEntry.Keyframes.SetFrameValue((KeyFrameMode)i, x + origIntCount, kfe._value)._tangent = kfe._tangent;
+                }
+        }
+        public void AverageKeys()
+        {
+            foreach (SRT0EntryNode u in Children)
+                foreach (SRT0TextureNode w in u.Children)
+                    for (int i = 0; i < 9; i++)
+                        if (w.Keyframes._keyCounts[i] > 1)
+                        {
+                            KeyframeEntry root = w.Keyframes._keyRoots[i];
+                            if (root._next != root && root._prev != root && root._prev != root._next)
+                            {
+                                float tan = (root._next._tangent + root._prev._tangent) / 2.0f;
+                                float val = (root._next._value + root._prev._value) / 2.0f;
+
+                                root._next._tangent = tan;
+                                root._prev._tangent = tan;
+
+                                root._next._value = val;
+                                root._prev._value = val;
+                            }
+                        }
+            SignalPropertyChange();
+        }
+
+        public void AverageKeys(string matName, int index)
+        {
+            SRT0EntryNode w = FindChild(matName, false) as SRT0EntryNode;
+            if (w == null)
+                return;
+
+            if (index < 0 || index >= w.Children.Count)
+                return;
+
+            SRT0TextureNode t = w.Children[index] as SRT0TextureNode;
+
+            for (int i = 0; i < 9; i++)
+                if (t.Keyframes._keyCounts[i] > 1)
+                {
+                    KeyframeEntry root = t.Keyframes._keyRoots[i];
+                    if (root._next != root && root._prev != root && root._prev != root._next)
+                    {
+                        float tan = (root._next._tangent + root._prev._tangent) / 2.0f;
+                        float val = (root._next._value + root._prev._value) / 2.0f;
+
+                        root._next._tangent = tan;
+                        root._prev._tangent = tan;
+
+                        root._next._value = val;
+                        root._prev._value = val;
+                    }
+                }
+            SignalPropertyChange();
+        }
+        #endregion
     }
 
     public unsafe class SRT0EntryNode : ResourceNode
@@ -494,7 +629,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _numFrames = count;
 
             if (_keyframes != null)
-                Keyframes.FrameLimit = FrameCount;
+                Keyframes.FrameCount = FrameCount;
 
             SignalPropertyChange();
         }
@@ -562,15 +697,27 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Keyframe Management
 
+        public static bool _generateTangents = true;
+        public static bool _linear = false;
+
         public KeyframeEntry GetKeyframe(KeyFrameMode mode, int index) { return Keyframes.GetKeyframe(mode, index); }
-        public void SetKeyframe(KeyFrameMode mode, int index, float value)
+        public KeyframeEntry SetKeyframe(KeyFrameMode mode, int index, float value)
         {
+            bool exists = Keyframes.GetKeyframe(mode, index) != null;
             KeyframeEntry k = Keyframes.SetFrameValue(mode, index, value);
-            k.GenerateTangent();
-            k._prev.GenerateTangent();
-            k._next.GenerateTangent();
+
+            if (!exists && !_generateTangents)
+                k.GenerateTangent();
+
+            if (_generateTangents)
+            {
+                k.GenerateTangent();
+                k._prev.GenerateTangent();
+                k._next.GenerateTangent();
+            }
 
             SignalPropertyChange();
+            return k;
         }
         public void SetKeyframe(int index, AnimationFrame frame)
         {
@@ -578,87 +725,83 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0x10; i < 0x19; i++)
                 SetKeyframe((KeyFrameMode)i, index, *v++);
         }
-
         public void SetKeyframeOnlyTrans(int index, AnimationFrame frame)
         {
             float* v = (float*)&frame.Translation;
             for (int i = 0x16; i < 0x19; i++)
                 SetKeyframe((KeyFrameMode)i, index, *v++);
         }
-
         public void SetKeyframeOnlyRot(int index, AnimationFrame frame)
         {
             float* v = (float*)&frame.Rotation;
             for (int i = 0x13; i < 0x16; i++)
                 SetKeyframe((KeyFrameMode)i, index, *v++);
         }
-
         public void SetKeyframeOnlyScale(int index, AnimationFrame frame)
         {
             float* v = (float*)&frame.Scale;
             for (int i = 0x10; i < 0x13; i++)
                 SetKeyframe((KeyFrameMode)i, index, *v++);
         }
-
         public void SetKeyframeOnlyTrans(int index, Vector3 trans)
         {
             float* v = (float*)&trans;
             for (int i = 0x16; i < 0x19; i++)
                 SetKeyframe((KeyFrameMode)i, index, *v++);
         }
-
         public void SetKeyframeOnlyRot(int index, Vector3 rot)
         {
             float* v = (float*)&rot;
             for (int i = 0x13; i < 0x16; i++)
                 SetKeyframe((KeyFrameMode)i, index, *v++);
         }
-
         public void SetKeyframeOnlyScale(int index, Vector3 scale)
         {
             float* v = (float*)&scale;
             for (int i = 0x10; i < 0x13; i++)
                 SetKeyframe((KeyFrameMode)i, index, *v++);
         }
-
         public void RemoveKeyframe(KeyFrameMode mode, int index)
         {
             KeyframeEntry k = Keyframes.Remove(mode, index);
-            if (k != null)
+            if (k != null && _generateTangents)
             {
+                k.GenerateTangent();
                 k._prev.GenerateTangent();
                 k._next.GenerateTangent();
-                SignalPropertyChange();
             }
         }
-
         public void RemoveKeyframe(int index)
         {
             for (int i = 0x10; i < 0x19; i++)
                 RemoveKeyframe((KeyFrameMode)i, index);
         }
-
         public void RemoveKeyframeOnlyTrans(int index)
         {
             for (int i = 0x16; i < 0x19; i++)
                 RemoveKeyframe((KeyFrameMode)i, index);
         }
-
         public void RemoveKeyframeOnlyRot(int index)
         {
             for (int i = 0x13; i < 0x16; i++)
                 RemoveKeyframe((KeyFrameMode)i, index);
         }
-
         public void RemoveKeyframeOnlyScale(int index)
         {
             for (int i = 0x10; i < 0x13; i++)
                 RemoveKeyframe((KeyFrameMode)i, index);
         }
-
         public AnimationFrame GetAnimFrame(int index)
         {
-            return Keyframes.GetFullFrame(index);
+            AnimationFrame a = Keyframes.GetFullFrame(index);
+            a.forKeyframeSRT = true;
+            return a;
+        }
+        public AnimationFrame GetAnimFrame(int index, bool linear)
+        {
+            AnimationFrame a = Keyframes.GetFullFrame(index, linear);
+            a.forKeyframeSRT = true;
+            return a;
         }
 
         #endregion

@@ -170,15 +170,37 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public unsafe class CollisionObject
     {
-        public List<CollisionPlane> _planes = new List<CollisionPlane>();
-        public bool _render = true;
+        public MDL0BoneNode LinkedBone 
+        {
+            get { return _linkedBone; }
+            set 
+            {
+                if ((_linkedBone = value) != null)
+                {
+                    _boneIndex = _linkedBone.BoneIndex;
+                    _boneName = _linkedBone.Name;
+                    _modelName = _linkedBone.Model.Name;
+                    _flags[1] = false;
+                }
+                else
+                {
+                    _boneIndex = -1;
+                    _boneName = "";
+                    _modelName = "";
+                    _flags[1] = true;
+                }
+            }
+        }
 
-        public string _modelName = "", _boneName = "";
-        //internal CollisionNode _parent;
+        public MDL0BoneNode _linkedBone = null;
 
         public Vector2 _boxMin, _boxMax;
         public int _unk1, _unk2, _unk3, _unk5, _unk6, _boneIndex;
         public Bin16 _flags;
+
+        public List<CollisionPlane> _planes = new List<CollisionPlane>();
+        public bool _render = true;
+        public string _modelName = "", _boneName = "";
 
         public enum Flags
         {
@@ -189,16 +211,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             SSEUnknown = 8,
         }
 
-        //internal Matrix _transform, _inverseTransform;
-
         public List<CollisionLink> _points = new List<CollisionLink>();
-
-        public CollisionObject()
-        {
-            //_parent = parent;
-            //_parent._objects.Add(this);
-        }
-        public CollisionObject(CollisionNode parent, ColObject* entry)// :this(parent)
+        public CollisionObject() { }
+        public CollisionObject(CollisionNode parent, ColObject* entry)
         {
             _modelName = entry->ModelName;
             _boneName = entry->BoneName;
@@ -256,7 +271,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (plane._linkRight != null)
                     plane._linkRight._encodeIndex = -1;
             }
-
         }
 
         internal unsafe void Render(TKContext ctx)
@@ -264,17 +278,22 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_render)
                 return;
 
-            //Apply bone transform
-            //context.glPushMatrix();
-            //fixed (Matrix* m = &_transform)
-            //    context.glMultMatrix((float*)m);
+            bool t = !_flags[1] && _linkedBone != null;
+            if (t)
+            {
+                //Apply bone transform
+                GL.PushMatrix();
+                fixed (Matrix* m = &_linkedBone._frameMatrix)
+                    GL.MultMatrix((float*)m);
+            }
 
             foreach (CollisionPlane p in _planes)
                 p.DrawPlanes();
             foreach (CollisionLink l in _points)
                 l.Render(ctx);
 
-            //context.glPopMatrix();
+            if (t)
+                GL.PopMatrix();
         }
 
         public override string ToString()
@@ -297,8 +316,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public CollisionLink() { }
         public CollisionLink(CollisionObject parent, Vector2 value)
-        { 
-            _parent = parent; 
+        {
+            _parent = parent;
             _value = value;
             _parent._points.Add(this);
         }

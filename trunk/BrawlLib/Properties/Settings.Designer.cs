@@ -9,6 +9,7 @@
 //------------------------------------------------------------------------------
 
 using BrawlLib.Modeling;
+using BrawlLib.SSBB.ResourceNodes;
 using System;
 using System.Collections.Generic;
 namespace BrawlLib.Properties
@@ -19,51 +20,6 @@ namespace BrawlLib.Properties
     {
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
         public static Settings Default { get { return defaultInstance; } }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public BBVS ViewerSettings
-        {
-            get
-            {
-                return ((BBVS)(this["ViewerSettings"]));
-            }
-            set
-            {
-                this["ViewerSettings"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ScreenCapBgLocText
-        {
-            get
-            {
-                return ((string)(this["ScreenCapBgLocText"]));
-            }
-            set
-            {
-                this["ScreenCapBgLocText"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("false")]
-        public bool External
-        {
-            get
-            {
-                return ((bool)(this["External"]));
-            }
-            set
-            {
-                this["External"] = value;
-            }
-        }
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -83,15 +39,30 @@ namespace BrawlLib.Properties
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public List<byte[]> Codes
+        public List<CodeStorage> Codes
         {
             get
             {
-                return ((List<byte[]>)(this["Codes"]));
+                return ((List<CodeStorage>)(this["Codes"]));
             }
             set
             {
                 this["Codes"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("true")]
+        public bool SaveGCTWithInfo
+        {
+            get
+            {
+                return (bool)(this["SaveGCTWithInfo"]);
+            }
+            set
+            {
+                this["SaveGCTWithInfo"] = value;
             }
         }
     }

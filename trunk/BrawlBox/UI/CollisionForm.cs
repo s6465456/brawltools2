@@ -1,5 +1,6 @@
 ﻿using System;
 using BrawlLib.SSBB.ResourceNodes;
+using BrawlBox;
 
 namespace System.Windows.Forms
 {
@@ -11,6 +12,7 @@ namespace System.Windows.Forms
     
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CollisionForm));
             this.collisionEditor1 = new System.Windows.Forms.CollisionEditor();
             this.SuspendLayout();
             // 
@@ -20,17 +22,16 @@ namespace System.Windows.Forms
             this.collisionEditor1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.collisionEditor1.Location = new System.Drawing.Point(0, 0);
             this.collisionEditor1.Name = "collisionEditor1";
-            this.collisionEditor1.Size = new System.Drawing.Size(562, 338);
+            this.collisionEditor1.Size = new System.Drawing.Size(800, 600);
             this.collisionEditor1.TabIndex = 0;
             // 
             // CollisionForm
             // 
             this.ClientSize = new System.Drawing.Size(800, 600);
             this.Controls.Add(this.collisionEditor1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimizeBox = false;
             this.Name = "CollisionForm";
-            this.ShowIcon = false;
-            this.ShowInTaskbar = false;
             this.Text = "Collision Editor";
             this.ResumeLayout(false);
 
@@ -40,7 +41,7 @@ namespace System.Windows.Forms
 
         CollisionNode _node;
 
-        public CollisionForm() { InitializeComponent(); }
+        public CollisionForm() { InitializeComponent(); Text = Program.AssemblyTitle + " - Collision Editor"; }
 
         public DialogResult ShowDialog(IWin32Window owner, CollisionNode node)
         {
@@ -55,7 +56,8 @@ namespace System.Windows.Forms
             collisionEditor1.TargetNode = _node;
             collisionEditor1._modelPanel.Capture();
 
-            //GenericWrapper._modelViewerOpen = true;
+            GenericWrapper._modelViewerOpen = true;
+            MainForm.Instance.Visible = false;
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -64,7 +66,8 @@ namespace System.Windows.Forms
             collisionEditor1.TargetNode = null;
             collisionEditor1._modelPanel.Release();
 
-            //GenericWrapper._modelViewerOpen = false;
+            GenericWrapper._modelViewerOpen = false;
+            MainForm.Instance.Visible = true;
         }
     }
 }

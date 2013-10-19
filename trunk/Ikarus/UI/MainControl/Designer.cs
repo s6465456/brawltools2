@@ -1442,8 +1442,8 @@ namespace Ikarus.UI
             FileManager.RootChanged += new EventHandler(FolderManager_RootChanged);
             FileManager.TargetCharacterChanged += new EventHandler(FolderManager_TargetCharacterChanged);
 
-            modelPanel._defaultTranslate = new Vector3(20.0f, 15.0f, 35.0f);
-            modelPanel._defaultRotate = new Vector2(-10.0f, 30.0f);
+            modelPanel.DefaultTranslate = new Vector3(20.0f, 15.0f, 35.0f);
+            modelPanel.DefaultRotate = new Vector2(-10.0f, 30.0f);
             modelPanel.ResetCamera();
             _updating = false;
         }

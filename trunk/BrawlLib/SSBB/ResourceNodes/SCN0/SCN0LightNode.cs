@@ -13,6 +13,8 @@ namespace BrawlLib.SSBB.ResourceNodes
 {
     public interface IBoolArrayNode
     {
+        bool Constant { get; set; }
+        bool Enabled { get; set; }
         int EntryCount { get; set; }
         void SetEntry(int index, bool value);
         bool GetEntry(int index);
@@ -22,6 +24,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public interface ISCN0KeyframeHolder
     {
+        int KeyArrayCount { get; }
         KeyframeArray GetKeys(int i);
         void SetKeys(int i, KeyframeArray value);
     }
@@ -68,6 +71,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public string PrimaryColorName(int id) { return null; }
         [Browsable(false)]
+        public int TypeCount { get { return _numEntries.Length; } }
+        [Browsable(false)]
         public int ColorCount(int id) { return (_numEntries[id] == 0) ? 1 : _numEntries[id]; }
         public ARGBPixel GetColor(int index, int id) { return (_numEntries[id] == 0) ? (ARGBPixel)_solidColors[id] : (ARGBPixel)GetColors(id)[index]; }
         public void SetColor(int index, int id, ARGBPixel color)
@@ -77,6 +82,23 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 GetColors(id)[index] = (RGBAPixel)color;
             SignalPropertyChange();
+        }
+        public bool GetClrConstant(int id)
+        {
+            switch (id)
+            {
+                case 0: return ConstantColor;
+                case 1: return ConstantSpecular;
+            }
+            return false;
+        }
+        public void SetClrConstant(int id, bool constant)
+        {
+            switch (id)
+            {
+                case 0: ConstantColor = constant; break;
+                case 1: ConstantSpecular = constant; break;
+            }
         }
 
         #endregion
@@ -147,8 +169,45 @@ namespace BrawlLib.SSBB.ResourceNodes
 
 #endregion
 
+        #region ISCN0KeyframeHolder Members
+        public int KeyArrayCount { get { return 10; } }
+        public KeyframeArray GetKeys(int i)
+        {
+            switch (i)
+            {
+                case 0: return _startX;
+                case 1: return _startY;
+                case 2: return _startZ;
+                case 3: return _endX;
+                case 4: return _endY;
+                case 5: return _endZ;
+                case 6: return _refDist;
+                case 7: return _refBright;
+                case 8: return _spotCut;
+                case 9: return _spotBright;
+            }
+            return null;
+        }
+        public void SetKeys(int i, KeyframeArray value)
+        {
+            switch (i)
+            {
+                case 0: _startX = value; break;
+                case 1: _startY = value; break;
+                case 2: _startZ = value; break;
+                case 3: _endX = value; break;
+                case 4: _endY = value; break;
+                case 5: _endZ = value; break;
+                case 6: _refDist = value; break;
+                case 7: _refBright = value; break;
+                case 8: _spotCut = value; break;
+                case 9: _spotBright = value; break;
+            }
+        }
+        #endregion
+
         [Browsable(false)]
-        public FixedFlags flags { get { return (FixedFlags)_flags1; } set { _flags1 = (ushort)value; } }
+        public FixedFlags Flags { get { return (FixedFlags)_flags1; } set { _flags1 = (ushort)value; } }
 
         public bool[] _constants = new bool[] { true, true };
 
@@ -207,8 +266,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         internal void SetNumEntries(int id, int value)
         {
-            if (_numEntries[id] == 0)
-                return;
+            //if (_numEntries[id] == 0)
+            //    return;
 
             if (value > _numEntries[id])
             {
@@ -249,13 +308,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public bool SetConstant
         {
-            get { return flags.HasFlag(FixedFlags.EnabledConstant); }
+            get { return Flags.HasFlag(FixedFlags.EnabledConstant); }
             set
             {
                 if (value) 
-                    flags |= FixedFlags.EnabledConstant;
+                    Flags |= FixedFlags.EnabledConstant;
                 else 
-                    flags &= ~FixedFlags.EnabledConstant;
+                    Flags &= ~FixedFlags.EnabledConstant;
             }
         }
 
@@ -278,42 +337,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             _refDist = new KeyframeArray(0),
             _refBright = new KeyframeArray(0);
 
-        public KeyframeArray GetKeys(int i)
-        {
-            switch (i)
-            {
-                case 0: return _startX;
-                case 1: return _startY;
-                case 2: return _startZ;
-                case 3: return _endX;
-                case 4: return _endY;
-                case 5: return _endZ;
-                case 6: return _refDist;
-                case 7: return _refBright;
-                case 8: return _spotCut;
-                case 9: return _spotBright;
-            }
-            return null;
-        }
-
-        public void SetKeys(int i, KeyframeArray value)
-        {
-            switch (i)
-            {
-                case 0: _startX = value; break;
-                case 1: _startY = value; break;
-                case 2: _startZ = value; break;
-                case 3: _endX = value; break;
-                case 4: _endY = value; break;
-                case 5: _endZ = value; break;
-                case 6: _refDist = value; break;
-                case 7: _refBright = value; break;
-                case 8: _spotCut = value; break;
-                case 9: _spotBright = value; break;
-            }
-        }
-
-        public FixedFlags[] Ordered = new FixedFlags[] 
+        private static readonly FixedFlags[] _ordered = new FixedFlags[] 
         { 
             FixedFlags.StartXConstant,
             FixedFlags.StartYConstant,
@@ -419,10 +443,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         internal int FrameCount 
         {
-            get 
-            {
-                return ((SCN0Node)Parent.Parent).FrameCount; 
-            }
+            get { return ((SCN0Node)Parent.Parent).FrameCount; }
             set
             {
                 int x = value + 1;
@@ -430,10 +451,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _numEntries[1] = GetColors(1).Count;
                 SetNumEntries(0, x);
                 SetNumEntries(1, x);
-                if (_constants[0])
-                    _numEntries[0] = 0;
-                if (_constants[1])
-                    _numEntries[1] = 0;
+                if (_constants[0]) _numEntries[0] = 0;
+                if (_constants[1]) _numEntries[1] = 0;
             }
         }
 
@@ -465,52 +484,52 @@ namespace BrawlLib.SSBB.ResourceNodes
             SpotFn spot_func = SpotFunction;
             float cutoff = _spotCut.GetFrameValue(frame);
 
-            if (cutoff <= 0.0F || cutoff > 90.0F)
+            if (cutoff <= 0.0f || cutoff > 90.0f)
                 spot_func = SpotFn.Off;
 
-            r = cutoff * Maths._pif / 180.0F;
+            r = cutoff * Maths._deg2radf;
             cr = (float)Math.Cos(r);
 
             switch (spot_func)
             {
                 case SpotFn.Flat:
-                    a0 = -1000.0F * cr;
-                    a1 = 1000.0F;
-                    a2 = 0.0F;
+                    a0 = -1000.0f * cr;
+                    a1 = 1000.0f;
+                    a2 = 0.0f;
                     break;
                 case SpotFn.Cos:
-                    a0 = -cr / (1.0F - cr);
-                    a1 = 1.0F / (1.0F - cr);
-                    a2 = 0.0F;
+                    a0 = -cr / (1.0f - cr);
+                    a1 = 1.0f / (1.0f - cr);
+                    a2 = 0.0f;
                     break;
                 case SpotFn.Cos2:
-                    a0 = 0.0F;
-                    a1 = -cr / (1.0F - cr);
-                    a2 = 1.0F / (1.0F - cr);
+                    a0 = 0.0f;
+                    a1 = -cr / (1.0f - cr);
+                    a2 = 1.0f / (1.0f - cr);
                     break;
                 case SpotFn.Sharp:
-                    d = (1.0F - cr) * (1.0F - cr);
-                    a0 = cr * (cr - 2.0F) / d;
-                    a1 = 2.0F / d;
-                    a2 = -1.0F / d;
+                    d = (1.0f - cr) * (1.0f - cr);
+                    a0 = cr * (cr - 2.0f) / d;
+                    a1 = 2.0f / d;
+                    a2 = -1.0f / d;
                     break;
                 case SpotFn.Ring:
-                    d = (1.0F - cr) * (1.0F - cr);
-                    a0 = -4.0F * cr / d;
-                    a1 = 4.0F * (1.0F + cr) / d;
-                    a2 = -4.0F / d;
+                    d = (1.0f - cr) * (1.0f - cr);
+                    a0 = -4.0f * cr / d;
+                    a1 = 4.0f * (1.0f + cr) / d;
+                    a2 = -4.0f / d;
                     break;
                 case SpotFn.Ring2:
-                    d = (1.0F - cr) * (1.0F - cr);
-                    a0 = 1.0F - 2.0F * cr * cr / d;
-                    a1 = 4.0F * cr / d;
-                    a2 = -2.0F / d;
+                    d = (1.0f - cr) * (1.0f - cr);
+                    a0 = 1.0f - 2.0f * cr * cr / d;
+                    a1 = 4.0f * cr / d;
+                    a2 = -2.0f / d;
                     break;
                 case SpotFn.Off:
                 default:
-                    a0 = 1.0F;
-                    a1 = 0.0F;
-                    a2 = 0.0F;
+                    a0 = 1.0f;
+                    a1 = 0.0f;
+                    a2 = 0.0f;
                     break;
             }
 
@@ -581,7 +600,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             _distFunc = Data->_distFunc;
             _spotFunc = Data->_spotFunc;
 
-            //_enabled = new List<bool>();
             for (int x = 0; x < 10; x++)
                 SetKeys(x, new KeyframeArray(FrameCount + 1));
 
@@ -597,13 +615,6 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 _data = new byte[numBytes];
                 Marshal.Copy((IntPtr)Data->visBitEntries, _data, 0, numBytes);
-
-                //SCN0Node.strings[(int)(Data->visBitEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Vis";
-
-                //byte* addr = Data->visBitEntries;
-                //int index = -1;
-                //for (int x = 0; x <= FrameCount; x++) //Read each bit, progress in bytes
-                //    _enabled.Add(((addr[(x % 8 == 0 ? ++index : index)] >> (7 - (x & 7))) & 1) != 0);
             }
             else
             {
@@ -620,35 +631,26 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RGBAPixel* addr = Data->lightColorEntries;
                 for (int x = 0; x <= FrameCount; x++)
                     _lightColor.Add(*addr++);
-
-                //SCN0Node.strings[(int)(Data->lightColorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Pixels Light";
             }
-            //_constants[1] = flags.HasFlag(FixedFlags.SpecColorConstant);
+
             if (SpecularEnabled)
-            if (flags.HasFlag(FixedFlags.SpecColorConstant))
-                _solidColors[1] = Data->_specularColor;
-            else
-            {
-                _constants[1] = false;
-                _numEntries[1] = FrameCount + 1;
-                RGBAPixel* addr = Data->specColorEntries;
-                for (int x = 0; x <= FrameCount; x++)
-                    _specColor.Add(*addr++);
-
-                //SCN0Node.strings[(int)(Data->specColorEntries - Parent.Parent.WorkingUncompressed.Address)] = "Light" + Index + " Pixels Spec";
-            }
+                if (flags.HasFlag(FixedFlags.SpecColorConstant))
+                    _solidColors[1] = Data->_specularColor;
+                else
+                {
+                    _constants[1] = false;
+                    _numEntries[1] = FrameCount + 1;
+                    RGBAPixel* addr = Data->specColorEntries;
+                    for (int x = 0; x <= FrameCount; x++)
+                        _specColor.Add(*addr++);
+                }
 
             bint* values = (bint*)&Data->_startPoint;
 
             int index = 0;
             for (int i = 0; i < 14; i++)
                 if (!(i == 3 || i == 7 || i == 10 || i == 12))
-                {
-                    //if (((int)_flags1 & (int)Ordered[index]) == 0)
-                    //    SCN0Node.strings[(int)((&values[i] - Parent.Parent.WorkingUncompressed.Address + values[i]))] = "Light" + Index + " Keys " + Ordered[index].ToString();
-
-                    DecodeFrames(GetKeys(index), &values[i], (int)_flags1, (int)Ordered[index++]);
-                }
+                    DecodeFrames(GetKeys(index), &values[i], (int)_flags1, (int)_ordered[index++]);
 
             return false;
         }
@@ -797,7 +799,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 int index = 0;
                 for (int i = 0; i < 14; i++)
                     if (!(i == 3 || i == 7 || i == 10 || i == 12))
-                        EncodeFrames(GetKeys(index), ref keyframeAddr, &values[i], ref newFlags, (int)Ordered[index++]);
+                        EncodeFrames(GetKeys(index), ref keyframeAddr, &values[i], ref newFlags, (int)_ordered[index++]);
 
                 header->_fixedFlags = _flags1 = (ushort)newFlags;
                 header->_usageFlags = _flags2;
@@ -814,7 +816,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             LightAnimationFrame frame;
             float* dPtr = (float*)&frame;
             for (int x = 0; x < 10; x++)
-                *dPtr++ = GetKeys(x).GetFrameValue(index);
+            {
+                KeyframeArray a = GetKeys(x);
+                *dPtr++ = a.GetFrameValue(index);
+                frame.SetBools(x, a.GetKeyframe(index) != null);
+                frame.Index = index;
+            }
 
             //if (((FixedFlags)_flags1).HasFlag(FixedFlags.EnabledConstant))
             //    frame.Enabled = UsageFlags.HasFlag(UsageFlags.Enabled);
@@ -824,20 +831,23 @@ namespace BrawlLib.SSBB.ResourceNodes
             return frame;
         }
 
+        public static bool _generateTangents = true;
+        public static bool _linear = true;
+
         public float GetFrameValue(LightKeyframeMode keyFrameMode, int index)
         {
-            return GetKeys((int)keyFrameMode - 0x10).GetFrameValue(index);
+            return GetKeys((int)keyFrameMode).GetFrameValue(index);
         }
 
         internal KeyframeEntry GetKeyframe(LightKeyframeMode keyFrameMode, int index)
         {
-            return GetKeys((int)keyFrameMode - 0x10).GetKeyframe(index);
+            return GetKeys((int)keyFrameMode).GetKeyframe(index);
         }
 
         internal void RemoveKeyframe(LightKeyframeMode keyFrameMode, int index)
         {
-            KeyframeEntry k = GetKeys((int)keyFrameMode - 0x10).Remove(index);
-            if (k != null)
+            KeyframeEntry k = GetKeys((int)keyFrameMode).Remove(index);
+            if (k != null && _generateTangents)
             {
                 k._prev.GenerateTangent();
                 k._next.GenerateTangent();
@@ -847,10 +857,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         internal void SetKeyframe(LightKeyframeMode keyFrameMode, int index, float value)
         {
-            KeyframeEntry k = GetKeys((int)keyFrameMode - 0x10).SetFrameValue(index, value);
-            k.GenerateTangent();
-            k._prev.GenerateTangent();
-            k._next.GenerateTangent();
+            KeyframeArray keys = GetKeys((int)keyFrameMode);
+            bool exists = keys.GetKeyframe(index) != null;
+            KeyframeEntry k = keys.SetFrameValue(index, value);
+
+            if (!exists && !_generateTangents)
+                k.GenerateTangent();
+
+            if (_generateTangents)
+            {
+                k.GenerateTangent();
+                k._prev.GenerateTangent();
+                k._next.GenerateTangent();
+            }
 
             SignalPropertyChange();
         }
@@ -858,16 +877,16 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public enum LightKeyframeMode
     {
-        StartX = 0x10,
-        StartY = 0x11,
-        StartZ = 0x12,
-        EndX = 0x13,
-        EndY = 0x14,
-        EndZ = 0x15,
-        SpotCut = 0x16,
-        SpotBright = 0x17,
-        RefDist = 0x18,
-        RefBright = 0x19,
+        StartX,
+        StartY,
+        StartZ,
+        EndX,
+        EndY,
+        EndZ,
+        SpotCut,
+        SpotBright,
+        RefDist,
+        RefBright,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -897,7 +916,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public bool hasRD;
         public bool hasRB;
 
-        public bool forKF;
+        public bool HasKeys
+        {
+            get { return hasSx || hasSy || hasSz || hasEx || hasEy || hasEz || hasSC || hasSB || hasRD || hasRB; }
+        }
 
         public void SetBools(int index, bool val)
         {
@@ -971,14 +993,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             Enabled = enabled;
             Index = 0;
             hasSx = hasSy = hasSz = hasEx = hasEy = hasEz = hasSC = hasSB = hasRD = hasRB = false;
-            forKF = true;
         }
         public int Index;
         const int len = 6;
         static string empty = new String('_', len);
         public override string ToString()
         {
-            return String.Format("[{0}] Start=({1},{2},{3}), End=({4},{5},{6}), SC={7}, SB={8} RD={9}, RB={10}", Index + 1,
+            return String.Format("[{0}] Start=({1},{2},{3}), End=({4},{5},{6}), SC={7}, SB={8} RD={9}, RB={10}", (Index + 1).ToString().PadLeft(5),
             !hasSx ? empty : Start._x.ToString().TruncateAndFill(len, ' '),
             !hasSy ? empty : Start._y.ToString().TruncateAndFill(len, ' '),
             !hasSz ? empty : Start._z.ToString().TruncateAndFill(len, ' '),
@@ -990,9 +1011,5 @@ namespace BrawlLib.SSBB.ResourceNodes
             !hasRD ? empty : RefDist.ToString().TruncateAndFill(len, ' '),
             !hasRB ? empty : RefBright.ToString().TruncateAndFill(len, ' '));
         }
-        //public override string ToString()
-        //{
-        //    return String.Format("{0}\r\n{1}\r\n{2}", Scale, Rotation, Translation);
-        //}
     }
 }

@@ -105,7 +105,7 @@ namespace Ikarus
         //    }
         //}
         
-        public static List<MoveDefActionNode> _runningScripts = new List<MoveDefActionNode>();
+        public static List<ActionScript> _runningScripts = new List<ActionScript>();
         public static Dictionary<int, List<AudioInfo>> _playingSounds = new Dictionary<int, List<AudioInfo>>();
         public static ArticleInfo[] _articles;
 
@@ -128,11 +128,11 @@ namespace Ikarus
             set { _timer.TargetUpdateFrequency = value; }
         }
 
-        private static MoveDefSubActionGroupNode _currentSubaction;
-        private static MoveDefActionGroupNode _currentAction;
-        private static MoveDefActionNode _currentSubRoutine;
+        private static SubActionGroup _currentSubaction;
+        private static ActionGroup _currentAction;
+        private static ActionScript _currentSubRoutine;
         
-        public static MoveDefSubActionGroupNode CurrentSubaction
+        public static SubActionGroup CurrentSubaction
         {
             get { return _currentSubaction; }
             set
@@ -146,7 +146,7 @@ namespace Ikarus
             }
         }
 
-        public static MoveDefActionGroupNode CurrentAction
+        public static ActionGroup CurrentAction
         {
             get { return _currentAction; }
             set
@@ -156,7 +156,7 @@ namespace Ikarus
             }
         }
 
-        public static MoveDefActionNode CurrentSubRoutine
+        public static ActionScript CurrentSubRoutine
         {
             get { return _currentSubRoutine; }
             set
@@ -168,12 +168,12 @@ namespace Ikarus
 
         private static void LoadSubactionScripts()
         {
-            foreach (MoveDefActionNode a in _runningScripts) 
+            foreach (ActionScript a in _runningScripts) 
                 a.Reset(); 
 
             _runningScripts.Clear();
             if (CurrentSubaction != null)
-                foreach (MoveDefActionNode a in CurrentSubaction.Children) 
+                foreach (ActionScript a in CurrentSubaction.Children) 
                 {
                     _runningScripts.Add(a); 
                     a.Reset();
@@ -190,10 +190,10 @@ namespace Ikarus
             LoadSubactionScripts();
 
             //Reset bone collisions and hurtbox type
-            foreach (MDL0BoneNode bone in MoveDefActionNode._boneCollisions)
+            foreach (MDL0BoneNode bone in ActionScript._boneCollisions)
                 bone._nodeColor = bone._boneColor = Color.Transparent;
-            MoveDefActionNode._boneCollisions = new List<MDL0BoneNode>();
-            MoveDefActionNode._hurtBoxType = 0;
+            ActionScript._boneCollisions = new List<MDL0BoneNode>();
+            ActionScript._hurtBoxType = 0;
 
             //Reset articles
             if (_articles != null)
@@ -254,8 +254,8 @@ namespace Ikarus
         /// </summary>
         public static void SetFrame(int frame)
         {
-            if (frame > MainWindow.MaxFrame && MainWindow.MaxFrame > 0)
-                frame = ((frame - 1) % MainWindow.MaxFrame) + 1;
+            //if (frame > MainWindow.MaxFrame && MainWindow.MaxFrame > 0)
+            //    frame = ((frame - 1) % MainWindow.MaxFrame) + 1;
 
             int difference = frame - MainWindow.CurrentFrame;
             if (difference == 0)
@@ -276,8 +276,7 @@ namespace Ikarus
 
                 //ResetSubactionVariables();
 
-                UpdateScripts(false, frame);
-                UpdateScripts(true, frame);
+                UpdateScripts(frame);
 
                 foreach (ArticleInfo a in RunTime._articles)
                     if (a.Running)
@@ -290,33 +289,36 @@ namespace Ikarus
         /// </summary>
         public static void IncrementFrame()
         {
-            UpdateScripts(false, -1);
-            UpdateScripts(true, -1);
+            UpdateScripts(-1);
 
             foreach (ArticleInfo a in RunTime._articles)
                 if (a.Running)
                     a.ProgressFrame();
         }
 
-        private static void UpdateScripts(bool articlePass, int index)
+        private static void UpdateScripts(int index)
         {
+            //Update main model scripts first
             for (int i = 0; i < _runningScripts.Count; i++)
             {
-                MoveDefActionNode a = _runningScripts[i];
+                ActionScript a = _runningScripts[i];
 
-                if (index == -1 && ((!articlePass && a._attachedArticleIndex < 0) || (articlePass && a._attachedArticleIndex >= 0)))
+                if (index == -1 && a._attachedArticleIndex < 0)
                     a.FrameAdvance();
-                else if (index >= 0)
-                    if (!articlePass && a._attachedArticleIndex < 0)
-                        a.SetFrame(index - 1);
-                    else if (articlePass && a._attachedArticleIndex >= 0)
-                        a.SetFrame(index - _articles[a._attachedArticleIndex]._setAt);
+                else if (index >= 0 && a._attachedArticleIndex < 0)
+                    a.SetFrame(index - 1);
 
-                //if (a._idling)
-                //{
-                //    _runningScripts.RemoveAt(i--);
-                //    continue;
-                //}
+                ScriptWindow.UpdateScriptEditor(a);
+            }
+            //Now update article scripts
+            for (int i = 0; i < _runningScripts.Count; i++)
+            {
+                ActionScript a = _runningScripts[i];
+
+                if (index == -1 && a._attachedArticleIndex >= 0)
+                    a.FrameAdvance();
+                else if (index >= 0 && a._attachedArticleIndex >= 0)
+                    a.SetFrame(index - _articles[a._attachedArticleIndex]._setAt);
 
                 ScriptWindow.UpdateScriptEditor(a);
             }
@@ -368,6 +370,7 @@ namespace Ikarus
                                     info._buffer.Stop();
 
                                 info._buffer.Dispose();
+                                info._stream.Dispose();
 
                                 if (!keys.ContainsKey(b.Key))
                                     keys[b.Key] = new List<int>();
@@ -563,7 +566,7 @@ namespace Ikarus
 
         public RunTime.Location CharacterLocation { get { return RunTime._location; } set { RunTime._location = value; } }
 
-        public List<MoveDefActionNode> RunningScripts { get { return RunTime._runningScripts; } }
+        public List<ActionScript> RunningScripts { get { return RunTime._runningScripts; } }
         
         public Dictionary<int, List<AudioInfo>> PlayingSounds { get { return RunTime._playingSounds; } }
         public ArticleInfo[] Articles { get { return RunTime._articles; } }

@@ -18,6 +18,20 @@ namespace BrawlLib.Modeling
         public Vector3 _rotate;
         public Vector3 _translate;
 
+        public unsafe float this[int index]
+        {
+            get
+            {
+                fixed (FrameState* f = &this)
+                    return ((float*)f)[index];
+            }
+            set
+            {
+                fixed (FrameState* f = &this)
+                    ((float*)f)[index] = value;
+            }
+        }
+
         public Vector3 Translate
         {
             get { return _translate; }

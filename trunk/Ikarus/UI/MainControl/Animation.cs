@@ -163,11 +163,11 @@ namespace Ikarus.UI
 
             if (TargetAnimType == AnimType.VIS)
             {
-                if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Flags.HasFlag(VIS0Flags.Constant))
+                if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Constant)
                 {
                     rightPanel.pnlKeyframes.visEditor._updating = true;
                     rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
-                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame;
+                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame - 1;
                     rightPanel.pnlKeyframes.visEditor._updating = false;
                 }
             }
@@ -293,7 +293,7 @@ namespace Ikarus.UI
             //        break;
             //}
 
-            if (GetSelectedBRRESFile(type) == null)
+            if (GetAnimation(type) == null)
             {
                 pnlPlayback.numFrameIndex.Maximum = _maxFrame = 0;
                 pnlPlayback.numTotalFrames.Minimum = 0;
@@ -312,7 +312,7 @@ namespace Ikarus.UI
             {
                 int oldMax = _maxFrame;
 
-                _maxFrame = GetSelectedBRRESFile(type).FrameCount;
+                _maxFrame = GetAnimation(type).FrameCount;
 
                 _updating = true;
                 pnlPlayback.btnPlay.Enabled =
@@ -321,7 +321,7 @@ namespace Ikarus.UI
                 pnlPlayback.Enabled = true;
                 pnlPlayback.numTotalFrames.Value = _maxFrame;
                 if (syncLoopToAnimationToolStripMenuItem.Checked)
-                    pnlPlayback.chkLoop.Checked = GetSelectedBRRESFile(type).Loop;
+                    pnlPlayback.chkLoop.Checked = GetAnimation(type).Loop;
                 _updating = false;
 
                 if (_maxFrame < oldMax)
@@ -411,7 +411,7 @@ namespace Ikarus.UI
 
         public void PlayAnim()
         {
-            if (GetSelectedBRRESFile(TargetAnimType) == null || _maxFrame == 1)
+            if (GetAnimation(TargetAnimType) == null || _maxFrame == 1)
                 return;
 
             _playing = true;

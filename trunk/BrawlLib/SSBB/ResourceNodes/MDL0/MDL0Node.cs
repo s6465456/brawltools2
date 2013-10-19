@@ -31,13 +31,13 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Changing the version will change the conversion.
         internal int _version = 9;
         internal int _scalingRule, _texMtxMode, _origPathOffset;
-        public byte _needNrmMtxArray, _needTexMtxArray, _enableExtents, _envMtxMode;
+        public byte _needsNrmMtxArray, _needsTexMtxArray, _enableExtents, _envMtxMode;
         internal int _numFacepoints, _numFaces, _numNodes;
         internal Vector3 _min, _max;
 
         public ModelLinker _linker;
         internal AssetStorage _assets;
-        internal bool _hasTree, _hasMix, _hasOpa, _hasXlu, _isImport, _rebuildAllObj, _autoMetal, _noColors;
+        internal bool _hasTree, _hasMix, _hasOpa, _hasXlu, _isImport, _rebuildAllObj, _autoMetal;
 
         [Category("User Data"), TypeConverter(typeof(ExpandableObjectCustomConverter))]
         public UserDataCollection UserEntries { get { return _userEntries; } set { _userEntries = value; SignalPropertyChange(); } }
@@ -103,9 +103,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             } 
         }
         [Category("MDL0 Definition")]
-        public bool NeedsNormalMtxArray { get { return _needNrmMtxArray != 0; } set { _needNrmMtxArray = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
+        public bool NeedsNormalMtxArray { get { return _needsNrmMtxArray != 0; } set { _needsNrmMtxArray = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
         [Category("MDL0 Definition")]
-        public bool NeedsTextureMtxArray { get { return _needTexMtxArray != 0; } set { _needTexMtxArray = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
+        public bool NeedsTextureMtxArray { get { return _needsTexMtxArray != 0; } set { _needsTexMtxArray = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
         [Category("MDL0 Definition"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 BoxMin { get { return _min; } set { _min = value; SignalPropertyChange(); } }
         [Category("MDL0 Definition"), TypeConverter(typeof(Vector3StringConverter))]
@@ -186,25 +186,25 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_objList != null)
                 foreach (MDL0ObjectNode o in _objList)
                 {
-                    if (o._manager._vertices != null)
-                    foreach (Vertex3 vertex in o._manager._vertices)
-                    {
-                        Vector3 v = vertex.WeightedPosition;
+                    if (o._manager != null && o._manager._vertices != null)
+                        foreach (Vertex3 vertex in o._manager._vertices)
+                        {
+                            Vector3 v = vertex.WeightedPosition;
 
-                        if (v._x < min._x)
-                            min._x = v._x;
-                        if (v._y < min._y)
-                            min._y = v._y;
-                        if (v._z < min._z)
-                            min._z = v._z;
+                            if (v._x < min._x)
+                                min._x = v._x;
+                            if (v._y < min._y)
+                                min._y = v._y;
+                            if (v._z < min._z)
+                                min._z = v._z;
 
-                        if (v._x > max._x)
-                            max._x = v._x;
-                        if (v._y > max._y)
-                            max._y = v._y;
-                        if (v._z > max._z)
-                            max._z = v._z;
-                    }
+                            if (v._x > max._x)
+                                max._x = v._x;
+                            if (v._y > max._y)
+                                max._y = v._y;
+                            if (v._z > max._z)
+                                max._z = v._z;
+                        }
                 }
             else
                 min = max = new Vector3(0);
@@ -686,8 +686,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             _numFaces = props->_numFaces;
             _origPathOffset = props->_origPathOffset;
             _numNodes = props->_numNodes;
-            _needNrmMtxArray = props->_needNrmMtxArray;
-            _needTexMtxArray = props->_needTexMtxArray;
+            _needsNrmMtxArray = props->_needNrmMtxArray;
+            _needsTexMtxArray = props->_needTexMtxArray;
             _min = props->_minExtents;
             _max = props->_maxExtents;
             _enableExtents = props->_enableExtents;
@@ -1072,7 +1072,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 List<MDL0ObjectNode> rendered = new List<MDL0ObjectNode>();
                 if (_matList != null)
                     foreach (MDL0MaterialNode m in _matList)
-                        foreach (MDL0ObjectNode p in m._polygons)
+                        foreach (MDL0ObjectNode p in m._objects)
                         {
                             RenderObject(p, ctx, mainWindow, maxDrawPriority);
                             rendered.Add(p);
@@ -1083,26 +1083,26 @@ namespace BrawlLib.SSBB.ResourceNodes
                     foreach (MDL0ObjectNode p in _objList)
                         if (!rendered.Contains(p))
                             RenderObject(p, ctx, mainWindow, maxDrawPriority);
+            }
 
-                if (_renderBox)
-                {
-                    //GL.LineWidth(1.0f);
-                    GL.Disable(EnableCap.Lighting);
-                    //GL.Disable(EnableCap.DepthTest);
+            if (_renderBox)
+            {
+                //GL.LineWidth(1.0f);
+                GL.Disable(EnableCap.Lighting);
+                //GL.Disable(EnableCap.DepthTest);
 
-                    GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-                    GL.Color4(Color.Gray);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+                GL.Color4(Color.Gray);
 
-                    DrawBox();
+                DrawBox();
 
-                    if (_objList != null)
-                        if (_polyIndex != -1 && ((MDL0ObjectNode)_objList[_polyIndex])._render)
-                            ((MDL0ObjectNode)_objList[_polyIndex]).DrawBox();
-                        //else
-                        //    foreach (MDL0ObjectNode p in _polyList)
-                        //        if (p._render)
-                        //            p.DrawBox();
-                }
+                if (_objList != null)
+                    if (_polyIndex != -1 && ((MDL0ObjectNode)_objList[_polyIndex])._render)
+                        ((MDL0ObjectNode)_objList[_polyIndex]).DrawBox();
+                //else
+                //    foreach (MDL0ObjectNode p in _polyList)
+                //        if (p._render)
+                //            p.DrawBox();
             }
 
             //Turn off the last bound shader program.
@@ -1152,12 +1152,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     MDL0ObjectNode o = (MDL0ObjectNode)_objList[_polyIndex];
                     if (o._render)
+                    {
                         o._manager.RenderVerts(ctx, o._matrixNode, _selectedBone, _mainWindow._camera.GetPoint(), pass2);
+                        return;
+                    }
                 }
-                else
-                    foreach (MDL0ObjectNode p in _objList)
-                        if (p._render)
-                            p._manager.RenderVerts(ctx, p._matrixNode, _selectedBone, _mainWindow._camera.GetPoint(), pass2);
+                foreach (MDL0ObjectNode p in _objList)
+                    if (p._render)
+                        p._manager.RenderVerts(ctx, p._matrixNode, _selectedBone, _mainWindow._camera.GetPoint(), pass2);
             }
         }
 
@@ -1173,7 +1175,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (o._render)
                         o._manager.RenderNormals(ctx, _mainWindow);
                 }
-                else
+                else 
                     foreach (MDL0ObjectNode p in _objList)
                         if (p._render)
                             p._manager.RenderNormals(ctx, _mainWindow);
@@ -1185,55 +1187,38 @@ namespace BrawlLib.SSBB.ResourceNodes
             Vector3 min, max;
             GetBox(out min, out max);
 
+            GL.Begin(BeginMode.LineStrip);
+            GL.Vertex3(max._x, max._y, max._z);
+            GL.Vertex3(max._x, max._y, min._z);
+            GL.Vertex3(min._x, max._y, min._z);
+            GL.Vertex3(min._x, min._y, min._z);
+            GL.Vertex3(min._x, min._y, max._z);
+            GL.Vertex3(max._x, min._y, max._z);
+            GL.Vertex3(max._x, max._y, max._z);
+            GL.End();
             GL.Begin(BeginMode.Lines);
-
-            GL.Vertex3(min._x, min._y, min._z);
-            GL.Vertex3(max._x, min._y, min._z);
-
-            GL.Vertex3(min._x, min._y, min._z);
-            GL.Vertex3(min._x, max._y, min._z);
-
-            GL.Vertex3(min._x, min._y, min._z);
-            GL.Vertex3(min._x, min._y, max._z);
-
-            GL.Vertex3(max._x, max._y, max._z);
-            GL.Vertex3(max._x, max._y, min._z);
-
+            GL.Vertex3(min._x, max._y, max._z);
             GL.Vertex3(max._x, max._y, max._z);
             GL.Vertex3(min._x, max._y, max._z);
-
-            GL.Vertex3(max._x, max._y, max._z);
-            GL.Vertex3(max._x, min._y, max._z);
-
-            GL.Vertex3(max._x, min._y, max._z);
-            GL.Vertex3(min._x, min._y, max._z);
-
-            GL.Vertex3(max._x, min._y, max._z);
-            GL.Vertex3(max._x, min._y, min._z);
-
-            GL.Vertex3(min._x, max._y, min._z);
-            GL.Vertex3(min._x, max._y, max._z);
-
-            GL.Vertex3(min._x, max._y, min._z);
-            GL.Vertex3(max._x, max._y, min._z);
-
             GL.Vertex3(min._x, min._y, max._z);
             GL.Vertex3(min._x, max._y, max._z);
-
+            GL.Vertex3(min._x, max._y, min._z);
+            GL.Vertex3(max._x, min._y, min._z);
+            GL.Vertex3(min._x, min._y, min._z);
             GL.Vertex3(max._x, min._y, min._z);
             GL.Vertex3(max._x, max._y, min._z);
-
+            GL.Vertex3(max._x, min._y, min._z);
+            GL.Vertex3(max._x, min._y, max._z);
             GL.End();
         }
 
-        public bool _linearAnimation;
         public void ApplyCHR(CHR0Node node, int index)
         {
             //Transform bones
             if (_boneList != null)
             {
                 foreach (MDL0BoneNode b in _boneList)
-                    b.ApplyCHR0(node, index, _linearAnimation);
+                    b.ApplyCHR0(node, index, CHR0EntryNode._linear);
                 foreach (MDL0BoneNode b in _boneList)
                     b.RecalcFrameState();
             }
@@ -1253,7 +1238,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             //Transform textures
             if (_matList != null)
                 foreach (MDL0MaterialNode m in _matList)
-                    m.ApplySRT0(node, index);
+                    m.ApplySRT0(node, index, SRT0TextureNode._linear);
         }
 
         public void ApplyCLR(CLR0Node node, int index)
@@ -1330,7 +1315,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 if (vn.Name == v.Name)
                                 { vNode = vn; break; }
 
-                            weights[v.Index] = vNode != null ? v.Keyframes.GetFrameValue(index - 1) : 0;
+                            weights[v.Index] = vNode != null ? v.Keyframes.GetFrameValue(index - 1, SHP0VertexSetNode._linear) : 0;
                             nodes[v.Index] = vNode;
                         }
 

@@ -79,7 +79,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_linkNext = 0;
             header->_padding = 0;
             header->_dataLength = length - 0x18;
-            //header->_dataOffset = 0x10 + (Name.Length + 1).Align(4);
             header->_header._tag = header->_tag = REFF.Tag;
             header->_header.Endian = Endian.Big;
             header->_header._version = 7;
@@ -111,7 +110,13 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class REFFEntryNode : ResourceNode
     {
         internal REFFDataHeader* Header { get { return (REFFDataHeader*)WorkingUncompressed.Address; } }
-
+        public override ResourceType ResourceType
+        {
+            get
+            {
+                return ResourceType.REFFEntry;
+            }
+        }
         [Category("REFF Entry")]
         public int REFFOffset { get { return _offset; } }
         [Category("REFF Entry")]
@@ -167,6 +172,13 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class REFFAnimationListNode : ResourceNode
     {
         internal VoidPtr First { get { return (VoidPtr)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType
+        {
+            get
+            {
+                return ResourceType.Container;
+            }
+        }
         public ushort _ptclTrackCount, _ptclInitTrackCount, _emitTrackCount, _emitInitTrackCount;
         public buint* _ptclTrackAddr, _emitTrackAddr;
         public List<uint> _ptclTrack, _emitTrack;
@@ -255,8 +267,9 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class REFFAnimationNode : ResourceNode
     {
         internal AnimCurveHeader* Header { get { return (AnimCurveHeader*)WorkingUncompressed.Address; } }
-
-        internal AnimCurveHeader _hdr;
+        public override ResourceType ResourceType { get { return ResourceType.REFFAnimationList; } }
+        
+        internal AnimCurveHeader _hdr = new AnimCurveHeader();
         
         public bool _isPtcl = false;
 
@@ -266,8 +279,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             Emitter
         }
 
+        [Category("Animation")]
         public AnimType Type { get { return _isPtcl ? AnimType.Particle : AnimType.Emitter; } set { _isPtcl = value == AnimType.Particle; SignalPropertyChange(); } }
-        
         [Category("Animation")]
         public byte Magic { get { return _hdr.magic; } }
         [Category("Animation"), TypeConverter(typeof(DropDownListReffAnimType))]
@@ -275,7 +288,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             get 
             {
-                if (((REFFNode)Parent.Parent).VersionMinor == 9)
+                if (((REFFNode)Parent.Parent.Parent).VersionMinor == 9)
                     switch (CurveFlag)
                     {
                         case AnimCurveType.ParticleByte:
@@ -316,63 +329,69 @@ namespace BrawlLib.SSBB.ResourceNodes
                     //}
                 return null;
             }
-            //set 
-            //{
-            //    int i = 0;
-            //    switch (CurveFlag)
-            //    {
-            //        case AnimCurveType.ParticleByte:
-            //        case AnimCurveType.ParticleFloat:
-            //            AnimCurveTargetByteFloat a;
-            //            if (Enum.TryParse<AnimCurveTargetByteFloat>(value, true, out a))
-            //                hdr.kindType = (byte)a;
-            //            else if (int.TryParse(value, out i))
-            //                hdr.kindType = (byte)i;
-            //            break;
-            //        case AnimCurveType.ParticleRotate:
-            //            AnimCurveTargetRotateFloat b;
-            //            if (Enum.TryParse<AnimCurveTargetRotateFloat>(value, true, out b))
-            //                hdr.kindType = (byte)b;
-            //            else if (int.TryParse(value, out i))
-            //                hdr.kindType = (byte)i;
-            //            break;
-            //        case AnimCurveType.ParticleTexture:
-            //            AnimCurveTargetPtclTex c;
-            //            if (Enum.TryParse<AnimCurveTargetPtclTex>(value, true, out c))
-            //                hdr.kindType = (byte)c;
-            //            else if (int.TryParse(value, out i))
-            //                hdr.kindType = (byte)i;
-            //            break;
-            //        case AnimCurveType.Child:
-            //            AnimCurveTargetChild d;
-            //            if (Enum.TryParse<AnimCurveTargetChild>(value, true, out d))
-            //                hdr.kindType = (byte)d;
-            //            else if (int.TryParse(value, out i))
-            //                hdr.kindType = (byte)i;
-            //            break;
-            //        case AnimCurveType.Field:
-            //            AnimCurveTargetField e;
-            //            if (Enum.TryParse<AnimCurveTargetField>(value, true, out e))
-            //                hdr.kindType = (byte)e;
-            //            else if (int.TryParse(value, out i))
-            //                hdr.kindType = (byte)i;
-            //            break;
-            //        case AnimCurveType.PostField:
-            //            AnimCurveTargetPostField f;
-            //            if (Enum.TryParse<AnimCurveTargetPostField>(value, true, out f))
-            //                hdr.kindType = (byte)f;
-            //            else if (int.TryParse(value, out i))
-            //                hdr.kindType = (byte)i;
-            //            break;
-            //        case AnimCurveType.EmitterFloat:
-            //            AnimCurveTargetEmitterFloat g;
-            //            if (Enum.TryParse<AnimCurveTargetEmitterFloat>(value, true, out g))
-            //                hdr.kindType = (byte)g;
-            //            else if (int.TryParse(value, out i))
-            //                hdr.kindType = (byte)i;
-            //            break;
-            //    }
-            //}
+            set
+            {
+                int i = 0;
+                if (((REFFNode)Parent.Parent.Parent).VersionMinor == 9)
+                    switch (CurveFlag)
+                    {
+                        case AnimCurveType.ParticleByte:
+                        case AnimCurveType.ParticleFloat:
+                            v9AnimCurveTargetByteFloat a;
+                            if (Enum.TryParse<v9AnimCurveTargetByteFloat>(value, true, out a))
+                                _hdr.kindType = (byte)a;
+                            else if (int.TryParse(value, out i))
+                                _hdr.kindType = (byte)i;
+                            break;
+                        case AnimCurveType.ParticleRotate:
+                            v9AnimCurveTargetRotateFloat b;
+                            if (Enum.TryParse<v9AnimCurveTargetRotateFloat>(value, true, out b))
+                                _hdr.kindType = (byte)b;
+                            else if (int.TryParse(value, out i))
+                                _hdr.kindType = (byte)i;
+                            break;
+                        case AnimCurveType.ParticleTexture:
+                            v9AnimCurveTargetPtclTex c;
+                            if (Enum.TryParse<v9AnimCurveTargetPtclTex>(value, true, out c))
+                                _hdr.kindType = (byte)c;
+                            else if (int.TryParse(value, out i))
+                                _hdr.kindType = (byte)i;
+                            break;
+                        case AnimCurveType.Child:
+                            v9AnimCurveTargetChild d;
+                            if (Enum.TryParse<v9AnimCurveTargetChild>(value, true, out d))
+                                _hdr.kindType = (byte)d;
+                            else if (int.TryParse(value, out i))
+                                _hdr.kindType = (byte)i;
+                            break;
+                        case AnimCurveType.Field:
+                            v9AnimCurveTargetField e;
+                            if (Enum.TryParse<v9AnimCurveTargetField>(value, true, out e))
+                                _hdr.kindType = (byte)e;
+                            else if (int.TryParse(value, out i))
+                                _hdr.kindType = (byte)i;
+                            break;
+                        case AnimCurveType.PostField:
+                            v9AnimCurveTargetPostField f;
+                            if (Enum.TryParse<v9AnimCurveTargetPostField>(value, true, out f))
+                                _hdr.kindType = (byte)f;
+                            else if (int.TryParse(value, out i))
+                                _hdr.kindType = (byte)i;
+                            break;
+                        case AnimCurveType.EmitterFloat:
+                            v9AnimCurveTargetEmitterFloat g;
+                            if (Enum.TryParse<v9AnimCurveTargetEmitterFloat>(value, true, out g))
+                                _hdr.kindType = (byte)g;
+                            else if (int.TryParse(value, out i))
+                                _hdr.kindType = (byte)i;
+                            break;
+                    }
+                else
+                {
+                    if (int.TryParse(value, out i))
+                        _hdr.kindType = (byte)i;
+                }
+            }
         }
         [Category("Animation")]
         public AnimCurveType CurveFlag { get { return (AnimCurveType)_hdr.curveFlag; } }//set { hdr.curveFlag = (byte)value; SignalPropertyChange(); } }
@@ -551,9 +570,15 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class REFFParticleNode : ResourceNode
     {
         internal ParticleParameterHeader* Params { get { return (ParticleParameterHeader*)WorkingUncompressed.Address; } }
-
-        ParticleParameterHeader hdr;
-        ParticleParameterDesc desc;
+        public override ResourceType ResourceType
+        {
+            get
+            {
+                return ResourceType.Unknown;
+            }
+        }
+        ParticleParameterHeader hdr = new ParticleParameterHeader();
+        ParticleParameterDesc desc = new ParticleParameterDesc();
 
         //[Category("Particle Parameters")]
         //public uint HeaderSize { get { return hdr.headersize; } }
@@ -618,7 +643,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Particle Parameters")]
         public string Texture3Name { get { return _textureNames[2]; } set { _textureNames[2] = value; SignalPropertyChange(); } }
 
-        public List<string> _textureNames = new List<string>(3);
+        public string[] _textureNames = new string[3] { "", "", "" };
 
         public override bool OnInitialize()
         {
@@ -630,9 +655,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0; i < 3; i++)
             {
                 if (*(bushort*)addr > 1)
-                    _textureNames.Add(new String((sbyte*)(addr + 2)));
+                    _textureNames[i] = new String((sbyte*)(addr + 2));
                 else
-                    _textureNames.Add(null);
+                    _textureNames[i] = null;
+                
                 addr += 2 + *(bushort*)addr;
             }
 
@@ -674,7 +700,13 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class REFFEmitterNode7 : ResourceNode
     {
         internal EmitterDesc* Descriptor { get { return (EmitterDesc*)WorkingUncompressed.Address; } }
-
+        public override ResourceType ResourceType
+        {
+            get
+            {
+                return ResourceType.Container;
+            }
+        }
         EmitterDesc desc;
 
         [Category("Emitter Descriptor")]
@@ -1476,6 +1508,13 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class REFFEmitterNode9 : ResourceNode
     {
         internal EmitterDesc* Descriptor { get { return (EmitterDesc*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType
+        {
+            get
+            {
+                return ResourceType.Container;
+            }
+        }
 
         EmitterDesc desc;
 

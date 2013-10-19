@@ -175,6 +175,12 @@ namespace BrawlBox
                     if (_rootPath == null)
                         return SaveAs();
 
+                    if (!_rootNode.IsDirty)
+                    {
+                        MessageBox.Show("No changes have been made.");
+                        return false;
+                    }
+
                     _rootNode.Merge(Control.ModifierKeys == (Keys.Control | Keys.Shift));
                     _rootNode.Export(_rootPath);
                     _rootNode.IsDirty = false;

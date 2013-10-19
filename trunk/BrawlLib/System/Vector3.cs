@@ -5,6 +5,7 @@ using System.Globalization;
 
 namespace System
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public unsafe struct Vector3 : IComparable
     {

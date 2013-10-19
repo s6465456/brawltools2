@@ -6,6 +6,7 @@ using BrawlLib.SSBB.ResourceNodes;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
 using BrawlLib.Wii.Animations;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -280,11 +281,140 @@ namespace BrawlLib.SSBB.ResourceNodes
             entry.Name = name;
             entry._flags = 3;
             AddChild(entry);
-            SHP0VertexSetNode morph = new SHP0VertexSetNode(FindName("NewMorphTarget"));
-            morph.isFixed = true;
-            entry.AddChild(morph);
+            entry.AddChild(new SHP0VertexSetNode(FindName("NewMorphTarget")));
             return entry;
         }
+
+        #region Extra Functions
+        /// <summary>
+        /// Stretches or compresses all frames of the animation to fit a new frame count specified by the user.
+        /// </summary>
+        public void Resize()
+        {
+            FrameCountChanger f = new FrameCountChanger();
+            if (f.ShowDialog(FrameCount) == DialogResult.OK)
+                Resize(f.NewValue);
+        }
+        /// <summary>
+        /// Stretches or compresses all frames of the animation to fit a new frame count.
+        /// </summary>
+        public void Resize(int newFrameCount)
+        {
+            KeyframeEntry kfe = null;
+            float ratio = (float)newFrameCount / (float)FrameCount;
+            foreach (SHP0EntryNode s in Children)
+                foreach (SHP0VertexSetNode e in s.Children)
+                {
+                    KeyframeArray newArr = new KeyframeArray(newFrameCount);
+                    for (int x = 0; x < FrameCount; x++)
+                        if ((kfe = e.GetKeyframe(x)) != null)
+                        {
+                            int newFrame = (int)((float)x * ratio + 0.5f);
+                            float frameRatio = newFrame == 0 ? 0 : (float)x / (float)newFrame;
+                            newArr.SetFrameValue(newFrame, kfe._value)._tangent = kfe._tangent * (float.IsNaN(frameRatio) ? 1 : frameRatio);
+                        }
+                    e._keyframes = newArr;
+                }
+            FrameCount = newFrameCount;
+        }
+        /// <summary>
+        /// Adds an animation opened by the user to the end of this one
+        /// </summary>
+        public void Append()
+        {
+            SHP0Node external = null;
+            OpenFileDialog o = new OpenFileDialog();
+            o.Filter = "SHP0 Animation (*.shp0)|*.shp0";
+            o.Title = "Please select an animation to append.";
+            if (o.ShowDialog() == DialogResult.OK)
+                if ((external = (SHP0Node)NodeFactory.FromFile(null, o.FileName)) != null)
+                    Append(external);
+        }
+        /// <summary>
+        /// Adds an animation to the end of this one
+        /// </summary>
+        public void Append(SHP0Node external)
+        {
+            KeyframeEntry kfe;
+
+            int origIntCount = FrameCount;
+            FrameCount += external.FrameCount;
+
+            foreach (SHP0EntryNode w in external.Children)
+                foreach (SHP0VertexSetNode _extEntry in w.Children)
+                {
+                    SHP0VertexSetNode _intEntry = null;
+                    if ((_intEntry = (SHP0VertexSetNode)FindChild(w.Name + "/" + _extEntry.Name, false)) == null)
+                    {
+                        SHP0EntryNode wi = null;
+                        if ((wi = (SHP0EntryNode)FindChild(w.Name, false)) == null)
+                            AddChild(wi = new SHP0EntryNode() { Name = FindName(null), _flags = w._flags });
+
+                        SHP0VertexSetNode newIntEntry = new SHP0VertexSetNode(_extEntry.Name);
+                        newIntEntry._numFrames = _extEntry.FrameCount + origIntCount;
+                        for (int x = 0; x < _extEntry.FrameCount; x++)
+                                if ((kfe = _extEntry.GetKeyframe(x)) != null)
+                                    newIntEntry.Keyframes.SetFrameValue(x + origIntCount, kfe._value)._tangent = kfe._tangent;
+                        wi.AddChild(newIntEntry);
+                    }
+                    else
+                        for (int x = 0; x < _extEntry.FrameCount; x++)
+                            if ((kfe = _extEntry.GetKeyframe(x)) != null)
+                                _intEntry.Keyframes.SetFrameValue(x + origIntCount, kfe._value)._tangent = kfe._tangent;
+                }
+        }
+        public void AverageKeys()
+        {
+            foreach (SHP0EntryNode u in Children)
+                foreach (SHP0VertexSetNode w in u.Children)
+                    if (w.Keyframes._keyCount > 1)
+                    {
+                        KeyframeEntry root = w.Keyframes._keyRoot;
+                        if (root._next != root && root._prev != root && root._prev != root._next)
+                        {
+                            float tan = (root._next._tangent + root._prev._tangent) / 2.0f;
+                            float val = (root._next._value + root._prev._value) / 2.0f;
+
+                            root._next._tangent = tan;
+                            root._prev._tangent = tan;
+
+                            root._next._value = val;
+                            root._prev._value = val;
+                        }
+                    }
+
+            SignalPropertyChange();
+        }
+
+        public void AverageKeys(string baseName, string morphName)
+        {
+            SHP0EntryNode w = FindChild(baseName, false) as SHP0EntryNode;
+            if (w == null)
+                return;
+
+            SHP0VertexSetNode t = w.FindChild(morphName, false) as SHP0VertexSetNode;
+            if (t == null)
+                return;
+
+            if (t.Keyframes._keyCount > 1)
+            {
+                KeyframeEntry root = t.Keyframes._keyRoot;
+                if (root._next != root && root._prev != root && root._prev != root._next)
+                {
+                    float tan = (root._next._tangent + root._prev._tangent) / 2.0f;
+                    float val = (root._next._value + root._prev._value) / 2.0f;
+
+                    root._next._tangent = tan;
+                    root._prev._tangent = tan;
+
+                    root._next._value = val;
+                    root._prev._value = val;
+                }
+            }
+
+            SignalPropertyChange();
+        }
+        #endregion
     }
 
     public unsafe class SHP0EntryNode : ResourceNode
@@ -300,20 +430,27 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         List<short> _indices;
-        public int _flags, indexCount, nameIndex, fixedFlags;
+        public Bin32 _flags = 3;
+        public int _indexCount, _fixedFlags;
 
         [Flags]
         public enum SHP0EntryFlags
         {
-            Enabled = 0x1,
-            UpdatePosition = 0x2,
-            UpdateNormals = 0x4,
-            UpdateColors = 0x8,
+            Enabled = 1,
+            UpdatePosition = 2,
+            UpdateNormals = 4,
+            UpdateColors = 8,
         }
 
         [Category("Vertex Morph Entry")]
-        public SHP0EntryFlags Flags { get { return (SHP0EntryFlags)_flags; } set { _flags = (int)value; SignalPropertyChange(); } }
-        
+        public bool Enabled { get { return _flags[0]; } set { _flags[0] = value; SignalPropertyChange(); } }
+        [Category("Vertex Morph Entry")]
+        public bool UpdatePosition { get { return _flags[1]; } set { _flags[1] = value; SignalPropertyChange(); } }
+        [Category("Vertex Morph Entry")]
+        public bool UpdateNormals { get { return _flags[2]; } set { _flags[2] = value; SignalPropertyChange(); } }
+        [Category("Vertex Morph Entry")]
+        public bool UpdateColors { get { return _flags[3]; } set { _flags[3] = value; SignalPropertyChange(); } }
+
         public override bool OnInitialize()
         {
             if ((_name == null) && (Header->_stringOffset != 0))
@@ -323,28 +460,27 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0; i < Header->_numIndices; i++)
                 _indices.Add((short)(Header->Indicies[i]));
 
-            _flags = Header->_flags;
-            indexCount = Header->_numIndices;
-            nameIndex = Header->_nameIndex;
-            fixedFlags = Header->_fixedFlags;
+            _flags = (uint)(int)Header->_flags;
+            _indexCount = Header->_numIndices;
+            _fixedFlags = Header->_fixedFlags;
 
             return Header->_flags > 0;
         }
 
         public override void OnPopulate()
         {
-            for (int i = 0; i < indexCount; i++)
-                if ((fixedFlags >> i & 1) == 0)
+            for (int i = 0; i < _indexCount; i++)
+                if ((_fixedFlags >> i & 1) == 0)
                     new SHP0VertexSetNode(_indices[i] < ((SHP0Node)Parent)._strings.Count ? ((SHP0Node)Parent)._strings[_indices[i]] : "Unknown").Initialize(this, new DataSource(Header->GetEntry(i), 0x14 + Header->_numIndices * 6));
                 else
                 {
-                    SHP0VertexSetNode n = new SHP0VertexSetNode(_indices[i] < ((SHP0Node)Parent)._strings.Count ? ((SHP0Node)Parent)._strings[_indices[i]] : "Unknown") { isFixed = true };
+                    SHP0VertexSetNode n = new SHP0VertexSetNode(_indices[i] < ((SHP0Node)Parent)._strings.Count ? ((SHP0Node)Parent)._strings[_indices[i]] : "Unknown") { _isFixed = true };
                     n.Keyframes[0] = ((bfloat*)Header->EntryOffset)[i];
                     n._numFrames = ((SHP0Node)Parent).FrameCount;
-                    //n.Parent = this;
-                    AddChild(n, false);
+                    _children.Add(n);
+                    n._parent = this;
                 }
-            }
+        }
 
         public VoidPtr _dataAddr;
         public int _dataLen, _entryLen;
@@ -372,14 +508,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             VoidPtr addr = _dataAddr;
             header->_numIndices = (short)Children.Count;
             header->_nameIndex = (short)((SHP0Node)Parent)._strings.IndexOf(Name);
-            header->_flags = _flags;
+            header->_flags = (int)(uint)_flags;
             header->_indiciesOffset = 0x14 + Children.Count * 4;
             uint fixedflags = 0;
             foreach (SHP0VertexSetNode p in Children)
             {
                 p._dataAddr = addr;
                 header->Indicies[p.Index] = (short)((SHP0Node)Parent)._strings.IndexOf(p.Name);
-                if (p.isFixed)
+                if (p._isFixed)
                 {
                     KeyframeEntry kf; float value = 0;
                     if ((kf = p.Keyframes.GetKeyframe(0)) != null)
@@ -411,7 +547,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void CreateEntry()
         {
             SHP0VertexSetNode morph = new SHP0VertexSetNode(FindName("NewMorphTarget"));
-            morph.isFixed = true;
             AddChild(morph);
         }
     }
@@ -455,8 +590,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
         }
 
-        public bool isFixed = false;
-        public float fixedValue;
+        public bool _isFixed = false;
+        public float _fixedValue;
 
         public SHP0VertexSetNode(string name) { _name = name; }
 
@@ -470,7 +605,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override int OnCalculateSize(bool force)
         {
-            return _dataLen = ((isFixed = Keyframes._keyCount <= 1) ? 0 : Keyframes._keyCount * 12 + 8);
+            return _dataLen = ((_isFixed = Keyframes._keyCount <= 1) ? 0 : Keyframes._keyCount * 12 + 8);
         }
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
@@ -487,20 +622,31 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         #region Keyframe Management
 
+        public static bool _generateTangents = true;
+        public static bool _linear = true;
+
         public KeyframeEntry GetKeyframe(int index) { return Keyframes.GetKeyframe(index); }
         public void SetKeyframe(int index, float value)
         {
+            bool exists = Keyframes.GetKeyframe(index) != null;
             KeyframeEntry k = Keyframes.SetFrameValue(index, value);
-            k.GenerateTangent();
-            k._prev.GenerateTangent();
-            k._next.GenerateTangent();
+
+            if (!exists && !_generateTangents)
+                k.GenerateTangent();
+
+            if (_generateTangents)
+            {
+                k.GenerateTangent();
+                k._prev.GenerateTangent();
+                k._next.GenerateTangent();
+            }
 
             SignalPropertyChange();
         }
         public void RemoveKeyframe(int index)
         {
             KeyframeEntry k = Keyframes.Remove(index);
-            if (k != null)
+            if (k != null && _generateTangents)
             {
                 k._prev.GenerateTangent();
                 k._next.GenerateTangent();

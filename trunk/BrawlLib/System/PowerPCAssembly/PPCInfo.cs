@@ -406,85 +406,6 @@ namespace System.PowerPcAssembly
         }
         #endregion
 
-        #region OpCode IDs
-
-        public const uint base_op = 0x00000000;
-
-        public const uint word = 0x00000000;
-        public const uint vaddubm = 0x10000000;
-        public const uint mulli = 0x1C000000;
-        public const uint subfic = 0x20000000;
-        public const uint cmpli = 0x28000000;
-        public const uint cmpi = 0x2C000000;
-        public const uint addic = 0x30000000;
-        public const uint addic_D = 0x34000000;
-        public const uint addi = 0x38000000;
-        public const uint addis = 0x3C000000;
-        public const uint bc = 0x40000000;
-        public const uint b = 0x48000000;
-
-        #region 0x4C
-        public const uint grp4C = 0x4C000000;
-        public const uint blr = 0x4C000020;
-        public const uint bctr = 0x4C000420;
-        #endregion
-
-        public const uint rlwimi = 0x50000000;
-        public const uint rlwinm = 0x54000000;
-        public const uint rlwnm = 0x5C000000;
-        public const uint ori = 0x60000000;
-        public const uint oris = 0x64000000;
-        public const uint xori = 0x68000000;
-        public const uint xoris = 0x6C000000;
-        public const uint andi_D = 0x70000000;
-        public const uint andis_D = 0x74000000;
-        public const uint rldicl = 0x78000000;
-
-        #region 0x7C
-        public const uint grp7C = 0x7C000000;
-        public const uint slw = 0x7C000030;
-        public const uint cntlzw = 0x7C000034;
-        public const uint cntlzd = 0x7C000074;
-        public const uint addze = 0x7C000194; 
-        public const uint addme = 0x7C0001D4;
-        public const uint mfspr = 0x7C0002A6;
-        public const uint xor = 0x7C000278;
-        public const uint or = 0x7C000378;
-        public const uint mtspr = 0x7C0003A6;
-        public const uint sraw = 0x7C000630;
-        public const uint srawi = 0x7C000670;
-        public const uint extsh = 0x7C000734;
-        public const uint extsb = 0x7C000774;
-        #endregion
-
-        public const uint lwz = 0x80000000;
-        public const uint lwzu = 0x84000000;
-        public const uint lbz = 0x88000000;
-        public const uint lbzu = 0x8C000000;
-        public const uint stw = 0x90000000;
-        public const uint stwu = 0x94000000;
-        public const uint stb = 0x98000000;
-        public const uint stbu = 0x9C000000;
-        public const uint lhz = 0xA0000000;
-        public const uint lhzu = 0xA4000000;
-        public const uint lha = 0xA8000000;
-        public const uint lhau = 0xAC000000;
-        public const uint sth = 0xB0000000;
-        public const uint sthu = 0xB4000000;
-        public const uint lmw = 0xB8000000;
-        public const uint stmw = 0xBC000000;
-        public const uint lfs = 0xC0000000;
-        public const uint lfsu = 0xC4000000;
-        public const uint lfd = 0xC8000000;
-        public const uint lfdu = 0xCC000000;
-        public const uint stfs = 0xD0000000;
-        public const uint stfsu = 0xD4000000;
-        public const uint stfd = 0xD8000000;
-        public const uint stfdu = 0xDC000000;
-        public const uint ld = 0xE8000000;
-        public const uint std = 0xF8000000;
-        public const uint fcmpu = 0xFC000000;
-
         //public const uint abs = new ppcId(31, 360);
         //public const uint add = new ppcId(31, 266);
         //public const uint addc = new ppcId(31, 10);
@@ -749,8 +670,6 @@ namespace System.PowerPcAssembly
         //public const uint xor = new ppcId(0, 0);
         //public const uint xori = new ppcId(0, 0);
 
-        #endregion
-
         public static List<PPCOpCodeInfo> InfoFor(uint value)
         {
             List<PPCOpCodeInfo> result = new List<PPCOpCodeInfo>();
@@ -759,14 +678,14 @@ namespace System.PowerPcAssembly
             uint compare = 0xFC;
             int shift = 24;
 
-            if ((value & 0xFC000000) == grp4C)
+            if ((value & 0xFC000000) == (uint)PPCMnemonic.grp4C)
             {
                 search = info4C;
                 compare = 0x7FE;
                 shift = 0;
             }
 
-            if ((value & 0xFC000000) == grp7C)
+            if ((value & 0xFC000000) == (uint)PPCMnemonic.grp7C)
             {
                 search = info7C;
                 compare = 0x7FE;
@@ -800,5 +719,230 @@ namespace System.PowerPcAssembly
         {
             return InfoFor(value).Select(x => x._description).ToList();
         }
+    }
+
+    public class PPCID
+    {
+        public uint _mask;
+
+        //1111 1100 0000 0000 0000 0000 0000 0000 Primary Op Code
+
+        public PPCID() { }
+        public PPCID(uint primaryOp)
+        {
+            _mask = (primaryOp & 0x3F) << 26;
+        }
+
+        public PPCID(uint primaryOp, uint secondaryMask)
+        {
+            _mask = (primaryOp & 0x3F) << 26;
+            _mask |= secondaryMask;
+        }
+
+        //Because I'm lazy
+        public PPCID(uint primaryOp, string secondaryBinary)
+        {
+            _mask = (primaryOp & 0x3F) << 26;
+            int i = 0;
+            foreach (char c in secondaryBinary)
+            {
+                if (c == '1')
+                    _mask |= (1u << i);
+                i++;
+            }
+        }
+
+        public static implicit operator uint(PPCID o) { return o._mask; }
+        public static implicit operator PPCID(uint u) { return new PPCID() { _mask = u }; }
+    }
+
+    public enum PPCMnemonic : uint
+    {
+        base_op = 0x00000000,
+
+        word = 0x00000000,
+        twi = 0x0C000000,
+        vaddubm = 0x10000000,
+        mulli = 0x1C000000,
+        subfic = 0x20000000,
+        cmpli = 0x28000000,
+        cmpi = 0x2C000000,
+        addic = 0x30000000,
+        addic_D = 0x34000000,
+        addi = 0x38000000,
+        addis = 0x3C000000,
+
+        bc = 0x40000000, //bca, bcl, bcla
+        bca = 0x40000002,
+        bcl = 0x40000001,
+        bcla = 0x40000003,
+
+        b = 0x48000000, //ba, bl, bla
+        ba = 0x48000002,
+        bl = 0x48000001,
+        bla = 0x48000003,
+
+        #region 0x4C
+        grp4C = 0x4C000000,
+
+        mcrf = 0x4C000000,
+        bclr = 0x4C000020, //bclrl
+        crnor = 0x4C000042,
+        rfi = 0x4C000064,
+        crandc = 0x4C000102,
+        isync = 0x4C00012C,
+        crxor = 0x4C000182,
+        crand = 0x4C000202,
+        crnand = 0x4C0001C2,
+        creqv = 0x4C000242,
+        crorc = 0x4C000342,
+        cror = 0x4C000382,
+        bcctr = 0x4C000420, //bcctrl
+        #endregion
+
+        rlwimi = 0x50000000, //rlwimi.
+        rlwimi_D = 0x50000001,
+
+        rlwinm = 0x54000000, //rlwinm.
+        rlwinm_D = 0x54000001,
+
+        rlwnm = 0x5C000000, //rlwnm.
+        rlwnm_D = 0x5C000001,
+
+        ori = 0x60000000,
+        oris = 0x64000000,
+        xori = 0x68000000,
+        xoris = 0x6C000000,
+        andi_D = 0x70000000,
+        andis_D = 0x74000000,
+        rldicl = 0x78000000,
+
+        #region 0x7C
+        grp7C = 0x7C000000,
+
+        cmp = 0x7C000000,
+        tw = 0x7C000008,
+
+        subfc = 0x7C000010, //subfc.
+        subfc_D = 0x7C000011,
+
+        addc = 0x7C000014, //addc.
+        addc_D = 0x7C000015,
+        
+        mulhwu = 0x7C000016, //mulhwu.
+        mulhwu_D = 0x7C000017,
+        mulhw = 0x7C000096, //mulhw.
+        mulhw_D = 0x7C000097,
+        
+        mfcr = 0x7C000023,
+        lwarx = 0x7C000028,
+        lwzx = 0x7C00002E,
+
+        slw = 0x7C000030, //slw.
+        slw_D = 0x7C000031,
+
+        cntlzw = 0x7C000034, //cntlzw.
+        cntlzw_D = 0x7C000035,
+        
+
+
+        cmplw = 0x7C000040,
+        sub = 0x7C000050,
+        
+        cntlzd = 0x7C000074,
+        addze = 0x7C000194,
+        addme = 0x7C0001D4,
+
+        add = 0x7C000214, //add.
+        add_D = 0x7C000215,
+
+        dcbt = 0x7C000000,
+        lhzx = 0x7C000000,
+
+        eqv = 0x7C000000, //eqv.
+        eqv_D = 0x7C000000,
+
+        tlbie = 0x7C000000,
+        eciwx = 0x7C000000,
+        lhzux = 0x7C000000,
+        
+        xor = 0x7C000278, //xor.
+        xor_D = 0x7C000279,
+
+        mfspr = 0x7C0002A6,
+        lhax = 0x7C000000,
+
+        or = 0x7C000378, //or.
+        or_D = 0x7C000379,
+
+        mtspr = 0x7C0003A6,
+
+        addmeo = 0x7C000000, //addmeo.
+        addmeo_D = 0x7C000000,
+
+        mullwo = 0x7C000000, //mullwo.
+        mullwo_D = 0x7C000000,
+
+        dcba = 0x7C000000,
+        stfdux = 0x7C000000,
+
+        addo = 0x7C000000, //addo.
+        addo_D = 0x7C000000,
+
+        lhbrx = 0x7C000000,
+
+        sraw = 0x7C000630, //sraw.
+        sraw_D = 0x7C000631,
+
+        srawi = 0x7C000670, //srawi.
+        srawi_D = 0x7C000671,
+
+        eieio = 0x7C0006AC, //oald mcdonald had a faaaaaaaaaaauuurm
+        sthbrx = 0x7C00072C,
+        
+        extsh = 0x7C000734, //extsh.
+        extsh_D = 0x7C000735,
+
+        extsb = 0x7C000774, //extsb.
+        extsb_D = 0x7C000775,
+
+        //TODO
+        divwuo = 0x7C000000,
+        divwuo_D = 0x7C000000,
+        icbi = 0x7C000000,
+        stfiwx = 0x7C000000,
+        divwo = 0x7C000000,
+        divwo_D = 0x7C000000,
+        dcbz = 0x7C000000,
+
+        #endregion
+
+        lwz = 0x80000000,
+        lwzu = 0x84000000,
+        lbz = 0x88000000,
+        lbzu = 0x8C000000,
+        stw = 0x90000000,
+        stwu = 0x94000000,
+        stb = 0x98000000,
+        stbu = 0x9C000000,
+        lhz = 0xA0000000,
+        lhzu = 0xA4000000,
+        lha = 0xA8000000,
+        lhau = 0xAC000000,
+        sth = 0xB0000000,
+        sthu = 0xB4000000,
+        lmw = 0xB8000000,
+        stmw = 0xBC000000,
+        lfs = 0xC0000000,
+        lfsu = 0xC4000000,
+        lfd = 0xC8000000,
+        lfdu = 0xCC000000,
+        stfs = 0xD0000000,
+        stfsu = 0xD4000000,
+        stfd = 0xD8000000,
+        stfdu = 0xDC000000,
+        ld = 0xE8000000,
+        std = 0xF8000000,
+        fcmpu = 0xFC000000,
     }
 }

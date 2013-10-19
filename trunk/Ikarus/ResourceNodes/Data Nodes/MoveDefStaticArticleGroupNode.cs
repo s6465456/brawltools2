@@ -8,7 +8,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefStaticArticleGroupNode : MoveDefEntryNode
+    public unsafe class MoveDefStaticArticleGroupNode : MoveDefEntry
     {
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         internal int i = 0;
@@ -84,7 +84,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Add all header offsets
                 bint* off = (bint*)(addr + 12);
                 for (int i = 0; i < 10 + b._extraOffsets.Count; i++)
-                    if (off[i] > 1480 && off[i] < Root.dataSize)
+                    if (off[i] > 1480 && off[i] < _root.dataSize)
                         b._lookupOffsets.Add(&off[i]);
 
                 _lookupOffsets.AddRange(b._lookupOffsets);

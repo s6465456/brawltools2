@@ -5,6 +5,7 @@ using System.Text;
 using BrawlLib.SSBBTypes;
 using System.ComponentModel;
 using BrawlLib.Imaging;
+using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -103,30 +104,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             this.AddChild(node);
             node.AddChild(entry);
             return node;
-        }
-
-        public void Append(CLR0Node external)
-        {
-            int origIntCount = FrameCount;
-            FrameCount += external.FrameCount;
-
-            foreach (CLR0MaterialNode mat in external.Children)
-            {
-                foreach (CLR0MaterialEntryNode _extEntry in mat.Children)
-                {
-                    CLR0MaterialEntryNode _intEntry = null;
-                    if ((_intEntry = (CLR0MaterialEntryNode)FindChild(mat.Name + "/" + _extEntry.Name, false)) == null)
-                    {
-                        CLR0MaterialEntryNode newIntEntry = new CLR0MaterialEntryNode() { Name = _extEntry.Name };
-                        
-                        //AddChild(newIntEntry);
-                    }
-                    else
-                    {
-                        //for (int x = 0; x < external.FrameCount; x++)
-                    }
-                }
-            }
         }
 
         public override int OnCalculateSize(bool force)
@@ -263,6 +240,47 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
 
         internal static ResourceNode TryParse(DataSource source) { return ((CLR0v3*)source.Address)->_header._tag == CLR0v3.Tag ? new CLR0Node() : null; }
+        
+        #region Extra Functions
+        //public void Append()
+        //{
+        //    CLR0Node external = null;
+        //    OpenFileDialog o = new OpenFileDialog();
+        //    o.Filter = "CLR0 Animation (*.clr0)|*.clr0";
+        //    o.Title = "Please select an animation to append.";
+        //    if (o.ShowDialog() == DialogResult.OK)
+        //        if ((external = (CLR0Node)NodeFactory.FromFile(null, o.FileName)) != null)
+        //            Append(external);
+        //}
+        //public void Append(CLR0Node external)
+        //{
+        //    int origIntCount = FrameCount;
+        //    FrameCount += external.FrameCount;
+
+        //    foreach (CLR0MaterialNode mat in external.Children)
+        //    {
+        //        foreach (CLR0MaterialEntryNode _extEntry in mat.Children)
+        //        {
+        //            CLR0MaterialEntryNode _intEntry = null;
+        //            if ((_intEntry = (CLR0MaterialEntryNode)FindChild(mat.Name + "/" + _extEntry.Name, false)) == null)
+        //            {
+        //                CLR0MaterialNode wi = null;
+        //                if ((wi = (CLR0MaterialNode)FindChild(mat.Name, false)) == null)
+        //                    AddChild(wi = new CLR0MaterialNode() { Name = FindName(null) });
+
+        //                CLR0MaterialEntryNode newIntEntry = new CLR0MaterialEntryNode() { Name = _extEntry.Name };
+
+        //                AddChild(newIntEntry);
+        //            }
+        //            else
+        //            {
+        //                //for (int x = 0; x < external.FrameCount; x++)
+        //            }
+        //        }
+        //    }
+        //}
+
+        #endregion
     }
 
     public unsafe class CLR0MaterialNode : ResourceNode
@@ -450,6 +468,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public string PrimaryColorName(int id) { return "Mask:"; }
         [Browsable(false)]
+        public int TypeCount { get { return 1; } }
+        [Browsable(false)]
         public int ColorCount(int id) { return (_numEntries == 0) ? 1 : _numEntries; }
         public ARGBPixel GetColor(int index, int id) { return (_numEntries == 0) ? _solidColor : _colors[index]; }
         public void SetColor(int index, int id, ARGBPixel color)
@@ -459,6 +479,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 _colors[index] = color;
             SignalPropertyChange();
+        }
+        public bool GetClrConstant(int id)
+        {
+            return Constant;
+        }
+        public void SetClrConstant(int id, bool constant)
+        {
+            Constant = constant;
         }
 
         #endregion

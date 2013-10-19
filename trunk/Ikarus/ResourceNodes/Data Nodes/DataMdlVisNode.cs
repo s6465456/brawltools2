@@ -8,7 +8,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefModelVisibilityNode : MoveDefEntryNode
+    public unsafe class MoveDefModelVisibilityNode : MoveDefEntry
     {
         internal FDefModelDisplay* Header { get { return (FDefModelDisplay*)WorkingUncompressed.Address; } }
 
@@ -44,8 +44,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (offset.DataOffset == 0)
                     continue;
 
-                if (Root.GetSize(offset.DataOffset) != EntryCount * 8)
-                    Console.WriteLine(Root.GetSize(offset.DataOffset) - EntryCount * 8);
+                if (_root.GetSize(offset.DataOffset) != EntryCount * 8)
+                    Console.WriteLine(_root.GetSize(offset.DataOffset) - EntryCount * 8);
 
                 VoidPtr offAddr = BaseAddress + offset.DataOffset;
                 for (int c = 0; c < EntryCount; c++)
@@ -216,7 +216,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefModelVisRefNode : MoveDefEntryNode
+    public unsafe class MoveDefModelVisRefNode : MoveDefEntry
     {
         internal bint* Header { get { return (bint*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.MDefMdlVisRef; } }
@@ -232,11 +232,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             i = *Header;
             if (_name == null)
             {
-                _extNode = Root.IsExternal(DataOffset);
-                if (_extNode != null && !_extOverride)
+                _externalEntry = _root.TryGetExternal(DataOffset);
+                if (_externalEntry != null && !_extOverride)
                 {
-                    _name = _extNode.Name;
-                    _extNode._refs.Add(this);
+                    _name = _externalEntry.Name;
+                    _externalEntry._refs.Add(this);
                 }
             }
 
@@ -247,7 +247,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefBoneSwitchNode : MoveDefEntryNode
+    public unsafe class MoveDefBoneSwitchNode : MoveDefEntry
     {
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.MDefMdlVisSwitch; } }
@@ -274,7 +274,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         }
     }
 
-    public unsafe class MoveDefModelVisGroupNode : MoveDefEntryNode
+    public unsafe class MoveDefModelVisGroupNode : MoveDefEntry
     {
         internal FDefListOffset* Header { get { return (FDefListOffset*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.MDefMdlVisGroup; } }

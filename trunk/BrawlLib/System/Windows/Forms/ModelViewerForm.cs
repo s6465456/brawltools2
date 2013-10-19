@@ -4,16 +4,19 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
-namespace System.Windows.Controls
+namespace System.Windows.Forms
 {
-    public partial class PPCOpCodeEditor : Form
+    public partial class ModelViewerForm : Form
     {
-        public PPCOpCodeEditor()
+        public IMainWindow _mainWindow;
+        public ModelViewerForm(IMainWindow mainWindow)
         {
             InitializeComponent();
+            TopMost = true;
         }
     }
 }

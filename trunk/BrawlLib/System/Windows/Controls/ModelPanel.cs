@@ -15,52 +15,22 @@ namespace System.Windows.Forms
 {
     public delegate void GLRenderEventHandler(object sender, TKContext ctx);
 
-    public unsafe class ModelPanel : GLPanel
+    public class ModelPanelSettings
     {
-        public bool _grabbing = false;
-        public bool _scrolling = false;
-        private int _lastX, _lastY;
-
-        private float _rotFactor = 0.1f;
-        public float RotationScale { get { return _rotFactor; } set { _rotFactor = value; } }
-
-        private float _transFactor = 0.05f;
-        public float TranslationScale { get { return _transFactor; } set { _transFactor = value; } }
-
-        private float _zoomFactor = 2.5f;
-        public float ZoomScale { get { return _zoomFactor; } set { _zoomFactor = value; } }
-
-        private int _zoomInit = 5;
-        public int InitialZoomFactor { get { return _zoomInit; } set { _zoomInit = value; } }
-
-        private int _yInit = 100;
-        public int InitialYFactor { get { return _yInit; } set { _yInit = value; } }
-
-        private float _viewDistance = 5.0f;
-        private float _spotCutoff = 180.0f;
-        private float _spotExponent = 100.0f;
-
-        [TypeConverter(typeof(Vector3StringConverter))]
-        public Vector3 DefaultTranslate { get { return _defaultTranslate; } set { _defaultTranslate = value; } }
-        [TypeConverter(typeof(Vector2StringConverter))]
-        public Vector2 DefaultRotate { get { return _defaultRotate; } set { _defaultRotate = value; } }
+        public float _rotFactor = 0.1f;
+        public float _transFactor = 0.05f;
+        public float _zoomFactor = 2.5f;
+        public int _zoomInit = 5;
+        public int _yInit = 100;
+        public float _viewDistance = 5.0f;
+        public float _spotCutoff = 180.0f;
+        public float _spotExponent = 100.0f;
 
         public Vector3 _defaultTranslate;
         public Vector2 _defaultRotate;
-
-        public event GLRenderEventHandler PreRender, PostRender;
-
-        private List<ResourceNode> _resourceList = new List<ResourceNode>();
-
-        private Matrix43 _transform = Matrix43.Identity;
-
-        private List<IRenderedObject> _renderList = new List<IRenderedObject>();
-
-        //Position for the angle of lighting. 
-        //X = Radius, 
-        //Y = Azimuth Angle, 
-        //Z = Elevation Angle, 
-        //W = 1 (World Coords) 
+        
+        public List<ResourceNode> _resourceList = new List<ResourceNode>();
+        public List<IRenderedObject> _renderList = new List<IRenderedObject>();
 
         const float v = 100.0f / 255.0f;
         public Vector4 _position = new Vector4(100.0f, 45.0f, 45.0f, 1.0f);
@@ -68,83 +38,76 @@ namespace System.Windows.Forms
         public Vector4 _diffuse = new Vector4(v, v, v, 1.0f);
         public Vector4 _specular = new Vector4(0.0f, 0.0f, 0.0f, 1.0f);
         public Vector4 _emission = new Vector4(v, v, v, 1.0f);
-        
-        public override Color BackColor
-        {
-            get { return base.BackColor; }
-            set
-            {
-                if (base.BackColor != value)
-                {
-                    base.BackColor = value;
-                    Vector3 v = (Vector3)value;
-                    GL.ClearColor(v._x, v._y, v._z, 0.0f);
-                }
-            }
-        }
+    }
 
-        public override Image BackgroundImage
-        {
-            get { return BGImage; }
-            set
-            {
-                if (BGImage != null)
-                    BGImage.Dispose();
+    public unsafe class ModelPanel : GLPanel
+    {
+        public ModelPanelSettings _settings = new ModelPanelSettings();
 
-                BGImage = value;
+        public bool _grabbing = false;
+        public bool _scrolling = false;
+        private int _lastX, _lastY;
 
-                _updateImage = true;
-                
-                Invalidate();
-            }
-        }
+        public float RotationScale { get { return _settings._rotFactor; } set { _settings._rotFactor = value; } }
+        public float TranslationScale { get { return _settings._transFactor; } set { _settings._transFactor = value; } }
+        public float ZoomScale { get { return _settings._zoomFactor; } set { _settings._zoomFactor = value; } }
+        public int InitialZoomFactor { get { return _settings._zoomInit; } set { _settings._zoomInit = value; } }
+        public int InitialYFactor { get { return _settings._yInit; } set { _settings._yInit = value; } }
+
+        [TypeConverter(typeof(Vector3StringConverter))]
+        public Vector3 DefaultTranslate { get { return _settings._defaultTranslate; } set { _settings._defaultTranslate = value; } }
+        [TypeConverter(typeof(Vector2StringConverter))]
+        public Vector2 DefaultRotate { get { return _settings._defaultRotate; } set { _settings._defaultRotate = value; } }
+
+        public event GLRenderEventHandler PreRender, PostRender;
+
         [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 Emission
         {
-            get { return _emission; }
+            get { return _settings._emission; }
             set
             {
-                _emission = value;
+                _settings._emission = value;
                 Invalidate();
             }
         }
         [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 Ambient
         {
-            get { return _ambient; }
+            get { return _settings._ambient; }
             set
             {
-                _ambient = value;
+                _settings._ambient = value;
                 Invalidate();
             }
         }
         [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 LightPosition
         {
-            get { return _position; }
+            get { return _settings._position; }
             set 
             {
-                _position = value; 
+                _settings._position = value; 
                 Invalidate(); 
             }
         }
         [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 Diffuse
         {
-            get { return _diffuse; }
+            get { return _settings._diffuse; }
             set
             {
-                _diffuse = value;
+                _settings._diffuse = value;
                 Invalidate();
             }
         }
         [TypeConverter(typeof(Vector4StringConverter))]
         public Vector4 Specular
         {
-            get { return _specular; }
+            get { return _settings._specular; }
             set
             {
-                _specular = value;
+                _settings._specular = value;
                 Invalidate();
             }
         }
@@ -163,8 +126,8 @@ namespace System.Windows.Forms
             base.OnLoad(e);
 
             _camera.Reset();
-            _camera.Translate(_defaultTranslate._x, _defaultTranslate._y, _defaultTranslate._z);
-            _camera.Rotate(_defaultRotate._x, _defaultRotate._y);
+            _camera.Translate(_settings._defaultTranslate._x, _settings._defaultTranslate._y, _settings._defaultTranslate._z);
+            _camera.Rotate(_settings._defaultRotate._x, _settings._defaultRotate._y);
         }
 
         public new bool Enabled { get { return _enabled; } set { _enabled = value; base.Enabled = value; } }
@@ -173,8 +136,8 @@ namespace System.Windows.Forms
         public void ResetCamera()
         {
             _camera.Reset();
-            _camera.Translate(_defaultTranslate._x, _defaultTranslate._y, _defaultTranslate._z);
-            _camera.Rotate(_defaultRotate._x, _defaultRotate._y);
+            _camera.Translate(DefaultTranslate._x, DefaultTranslate._y, DefaultTranslate._z);
+            _camera.Rotate(DefaultRotate._x, DefaultRotate._y);
             Invalidate();
         }
 
@@ -205,19 +168,19 @@ namespace System.Windows.Forms
             if (_ctx != null)
             {
                 _ctx.Unbind();
-                _ctx._states["_Node_Refs"] = _resourceList;
+                _ctx._states["_Node_Refs"] = _settings._resourceList;
             }
         }
 
         public void AddTarget(IRenderedObject target)
         {
-            if (_renderList.Contains(target))
+            if (_settings._renderList.Contains(target))
                 return;
 
-            _renderList.Add(target);
+            _settings._renderList.Add(target);
 
             if (target is ResourceNode)
-                _resourceList.Add(target as ResourceNode);
+                _settings._resourceList.Add(target as ResourceNode);
 
             target.Attach(_ctx);
 
@@ -225,7 +188,7 @@ namespace System.Windows.Forms
         }
         public void RemoveTarget(IRenderedObject target)
         {
-            if (!_renderList.Contains(target))
+            if (!_settings._renderList.Contains(target))
                 return;
 
             target.Detach();
@@ -233,39 +196,39 @@ namespace System.Windows.Forms
             if (target is ResourceNode)
                 RemoveReference(target as ResourceNode);
 
-            _renderList.Remove(target);
+            _settings._renderList.Remove(target);
         }
         public void ClearTargets()
         {
-            foreach (IRenderedObject o in _renderList)
-                o.Detach();
-            _renderList.Clear();
+            for (int i = 0; i < _settings._renderList.Count; i++)
+                _settings._renderList[i].Detach();
+            _settings._renderList.Clear();
         }
 
         public void AddReference(ResourceNode node)
         {
-            if (_resourceList.Contains(node))
+            if (_settings._resourceList.Contains(node))
                 return;
 
-            _resourceList.Add(node);
+            _settings._resourceList.Add(node);
             RefreshReferences();
         }
         public void RemoveReference(ResourceNode node)
         {
-            if (!_resourceList.Contains(node))
+            if (!_settings._resourceList.Contains(node))
                 return;
 
-            _resourceList.Remove(node);
+            _settings._resourceList.Remove(node);
             RefreshReferences();
         }
         public void ClearReferences()
         {
-            _resourceList.Clear();
+            _settings._resourceList.Clear();
             RefreshReferences();
         }
         public void RefreshReferences()
         {
-            foreach (IRenderedObject o in _renderList)
+            foreach (IRenderedObject o in _settings._renderList)
                 o.Refesh();
         }
 
@@ -280,7 +243,7 @@ namespace System.Windows.Forms
             if (Control.ModifierKeys == Keys.Shift)
                 z *= 32;
 
-            Zoom(-z * _zoomFactor * _multiplier);
+            Zoom(-z * _settings._zoomFactor * _multiplier);
 
             if (Control.ModifierKeys == Keys.Alt)
                 if (z < 0)
@@ -337,13 +300,13 @@ namespace System.Windows.Forms
                 if (_grabbing)
                     if (ctrl)
                         if (alt)
-                            Rotate(0, 0, -yDiff * _rotFactor);
+                            Rotate(0, 0, -yDiff * RotationScale);
                         else
-                            Rotate(yDiff * _rotFactor, -xDiff * _rotFactor);
+                            Rotate(yDiff * RotationScale, -xDiff * RotationScale);
                     else
-                        Translate(-xDiff * _transFactor, -yDiff * _transFactor, 0.0f);
+                        Translate(-xDiff * TranslationScale, -yDiff * TranslationScale, 0.0f);
 
-            if (_selecting && !_attached)
+            if (_selecting)
                 Invalidate();
 
             base.OnMouseMove(e);
@@ -365,6 +328,8 @@ namespace System.Windows.Forms
             }
         }
 
+        public delegate bool KeyMessageEventHandler(ref Message m);
+        public KeyMessageEventHandler EventProcessKeyMessage;
         protected override bool ProcessKeyMessage(ref Message m)
         {
             if (!Enabled)
@@ -384,9 +349,9 @@ namespace System.Windows.Forms
                             if (alt)
                                 break;
                             if (ctrl)
-                                Rotate(-_rotFactor * (shift ? 32 : 4), 0.0f);
+                                Rotate(-RotationScale * (shift ? 32 : 4), 0.0f);
                             else
-                                Translate(0.0f, _transFactor * (shift ? 128 : 8), 0.0f);
+                                Translate(0.0f, TranslationScale * (shift ? 128 : 8), 0.0f);
                             return true;
                         }
                     case Keys.NumPad2:
@@ -395,9 +360,9 @@ namespace System.Windows.Forms
                             if (alt)
                                 break;
                             if (ctrl)
-                                Rotate(_rotFactor * (shift ? 32 : 4), 0.0f);
+                                Rotate(RotationScale * (shift ? 32 : 4), 0.0f);
                             else
-                                Translate(0.0f, -_transFactor * (shift ? 128 : 8), 0.0f);
+                                Translate(0.0f, -TranslationScale * (shift ? 128 : 8), 0.0f);
                             return true;
                         }
                     case Keys.NumPad6:
@@ -406,9 +371,9 @@ namespace System.Windows.Forms
                             if (alt)
                                 break;
                             if (ctrl)
-                                Rotate(0.0f, _rotFactor * (shift ? 32 : 4));
+                                Rotate(0.0f, RotationScale * (shift ? 32 : 4));
                             else
-                                Translate(_transFactor * (shift ? 128 : 8), 0.0f, 0.0f);
+                                Translate(TranslationScale * (shift ? 128 : 8), 0.0f, 0.0f);
                             return true;
                         }
                     case Keys.NumPad4:
@@ -417,29 +382,31 @@ namespace System.Windows.Forms
                             if (alt)
                                 break;
                             if (ctrl)
-                                Rotate(0.0f, -_rotFactor * (shift ? 32 : 4));
+                                Rotate(0.0f, -RotationScale * (shift ? 32 : 4));
                             else
-                                Translate(-_transFactor * (shift ? 128 : 8), 0.0f, 0.0f);
+                                Translate(-TranslationScale * (shift ? 128 : 8), 0.0f, 0.0f);
                             return true;
                         }
                     case Keys.Add:
                     case Keys.Oemplus:
                         {
-                            if (alt)
-                                break;
-                            Zoom(-_zoomFactor * (shift ? 32 : 2));
+                            if (alt) break;
+                            Zoom(-ZoomScale * (shift ? 32 : 2));
                             return true;
                         }
                     case Keys.Subtract:
                     case Keys.OemMinus:
                         {
-                            if (alt)
-                                break;
-                            Zoom(_zoomFactor * (shift ? 32 : 2));
+                            if (alt) break;
+                            Zoom(ZoomScale * (shift ? 32 : 2));
                             return true;
                         }
                 }
             }
+
+            if (EventProcessKeyMessage != null)
+                EventProcessKeyMessage(ref m);
+
             return base.ProcessKeyMessage(ref m);
         }
         private void Zoom(float amt)
@@ -480,7 +447,7 @@ namespace System.Windows.Forms
             x *= _multiplier;
             y *= _multiplier;
 
-            _camera.Pivot(_viewDistance, x, y);
+            _camera.Pivot(_settings._viewDistance, x, y);
             Invalidate();
         }
         private void Rotate(float x, float y, float z)
@@ -498,12 +465,12 @@ namespace System.Windows.Forms
         //(Which makes sense, since the camera isn't moving and the scene is)
         public void RecalcLight()
         {
-            GL.Light(LightName.Light0, LightParameter.SpotCutoff, _spotCutoff);
-            GL.Light(LightName.Light0, LightParameter.SpotExponent, _spotExponent);
+            GL.Light(LightName.Light0, LightParameter.SpotCutoff, _settings._spotCutoff);
+            GL.Light(LightName.Light0, LightParameter.SpotExponent, _settings._spotExponent);
 
-            float r = _position._x;
-            float azimuth = _position._y * Maths._deg2radf;
-            float elevation = 360.0f - (_position._z * Maths._deg2radf);
+            float r = _settings._position._x;
+            float azimuth = _settings._position._y * Maths._deg2radf;
+            float elevation = 360.0f - (_settings._position._z * Maths._deg2radf);
             
             Vector4 PositionLight = new Vector4(r * (float)Math.Cos(azimuth) * (float)Math.Sin(elevation), r * (float)Math.Cos(elevation), r * (float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
             Vector4 SpotDirectionLight = new Vector4(-(float)Math.Cos(azimuth) * (float)Math.Sin(elevation), -(float)Math.Cos(elevation), -(float)Math.Sin(azimuth) * (float)Math.Sin(elevation), 1);
@@ -511,22 +478,22 @@ namespace System.Windows.Forms
             GL.Light(LightName.Light0, LightParameter.Position, (float*)&PositionLight);
             GL.Light(LightName.Light0, LightParameter.SpotDirection, (float*)&SpotDirectionLight);
 
-            fixed (Vector4* pos = &_ambient)
+            fixed (Vector4* pos = &_settings._ambient)
             {
                 GL.Light(LightName.Light0, LightParameter.Ambient, (float*)pos);
                 GL.Material(MaterialFace.FrontAndBack, MaterialParameter.Ambient, (float*)pos);
             }
-            fixed (Vector4* pos = &_diffuse)
+            fixed (Vector4* pos = &_settings._diffuse)
             {
                 GL.Light(LightName.Light0, LightParameter.Diffuse, (float*)pos);
                 GL.Material(MaterialFace.FrontAndBack, MaterialParameter.Diffuse, (float*)pos);
             }
-            fixed (Vector4* pos = &_specular)
+            fixed (Vector4* pos = &_settings._specular)
             {
                 GL.Light(LightName.Light0, LightParameter.Specular, (float*)pos);
                 GL.Material(MaterialFace.FrontAndBack, MaterialParameter.Specular, (float*)pos);
             }
-            fixed (Vector4* pos = &_emission)
+            fixed (Vector4* pos = &_settings._emission)
             {
                 GL.Material(MaterialFace.FrontAndBack, MaterialParameter.Emission, (float*)pos);
             }
@@ -585,7 +552,7 @@ namespace System.Windows.Forms
             RecalcLight();
 
             //Set client states
-            ctx._states["_Node_Refs"] = _resourceList;
+            ctx._states["_Node_Refs"] = _settings._resourceList;
         }
         public bool _showCamCoords = false;
         protected internal override void OnRender(TKContext ctx, PaintEventArgs e)
@@ -612,7 +579,7 @@ namespace System.Windows.Forms
             if (PreRender != null)
                 PreRender(this, ctx);
 
-            foreach (IRenderedObject o in _renderList)
+            foreach (IRenderedObject o in _settings._renderList)
                 o.Render(ctx, this);
 
             if (PostRender != null)
@@ -629,17 +596,13 @@ namespace System.Windows.Forms
             }
         }
 
-        public bool _attached = false;
         private void ModelPanel_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
                 _selEnd = e.Location;
-                if (!_attached)
-                {
-                    _selecting = false;
-                    Invalidate();
-                }
+                _selecting = false;
+                Invalidate();
             }
         }
 
@@ -665,26 +628,6 @@ namespace System.Windows.Forms
             bmp.UnlockBits(data);
             bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
             return bmp;
-        }
-
-        Form popoutForm;
-
-        //Gummers told me to put this here
-        public void Popout()
-        {
-            popoutForm = new Form();
-            //_mainWindow.Controls.Remove(this);
-            popoutForm.Controls.Add(this);
-            Dock = DockStyle.Fill;
-            popoutForm.Show();
-        }
-
-        public void Popin()
-        {
-            popoutForm.Controls.Remove(this);
-            //_mainWindow.Controls.Add(this);
-            popoutForm.Close();
-            Dock = DockStyle.Fill;
         }
     }
 }

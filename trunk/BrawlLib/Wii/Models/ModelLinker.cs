@@ -264,9 +264,6 @@ namespace BrawlLib.Wii.Models
             fixed (ResourceGroup** pOut = &Defs)
                 foreach (MDLResourceType resType in IndexBank[Version])
                 {
-                    if (form != null)
-                        form.Say("Writing relocation offsets for the " + resType.ToString());
-
                     if (((group = Groups[(int)resType]) == null) || (TypeBank[(int)resType] == null))
                         continue;
 

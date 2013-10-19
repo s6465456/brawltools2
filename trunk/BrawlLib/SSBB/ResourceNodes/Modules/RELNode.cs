@@ -69,8 +69,12 @@ namespace BrawlLib.SSBB.ResourceNodes
         public uint _bssAlign = 8;
         public uint _fixSize;
 
+        [Browsable(false)]
+        public new bool IsDirty { get { return base.IsDirty || (AppliedModule != null && AppliedModule.HasChanged); } set { base.IsDirty = value; } }
+
+        [Browsable(true)]
         public RELNode AppliedModule { get { return _appliedModule; } }
-        public RELNode _appliedModule;
+        private RELNode _appliedModule = null;
 
         [Category("Relocatable Module")]
         public uint ModuleID { get { return ID; } set { if (value > 0) { ID = value; SignalPropertyChange(); } } }
@@ -125,11 +129,15 @@ namespace BrawlLib.SSBB.ResourceNodes
         //[Category("REL")]
         //public uint FixSize { get { return _fixSize; } }
 
+        public Relocation
+            _prologReloc = null,
+            _epilogReloc = null,
+            _unresReloc = null;
+
         public override bool OnInitialize()
         {
             _files.Add(this);
 
-            //_name = Header->Name;
             _name = Path.GetFileName(_origPath);
 
             _id = Header->_info._id;
@@ -176,32 +184,100 @@ namespace BrawlLib.SSBB.ResourceNodes
                 section._dataOffset = entry.Offset;
                 section._dataSize = entry._size;
 
-                section.Initialize(Children[0], WorkingUncompressed.Address + Header->SectionInfo[i]._offset, (int)Header->SectionInfo[i]._size);
+                section.Initialize(Children[0], WorkingUncompressed.Address + Header->SectionInfo[i].Offset, (int)Header->SectionInfo[i]._size);
             }
 
             for (int i = 0; i < Header->ImportListCount; i++)
                 new RELImportNode().Initialize(Children[1], &Header->Imports[i], RELImportEntry.Size);
 
             ApplyRelocations();
-
-            ModuleSectionNode s = _sections[Header->_prologSection];
-            new RELMethodNode() { _name = "Constructor" }.Initialize(this, s.WorkingUncompressed.Address + (Header->_prologOffset - s._offset), 0);
-            s = _sections[Header->_epilogSection];
-            new RELMethodNode() { _name = "Destructor" }.Initialize(this, s.WorkingUncompressed.Address + (Header->_epilogOffset - s._offset), 0);
-            s = _sections[Header->_unresolvedSection];
-            new RELMethodNode() { _name = "Undefined" }.Initialize(this, s.WorkingUncompressed.Address + (Header->_unresolvedOffset - s._offset), 0);
         }
 
         public bool ApplyRelocations() { return ApplyRelocations(this); }
         public bool ApplyRelocations(RELNode n)
         {
-            foreach (RELImportNode r in n.Children[1].Children)
-                if (r.ModuleID == ModuleID)
-                    if (r.ApplyRelocations(this))
+            if (_appliedModule == n)
+                return false;
+
+            if (_appliedModule != null && _appliedModule.IsDirty && _appliedModule != this)
+            {
+                if (MessageBox.Show(RootNode._mainForm, "You have made changes to the externally applied module. Save changes?", "Save External Module?", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                {
+                    _appliedModule.Merge();
+                    _appliedModule.Export(_appliedModule._origPath);
+                    _appliedModule.IsDirty = false;
+                }
+            }
+            if (n != null)
+            {
+                foreach (RELImportNode r in n.Children[1].Children)
+                    if (r.ModuleID == ModuleID)
                     {
-                        _appliedModule = r.Root as RELNode;
-                        return true;
+                        RELNode temp = _appliedModule;
+                        _appliedModule = n;
+                        if (r.ApplyRelocationsTo(this))
+                        {
+                            if (temp != null)
+                                temp.Dispose();
+
+                            ModuleDataNode s;
+                            int offset;
+
+                            if (_prologReloc == null)
+                            {
+                                s = _sections[Header->_prologSection];
+                                offset = (int)Header->_prologOffset - (int)s._offset;
+                            }
+                            else
+                            {
+                                s = _prologReloc._section;
+                                offset = _prologReloc._index * 4;
+                            }
+                            _prologReloc = s.GetRelocationAtOffset(offset);
+                            if (_prologReloc != null)
+                                _prologReloc._prolog = true;
+
+                            if (_epilogReloc == null)
+                            {
+                                s = _sections[Header->_epilogSection];
+                                offset = (int)Header->_epilogOffset - (int)s._offset;
+                            }
+                            else
+                            {
+                                s = _epilogReloc._section;
+                                offset = _epilogReloc._index * 4;
+                            }
+                            _epilogReloc = s.GetRelocationAtOffset(offset);
+                            if (_epilogReloc != null)
+                                _epilogReloc._epilog = true;
+
+                            if (_unresReloc == null)
+                            {
+                                s = _sections[Header->_unresolvedSection];
+                                offset = (int)Header->_unresolvedOffset - (int)s._offset;
+                            }
+                            else
+                            {
+                                s = _unresReloc._section;
+                                offset = _unresReloc._index * 4;
+                            }
+                            _unresReloc = s.GetRelocationAtOffset(offset);
+                            if (_unresReloc != null)
+                                _unresReloc._unresolved = true;
+
+                            return true;
+                        }
+                        else
+                            _appliedModule = temp;
                     }
+            }
+            else
+            {
+                foreach (ModuleSectionNode s in Sections)
+                    s.ClearCommands();
+
+                _appliedModule = n;
+            }
             return false;
         }
         
@@ -209,20 +285,32 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             int size = RELHeader.Size + Children[0].Children.Count * RELSectionEntry.Size + Children[1].Children.Count * RELImportEntry.Size;
             foreach (ModuleSectionNode s in Children[0].Children)
-                size += s.CalculateSize(true);
+            {
+                if (s.Index > 3)
+                    size = size.Align(0x20);
+                int r = s.CalculateSize(true);
+                if (!s._isBSSSection)
+                    size += r;
+            }
+
+            if (AppliedModule != null && AppliedModule != this)
+                foreach (RELImportNode s in AppliedModule.Children[1].Children)
+                    if (s.ModuleID == ModuleID)
+                        s.GenerateCommandList(this);
+
             foreach (RELImportNode s in Children[1].Children)
+            {
+                if (AppliedModule == this && s.ModuleID == ModuleID)
+                    s.GenerateCommandList(this);
+
                 size += s.CalculateSize(true);
-            return size;
+            }
+            
+            return size - 8;
         }
 
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
-            //Header
-            //Section Entries
-            //Section Data
-            //Rel Import Entries
-            //Rel Link Arrays
-
             RELHeader* header = (RELHeader*)address;
 
             header->_info._id = _id;
@@ -234,35 +322,88 @@ namespace BrawlLib.SSBB.ResourceNodes
             header->_info._nameSize = 0;
             header->_info._version = _version;
 
-            header->_bssSize = 0;
-            header->_prologSection = 1;
-            header->_epilogSection = 1;
-            header->_unresolvedSection = 1;
-            header->_bssSection = 0;
-            header->_prologOffset = 0;
-            header->_epilogOffset = 0;
-            header->_unresolvedOffset = 0;
-
             header->_moduleAlign = 0x20;
             header->_bssAlign = 0x8;
             header->_commandOffset = 0;
 
+            bool bssFound = false;
             RELSectionEntry* sections = (RELSectionEntry*)(address + RELHeader.Size);
             VoidPtr dataAddr = address + RELHeader.Size + Children[0].Children.Count * RELSectionEntry.Size;
-            int i = 0;
             foreach (ModuleSectionNode s in Children[0].Children)
+                if (s._dataBuffer.Length != 0)
+                {
+                    int i = s.Index;
+
+                    if (i > 3)
+                    {
+                        int off = (int)(dataAddr - address);
+                        int aligned = off.Align(0x20);
+                        int diff = aligned - off;
+                        dataAddr += diff;
+                    }
+
+                    if (!s._isBSSSection)
+                    {
+                        sections[i]._offset = (uint)(dataAddr - address);
+                        sections[i].IsCodeSection = s.HasCode;
+
+                        s.Rebuild(dataAddr, s._calcSize, true);
+                        dataAddr += s._calcSize;
+                    }
+                    else
+                    {
+                        sections[i]._offset = 0;
+                        header->_bssSize = (uint)s._calcSize;
+                        header->_bssSection = 0;
+                        bssFound = true;
+                    }
+                    sections[i]._size = (uint)s._calcSize;
+                }
+
+            if (!bssFound)
             {
-                sections[i]._offset = (uint)(dataAddr - address);
-                sections[i]._size = (uint)s._calcSize;
-                sections[i].IsCodeSection = s.HasCode;
-                s.Rebuild(dataAddr, s._calcSize, true);
-                dataAddr += s._calcSize;
-                i++;
+                header->_bssSize = 0;
+                header->_bssSection = 0;
             }
+
+            if (_prologReloc != null)
+            {
+                header->_prologSection = (byte)_prologReloc._section.Index;
+                header->_prologOffset = (uint)sections[_prologReloc._section.Index].Offset + (uint)_prologReloc._index * 4;
+            }
+            else
+            {
+                header->_prologOffset = 0;
+                header->_prologSection = 0;
+            }
+
+            if (_epilogReloc != null)
+            {
+                header->_epilogSection = (byte)_epilogReloc._section.Index;
+                header->_epilogOffset = (uint)sections[_epilogReloc._section.Index].Offset + (uint)_epilogReloc._index * 4;
+            }
+            else
+            {
+                header->_epilogSection = 0;
+                header->_epilogOffset = 0;
+            }
+
+            if (_unresReloc != null)
+            {
+                header->_unresolvedSection = (byte)_unresReloc._section.Index;
+                header->_unresolvedOffset = (uint)sections[_unresReloc._section.Index].Offset + (uint)_unresReloc._index * 4;
+            }
+            else
+            {
+                header->_unresolvedSection = 0;
+                header->_unresolvedOffset = 0;
+            }
+            
             RELImportEntry* imports = (RELImportEntry*)dataAddr;
             header->_impOffset = (uint)(dataAddr - address);
             dataAddr = (VoidPtr)imports + (header->_impSize = (uint)Children[1].Children.Count * RELImportEntry.Size);
-            
+            header->_relOffset = (uint)(dataAddr - address);
+
             List<RELImportNode> k = new List<RELImportNode>();
             foreach (RELImportNode s in Children[1].Children)
                 if (s.ModuleID != ModuleID && s.ModuleID != 0)
@@ -280,31 +421,20 @@ namespace BrawlLib.SSBB.ResourceNodes
                     k.Add(s);
                     break;
                 }
-            i = 0;
             foreach (RELImportNode s in k)
             {
+                int i = s.Index;
+
                 if (s.ModuleID == ModuleID)
-                {
-                    header->_relOffset = s._dataOffset = (uint)(dataAddr - address);
-                    s.GenerateCommandList(this);
-                }
+                    header->_commandOffset = s._dataOffset = (uint)(dataAddr - address);
 
                 imports[i]._moduleId = s.ModuleID;
-                imports[i]._offset = (uint)(dataAddr - address);
+                imports[i]._offset = s._dataOffset;
                 s.Rebuild(dataAddr, s._calcSize, true);
                 dataAddr += s._calcSize;
-                i++;
             }
         }
 
         public static List<RELNode> _files = new List<RELNode>();
-
-        public ModuleSectionNode Section(uint address)
-        {
-            foreach (ModuleSectionNode section in Sections)
-                if ((uint)section.Header <= address && address < (uint)section.Header + section.Size)
-                    return section;
-            return null;
-        }
     }
 }

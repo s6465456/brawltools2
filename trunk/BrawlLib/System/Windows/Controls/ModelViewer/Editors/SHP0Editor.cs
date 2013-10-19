@@ -22,7 +22,6 @@ namespace System.Windows.Forms
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.NumericInputBox();
             this.label6 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
@@ -32,6 +31,7 @@ namespace System.Windows.Forms
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.button5 = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.NumericInputBox();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -125,16 +125,6 @@ namespace System.Windows.Forms
             this.label5.TabIndex = 8;
             this.label5.Text = "100%";
             // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(404, 5);
-            this.textBox1.MaxLength = 3;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(41, 20);
-            this.textBox1.TabIndex = 9;
-            this.textBox1.Text = "0";
-            this.textBox1.ValueChanged += new System.EventHandler(this.PercentChanged);
-            // 
             // label6
             // 
             this.label6.AutoSize = true;
@@ -222,6 +212,19 @@ namespace System.Windows.Forms
             this.button5.UseVisualStyleBackColor = true;
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
+            // textBox1
+            // 
+            this.textBox1.Integral = false;
+            this.textBox1.Location = new System.Drawing.Point(404, 5);
+            this.textBox1.MaximumValue = 3.402823E+38F;
+            this.textBox1.MaxLength = 999999;
+            this.textBox1.MinimumValue = -3.402823E+38F;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(41, 20);
+            this.textBox1.TabIndex = 9;
+            this.textBox1.Text = "0";
+            this.textBox1.ValueChanged += new System.EventHandler(this.PercentChanged);
+            // 
             // SHP0Editor
             // 
             this.Controls.Add(this.button5);
@@ -283,6 +286,9 @@ namespace System.Windows.Forms
                 return;
 
             ResetBox();
+
+            if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor._targetNode != VertexSetDest)
+                _mainWindow.InterpolationEditor.SetTarget(VertexSetDest);
         }
         private MDL0VertexNode _vertexSet;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -296,7 +302,13 @@ namespace System.Windows.Forms
         public MDL0VertexNode SelectedDestination
         {
             get { return _selectedDest; }
-            set { _selectedDest = value; ResetBox(); }
+            set
+            {
+                _selectedDest = value; 
+                ResetBox(); 
+                if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor._targetNode != VertexSetDest)
+                    _mainWindow.InterpolationEditor.SetTarget(VertexSetDest);
+            }
         }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int CurrentFrame
@@ -327,7 +339,7 @@ namespace System.Windows.Forms
         {
             get
             {
-                if (VertexSet == null || SelectedDestination == null) return null;
+                if (VertexSet == null || SelectedDestination == null || SelectedAnimation == null) return null;
                 ResourceNode set = SelectedAnimation.FindChild(VertexSet.Name, false);
                 if (set == null) return null;
                 return set.FindChild(SelectedDestination.Name, false) as SHP0VertexSetNode;
@@ -415,10 +427,7 @@ namespace System.Windows.Forms
                     else
                         v.SetKeyframe(CurrentFrame - 1, textBox1.Value / 100.0f);
             }
-            //TargetModel.ApplyCHR(SelectedCHR0, CurrentFrame);
-            //TargetModel.ApplySHP(SelectedAnimation, CurrentFrame);
-            //ResetBox();
-            //_mainWindow.modelPanel1.Invalidate();
+            _mainWindow.KeyframePanel.UpdateKeyframe(CurrentFrame - 1);
             _mainWindow.UpdateModel();
         }
         bool updating = false;
@@ -436,12 +445,12 @@ namespace System.Windows.Forms
                 KeyframeEntry e = v.Keyframes.GetKeyframe(CurrentFrame - 1);
                 if (e == null)
                 {
-                    textBox1.Value = v.Keyframes[CurrentFrame - 1].Clamp(0, 1) * 100.0f;
+                    textBox1.Value = v.Keyframes[CurrentFrame - 1] * 100.0f;
                     textBox1.BackColor = Color.White;
                 }
                 else
                 {
-                    textBox1.Value = e._value.Clamp(0, 1) * 100.0f;
+                    textBox1.Value = e._value * 100.0f;
                     textBox1.BackColor = Color.Yellow;
                 }
             }
@@ -451,7 +460,7 @@ namespace System.Windows.Forms
                 textBox1.BackColor = Color.White;
             }
             updating = true;
-            trackBar1.Value = (int)(textBox1.Value * 10.0f);
+            trackBar1.Value = ((int)(textBox1.Value * 10.0f)).Clamp(trackBar1.Minimum, trackBar1.Maximum);
             updating = false;
         }
 
@@ -470,8 +479,9 @@ namespace System.Windows.Forms
         private void listBox2_SelectedValueChanged(object sender, EventArgs e)
         {
             button2.Enabled = listBox2.SelectedItem != null;
-            SelectedDestination = listBox2.SelectedItem as MDL0VertexNode;
+            _selectedDest = listBox2.SelectedItem as MDL0VertexNode;
             _mainWindow.KeyframePanel.TargetSequence = VertexSetDest;
+            _mainWindow.UpdatePropDisplay();
         }
 
         private void button1_Click(object sender, EventArgs e)

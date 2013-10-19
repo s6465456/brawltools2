@@ -157,16 +157,6 @@ namespace BrawlLib.Wii.Animations
             float vStep, vBase;
             switch (format)
             {
-                case AnimDataFormat.I12:
-                    {
-                        I12Header* header = (I12Header*)dataAddr;
-                        fCount = header->_numFrames;
-
-                        I12Entry* entry = header->Data;
-                        for (int i = 0; i < fCount; i++, entry++)
-                            kf.SetFrameValue(mode, (int)entry->_index, entry->_value)._tangent = entry->_tangent;
-                        break;
-                    }
                 case AnimDataFormat.I4:
                     {
                         I4Header* header = (I4Header*)dataAddr;
@@ -191,6 +181,16 @@ namespace BrawlLib.Wii.Animations
                             kf.SetFrameValue(mode, entry->FrameIndex, vBase + (entry->_step * vStep))._tangent = entry->Tangent;
                         break;
                     }
+                case AnimDataFormat.I12:
+                    {
+                        I12Header* header = (I12Header*)dataAddr;
+                        fCount = header->_numFrames;
+
+                        I12Entry* entry = header->Data;
+                        for (int i = 0; i < fCount; i++, entry++)
+                            kf.SetFrameValue(mode, (int)entry->_index, entry->_value)._tangent = entry->_tangent;
+                        break;
+                    }
                 case AnimDataFormat.L1:
                     {
                         L1Header* header = (L1Header*)dataAddr;
@@ -198,9 +198,13 @@ namespace BrawlLib.Wii.Animations
                         vBase = header->_base;
 
                         byte* sPtr = header->Data;
-                        for (int i = 0; i < kf.FrameLimit; i++)
+                        for (int i = 0; i < kf.FrameCount; i++)
                             kf[mode, i] = vBase + (*sPtr++ * vStep);
 
+                        KeyframeEntry root = kf._keyRoots[(int)mode & 0xF];
+                        for (KeyframeEntry entry = root._next; entry != root; entry = entry._next)
+                            entry.GenerateTangent();
+                            
                         break;
                     }
                 case AnimDataFormat.L2:
@@ -210,8 +214,12 @@ namespace BrawlLib.Wii.Animations
                         vBase = header->_base;
 
                         bushort* sPtr = (bushort*)header->Data;
-                        for (int i = 0; i < kf.FrameLimit; i++)
+                        for (int i = 0; i < kf.FrameCount; i++)
                             kf[mode, i] = vBase + (*sPtr++ * vStep);
+
+                        KeyframeEntry root = kf._keyRoots[(int)mode & 0xF];
+                        for (KeyframeEntry entry = root._next; entry != root; entry = entry._next)
+                            entry.GenerateTangent();
 
                         break;
                     }
@@ -219,8 +227,12 @@ namespace BrawlLib.Wii.Animations
                     {
                         bfloat* sPtr = (bfloat*)dataAddr;
 
-                        for (int i = 0; i < kf.FrameLimit; i++)
+                        for (int i = 0; i < kf.FrameCount; i++)
                             kf[mode, i] = *sPtr++;
+
+                        KeyframeEntry root = kf._keyRoots[(int)mode & 0xF];
+                        for (KeyframeEntry entry = root._next; entry != root; entry = entry._next)
+                            entry.GenerateTangent();
 
                         break;
                     }
@@ -244,9 +256,6 @@ namespace BrawlLib.Wii.Animations
             int dataSize = 0;
             entrySize = 8;
 
-#if DEBUG
-            //kf.Clean();
-#endif
             kf._evalCode = AnimationCode.Default;
 
             for (int i = 0; i < 3; i++)
@@ -255,9 +264,12 @@ namespace BrawlLib.Wii.Animations
             if (!kf._evalCode.HasRotation && !kf._evalCode.HasTranslation)
             {
                 kf._evalCode.IgnoreRotAndTrans = true;
-
-                if (!kf._evalCode.HasScale)
-                    kf._evalCode.Identity = true;
+                kf._evalCode.Identity = !kf._evalCode.HasScale;
+            }
+            else
+            {
+                kf._evalCode.IgnoreRotAndTrans = false;
+                kf._evalCode.Identity = false;
             }
 
             return dataSize;
@@ -268,9 +280,6 @@ namespace BrawlLib.Wii.Animations
             int dataSize = 0;
             entrySize = 4;
 
-#if DEBUG
-            //kf.Clean();
-#endif
             kf._texEvalCode = SRT0Code.Default;
 
             for (int i = 0; i < 3; i++)
@@ -284,7 +293,7 @@ namespace BrawlLib.Wii.Animations
         private static int EvaluateCHR0Group(ref AnimationCode code, KeyframeCollection kf, int group, ref int entrySize)
         {
             int index = group * 3;
-            int numFrames = kf.FrameLimit;
+            int numFrames = kf.FrameCount;
             int dataLen = 0;
             int maxEntries;
             int evalCount;
@@ -478,10 +487,6 @@ namespace BrawlLib.Wii.Animations
                     }
                 }
 
-                //#if DEBUG
-                //                format = AnimDataFormat.F3F;
-                //#else
-
                 //Determine format only if there are unfixed entries
                 if (!isFixed[0] || !isFixed[1] || !isFixed[2])
                 {
@@ -505,37 +510,7 @@ namespace BrawlLib.Wii.Animations
                         format = AnimDataFormat.L4;
                     else
                         format = AnimDataFormat.I12;
-
-                    //else
-                    //{
-                    //    if ((group != 1) || (frameSpan > 3.0f))
-                    //        format = AnimDataFormat.F3F;
-                    //    else
-                    //        format = AnimDataFormat.F1F;
-                    //}
-
-                    //if (useLinear) //rotation
-                    //{
-                    //    if (scaleSpan == 255)
-                    //        format = AnimDataFormat.F1B;
-                    //    else
-                    //        format = AnimDataFormat.F1F;
-                    //}
-                    //else
-                    //{
-                    //    if (scale)
-                    //    {
-                    //        if (scaleSpan == 4095)
-                    //            format = AnimDataFormat.F4B;
-                    //        else
-                    //            format = AnimDataFormat.F6B;
-                    //    }
-                    //    else
-                    //        format = AnimDataFormat.F3F;
-                    //}
                 }
-
-                //#endif
 
                 //calculate size
                 for (int i = 0; i < evalCount; i++)
@@ -595,7 +570,7 @@ namespace BrawlLib.Wii.Animations
             //2 = trans
 
             int index = group * 3;
-            int numFrames = kf.FrameLimit;
+            int numFrames = kf.FrameCount;
             int dataLen = 0;
             KeyframeEntry[] roots = new KeyframeEntry[2];
             bool exist = false;
@@ -802,7 +777,7 @@ namespace BrawlLib.Wii.Animations
 
         private static int EncodeEntry(int index, AnimDataFormat format, KeyframeCollection kf, VoidPtr addr)
         {
-            int numFrames = kf._frameLimit;
+            int numFrames = kf._frameCount;
             KeyframeEntry frame, root = kf._keyRoots[index];
             bfloat* pVal = (bfloat*)addr;
             float val, frameScale = numFrames <= 1 ? 1 : 1.0f / (numFrames - 1);

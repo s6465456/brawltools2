@@ -19,28 +19,6 @@ namespace System.Windows.Forms
 {
     public partial class ModelEditControl : UserControl, IMainWindow
     {
-        //private void btnLoadMoveset_Click(object sender, EventArgs e)
-        //{
-        //    if (btnLoadMoveset.Text == "Load")
-        //    {
-        //        if (pnlMoveset.LoadMoveset())
-        //        {
-        //            showMoveset.Checked = true;
-        //            btnLoadMoveset.Text = "Close";
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if (pnlMoveset.CloseMoveset())
-        //        {
-        //            showMoveset.Checked = false;
-        //            btnLoadMoveset.Text = "Load";
-        //        }
-        //    }
-        //}
-
-        //private void btnSaveMoveset_Click(object sender, EventArgs e) { pnlMoveset.SaveMoveset(); }
-
         public ResourceNode _externalAnimationsNode;
         private OpenFileDialog dlgOpen = new OpenFileDialog();
         private bool LoadExternal()
@@ -65,7 +43,7 @@ namespace System.Windows.Forms
                             node = null;
                             //txtExtPath.Text = Path.GetFileName(dlgOpen.FileName);
 
-                            modelPanel.AddReference(_externalAnimationsNode);
+                            ModelPanel.AddReference(_externalAnimationsNode);
 
                             return true;
                         }
@@ -94,7 +72,7 @@ namespace System.Windows.Forms
                         return false;
                 }
 
-                modelPanel.RemoveReference(_externalAnimationsNode);
+                ModelPanel.RemoveReference(_externalAnimationsNode);
                 leftPanel._closing = true;
                 leftPanel.listAnims.Items.Clear();
                 leftPanel._closing = false;
@@ -105,12 +83,10 @@ namespace System.Windows.Forms
                     SelectedBone._boneColor = SelectedBone._nodeColor = Color.Transparent;
 
                 leftPanel.UpdateAnimations(TargetAnimType);
-                SetSelectedBRRESFile(TargetAnimType, null);
+                SetAnimation(TargetAnimType, null);
                 GetFiles(AnimType.None);
                 UpdatePropDisplay();
                 UpdateModel();
-
-                //txtExtPath.Text = "";
             }
             return true;
         }
@@ -223,71 +199,10 @@ namespace System.Windows.Forms
                 _targetModels.Add(model);
             if (!models.Items.Contains(model))
                 models.Items.Add(model);
-            modelPanel.AddTarget(model);
+            ModelPanel.AddTarget(model);
             model.ApplyCHR(null, 0);
             model.ApplySRT(null, 0);
             model._renderBones = true;
-        }
-
-        public bool CloseFiles()
-        {
-            InterpolationEditorVisible = false;
-            StopAnim();
-            if (TargetModel != null)
-            {
-                TargetModel.ApplyCHR(null, 0);
-                TargetModel.ApplySRT(null, 0);
-            }
-            ResetBoneColors();
-            return CloseExternal();
-        }
-
-        public bool _resetCam = true;
-        public bool _hide = false;
-        private void ModelChanged(MDL0Node model)
-        {
-            if (model != null && !_targetModels.Contains(model))
-                _targetModels.Add(model);
-
-            if (_targetModel != null)
-            {
-                _targetModel._isTargetModel = false;
-                _targetModel._linearAnimation = false;
-            }
-
-            if (model == null)
-                modelPanel.RemoveTarget(_targetModel);
-
-            if ((_targetModel = model) != null)
-            {
-                modelPanel.AddTarget(_targetModel);
-                leftPanel.VIS0Indices = _targetModel.VIS0Indices;
-                _targetModel._isTargetModel = true;
-                ResetVertexColors();
-                _targetModel._linearAnimation = linearInterpolationToolStripMenuItem.Checked;
-            }
-
-            if (_resetCam)
-            {
-                modelPanel.ResetCamera();
-                SetFrame(0);
-            }
-            else
-                _resetCam = true;
-
-            leftPanel.Reset();
-            rightPanel.Reset();
-
-            if (TargetModelChanged != null)
-                TargetModelChanged(this, null);
-
-            _updating = true;
-            if (_targetModel != null && !_editingAll)
-                models.SelectedItem = _targetModel;
-            _updating = false;
-
-            if (_targetModel != null)
-                RenderBones = _targetModel._renderBones;
         }
     }
 }

@@ -40,8 +40,6 @@ namespace System.Windows.Forms
             progressBar1.MaxValue = max;
             progressBar1.CurrentValue = current;
 
-            //if (controlOwner != null)
-            //    controlOwner.Enabled = false;
             if (Owner != null)
                 Owner.Enabled = false;
 
@@ -62,8 +60,6 @@ namespace System.Windows.Forms
         {
             if (Owner != null)
                 Owner.Enabled = true;
-            //if (controlOwner != null)
-            //    controlOwner.Enabled = true;
 
             Close();
         }

@@ -128,7 +128,7 @@ namespace System.Windows.Forms
         {
             DefaultExt =
                 "All RSAR Files (*.brstm, *.rwsd, *.rbnk, *.rseq)|*.brstm;*.rwsd;*.rbnk;*.rseq|" +
-                "BRSTM Raw Audio (*.brstm)|*.brstm|" +
+                "BRSTM Audio (*.brstm)|*.brstm|" +
                 "Raw Sound Pack (*.rwsd)|*.rwsd|" +
                 "Raw Sound Bank (*.rbnk)|*.rbnk|" +
                 "Raw Sound Requence (*.rseq)|*.rseq"

@@ -171,6 +171,7 @@ namespace System.Windows.Forms
         private ARGBPixel _copyColor;
 
         public int _colorId = 0;
+        public int ColorID { get { return _colorId; } set { _colorId = value; SourceChanged(); } }
 
         private IColorSource _colorSource;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

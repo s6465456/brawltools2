@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Collections.Generic;
 using BrawlLib.IO;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -126,7 +127,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             FileMap tMap, pMap;
             if (HasPalette)
             {
-                PLT0Node pn = this.GetPaletteNode();
+                PLT0Node pn = GetPaletteNode();
                 tMap = TextureConverter.Get(Format).EncodeTextureIndexed(bmp, LevelOfDetail, pn.Colors, pn.Format, QuantizationAlgorithm.MedianCut, out pMap);
                 pn.ReplaceRaw(pMap);
             }
@@ -137,14 +138,18 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override unsafe void Replace(string fileName)
         {
+            string ext = Path.GetExtension(fileName);
             Bitmap bmp;
-            if (fileName.EndsWith(".tga"))
+            if (String.Equals(ext, ".tga", StringComparison.OrdinalIgnoreCase))
                 bmp = TGA.FromFile(fileName);
-            else if (fileName.EndsWith(".png") ||
-                fileName.EndsWith(".tiff") || fileName.EndsWith(".tif") ||
-                fileName.EndsWith(".bmp") ||
-                fileName.EndsWith(".jpg") || fileName.EndsWith(".jpeg") ||
-                fileName.EndsWith(".gif"))
+            else if (
+                String.Equals(ext, ".png", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".tif", StringComparison.OrdinalIgnoreCase) || 
+                String.Equals(ext, ".tiff", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".bmp", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".jpg", StringComparison.OrdinalIgnoreCase) || 
+                String.Equals(ext, ".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, ".gif", StringComparison.OrdinalIgnoreCase))
                 bmp = (Bitmap)Bitmap.FromFile(fileName);
             else
             {

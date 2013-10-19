@@ -158,5 +158,13 @@ namespace Ikarus
 
         public static event EventHandler RootChanged;
         public static event EventHandler TargetCharacterChanged;
+
+        public static ActionEventInfo GetEventInfo(long id)
+        {
+            if (EventDictionary.ContainsKey(id))
+                return EventDictionary[id];
+
+            return new ActionEventInfo(id, id.ToString("X"), "No Description Available.", null, null);
+        }
     }
 }

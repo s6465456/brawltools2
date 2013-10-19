@@ -247,7 +247,7 @@ namespace Ikarus.UI
             set { _mDef = value; }
         }
 
-        private MoveDefActionNode _targetNode;
+        private ActionScript _targetNode;
         private Label description;
         private ToolStrip toolStrip1;
         private ToolStripButton btnDown;
@@ -263,7 +263,7 @@ namespace Ikarus.UI
         private Splitter splitter1;
     
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefActionNode TargetNode
+        public ActionScript TargetNode
         {
             get { return _targetNode; }
             set { _targetNode = value; TargetChanged(); }
@@ -280,7 +280,7 @@ namespace Ikarus.UI
         {
             if (TargetNode != null)
             {
-                MoveDef = TargetNode.Root;
+                MoveDef = TargetNode._root;
                 //Offset.Text = TargetNode.HexOffset;
                 MakeScript();
 
@@ -304,7 +304,7 @@ namespace Ikarus.UI
 
             for (int i = 0; i < TargetNode.Children.Count; i++)
             {
-                MoveDefEventNode node = TargetNode.Children[i] as MoveDefEventNode;
+                Event node = TargetNode.Children[i] as Event;
                 string arg = node._name;
 
                 //Format the event and its parameters into a readable script.
@@ -330,7 +330,7 @@ namespace Ikarus.UI
         }
 
         //Return the parameters contained in the keyword's parameter list.
-        public string[] GetParameters(string strParams, MoveDefEventNode Event)
+        public string[] GetParameters(string strParams, Event Event)
         {
             string[] parameters = new string[0];
             char chrFound = '\0';
@@ -394,7 +394,7 @@ namespace Ikarus.UI
         }
 
         //Return the string result from the passed keyword and its parameters.
-        public string ResolveKeyword(string keyword, string[] Params, MoveDefEventNode Event)
+        public string ResolveKeyword(string keyword, string[] Params, Event Event)
         {
             Event eventData = Event.EventData;
             switch (keyword)
@@ -430,7 +430,7 @@ namespace Ikarus.UI
                     {
                         int id = int.Parse(Params[0]);
                         if (id >= 400)
-                            TargetNode.Root.GetBoneIndex(ref id);
+                            TargetNode._root.GetBoneIndex(ref id);
                         if (_targetNode.Model != null && _targetNode.Model._linker.BoneCache != null && _targetNode.Model._linker.BoneCache.Length > id && id >= 0)
                             return _targetNode.Model._linker.BoneCache[id].Name;
                         else return id.ToString();
@@ -481,7 +481,7 @@ namespace Ikarus.UI
             }
         }
         //Return a string of the parameter in the format corresponding to it's type.
-        public string[] ResolveParamTypes(MoveDefEventNode Event)
+        public string[] ResolveParamTypes(Event Event)
         {
             Event eventData = Event.EventData;
             string[] p = new string[eventData._parameters.Length];
@@ -503,14 +503,14 @@ namespace Ikarus.UI
         }
         //Return the name of the external pointer corresponding to the address if 
         //one is available, otherwise return the string of the value passed.
-        public string ResolvePointer(long pointer, Param parameter, MoveDefEventOffsetNode node)
+        public string ResolvePointer(long pointer, ParameterData parameter, MoveDefEventOffsetNode node)
         {
             //MoveDefExternalNode ext;
             //if ((ext = _targetNode.Root.IsExternal((int)pointer)) != null || (ext = _targetNode.Root.IsExternal((int)parameter._data)) != null)
             //    return "External: " + ext.Name;
 
-            if (node._extNode != null)
-                return "External: " + node._extNode.Name;
+            if (node._externalEntry != null)
+                return "External: " + node._externalEntry.Name;
 
             if (node.list == 4)
                 return "0x" + DataHelpers.Hex(parameter._data);
@@ -521,7 +521,7 @@ namespace Ikarus.UI
                 {
                     case 0:
                         grp = "Actions";
-                        name = _targetNode.Root._actions.Children[node.index].Name;
+                        name = _targetNode._root._actions.Children[node.index].Name;
                         switch (node.type)
                         {
                             case 0: t = "Entry"; break;
@@ -530,7 +530,7 @@ namespace Ikarus.UI
                         break;
                     case 1:
                         grp = "SubActions";
-                        name = _targetNode.Root._subActions.Children[node.index].Name;
+                        name = _targetNode._root._subActions.Children[node.index].Name;
                         switch (node.type)
                         {
                             case 0: t = "Main"; break;
@@ -541,17 +541,17 @@ namespace Ikarus.UI
                         break;
                     case 2:
                         grp = "SubRoutines";
-                        name = _targetNode.Root._subRoutineList[node.index].Name;
+                        name = _targetNode._root._subRoutines[node.index].Name;
                         break;
                     case 3:
-                        return "External: " + _targetNode.Root._references.Children[node.index].Name;
+                        return "External: " + _targetNode._root._references.Children[node.index].Name;
                     case 5:
                         grp = "Screen Tints";
-                        name = _targetNode.Root._dataCommon._screenTint.Children[node.index].Name;
+                        name = _targetNode._root._dataCommon._screenTint.Children[node.index].Name;
                         break;
                     case 6:
                         grp = "Flash Overlays";
-                        name = _targetNode.Root._dataCommon._flashOverlay.Children[node.index].Name;
+                        name = _targetNode._root._dataCommon._flashOverlay.Children[node.index].Name;
                         break;
                 }
 
@@ -591,8 +591,8 @@ namespace Ikarus.UI
                             if (sa != null)
                                 return sa.Children[(int)value].Name;
                         }
-                        else if (TargetNode.Root._subActions != null && value < TargetNode.Root._subActions.Children.Count && value >= 0)
-                            return TargetNode.Root._subActions.Children[(int)value].Name;
+                        else if (TargetNode._root._subActions != null && value < TargetNode._root._subActions.Children.Count && value >= 0)
+                            return TargetNode._root._subActions.Children[(int)value].Name;
                         else return ((int)value).ToString();
                     break;
                 //case 0x02010200:
@@ -635,7 +635,7 @@ namespace Ikarus.UI
         }
 
         //Return the event name followed by each parameter paired with its type.
-        public string GetDefaultSyntax(MoveDefEventNode Event)
+        public string GetDefaultSyntax(Event Event)
         {
             Event eventData = Event.EventData;
             string script = GetEventInfo(eventData._eventEvent)._name + (eventData._paramCount > 0 ? ": " : "");
@@ -659,7 +659,7 @@ namespace Ikarus.UI
         }
 
         //Return the passed syntax with all keywords replaced with their proper values.
-        public string ResolveEventSyntax(string syntax, MoveDefEventNode Event)
+        public string ResolveEventSyntax(string syntax, Event Event)
         {
             Event eventData = Event.EventData;
             while (true)
@@ -700,7 +700,7 @@ namespace Ikarus.UI
             if (EventList.SelectedIndex != -1)
                 highest = EventList.SelectedIndices[EventList.SelectedIndices.Count - 1];
 
-            MoveDefEventNode d = new MoveDefEventNode();
+            Event d = new Event();
             if (highest == EventList.Items.Count)
                 TargetNode.AddChild(d);
             else
@@ -719,13 +719,13 @@ namespace Ikarus.UI
             if (EventList.SelectedIndex != -1)
                 if (_mainWindow != null)
                 {
-                    _mainWindow.SelectedEvent = TargetNode.Children[EventList.SelectedIndex] as MoveDefEventNode;
+                    _mainWindow.SelectedEvent = TargetNode.Children[EventList.SelectedIndex] as Event;
                     _mainWindow.ModifyEvent();
                 }
                 else
                 {
                     FormModifyEvent p = new FormModifyEvent();
-                    p.eventModifier.Setup(TargetNode.Children[EventList.SelectedIndex] as MoveDefEventNode);
+                    p.eventModifier.Setup(TargetNode.Children[EventList.SelectedIndex] as Event);
                     if (p.ShowDialog() == DialogResult.OK)
                         MakeScript();
                 }
@@ -787,7 +787,7 @@ namespace Ikarus.UI
             string s = "";
             foreach (int i in EventList.SelectedIndices)
             {
-                s += (TargetNode.Children[i] as MoveDefEventNode).Serialize();
+                s += (TargetNode.Children[i] as Event).Serialize();
                 s += "/";
             }
             if (!String.IsNullOrEmpty(s))
@@ -809,7 +809,7 @@ namespace Ikarus.UI
                 string[] Events = s.Split('/');
                 foreach (string x in Events)
                 {
-                    MoveDefEventNode y = MoveDefEventNode.Deserialize(x, TargetNode.Root);
+                    Event y = Event.Deserialize(x, TargetNode._root);
                     if (y != null)
                     {
                         if (highest == TargetNode.Children.Count)
@@ -834,7 +834,7 @@ namespace Ikarus.UI
         {
             if (EventList.SelectedIndex >= 0)
             {
-                ActionEventInfo info = (TargetNode.Children[EventList.SelectedIndex] as MoveDefEventNode).EventInfo;
+                ActionEventInfo info = (TargetNode.Children[EventList.SelectedIndex] as Event).EventInfo;
                 if (info != null && !String.IsNullOrEmpty(info._description))
                     description.Text = info._description;
                 else

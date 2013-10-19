@@ -117,6 +117,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public string PrimaryColorName(int id) { return null; }
         [Browsable(false)]
+        public int TypeCount { get { return 1; } }
+        [Browsable(false)]
         public int ColorCount(int id) { return (_numEntries == 0) ? 1 : _numEntries; }
         public ARGBPixel GetColor(int index, int id) { return (_numEntries == 0) ? _solidColor : _colors[index]; }
         public void SetColor(int index, int id, ARGBPixel color)
@@ -126,6 +128,14 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 _colors[index] = color;
             SignalPropertyChange();
+        }
+        public bool GetClrConstant(int id)
+        {
+            return Constant;
+        }
+        public void SetClrConstant(int id, bool constant)
+        {
+            Constant = constant;
         }
 
         #endregion
@@ -166,18 +176,16 @@ namespace BrawlLib.SSBB.ResourceNodes
                 RGBAPixel* addr = Data->lightEntries;
                 for (int i = 0; i < _numEntries; i++)
                     _colors.Add((ARGBPixel)(*addr++));
-
-                //SCN0Node.strings[(int)(Data->lightEntries - Parent.Parent.WorkingUncompressed.Address)] = "Ambient" + Index + " Pixels Light";
             }
 
             return false;
         }
 
-        SCN0AmbientLightNode match;
+        SCN0AmbientLightNode _match;
         public override int OnCalculateSize(bool force)
         {
             _visLen = 0;
-            match = null;
+            _match = null;
             if (_name != "<null>")
                 if (_numEntries != 0)
                 {
@@ -194,14 +202,14 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 if (n._colors[i] != _colors[i])
                                     break;
                                 if (i == FrameCount)
-                                    match = n;
+                                    _match = n;
                             }
                         }
 
-                        if (match != null)
+                        if (_match != null)
                             break;
                     }
-                    if (match == null)
+                    if (_match == null)
                         _lightLen += 4 * (FrameCount + 1);
                 }
                 else
@@ -211,12 +219,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
             return SCN0AmbientLight.Size;
         }
-        VoidPtr matchAddr;
+        VoidPtr _matchAddr;
         public override void OnRebuild(VoidPtr address, int length, bool force)
         {
             base.OnRebuild(address, length, force);
 
-            matchAddr = null;
+            _matchAddr = null;
 
             SCN0AmbientLight* header = (SCN0AmbientLight*)address;
             header->_header._length = _length = SCN0AmbientLight.Size;
@@ -231,8 +239,8 @@ namespace BrawlLib.SSBB.ResourceNodes
                 {
                     header->_fixedFlags = 0;
 
-                    matchAddr = lightAddr;
-                    if (match == null)
+                    _matchAddr = lightAddr;
+                    if (_match == null)
                     {
                         *((bint*)header->_lighting.Address) = (int)lightAddr - (int)header->_lighting.Address;
                         for (int i = 0; i <= ((SCN0Node)Parent.Parent).FrameCount; i++)
@@ -242,16 +250,11 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 *lightAddr++ = new RGBAPixel();
                     }
                     else
-                        *((bint*)header->_lighting.Address) = (int)match.matchAddr - (int)header->_lighting.Address;
+                        *((bint*)header->_lighting.Address) = (int)_match._matchAddr - (int)header->_lighting.Address;
                 }
                 else
                     header->_lighting = (RGBAPixel)_solidColor;
             }
-        }
-
-        protected internal override void PostProcess(VoidPtr scn0Address, VoidPtr dataAddress, StringTable stringTable)
-        {
-            base.PostProcess(scn0Address, dataAddress, stringTable);
         }
     }
 }

@@ -10,7 +10,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefLookupNode : MoveDefEntryNode
+    public unsafe class MoveDefLookupNode : MoveDefEntry
     {
         internal bint* First { get { return (bint*)WorkingUncompressed.Address; } }
         int Count = 0;
@@ -35,34 +35,34 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 size = (int)next - (int)current;
                 (o = new MoveDefLookupOffsetNode()).Initialize(this, current, size);
-                if (Root._lookupSizes.ContainsKey(o.DataOffset))
-                    if (Root._lookupSizes[o.DataOffset].DataSize < o.DataSize)
-                        Root._lookupSizes[o.DataOffset] = o;
+                if (_root._lookupSizes.ContainsKey(o.DataOffset))
+                    if (_root._lookupSizes[o.DataOffset].DataSize < o.DataSize)
+                        _root._lookupSizes[o.DataOffset] = o;
                     else { }
                 else
-                    Root._lookupSizes.Add(o.DataOffset, o);
+                    _root._lookupSizes.Add(o.DataOffset, o);
                 current = next;
                 next = BaseAddress + *addr++;
             }
             size = ((int)_offset - (int)(current - BaseAddress));
             (o = new MoveDefLookupOffsetNode()).Initialize(this, current, size);
 
-            if (!Root._lookupSizes.ContainsKey(o.DataOffset))
-                Root._lookupSizes.Add(o.DataOffset, o);
+            if (!_root._lookupSizes.ContainsKey(o.DataOffset))
+                _root._lookupSizes.Add(o.DataOffset, o);
 
             //Sorting by data offset will allow us to get the exact size of every entry!
             Children.Sort(MoveDefLookupOffsetNode.LookupCompare);
         }
     }
 
-    public unsafe class MoveDefLookupOffsetNode : MoveDefEntryNode
+    public unsafe class MoveDefLookupOffsetNode : MoveDefEntry
     {
         internal FDefLookupOffset* Header { get { return (FDefLookupOffset*)WorkingUncompressed.Address; } }
 
         [Category("MoveDef Lookup Node")]
         public int DataOffset { get { return Header->_offset; } }
         [Category("MoveDef Lookup Node")]
-        public int DataSize { get { return Index == Parent.Children.Count - 1 ? Root._sections.dataOffset - DataOffset : ((MoveDefLookupOffsetNode)Parent.Children[Index + 1]).DataOffset - DataOffset; } }
+        public int DataSize { get { return Index == Parent.Children.Count - 1 ? _root._sections.dataOffset - DataOffset : ((MoveDefLookupOffsetNode)Parent.Children[Index + 1]).DataOffset - DataOffset; } }
 
         public static int LookupCompare(ResourceNode n1, ResourceNode n2)
         {
@@ -85,7 +85,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             int val;
             if ((val = *(bint*)Header) == -1)
             {
-                MoveDefExternalNode ext = Root.IsExternal(_offset);
+                ReferenceEntry ext = _root.TryGetExternal(_offset);
                 if (ext != null)
                     _name = ext.Name;
                 return false;

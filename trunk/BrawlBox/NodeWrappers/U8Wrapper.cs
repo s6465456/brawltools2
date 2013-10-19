@@ -178,9 +178,7 @@ namespace BrawlBox
             List<MDL0Node> models = new List<MDL0Node>();
             LoadModels(_resource, models);
             using (ModelForm form = new ModelForm())
-            {
                 form.ShowDialog(_owner, models);
-            }
         }
 
         public void ExportAll()

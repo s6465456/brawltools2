@@ -8,7 +8,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefActionOverrideNode : MoveDefEntryNode
+    public unsafe class MoveDefActionOverrideNode : MoveDefEntry
     {
         internal ActionOverride* Start { get { return (ActionOverride*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.MDefActionOverrideList; } }
@@ -65,11 +65,11 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             foreach (MoveDefActionOverrideEntryNode e in Children)
                 if (e.Children.Count > 0)
-                    ((ActionOverride*)e._rebuildAddr)->_commandListOffset = (int)(e.Children[0] as MoveDefActionNode)._rebuildAddr - (int)RebuildBase;
+                    ((ActionOverride*)e._rebuildAddr)->_commandListOffset = (int)(e.Children[0] as ActionScript)._rebuildAddr - (int)RebuildBase;
         }
     }
 
-    public unsafe class MoveDefActionOverrideEntryNode : MoveDefEntryNode
+    public unsafe class MoveDefActionOverrideEntryNode : MoveDefEntry
     {
         internal ActionOverride* Header { get { return (ActionOverride*)WorkingUncompressed.Address; } }
         public override ResourceType ResourceType { get { return ResourceType.NoEdit; } }
@@ -96,7 +96,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public override void OnPopulate()
         {
-            new MoveDefActionNode("Action" + _actionId, false, this).Initialize(this, new DataSource(((VoidPtr)(BaseAddress + _commandListOffset)), 0));
+            new ActionScript("Action" + _actionId, false, this).Initialize(this, new DataSource(((VoidPtr)(BaseAddress + _commandListOffset)), 0));
         }
     }
 }

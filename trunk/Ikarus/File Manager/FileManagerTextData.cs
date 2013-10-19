@@ -2046,6 +2046,7 @@ namespace Ikarus
         public static string[] iCollisionStats = null;
         public static string[] iGFXFiles = null;
         public static AttributeInfo[] AttributeArray = null;
+        public Dictionary<string, SectionParamInfo> Params = null;
 
         public static bool _attributesChanged = false;
 

@@ -32,7 +32,6 @@ namespace BrawlLib.Modeling
             ushort* pRemap = (ushort*)remap.Address;
 
             pNorms = (Vector3*)manager._faceData[1].Address;
-            //List<int> FixedIndices = new List<int>();
 
             manager._vertices = vertList;
 
@@ -119,12 +118,6 @@ namespace BrawlLib.Modeling
                                 bone = boneList[*iPtr];
                             else if (pCmd[z] == 2)
                                 weight = pWeights[*iPtr];
-                        //if (bone != null)
-                        //    if (bone.Name == "TopN" || bone.Name == "XRotN" || bone.Name == "YRotN" || bone.Name == "TransN" || bone.Name == "ThrowN" || bone.Name == "FacePattern")
-                        //        Console.WriteLine(bone.Name);
-                        //    else if (bone.Parent != null)
-                        //        if (bone.Parent.Name == "FacePattern")
-                        //            Console.WriteLine(bone.Name);
                         inf._weights.Add(new BoneWeight(bone, weight));
                     }
                 }
@@ -145,11 +138,6 @@ namespace BrawlLib.Modeling
                     bone = inf._weights[0].Bone;
                     v = new Vertex3(n._matrix * bone._inverseBindMatrix * skin._bindMatrix * pVert[i], bone); //Local position
                 }
-
-                ////Create Vertex, set to world position.
-                //v = new Vertex3(skin._bindMatrix * pVert[i], inf);
-                ////Fix single-bind vertices
-                //v.Position = inf._weights[0].Bone._inverseBindMatrix * v.Position;
 
                 ushort index = 0;
                 while (index < vertList.Count)
@@ -180,8 +168,6 @@ namespace BrawlLib.Modeling
             }
 
             remap.Dispose();
-
-            //manager.MergeTempData();
             return manager;
         }
         static PrimitiveManager DecodePrimitivesUnweighted(NodeEntry n, GeometryEntry geo)
@@ -249,9 +235,6 @@ namespace BrawlLib.Modeling
             byte** pInData = (byte**)pInDataList;
             byte** pOutData = (byte**)pOutDataList;
 
-            //_geo = geo;
-            //_sources = new UnsafeBuffer[12];
-            //_remapTable = new List<int>(64);
             PrimitiveManager manager = new PrimitiveManager();
 
             //Assign vertex source
@@ -467,152 +450,6 @@ namespace BrawlLib.Modeling
                             break;
                     }
                 }
-        }
-
-        static void NullWeight(PrimitiveManager manager, GeometryEntry geo)
-        {
-            Vector3* pVert = null;
-            ushort* pVInd = (ushort*)manager._indices.Address;
-            List<Vertex3> vertList = new List<Vertex3>(manager._pointCount);
-
-            //Find vertex source
-            foreach (SourceEntry s in geo._sources)
-                if (s._id == geo._verticesInput._source)
-                {
-                    pVert = (Vector3*)((UnsafeBuffer)s._arrayData).Address;
-                    break;
-                }
-
-            //Construct Vertex from new weight
-            for (int i = 0; i < manager._pointCount; i++)
-            {
-                //Create Vertex and look for match
-                Vertex3 v = new Vertex3(pVert[*pVInd]);
-                int index = 0;
-                while (index < vertList.Count)
-                {
-                    if (v.Equals(vertList[i]))
-                        break;
-                    index++;
-                }
-                if (index == vertList.Count)
-                    vertList.Add(v);
-
-                //Assign new index
-                *pVInd++ = (ushort)index;
-            }
-
-        }
-        static void Weight(PrimitiveManager manager, SkinEntry skin, DecoderShell shell, GeometryEntry geo, InfluenceManager iMan)
-        {
-            MDL0BoneNode[] boneList;
-            MDL0BoneNode bone = null;
-            int boneCount;
-            string[] jointStrings = null;
-            byte* pCmd = stackalloc byte[4];
-            int cmdCount = skin._weightInputs.Count;
-            float weight = 0;
-            float* pWeights = null;
-            Vector3* pVert = null;
-            ushort* pVInd = (ushort*)manager._indices.Address;
-            List<Vertex3> vertList = new List<Vertex3>(skin._weightCount);
-
-            manager._vertices = vertList;
-
-            //Find vertex source
-            foreach (SourceEntry s in geo._sources)
-                if (s._id == geo._verticesInput._source)
-                {
-                    pVert = (Vector3*)((UnsafeBuffer)s._arrayData).Address;
-                    break;
-                }
-
-            //Find joint source
-            foreach (InputEntry inp in skin._jointInputs)
-                if (inp._semantic == SemanticType.JOINT)
-                {
-                    foreach (SourceEntry src in skin._sources)
-                        if (src._id == inp._source)
-                        {
-                            jointStrings = src._arrayData as string[];
-                            break;
-                        }
-                    break;
-                }
-
-            //Populate bone list
-            boneCount = jointStrings.Length;
-            boneList = new MDL0BoneNode[boneCount];
-            for (int i = 0; i < boneCount; i++)
-                boneList[i] = shell.FindNode(jointStrings[i])._node as MDL0BoneNode;
-
-            //Build command list
-            foreach (InputEntry inp in skin._weightInputs)
-            {
-                switch (inp._semantic)
-                {
-                    case SemanticType.JOINT:
-                        pCmd[inp._offset] = 1;
-                        break;
-
-                    case SemanticType.WEIGHT:
-                        pCmd[inp._offset] = 2;
-
-                        //Get weight source
-                        foreach (SourceEntry src in skin._sources)
-                            if (src._id == inp._source)
-                            {
-                                pWeights = (float*)((UnsafeBuffer)src._arrayData).Address;
-                                break;
-                            }
-
-                        break;
-
-                    default:
-                        pCmd[inp._offset] = 0;
-                        break;
-                }
-            }
-
-            //Construct Vertex from new weight
-            for (int i = 0; i < skin._weightCount; i++)
-            {
-                //Create influence
-                int iCount = skin._weights.Length / cmdCount;
-                Influence inf = new Influence(/*iCount*/);
-                fixed (int* p = skin._weights[i])
-                {
-                    int* iPtr = p;
-                    for (int x = 0; x < iCount; x++)
-                    {
-                        for (int z = 0; z < cmdCount; z++, iPtr++)
-                            if (pCmd[z] == 1)
-                                bone = boneList[*iPtr];
-                            else if (pCmd[z] == 2)
-                                weight = pWeights[*iPtr];
-
-                        inf._weights.Add(new BoneWeight(bone, weight));
-                    }
-                }
-
-                //Match with manager
-                inf = iMan.FindOrCreate(inf, true);
-
-                //Create Vertex and look for match
-                Vertex3 v = new Vertex3(pVert[*pVInd], inf);
-                int index = 0;
-                while (index < vertList.Count)
-                {
-                    if (v.Equals(vertList[i]))
-                        break;
-                    index++;
-                }
-                if (index == vertList.Count)
-                    vertList.Add(v);
-
-                //Assign new index
-                *pVInd++ = (ushort)index;
-            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]

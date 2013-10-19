@@ -8,7 +8,7 @@ using Ikarus;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
-    public unsafe class MoveDefBoneRef2Node : MoveDefEntryNode
+    public unsafe class MoveDefBoneRef2Node : MoveDefEntry
     {
         internal FDefBoneRef2* Header { get { return (FDefBoneRef2*)WorkingUncompressed.Address; } }
 

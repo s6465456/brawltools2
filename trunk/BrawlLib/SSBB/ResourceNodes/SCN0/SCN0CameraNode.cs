@@ -24,8 +24,26 @@ namespace BrawlLib.SSBB.ResourceNodes
         public SCN0CameraFlags _flags1 = (SCN0CameraFlags)0xFFFE;
         public ushort _flags2 = 1;
 
-        public KeyframeArray _posX = new KeyframeArray(0), _posY = new KeyframeArray(0), _posZ = new KeyframeArray(0), _rotX = new KeyframeArray(0), _rotY = new KeyframeArray(0), _rotZ = new KeyframeArray(0), _aimX = new KeyframeArray(0), _aimY = new KeyframeArray(0), _aimZ = new KeyframeArray(0), _twist = new KeyframeArray(0), _fovY = new KeyframeArray(0), _height = new KeyframeArray(0), _aspect = new KeyframeArray(0), _nearZ = new KeyframeArray(0), _farZ = new KeyframeArray(0);
+        public KeyframeArray 
+            _posX = new KeyframeArray(0), 
+            _posY = new KeyframeArray(0), 
+            _posZ = new KeyframeArray(0), 
+            _rotX = new KeyframeArray(0), 
+            _rotY = new KeyframeArray(0), 
+            _rotZ = new KeyframeArray(0), 
+            _aimX = new KeyframeArray(0), 
+            _aimY = new KeyframeArray(0), 
+            _aimZ = new KeyframeArray(0), 
+            _twist = new KeyframeArray(0), 
+            _fovY = new KeyframeArray(0), 
+            _height = new KeyframeArray(0), 
+            _aspect = new KeyframeArray(0), 
+            _nearZ = new KeyframeArray(0), 
+            _farZ = new KeyframeArray(0);
 
+        #region ISCN0KeyframeHolder Members
+
+        public int KeyArrayCount { get { return 15; } }
         public KeyframeArray GetKeys(int i)
         {
             switch (i)
@@ -70,6 +88,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 case 14: _height = value; break;
             }
         }
+        #endregion
 
         [Category("Camera")]
         public SCN0CameraType Type { get { return _type; } set { _type = value; SignalPropertyChange(); } }
@@ -184,39 +203,36 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Browsable(false)]
         public int FrameCount { get { return ((SCN0Node)Parent.Parent).FrameCount; } }
 
+        public static bool _generateTangents = true;
+        public static bool _linear = true;
+
         public CameraAnimationFrame GetAnimFrame(int index)
         {
             CameraAnimationFrame frame;
             float* dPtr = (float*)&frame;
             for (int x = 0; x < 15; x++)
-                *dPtr++ = GetKeys(x).GetFrameValue(index);
+            {
+                KeyframeArray a = GetKeys(x);
+                *dPtr++ = a.GetFrameValue(index);
+                frame.SetBools(x, a.GetKeyframe(index) != null);
+                frame.Index = index;
+            }
             return frame;
         }
         internal KeyframeEntry GetKeyframe(CameraKeyframeMode keyFrameMode, int index)
         {
-            return GetKeys((int)keyFrameMode - 0x10).GetKeyframe(index);
+            return GetKeys((int)keyFrameMode).GetKeyframe(index);
         }
 
         public float GetFrameValue(CameraKeyframeMode keyFrameMode, int index)
         {
-            return GetKeys((int)keyFrameMode - 0x10).GetFrameValue(index);
-        }
-
-        internal void RemoveKeyframe(LightKeyframeMode keyFrameMode, int index)
-        {
-            KeyframeEntry k = GetKeys((int)keyFrameMode - 0x10).Remove(index);
-            if (k != null)
-            {
-                k._prev.GenerateTangent();
-                k._next.GenerateTangent();
-                SignalPropertyChange();
-            }
+            return GetKeys((int)keyFrameMode).GetFrameValue(index);
         }
 
         internal void RemoveKeyframe(CameraKeyframeMode keyFrameMode, int index)
         {
-            KeyframeEntry k = GetKeys((int)keyFrameMode - 0x10).Remove(index);
-            if (k != null)
+            KeyframeEntry k = GetKeys((int)keyFrameMode).Remove(index);
+            if (k != null && _generateTangents)
             {
                 k._prev.GenerateTangent();
                 k._next.GenerateTangent();
@@ -226,10 +242,19 @@ namespace BrawlLib.SSBB.ResourceNodes
         
         internal void SetKeyframe(CameraKeyframeMode keyFrameMode, int index, float value)
         {
-            KeyframeEntry k = GetKeys((int)keyFrameMode - 0x10).SetFrameValue(index, value);
-            k.GenerateTangent();
-            k._prev.GenerateTangent();
-            k._next.GenerateTangent();
+            KeyframeArray keys = GetKeys((int)keyFrameMode);
+            bool exists = keys.GetKeyframe(index) != null;
+            KeyframeEntry k = keys.SetFrameValue(index, value);
+
+            if (!exists && !_generateTangents)
+                k.GenerateTangent();
+
+            if (_generateTangents)
+            {
+                k.GenerateTangent();
+                k._prev.GenerateTangent();
+                k._next.GenerateTangent();
+            }
 
             SignalPropertyChange();
         }
@@ -237,21 +262,21 @@ namespace BrawlLib.SSBB.ResourceNodes
 
     public enum CameraKeyframeMode
     {
-        PosX = 0x10,
-        PosY = 0x11,
-        PosZ = 0x12,
-        Aspect = 0x13,
-        NearZ = 0x14,
-        FarZ = 0x15,
-        RotX = 0x16,
-        RotY = 0x17,
-        RotZ = 0x18,
-        AimX = 0x19,
-        AimY = 0x1A,
-        AimZ = 0x1B,
-        Twist = 0x1C,
-        FovY = 0x1D,
-        Height = 0x1E,
+        PosX,
+        PosY,
+        PosZ,
+        Aspect,
+        NearZ,
+        FarZ,
+        RotX,
+        RotY,
+        RotZ,
+        AimX,
+        AimY,
+        AimZ,
+        Twist,
+        FovY,
+        Height,
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -288,7 +313,10 @@ namespace BrawlLib.SSBB.ResourceNodes
         public bool hasNz;
         public bool hasFz;
 
-        public bool forKF;
+        public bool HasKeys
+        {
+            get { return hasPx || hasPy || hasPz || hasRx || hasRy || hasRz || hasAx || hasAy || hasAz || hasT || hasF || hasH || hasA || hasNz || hasFz; }
+        }
 
         public void SetBools(int index, bool val)
         {
@@ -378,7 +406,6 @@ namespace BrawlLib.SSBB.ResourceNodes
                 Matrix m = Matrix.ReverseLookat(Aim, Pos, Twist);
                 Vector3 a = m.GetAngles();
                 return new Vector3(-a._x, -a._y, -a._z);
-                //return aimPos.LookatAngles(pos) * Maths._rad2degf;
             }
         }
 
@@ -399,14 +426,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             hasAx = hasAy = hasAz =
             hasT = hasF = hasH =
             hasA = hasNz = hasFz = false;
-            forKF = true;
         }
         public int Index;
         const int len = 6;
         static string empty = new String('_', len);
         public override string ToString()
         {
-            return String.Format("[{0}] Pos=({1},{2},{3}), Rot=({4},{5},{6}), Aim=({7},{8},{9}), Twist={10}, FovY={11}, Height={12}, Aspect={13}, NearZ={14}, FarZ={15}", Index + 1,
+            return String.Format("[{0}] Pos=({1},{2},{3}), Rot=({4},{5},{6}), Aim=({7},{8},{9}), Twist={10}, FovY={11}, Height={12}, Aspect={13}, NearZ={14}, FarZ={15}", (Index + 1).ToString().PadLeft(5),
             !hasPx ? empty : Pos._x.ToString().TruncateAndFill(len, ' '),
             !hasPy ? empty : Pos._y.ToString().TruncateAndFill(len, ' '),
             !hasPz ? empty : Pos._z.ToString().TruncateAndFill(len, ' '),
@@ -423,9 +449,5 @@ namespace BrawlLib.SSBB.ResourceNodes
             !hasNz ? empty : NearZ.ToString().TruncateAndFill(len, ' '),
             !hasFz ? empty : FarZ.ToString().TruncateAndFill(len, ' '));
         }
-        //public override string ToString()
-        //{
-        //    return String.Format("{0}\r\n{1}\r\n{2}", Scale, Rotation, Translation);
-        //}
     }
 }
