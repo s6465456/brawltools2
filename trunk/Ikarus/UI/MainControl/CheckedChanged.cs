@@ -22,37 +22,37 @@ namespace Ikarus.UI
     {
         private unsafe void storeSettingsExternallyToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (_updating) return;
-            BrawlLib.Properties.Settings.Default.External = storeSettingsExternallyToolStripMenuItem.Checked;
+            //if (_updating) return;
+            //BrawlLib.Properties.Settings.Default.External = storeSettingsExternallyToolStripMenuItem.Checked;
 
-            BrawlBoxViewerSettings settings = new BrawlBoxViewerSettings();
-            if (BrawlLib.Properties.Settings.Default.External)
-            {
-                settings = BrawlLib.Properties.Settings.Default.ViewerSettings;
-                using (FileStream stream = new FileStream(Application.StartupPath + "/brawlbox.settings", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 8, FileOptions.SequentialScan))
-                {
-                    CompactStringTable s = new CompactStringTable();
-                    s.Add(ScreenCapBgLocText.Text);
-                    stream.SetLength((long)BrawlBoxViewerSettings.Size + s.TotalSize);
-                    using (FileMap map = FileMap.FromStream(stream))
-                    {
-                        *(BrawlBoxViewerSettings*)map.Address = settings;
-                        s.WriteTable(map.Address + BrawlBoxViewerSettings.Size);
-                        ((BrawlBoxViewerSettings*)map.Address)->_screenCapPathOffset = (uint)s[ScreenCapBgLocText.Text] - (uint)map.Address;
-                    }
-                }
-            }
-            else
-            {
-                if (File.Exists(Application.StartupPath + "/brawlbox.settings"))
-                    using (FileMap map = FileMap.FromFile(Application.StartupPath + "/brawlbox.settings", FileMapProtect.Read))
-                        if (*(uint*)map.Address == BrawlBoxViewerSettings.Tag)
-                            settings = *(BrawlBoxViewerSettings*)map.Address;
+            //BrawlBoxViewerSettings settings = new BrawlBoxViewerSettings();
+            //if (BrawlLib.Properties.Settings.Default.External)
+            //{
+            //    settings = BrawlLib.Properties.Settings.Default.ViewerSettings;
+            //    using (FileStream stream = new FileStream(Application.StartupPath + "/brawlbox.settings", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite, 8, FileOptions.SequentialScan))
+            //    {
+            //        CompactStringTable s = new CompactStringTable();
+            //        s.Add(ScreenCapBgLocText.Text);
+            //        stream.SetLength((long)BrawlBoxViewerSettings.Size + s.TotalSize);
+            //        using (FileMap map = FileMap.FromStream(stream))
+            //        {
+            //            *(BrawlBoxViewerSettings*)map.Address = settings;
+            //            s.WriteTable(map.Address + BrawlBoxViewerSettings.Size);
+            //            ((BrawlBoxViewerSettings*)map.Address)->_screenCapPathOffset = (uint)s[ScreenCapBgLocText.Text] - (uint)map.Address;
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    if (File.Exists(Application.StartupPath + "/brawlbox.settings"))
+            //        using (FileMap map = FileMap.FromFile(Application.StartupPath + "/brawlbox.settings", FileMapProtect.Read))
+            //            if (*(uint*)map.Address == BrawlBoxViewerSettings.Tag)
+            //                settings = *(BrawlBoxViewerSettings*)map.Address;
 
-                BrawlLib.Properties.Settings.Default.ViewerSettings = settings;
-                BrawlLib.Properties.Settings.Default.ScreenCapBgLocText = ScreenCapBgLocText.Text;
-                BrawlLib.Properties.Settings.Default.Save();
-            }
+            //    BrawlLib.Properties.Settings.Default.ViewerSettings = settings;
+            //    BrawlLib.Properties.Settings.Default.ScreenCapBgLocText = ScreenCapBgLocText.Text;
+            //    BrawlLib.Properties.Settings.Default.Save();
+            //}
         }
         private void orthographicToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
@@ -254,7 +254,7 @@ namespace Ikarus.UI
             if (_updating)
                 return;
 
-            leftPanel.chkSyncVis.Checked = syncObjectsListToVIS0ToolStripMenuItem.Checked;
+            modelListsPanel1.chkSyncVis.Checked = syncObjectsListToVIS0ToolStripMenuItem.Checked;
         }
 
         private void syncAnimationsTogetherToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -266,59 +266,9 @@ namespace Ikarus.UI
         }
         public void pnlAnim_ReferenceLoaded(ResourceNode node) { modelPanel.AddReference(node); }
 
-        public void CHR0StateChanged(object sender, EventArgs e)
-        {
-            if (_chr0 == null)
-                return;
-
-            if (_animFrame < _chr0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _chr0.FrameCount;
-        }
-        public void SRT0StateChanged(object sender, EventArgs e)
-        {
-            if (_srt0 == null)
-                return;
-
-            if (_animFrame < _srt0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _srt0.FrameCount;
-        }
-        public void SHP0StateChanged(object sender, EventArgs e)
-        {
-            if (_shp0 == null)
-                return;
-
-            if (_animFrame < _shp0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _shp0.FrameCount;
-        }
-        public void VIS0StateChanged(object sender, EventArgs e)
-        {
-            if (_vis0 == null)
-                return;
-
-            if (_animFrame < _vis0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _vis0.FrameCount;
-        }
-        public void PAT0StateChanged(object sender, EventArgs e)
-        {
-            if (_pat0 == null)
-                return;
-
-            if (_animFrame < _pat0.FrameCount)
-                SetFrame(_animFrame);
-            pnlPlayback.numTotalFrames.Value = _pat0.FrameCount;
-        }
-
         private void pnlOptions_FloorRenderChanged(object sender, EventArgs e)
         {
-            if (RenderFloor == false)
-                toggleFloor.Checked = false;
-            else
-                toggleFloor.Checked = true;
-
+            toggleFloor.Checked = RenderFloor;
             modelPanel.Invalidate();
         }
 
@@ -348,23 +298,22 @@ namespace Ikarus.UI
             RenderPolygons = chkPolygons.Checked;
         }
 
-        public ScriptPanel MovesetPanel { get { return rightPanel.pnlMoveset; } }
+        public ScriptPanel MovesetPanel { get { return scriptPanel.scriptPanel; } }
         public void numFPS_ValueChanged(object sender, EventArgs e) 
         {
             RunTime._timer.TargetRenderFrequency = 
-            //RunTime._timer.TargetUpdateFrequency = 
             (double)pnlPlayback.numFPS.Value; 
         }
         public void chkLoop_CheckedChanged(object sender, EventArgs e) 
         {
-            _loop = pnlPlayback.chkLoop.Checked;
+            RunTime._loop = pnlPlayback.chkLoop.Checked;
             if (syncLoopToAnimationToolStripMenuItem.Checked && !_updating)
-                GetAnimation(TargetAnimType).Loop = _loop;
+                GetAnimation(TargetAnimType).Loop = Loop;
         }
 
         private void FileChanged(object sender, EventArgs e)
         {
-            movesetToolStripMenuItem1.Visible = chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = FileManager.Moveset != null;
+            movesetToolStripMenuItem1.Visible = chkHurtboxes.Visible = chkHitboxes.Visible = chkHurtboxes.Checked = Manager.Moveset != null;
         }
 
         private void RenderStateChanged(object sender, EventArgs e)
@@ -389,17 +338,17 @@ namespace Ikarus.UI
 
         public void SelectedPolygonChanged(object sender, EventArgs e) 
         {
-            _targetModel._polyIndex = _targetModel._objList.IndexOf(leftPanel.SelectedPolygon);
+            _targetModel._polyIndex = _targetModel._objList.IndexOf(modelListsPanel1.SelectedPolygon);
 
-            if (leftPanel._syncObjTex)
-                leftPanel.UpdateTextures();
+            if (modelListsPanel1._syncObjTex)
+                modelListsPanel1.UpdateTextures();
 
             if (TargetAnimType == AnimType.VIS)
-                if (leftPanel.TargetObject != null && vis0Editor.listBox1.Items.Count != 0)
+                if (listPanel.TargetObject != null && vis0Editor.listBox1.Items.Count != 0)
                 {
                     int x = 0;
                     foreach (object i in vis0Editor.listBox1.Items)
-                        if (i.ToString() == leftPanel.TargetObject.VisibilityBone)
+                        if (i.ToString() == listPanel.TargetObject.VisibilityBone)
                         {
                             vis0Editor.listBox1.SelectedIndex = x;
                             break;
@@ -418,37 +367,35 @@ namespace Ikarus.UI
             if ((GetAnimation(TargetAnimType) == null) || (_updating))
                 return;
 
-            _maxFrame = (int)pnlPlayback.numTotalFrames.Value;
+            MaxFrame = (int)pnlPlayback.numTotalFrames.Value;
 
-            AnimationNode n;
-            if (alwaysSyncFrameCountsToolStripMenuItem.Checked)
-                for (int i = 0; i < 5; i++)
-                    if ((n = GetAnimation((AnimType)i)) != null) 
-                        //if (i == 5) ((BRESEntryNode)n).tFrameCount = _maxFrame - 1; else 
-                        n.FrameCount = _maxFrame;
-                    else { }
-            else
-            {
-                if ((n = GetAnimation(TargetAnimType)) != null)
-                    n.FrameCount = _maxFrame;
-                if (displayFrameCountDifferencesToolStripMenuItem.Checked)
-                    if (MessageBox.Show("Do you want to update the frame counts of the other animation types?", "Update Frame Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    for (int i = 0; i < 5; i++)
-                        if (i != (int)TargetAnimType && (n = GetAnimation((AnimType)i)) != null)
-                            n.FrameCount = _maxFrame;
-            }
+            //AnimationNode n;
+            //if (alwaysSyncFrameCountsToolStripMenuItem.Checked)
+            //    for (int i = 0; i < 5; i++)
+            //        if ((n = GetAnimation((AnimType)i)) != null) 
+            //            //if (i == 5) ((BRESEntryNode)n).tFrameCount = _maxFrame - 1; else 
+            //            n.FrameCount = _maxFrame;
+            //        else { }
+            //else
+            //{
+            //    if ((n = GetAnimation(TargetAnimType)) != null)
+            //        n.FrameCount = _maxFrame;
+            //    if (displayFrameCountDifferencesToolStripMenuItem.Checked)
+            //        if (MessageBox.Show("Do you want to update the frame counts of the other animation types?", "Update Frame Counts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            //        for (int i = 0; i < 5; i++)
+            //            if (i != (int)TargetAnimType && (n = GetAnimation((AnimType)i)) != null)
+            //                n.FrameCount = _maxFrame;
+            //}
 
-            pnlPlayback.numFrameIndex.Maximum = _maxFrame;
+            pnlPlayback.numFrameIndex.Maximum = MaxFrame;
         }
         private void showAssets_CheckedChanged(object sender, EventArgs e)
         {
-            leftPanel.Visible = spltLeft.Visible = showLeft.Checked;
-            btnLeftToggle.Text = showLeft.Checked == false ? ">" : "<";
+            panel1.Visible = spltLeft.Visible = showLeft.Checked;
         }
         private void showMoveset_CheckedChanged(object sender, EventArgs e)
         {
-            rightPanel.Visible = spltRight.Visible = showRight.Checked;
-            btnRightToggle.Text = showRight.Checked == false ? "<" : ">";
+            modelListsPanel1.Visible = spltRight.Visible = showRight.Checked;
         }
         private void showPlay_CheckedChanged(object sender, EventArgs e) 
         {
@@ -504,7 +451,7 @@ namespace Ikarus.UI
 
             _resetCam = false;
 
-            FileManager.TargetCharacter = (CharName)comboCharacters.SelectedItem;
+            Manager.TargetCharacter = (CharName)Enum.Parse(typeof(CharName), comboCharacters.SelectedItem.ToString());
 
             _undoSaves.Clear();
             _redoSaves.Clear();

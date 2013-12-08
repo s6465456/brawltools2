@@ -3,6 +3,7 @@ using Ikarus.UI;
 using OpenTK.Input;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -28,38 +29,36 @@ namespace Ikarus
         public static MainControl MainWindow { get { return MainForm.Instance._mainControl; } }
         public static ScriptPanel ScriptWindow { get { return MainWindow.MovesetPanel; } }
 
-        #region Variables
-
-        //Variable storage. Order: IC, LA, RA
-        public static int[][] BasicVars = new int[3][];
-        public static float[][] FloatVars = new float[3][];
-        public static bool[][] BitVars = new bool[3][];
-
-        public static float GetVar(int var, int mem, int num)
+        public static BindingList<string> _log = new BindingList<string>();
+        public static void Log(string message) 
         {
-            var = var.Clamp(0, 2);
-            mem = mem.Clamp(0, 2);
-            switch (var)
+            _log.Add(message);
+            Console.WriteLine(message);
+        }
+        public static void ClearLog() { _log.Clear(); }
+
+        public static float GetVar(VariableType var, VarMemType mem, int num)
+        {
+            switch (mem)
             {
-                case 0:
-                    if (num < 0 || num >= BasicVars[mem].Length)
-                        return float.NaN;
-                    return BasicVars[mem][num];
-                case 1:
-                    if (num < 0 || num >= FloatVars[mem].Length)
-                        return float.NaN;
-                    return FloatVars[mem][num];
-                case 2:
-                    if (num < 0 || num >= BitVars[mem].Length)
-                        return float.NaN;
-                    return !BitVars[mem][num] ? 0 : 1;
+                case VarMemType.IC: return IC.Get(var, num);
+                case VarMemType.LA: return LA.Get(var, num);
+                case VarMemType.RA: return RA.Get(var, num);
             }
-            return float.NaN;
+            return 0.0f;
+        }
+        public static void SetVar(VariableType var, VarMemType mem, int num, float value)
+        {
+            switch (mem)
+            {
+                case VarMemType.IC: break;
+                case VarMemType.LA: LA.Set(var, num, value); break;
+                case VarMemType.RA: RA.Set(var, num, value); break;
+            }
         }
 
-        #endregion
-
         private static List<ActionChangeInfo> _actionChanges = new List<ActionChangeInfo>();
+        private static List<SubActionChangeInfo> _subActionChanges = new List<SubActionChangeInfo>();
         public static ActionChangeInfo GetActionChangeInfo(uint statusID)
         {
             foreach (ActionChangeInfo a in _actionChanges)
@@ -67,6 +66,7 @@ namespace Ikarus
                     return a;
             return null;
         }
+        
         public static void AddActionChangeInfo(ActionChangeInfo info)
         {
             _actionChanges.Add(info);
@@ -75,46 +75,41 @@ namespace Ikarus
             //If they are prioritized, then where do action changes without a status ID fit in to the sorting, first or last?
             //_actionChanges = _actionChanges.OrderBy(x => x._statusID).ToList();
         }
+        public static void AddSubActionChangeInfo(SubActionChangeInfo info)
+        {
+            _subActionChanges.Add(info);
+        }
 
-        public static bool _animationRunning = false;
-
+        public static bool _allowInterrupt = false;
         public static Location _location = Location.Ground;
         public enum Location
         {
-            Ground,
-            Air
+            Air = 0,
+            Ground = 1
         }
 
-        ///// <summary>
-        ///// Returns true if all running subaction scripts have finished executing code.
-        ///// </summary>
-        //public static bool AllScriptsIdling
-        //{
-        //    get
-        //    {
-        //        bool allEmpty = true;
-        //        foreach (MoveDefActionNode a in _runningScripts)
-        //            if (a.Children.Count > 0)
-        //                allEmpty = false;
-        //        if (allEmpty)
-        //            return true;
-        //        foreach (MoveDefActionNode a in _runningScripts)
-        //            if (!a._idling)
-        //                return false;
-        //        return true;
-        //    }
-        //}
-        
-        public static List<ActionScript> _runningScripts = new List<ActionScript>();
+        public static Dictionary<int, Script> _concurrentLoopScripts = new Dictionary<int, Script>();
+        public static List<Script> _runningScripts = new List<Script>();
         public static Dictionary<int, List<AudioInfo>> _playingSounds = new Dictionary<int, List<AudioInfo>>();
         public static ArticleInfo[] _articles;
+        public static List<HitBox> _hitBoxes = new List<HitBox>();
 
         public static bool _muteSFX = false;
 
         public static CoolTimer _timer = new CoolTimer();
         public static bool IsRunning { get { return _timer.IsRunning; } }
-        public static void Run() { _timer.Run(0, FramesPerSecond); }
-        public static void Stop() { _timer.Stop(); }
+        public static void Run() { Playing = true; _timer.Run(0, FramesPerSecond); }
+        public static void Stop()
+        {
+            _timer.Stop(); 
+            Playing = false; 
+            if (MainWindow._capture)
+            {
+                MainWindow.RenderToGIF(MainWindow.images.ToArray());
+                MainWindow.images.Clear();
+                MainWindow._capture = false;
+            }
+        }
 
         public static double FramesPerSecond 
         {
@@ -128,35 +123,91 @@ namespace Ikarus
             set { _timer.TargetUpdateFrequency = value; }
         }
 
-        private static SubActionGroup _currentSubaction;
-        private static ActionGroup _currentAction;
-        private static ActionScript _currentSubRoutine;
+        public static bool _passFrame = false;
         
-        public static SubActionGroup CurrentSubaction
+        private static SubActionEntry _currentSubaction;
+        private static ActionEntry _currentAction, _prevAction;
+        private static Script _currentSubRoutine;
+
+        public static BindingList<SubActionEntry> Subactions { get { return Manager.Moveset == null || Manager.Moveset.Data == null ? null : Manager.Moveset.Data.SubActions; } }
+        public static ActionOverrideList EntryOverrides { get { return Manager.Moveset == null || Manager.Moveset.Data == null ? null : Manager.Moveset.Data._entryOverrides; } }
+        public static ActionOverrideList ExitOverrides { get { return Manager.Moveset == null || Manager.Moveset.Data == null ? null : Manager.Moveset.Data._exitOverrides; } }
+        public static BindingList<CommonAction> FlashOverlays { get { return Manager.CommonMoveset == null || Manager.CommonMoveset.DataCommon == null ? null : Manager.CommonMoveset.DataCommon.FlashOverlays; } }
+        public static BindingList<CommonAction> ScreenTints { get { return Manager.CommonMoveset == null || Manager.CommonMoveset.DataCommon == null ? null : Manager.CommonMoveset.DataCommon.ScreenTints; } }
+        public static BindingList<ActionEntry> CommonActions { get { return Manager.CommonMoveset == null ? null : Manager.CommonMoveset.Actions; } }
+        public static BindingList<ActionEntry> Actions { get { return Manager.Moveset == null ? null : Manager.Moveset.Actions; } }
+        public static BindingList<Script> Subroutines { get { return Manager.Moveset == null ? null : Manager.Moveset.SubRoutines; } }
+        public static BindingList<Script> CommonSubroutines { get { return Manager.CommonMoveset == null ? null : Manager.CommonMoveset.CommonSubRoutines; } }
+        
+        public static int CurrentSubactionIndex
+        {
+            get { return _currentSubaction == null ? -1 : _currentSubaction.ID; }
+            set
+            {
+                if (Subactions == null)
+                    return;
+                if (value >= 0 && value < Subactions.Count)
+                    CurrentSubaction = Subactions[value];
+            }
+        }
+        public static int CurrentActionIndex
+        {
+            get { return _currentAction == null ? -1 : _currentAction.ID; }
+            set
+            {
+                if (value >= 274)
+                {
+                    if (Actions == null)
+                        return;
+
+                    if (value < Actions.Count)
+                        CurrentAction = Actions[value];
+                }
+                else if (value >= 0)
+                {
+                    if (CommonActions == null)
+                        return;
+
+                    CurrentAction = CommonActions[value];
+                }
+            }
+        }
+        public static SubActionEntry CurrentSubaction
         {
             get { return _currentSubaction; }
             set
             {
+                if (_currentSubaction == value)
+                    return;
+
                 _currentSubaction = value;
 
                 //Reset all of the subaction-dependent variables
                 ResetSubactionVariables();
 
                 ScriptWindow.SubactionGroupChanged();
+
+                UpdateCharPos();
             }
         }
 
-        public static ActionGroup CurrentAction
+        public static ActionEntry PreviousAction
+        {
+            get { return _prevAction; }
+            set { _prevAction = value; }
+        }
+        public static ActionEntry CurrentAction
         {
             get { return _currentAction; }
             set
             {
+                _prevAction = _currentAction;
                 _currentAction = value;
                 ScriptWindow.ActionGroupChanged();
             }
         }
 
-        public static ActionScript CurrentSubRoutine
+        public static Script CurrentSubRoutine
         {
             get { return _currentSubRoutine; }
             set
@@ -166,14 +217,14 @@ namespace Ikarus
             }
         }
 
-        private static void LoadSubactionScripts()
+        public static void LoadSubactionScripts()
         {
-            foreach (ActionScript a in _runningScripts) 
+            foreach (Script a in _runningScripts) 
                 a.Reset(); 
 
             _runningScripts.Clear();
             if (CurrentSubaction != null)
-                foreach (ActionScript a in CurrentSubaction.Children) 
+                foreach (Script a in CurrentSubaction.GetScriptArray()) 
                 {
                     _runningScripts.Add(a); 
                     a.Reset();
@@ -182,23 +233,22 @@ namespace Ikarus
 
         public static void ResetSubactionVariables()
         {
-            //Reset TopN
-            MDL0BoneNode TopN = (FileManager.Moveset._data.boneRef1.Children[0] as MoveDefBoneIndexNode).BoneNode;
-            TopN._overrideTranslate = new Vector3();
-
-            //Reload scripts
             LoadSubactionScripts();
 
-            //Reset bone collisions and hurtbox type
-            foreach (MDL0BoneNode bone in ActionScript._boneCollisions)
+            foreach (MDL0BoneNode bone in Scriptor._boneCollisions)
                 bone._nodeColor = bone._boneColor = Color.Transparent;
-            ActionScript._boneCollisions = new List<MDL0BoneNode>();
-            ActionScript._hurtBoxType = 0;
+            Scriptor._boneCollisions = new List<MDL0BoneNode>();
+            Scriptor._hurtBoxType = 0;
+            _hitBoxes = new List<HitBox>();
+            _allowInterrupt = false;
 
             //Reset articles
             if (_articles != null)
                 foreach (ArticleInfo i in _articles)
                 {
+                    if (i == null)
+                        continue;
+
                     i.SubactionIndex = -1;
                     if (!i._etcModel)
                     {
@@ -218,82 +268,96 @@ namespace Ikarus
                 }
 
             //Reset model visiblity to its default state
-            if (MainWindow.TargetModel != null && MainWindow.TargetModel._objList != null && FileManager.Moveset != null)
+            if (MainWindow.TargetModel != null && MainWindow.TargetModel._objList != null && Manager.Moveset != null)
             {
-                MoveDefModelVisibilityNode node = FileManager.Moveset._data.mdlVisibility;
-                if (node.Children.Count != 0)
+                ModelVisibility node = Manager.Moveset.Data._modelVis;
+                if (node.Count != 0)
                 {
-                    MoveDefModelVisRefNode entry = node.Children[0] as MoveDefModelVisRefNode;
+                    ModelVisReference entry = node[0] as ModelVisReference;
 
                     //First, disable bones
-                    foreach (MoveDefBoneSwitchNode Switch in entry.Children)
-                        foreach (MoveDefModelVisGroupNode Group in Switch.Children)
-                            if (Group.Index != Switch.defaultGroup)
-                                foreach (MoveDefBoneIndexNode b in Group.Children)
+                    foreach (ModelVisBoneSwitch Switch in entry)
+                    {
+                        int i = 0;
+                        foreach (ModelVisGroup Group in Switch)
+                        {
+                            if (i != Switch._defaultGroup)
+                                foreach (BoneIndexValue b in Group._bones)
                                     if (b.BoneNode != null)
                                         foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
                                             p._render = false;
+                            i++;
+                        }
+                    }
 
                     //Now, enable bones
-                    foreach (MoveDefBoneSwitchNode Switch in entry.Children)
-                        foreach (MoveDefModelVisGroupNode Group in Switch.Children)
-                            if (Group.Index == Switch.defaultGroup)
-                                foreach (MoveDefBoneIndexNode b in Group.Children)
-                                    if (b.BoneNode != null)
-                                        foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
-                                            p._render = true;
+                    foreach (ModelVisBoneSwitch Switch in entry)
+                        if (Switch._defaultGroup >= 0 && Switch._defaultGroup < Switch.Count)
+                        {
+                            ModelVisGroup Group = Switch[Switch._defaultGroup];
+                            foreach (BoneIndexValue b in Group._bones)
+                                if (b.BoneNode != null)
+                                    foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
+                                        p._render = true;
+                        }
                 }
             }
         }
 
-        #region Frames
-
-        /// <summary>
-        /// Changes the code frame using a difference.
-        /// This will do nothing if the timer is running.
-        /// </summary>
-        public static void SetFrame(int frame)
+        public static void ResetCharPos()
         {
-            //if (frame > MainWindow.MaxFrame && MainWindow.MaxFrame > 0)
-            //    frame = ((frame - 1) % MainWindow.MaxFrame) + 1;
-
-            int difference = frame - MainWindow.CurrentFrame;
-            if (difference == 0)
-                return;
-
-            MainWindow.SetFrame(frame);
-
-            if (frame <= 1)
-                ResetSubactionVariables();
-
-            if (difference > 0)
-                for (int i = 0; i < difference; i++)
-                    IncrementFrame();
-            else
-            {
-                //We can't exactly go back frames, 
-                //so instead we'll reset the subaction and run it until the new index.
-
-                //ResetSubactionVariables();
-
-                UpdateScripts(frame);
-
-                foreach (ArticleInfo a in RunTime._articles)
-                    if (a.Running)
-                        a.SetFrame(frame);
-            }
+            if (Manager.Moveset == null || Manager.Moveset.Data == null) return;
+            MDL0BoneNode TopN = Manager.Moveset.Data._boneRef1[0].BoneNode;
+            TopN._overrideTranslate = new Vector3();
         }
 
-        /// <summary>
-        /// Progresses everything one frame forward.
-        /// </summary>
-        public static void IncrementFrame()
+        public static void UpdateCharPos()
         {
-            UpdateScripts(-1);
+            //This needs to happen every time the animation loops or the subaction is changed.
+            //For now emulation doesn't work and this just proves to be really tragic,
+            //so it's commented out
 
-            foreach (ArticleInfo a in RunTime._articles)
-                if (a.Running)
-                    a.ProgressFrame();
+            //MDL0BoneNode TopN = Manager.Moveset.Data._boneRef1[0].BoneNode;
+            //MDL0BoneNode TransN = Manager.Moveset.Data._misc._boneRefs[4].BoneNode;
+            //Vector3 v = TransN._frameMatrix.GetPoint();
+            //TopN._overrideTranslate = v;
+        }
+
+        #region Frames
+        public static void SetFrame(int frame)
+        {
+            if (frame == 1 && Loop && RunTime.CurrentSubaction != null && RunTime.CurrentSubaction.Flags.HasFlag(AnimationFlags.MovesCharacter))
+                UpdateCharPos();
+
+            //Set the animation frame
+            int oldFrame = CurrentFrame;
+            CurrentFrame = frame.Clamp(-1, MaxFrame - 1);
+            bool forward = oldFrame == frame - 1;
+
+            //Reset only if the on the first frame or the animation is going backward
+            if (frame <= 0 || (!_playing && !forward))
+                ResetSubactionVariables();
+
+            //The next two things work for editing, but are technically wrong for emulation.
+            //The animation and the scripts need to work seperately, meaning while the 
+            //emulation is playing, the animation may loop but the scripts
+            //progress forward always. At the moment if the animation loops, the scripts
+            //will be reset and also loop.
+
+            //Set the scripts to the current frame
+            UpdateScripts(frame);
+
+            //Update the article models
+            //Do this after applying the scripts!
+            //If going backwards, the current frame will be set by the script
+            //and the models can't be updated before that
+            if (RunTime._articles != null)
+                foreach (ArticleInfo a in RunTime._articles)
+                    if (a != null && a.Running)
+                        a.SetFrame(frame);
+
+            if (MainWindow._capture && _playing)
+                MainWindow.images.Add(MainWindow.ModelPanel.GrabScreenshot(false));
         }
 
         private static void UpdateScripts(int index)
@@ -301,56 +365,86 @@ namespace Ikarus
             //Update main model scripts first
             for (int i = 0; i < _runningScripts.Count; i++)
             {
-                ActionScript a = _runningScripts[i];
+                Script a = _runningScripts[i];
+                if (a._parentArticle != null)
+                    continue;
 
-                if (index == -1 && a._attachedArticleIndex < 0)
-                    a.FrameAdvance();
-                else if (index >= 0 && a._attachedArticleIndex < 0)
-                    a.SetFrame(index - 1);
+                a.SetFrame(index);
 
-                ScriptWindow.UpdateScriptEditor(a);
+                MainWindow.MovesetPanel.UpdateScriptEditor(a);
             }
             //Now update article scripts
             for (int i = 0; i < _runningScripts.Count; i++)
             {
-                ActionScript a = _runningScripts[i];
+                Script a = _runningScripts[i];
+                if (a._parentArticle == null)
+                    continue;
 
-                if (index == -1 && a._attachedArticleIndex >= 0)
-                    a.FrameAdvance();
-                else if (index >= 0 && a._attachedArticleIndex >= 0)
-                    a.SetFrame(index - _articles[a._attachedArticleIndex]._setAt);
-
-                ScriptWindow.UpdateScriptEditor(a);
+                a.SetFrame(index - _articles[a._parentArticle.Index]._setAt);
+                
+                MainWindow.MovesetPanel.UpdateScriptEditor(a);
             }
+            //Finally, run concurrent scripts
+            //They shouldn't have any wait times in them, 
+            //so setting to frame 0 should run everything
+            foreach (Script s in _concurrentLoopScripts.Values)
+                s.SetFrame(0);
         }
 
         #endregion
 
         #region Rendering
 
+        public static int CurrentFrame 
+        {
+            get { return _animFrame; }
+            set { _animFrame = value; MainWindow.ApplyFrame(); }
+        }
+
+        public static int MaxFrame { get { return _maxFrame; } set { _maxFrame = value; } }
+        public static bool Loop { get { return _loop; } set { _loop = value; } }
+        public static bool Playing { get { return _playing; } set { _playing = value; MainWindow.pnlPlayback.btnPlay.Text = _playing ? "Stop" : "Play"; } }
+
+        public static int _animFrame = -1, _maxFrame;
+        public static bool _loop, _playing;
+
         private static void RenderFrame(object sender, FrameEventArgs e)
         {
             if (!IsRunning)
                 return;
 
-            if (MainWindow.CurrentFrame == MainWindow.MaxFrame && !MainWindow.Loop)
-                if (_playingSounds.Count == 0)
+            if (CurrentFrame == MainWindow.MaxFrame - 1)
+            {
+                if (!MainWindow.Loop)
                 {
-                    //Stop and reset scripts
-                    Stop(); ResetSubactionVariables();
-                }
-                else
-                {
+                    if (_playingSounds.Count == 0)
+                    {
+                        Stop();
+                        //ResetSubactionVariables();
+                        //MainWindow.ModelPanel.Invalidate();
+                    }
+
                     //Wait for playing sounds to finish, but don't update the frame.
                 }
+                else
+                    SetFrame(0);
+            }
             else
-                SetFrame(MainWindow.CurrentFrame + 1);
+                SetFrame(CurrentFrame + 1);
 
             //Rendering text on the screen makes the FPS drop by nearly 20
             //So ironically, rendering the FPS on the screen slows the FPS
             //MainWindow.ModelPanel.ScreenText[String.Format("FPS: {0}", Math.Round(_timer.RenderFrequency, 3).ToString())] = new Vector3(5.0f, 10.0f, 0.5f);
 
             //Check if any sounds are done playing so they can be disposed of
+            DisposeSounds();
+        }
+
+        /// <summary>
+        /// Disposes of all sounds that are done playing.
+        /// </summary>
+        private static void DisposeSounds()
+        {
             if (_playingSounds.Count != 0)
             {
                 Dictionary<int, List<int>> keys = new Dictionary<int, List<int>>();
@@ -450,26 +544,14 @@ namespace Ikarus
             Keys.K | Keys.W | Keys.Up | Keys.Right | Keys.Left,
         };
 
-        
         private static void UpdateFrame(object sender, FrameEventArgs e)
         {
-            //foreach (ActionChangeInfo info in _actionChanges)
-            //{
-            //    if (info.Evaluate())
-            //    {
-            //        int i = info._newActionID;
-            //        if (i < 274)
-            //        {
-            //            if (FileManager.CommonMoveset != null && i < FileManager.CommonMoveset._actions.Children.Count)
-            //                CurrentAction = FileManager.CommonMoveset._actions.Children[i] as MoveDefActionGroupNode;
-            //        }
-            //        else
-            //        {
-            //            if (FileManager.Moveset != null && i < FileManager.Moveset._actions.Children.Count)
-            //                CurrentAction = FileManager.Moveset._actions.Children[i] as MoveDefActionGroupNode;
-            //        }
-            //    }
-            //}
+            foreach (ActionChangeInfo info in _actionChanges)
+                if (info._enabled && info.Evaluate())
+                    CurrentActionIndex = info._newID;
+            foreach (SubActionChangeInfo info in _subActionChanges)
+                if (info.Evaluate())
+                    CurrentSubactionIndex = info._newID;
 
             //Read controller input here
         }
@@ -560,13 +642,9 @@ namespace Ikarus
 
     public class RunTimeAccessor
     {
-        public int[][] BasicVars { get { return RunTime.BasicVars; } }
-        public float[][] FloatVars { get { return RunTime.FloatVars; } }
-        public bool[][] BitVars { get { return RunTime.BitVars; } }
-
         public RunTime.Location CharacterLocation { get { return RunTime._location; } set { RunTime._location = value; } }
 
-        public List<ActionScript> RunningScripts { get { return RunTime._runningScripts; } }
+        public List<Script> RunningScripts { get { return RunTime._runningScripts; } }
         
         public Dictionary<int, List<AudioInfo>> PlayingSounds { get { return RunTime._playingSounds; } }
         public ArticleInfo[] Articles { get { return RunTime._articles; } }

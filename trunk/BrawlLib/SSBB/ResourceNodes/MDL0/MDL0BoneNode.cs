@@ -533,8 +533,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         protected internal override void PostProcess(VoidPtr mdlAddress, VoidPtr dataAddress, StringTable stringTable)
         {
             MDL0Bone* header = (MDL0Bone*)dataAddress;
-            header->_mdl0Offset = (int)mdlAddress - (int)dataAddress;
-            header->_stringOffset = (int)stringTable[Name] + 4 - (int)dataAddress;
+            header->MDL0Address = mdlAddress;
+            header->ResourceStringAddress = stringTable[Name] + 4;
 
             _userEntries.PostProcess(dataAddress + 0xD0, stringTable);
         }

@@ -68,8 +68,15 @@ namespace BrawlLib.Imaging
 
         public override string ToString()
         {
-            //return String.Format("A:{0:X2} R:{1:X2} G:{2:X2} B:{3:X2}", A, R, G, B);
             return String.Format("A:{0} R:{1} G:{2} B:{3}", A, R, G, B);
+        }
+        public string ToHexString()
+        {
+            return String.Format("A:{0:X2} R:{1:X2} G:{2:X2} B:{3:X2}", A, R, G, B);
+        }
+        public string ToPaddedString()
+        {
+            return String.Format("A:{0,3} R:{1,3} G:{2,3} B:{3,3}", A, R, G, B);
         }
         public override int GetHashCode() { return (int)this; }
         public override bool Equals(object obj)

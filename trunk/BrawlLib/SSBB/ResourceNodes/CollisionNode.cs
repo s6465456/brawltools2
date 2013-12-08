@@ -80,13 +80,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                     //Get left point index, and encode where necessary
                     if ((link = current._linkLeft)._encodeIndex == -1)
-                        pPoint[link._encodeIndex = lind = iPoint++] = link._value;
+                        pPoint[link._encodeIndex = lind = iPoint++] = link._rawValue;
                     else
                         lind = link._encodeIndex;
 
                     //Get right point index and encode. 
                     if ((link = current._linkRight)._encodeIndex == -1)
-                        pPoint[link._encodeIndex = rind = iPoint++] = link._value;
+                        pPoint[link._encodeIndex = rind = iPoint++] = link._rawValue;
                     else
                         rind = link._encodeIndex;
 
@@ -278,22 +278,22 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_render)
                 return;
 
-            bool t = !_flags[1] && _linkedBone != null;
-            if (t)
-            {
-                //Apply bone transform
-                GL.PushMatrix();
-                fixed (Matrix* m = &_linkedBone._frameMatrix)
-                    GL.MultMatrix((float*)m);
-            }
+            //bool t = !_flags[1] && _linkedBone != null;
+            //if (t)
+            //{
+            //    //Apply bone transform
+            //    GL.PushMatrix();
+            //    fixed (Matrix* m = &_linkedBone._frameMatrix)
+            //        GL.MultMatrix((float*)m);
+            //}
 
             foreach (CollisionPlane p in _planes)
                 p.DrawPlanes();
             foreach (CollisionLink l in _points)
                 l.Render(ctx);
 
-            if (t)
-                GL.PopMatrix();
+            //if (t)
+            //    GL.PopMatrix();
         }
 
         public override string ToString()
@@ -311,18 +311,47 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int _encodeIndex;
         public bool _highlight;
 
-        public Vector2 _value;
+        public Vector2 _rawValue;
+        public Vector2 Value 
+        {
+            get
+            {
+                if (_parent == null || _parent.LinkedBone == null)
+                    return _rawValue;
+
+                Vector3 point = _parent.LinkedBone.Matrix.GetPoint();
+                Vector3 scale = _parent.LinkedBone.Matrix.GetScale();
+                return _rawValue * new Vector2(scale._x, scale._y) + new Vector2(point._x, point._y);
+            }
+            set
+            {
+                if (_parent == null || _parent.LinkedBone == null)
+                {
+                    _rawValue = value;
+                    return;
+                }
+
+                //Vector3 point = _parent.LinkedBone.InverseMatrix.GetPoint();
+                //Vector3 scale = _parent.LinkedBone.InverseMatrix.GetScale();
+                //_rawValue = value * new Vector2(scale._x, scale._y) + new Vector2(point._x, point._y);
+
+                Vector3 point = _parent.LinkedBone.Matrix.GetPoint();
+                Vector3 scale = _parent.LinkedBone.Matrix.GetScale();
+                _rawValue = (value - new Vector2(point._x, point._y)) / new Vector2(scale._x, scale._y);
+            }
+        }
+        
         public List<CollisionPlane> _members = new List<CollisionPlane>();
 
         public CollisionLink() { }
         public CollisionLink(CollisionObject parent, Vector2 value)
         {
             _parent = parent;
-            _value = value;
+            _rawValue = value;
             _parent._points.Add(this);
         }
 
-        public CollisionLink Clone() { return new CollisionLink(_parent, _value); }
+        public CollisionLink Clone() { return new CollisionLink(_parent, _rawValue); }
 
         //internal CollisionLink Splinter()
         //{
@@ -449,9 +478,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
+            Vector2 v = Value;
+
             ctx.DrawBox(
-                new Vector3(_value._x - BoxRadius, _value._y - BoxRadius, LineWidth),
-                new Vector3(_value._x + BoxRadius, _value._y + BoxRadius, -LineWidth));
+                new Vector3(v._x - BoxRadius, v._y - BoxRadius, LineWidth),
+                new Vector3(v._x + BoxRadius, v._y + BoxRadius, -LineWidth));
         }
     }
 
@@ -533,13 +564,13 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public Vector2 PointLeft
         {
-            get { return _linkLeft._value; }
-            set { _linkLeft._value = value; }
+            get { return _linkLeft.Value; }
+            //set { _linkLeft.Value = value; }
         }
         public Vector2 PointRight
         {
-            get { return _linkRight._value; }
-            set { _linkRight._value = value; }
+            get { return _linkRight.Value; }
+            //set { _linkRight.Value = value; }
         }
         public CollisionLink LinkLeft
         {
@@ -616,6 +647,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (!_render)
                 return;
 
+            Vector2 l = _linkLeft.Value;
+            Vector2 r = _linkRight.Value;
+
             int lev = 0;
             if (_linkLeft._highlight)
                 lev++;
@@ -631,10 +665,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             GL.Begin(BeginMode.Quads);
 
-            GL.Vertex3(_linkLeft._value._x, _linkLeft._value._y, 10.0f);
-            GL.Vertex3(_linkLeft._value._x, _linkLeft._value._y, -10.0f);
-            GL.Vertex3(_linkRight._value._x, _linkRight._value._y, -10.0f);
-            GL.Vertex3(_linkRight._value._x, _linkRight._value._y, 10.0f);
+            GL.Vertex3(l._x, l._y, 10.0f);
+            GL.Vertex3(l._x, l._y, -10.0f);
+            GL.Vertex3(r._x, r._y, -10.0f);
+            GL.Vertex3(r._x, r._y, 10.0f);
 
             GL.End();
 
@@ -647,10 +681,10 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             GL.Begin(BeginMode.Lines);
 
-            GL.Vertex3(_linkLeft._value._x, _linkLeft._value._y, 10.0f);
-            GL.Vertex3(_linkRight._value._x, _linkRight._value._y, 10.0f);
-            GL.Vertex3(_linkLeft._value._x, _linkLeft._value._y, -10.0f);
-            GL.Vertex3(_linkRight._value._x, _linkRight._value._y, -10.0f);
+            GL.Vertex3(l._x, l._y, 10.0f);
+            GL.Vertex3(r._x, r._y, 10.0f);
+            GL.Vertex3(l._x, l._y, -10.0f);
+            GL.Vertex3(r._x, r._y, -10.0f);
 
             GL.End();
         }

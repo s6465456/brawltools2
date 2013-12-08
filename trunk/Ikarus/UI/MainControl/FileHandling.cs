@@ -109,7 +109,7 @@ namespace Ikarus.UI
                 if (TargetModel != null)
                     TargetModel.ApplyCHR(null, 0);
                 ResetBoneColors();
-                return CloseExternal() && rightPanel.pnlMoveset.CloseReferences();
+                return CloseExternal() && scriptPanel.scriptPanel.CloseReferences();
             }
             catch { return true; }
         }

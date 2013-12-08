@@ -23,16 +23,6 @@ namespace BrawlLib.SSBB.ResourceNodes
             NBT3 = 2, // one index per each of N/B/T
         }
 
-        //#if DEBUG
-        //[Category("Normal Data")]
-        //public int TotalLen { get { return hdr._dataLen; } }
-        //[Category("Normal Data")]
-        //public int MDL0Offset { get { return hdr._mdl0Offset; } }
-        //[Category("Normal Data")]
-        //public int DataOffset { get { return hdr._dataOffset; } }
-        //[Category("Normal Data")]
-        //public int StringOffset { get { return hdr._stringOffset; } }
-        //#endif
         [Category("Normal Data")]
         public int ID { get { return hdr._index; } }
         [Category("Normal Data")]

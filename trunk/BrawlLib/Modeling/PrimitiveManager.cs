@@ -508,7 +508,7 @@ namespace BrawlLib.Modeling
                 if (poly.Model._isImport)
                 {
                     if (g._tristrips.Count != 0)
-                        foreach (Tristrip tri in g._tristrips)
+                        foreach (FacepointTristrip tri in g._tristrips)
                         {
                             *(PrimitiveHeader*)address = new PrimitiveHeader() { Type = WiiPrimitiveType.TriangleStrip, Entries = (ushort)tri._points.Count };
                             address += 3;
@@ -520,7 +520,7 @@ namespace BrawlLib.Modeling
                     {
                         *(PrimitiveHeader*)address = new PrimitiveHeader() { Type = WiiPrimitiveType.Triangles, Entries = (ushort)(g._triangles.Count * 3) };
                         address += 3;
-                        foreach (Triangle tri in g._triangles)
+                        foreach (FacepointTriangle tri in g._triangles)
                         {
                             WriteFacepoint(tri._x, g, desc, ref address, poly);
                             WriteFacepoint(tri._y, g, desc, ref address, poly);
@@ -603,15 +603,13 @@ namespace BrawlLib.Modeling
                                 address = addr;
                                 break;
                             case XFDataFormat.Index8:
-                                if ((_polygon._c0Changed && d._attr == GXAttribute.Color0 && _polygon._colorSet[0] != null) ||
-                                    (_polygon._c1Changed && d._attr == GXAttribute.Color1 && _polygon._colorSet[1] != null))
+                                if (_polygon._colorChanged[(int)d._attr - (int)GXAttribute.Color0] && _polygon._colorSet[(int)d._attr - (int)GXAttribute.Color0] != null)
                                     *(byte*)address++ = 0;
                                 else
                                     *(byte*)address++ = (byte)f._colorIndices[(int)d._attr - 11];
                                 break;
                             case XFDataFormat.Index16:
-                                if ((_polygon._c0Changed && d._attr == GXAttribute.Color0 && _polygon._colorSet[0] != null) ||
-                                    (_polygon._c1Changed && d._attr == GXAttribute.Color1 && _polygon._colorSet[1] != null))
+                                if (_polygon._colorChanged[(int)d._attr - (int)GXAttribute.Color0] && _polygon._colorSet[(int)d._attr - (int)GXAttribute.Color0] != null)
                                     *(bushort*)address = 0;
                                 else
                                     *(bushort*)address = (ushort)f._colorIndices[(int)d._attr - 11];
@@ -697,11 +695,14 @@ namespace BrawlLib.Modeling
                 obj._fpStride += fmt == XFDataFormat.Direct ? linker._normals[obj._elementIndices[1]]._dstStride : (int)fmt - 1;
             }
             for (int i = 2; i < 4; i++)
-                if (indices[i] > -1 && _faceData[i] != null) //Colors
+                if (indices[i] > -1 && (_faceData[i] != null || obj._colorChanged[i - 2])) //Colors
                 {
                     obj._arrayFlags.SetHasColor(i - 2, true);
 
-                    fmt = (forceDirect != null && forceDirect.Length > i && forceDirect[i] == true) ? XFDataFormat.Direct : (XFDataFormat)(GetColors(i - 2, false).Length > byte.MaxValue ? 3 : 2);
+                    if (obj._colorChanged[i - 2])
+                        fmt = XFDataFormat.Index8;
+                    else
+                        fmt = (forceDirect != null && forceDirect.Length > i && forceDirect[i] == true) ? XFDataFormat.Direct : (XFDataFormat)(GetColors(i - 2, false).Length > byte.MaxValue ? 3 : 2);
 
                     list.Add(new FacepointAttribute((GXAttribute)(i + 9), fmt));
                     obj._fpStride += fmt == XFDataFormat.Direct ? linker._colors[obj._elementIndices[i]]._dstStride : (int)fmt - 1;
@@ -1115,7 +1116,7 @@ namespace BrawlLib.Modeling
                         for (int i = 0; i < _pointCount; i++)
                             if (_vertices.Count != 0)
                             {
-                                Facepoint f = _facepoints[i] = new Facepoint();
+                                Facepoint f = _facepoints[i] = new Facepoint() { _index = i };
                                 f._vertexIndex = *pIndex++;
                                 if (f._vertexIndex < _vertices.Count && f._vertexIndex >= 0)
                                     f._vertex = _vertices[f._vertexIndex];

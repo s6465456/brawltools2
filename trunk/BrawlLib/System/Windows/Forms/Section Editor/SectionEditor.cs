@@ -58,7 +58,7 @@ namespace System.Windows.Forms
                 //    _nameReloc = r._nameReloc;
             }
 
-            panel5.Enabled = (_section.Root as ModuleNode).AppliedModule != null;
+            panel5.Enabled = true;
         }
 
         //This editor serves as a temporary dynamic section.
@@ -261,10 +261,13 @@ namespace System.Windows.Forms
             if (_section.HasCode && ppcDisassembler1.Visible && TargetRelocation != null && !ppcDisassembler1._updating)
             {
                 int i = ppcDisassembler1._relocations.IndexOf(TargetRelocation);
-                ppcDisassembler1.grdDisassembler.ClearSelection();
-                ppcDisassembler1.grdDisassembler.Rows[i].Selected = true;
-                ppcDisassembler1.grdDisassembler.FirstDisplayedScrollingRowIndex = i;
-                //ppcDisassembler1.grdDisassembler.CurrentCell = ppcDisassembler1.grdDisassembler.Rows[i].Cells[0];
+                if (i >= 0)
+                {
+                    ppcDisassembler1.grdDisassembler.ClearSelection();
+                    ppcDisassembler1.grdDisassembler.Rows[i].Selected = true;
+                    ppcDisassembler1.grdDisassembler.FirstDisplayedScrollingRowIndex = i;
+                    //ppcDisassembler1.grdDisassembler.CurrentCell = ppcDisassembler1.grdDisassembler.Rows[i].Cells[0];
+                }
             }
 
             _updating = false;
@@ -776,7 +779,7 @@ namespace System.Windows.Forms
                 {
                     RELNode r = _section.Root as RELNode;
 
-                    if (r._prologReloc != _prologReloc)
+                    if (r._prologReloc != _prologReloc && _prologReloc != null)
                     {
                         if (r._prologReloc != null)
                             r._prologReloc._prolog = false;
@@ -785,7 +788,7 @@ namespace System.Windows.Forms
                         r.SignalPropertyChange();
                     }
 
-                    if (r._epilogReloc != _epilogReloc)
+                    if (r._epilogReloc != _epilogReloc && _epilogReloc != null)
                     {
                         if (r._epilogReloc != null)
                             r._epilogReloc._epilog = false;
@@ -794,7 +797,7 @@ namespace System.Windows.Forms
                         r.SignalPropertyChange();
                     }
 
-                    if (r._unresReloc != _unresReloc)
+                    if (r._unresReloc != _unresReloc && _unresReloc != null)
                     {
                         if (r._unresReloc != null)
                             r._unresReloc._unresolved = false;
@@ -837,15 +840,9 @@ namespace System.Windows.Forms
                     _section._relocations = temp2;
                     _section._firstCommand = _firstCommand;
 
-                    RELNode a = (_section.Root as ModuleNode).AppliedModule;
+                    ResourceNode a = _section.Root;
                     if (a != null && a != _section.Root)
-                    {
-                        foreach (RELImportNode s in a.Children[1].Children)
-                            if (s.ModuleID == (_section.Root as ModuleNode).ID)
-                                s.GenerateCommandList((_section.Root as RELNode));
-
                         a.SignalPropertyChange();
-                    }
                 }
 
                 hexBox1.Invalidate();

@@ -842,11 +842,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             _replSrc.Close();
             _replUncompSrc.Close();
             _replSrc = _replUncompSrc = new DataSource(uncompMap.Address, size);
-
-            _changed = false;
             _replSrc.Map = _replUncompSrc.Map = uncompMap;
 
+            IsDirty = false;
             _reopen = true;
+            _isImport = false;
         }
 
         public override int OnCalculateSize(bool force)

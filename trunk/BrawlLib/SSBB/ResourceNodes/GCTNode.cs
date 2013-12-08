@@ -186,7 +186,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                                     break;
 
                                 string[] lines = lastLine.Split(' ');
-                                if (lines.Length != 2)
+                                if (lines.Length < 2)
                                     break;
 
                                 uint val1, val2;
@@ -252,13 +252,15 @@ namespace BrawlLib.SSBB.ResourceNodes
 
                 GCTNode g = new GCTNode();
 
+                List<string> _unrecognized = new List<string>();
+
                 foreach (CodeStorage c in Properties.Settings.Default.Codes)
                 {
                     int index = -1;
                     if ((index = s.IndexOf(c._code)) >= 0)
                     {
                         g.AddChild(new GCTCodeEntryNode() { _name = c._name, _description = c._description, LinesNoSpaces = s.Substring(index, c._code.Length) });
-                        s.Remove(index, c._code.Length);
+                        s = s.Remove(index, c._code.Length);
                     }
                 }
 
@@ -317,10 +319,10 @@ namespace BrawlLib.SSBB.ResourceNodes
             }
             set
             {
-                int x = value.Length / 8;
+                int x = value.Length / 16;
                 _lines = new GCTCodeLine[x];
                 for (int i = 0; i < x; i++)
-                    _lines[i] = GCTCodeLine.FromStringNoSpace(value.Substring(i * 8, 8));
+                    _lines[i] = GCTCodeLine.FromStringNoSpace(value.Substring(i * 16, 16));
             }
         }
 
@@ -402,7 +404,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public static GCTCodeLine FromStringNoSpace(string s)
         {
-            return new GCTCodeLine(Convert.ToUInt32(s.Substring(0, 4), 16), Convert.ToUInt32(s.Substring(4, 4), 16));
+            return new GCTCodeLine(Convert.ToUInt32(s.Substring(0, 8), 16), Convert.ToUInt32(s.Substring(8, 8), 16));
         }
     }
 

@@ -18,9 +18,9 @@ namespace BrawlLib
             "TEX0 Texture (*.tex0)|*.tex0";
 
         public static string MDL0Import =
-            "All Model Formats (*.mdl0, *.dae)|*.mdl0;*.dae|" +
+            "All Model Formats (*.mdl0, *.pmd, *.dae)|*.mdl0;*.pmd;*.dae|" +
             "Collada Scene (*.dae)|*.dae|" +
-            //"MMD Model (*.pmd)|*.pmd|" +
+            "MMD Model (*.pmd)|*.pmd|" +
             "MDL0 Model (*.mdl0)|*.mdl0";
         
         public static string MDL0Export =
@@ -32,7 +32,6 @@ namespace BrawlLib
             "All Formats (*.chr0, *.anim)|*.chr0;*.anim|" +
             "CHR0 Animation (*.chr0)|*.chr0|" +
             "Maya Animation (*.anim)|*.anim";
-            //"Collada Scene (*.dae)|*.dae";
 
         public static string PLT0 =
             "PLT0 Palette (*.plt0)|*.plt0";
@@ -44,7 +43,7 @@ namespace BrawlLib
             "MSBin Message List (*.msbin)|*.msbin";
 
         public static string BRES =
-            "BRResource Pack (*.brres)|*.brres";
+            "BRResource Pack (*.brres, *.brtex, *.brmdl, *.branm)|*.brres;*.brtex*.brmdl*.branm";
 
         public static string RSTM =
             "All Audio Formats (*.brstm, *.wav)|*.brstm;*.wav|" +

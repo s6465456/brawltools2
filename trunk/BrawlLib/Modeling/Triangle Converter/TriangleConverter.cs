@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace BrawlLib.Modeling
 {
     class TriangleConverter
     {
         public static bool UseTristrips = false;
-        public static List<PrimitiveGroup> GroupPrimitives(List<Triangle> t)
+        public static List<PrimitiveGroup> GroupPrimitives(List<FacepointTriangle> t)
         {
             List<PrimitiveGroup> groups = new List<PrimitiveGroup>();
 
-            List<Triangle> triangles = new List<Triangle>();
-            foreach (Triangle x in t)
+            List<FacepointTriangle> triangles = new List<FacepointTriangle>();
+            foreach (FacepointTriangle x in t)
                 triangles.Add(x);
 
             PrimitiveGroup group = new PrimitiveGroup();
@@ -23,13 +23,13 @@ namespace BrawlLib.Modeling
             PrimitiveGroup grp = new PrimitiveGroup();
             if (UseTristrips)
             {
-                List<Tristrip> strips = new List<Tristrip>();
+                List<FacepointTristrip> strips = new List<FacepointTristrip>();
 
             Top:
-                Tristrip strip = new Tristrip();
+                FacepointTristrip strip = new FacepointTristrip();
                 for (int x = 0; x < triangles.Count; x++)
                 {
-                    Triangle current = triangles[x];
+                    FacepointTriangle current = triangles[x];
                     if (Recursive(ref strip, ref triangles, current, true))
                     {
                         strips.Add(strip);
@@ -68,7 +68,7 @@ namespace BrawlLib.Modeling
             }
 
             //Now group triangles
-            NewGroup = false;
+            //NewGroup = false;
             if (groups.Count > 0)
                 grp = groups[0];
             else
@@ -104,13 +104,13 @@ namespace BrawlLib.Modeling
             return groups;
         }
 
-        public static bool Recursive(ref Tristrip strip, ref List<Triangle> triangles, Triangle current, bool first)
+        public static bool Recursive(ref FacepointTristrip strip, ref List<FacepointTriangle> triangles, FacepointTriangle current, bool first)
         {
             Facepoint one = current._y;
             Facepoint two = current._z;
             for (int x = 0; x < triangles.Count; x++)
             {
-                Triangle compare = triangles[x];
+                FacepointTriangle compare = triangles[x];
                 for (int i = 0; i < 3; i++)
                 {
                     if (compare._x._vertex.Equals(two._vertex) &&

@@ -12,27 +12,11 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MDL0VertexNode : MDL0EntryNode
     {
         internal MDL0VertexData* Header { get { return (MDL0VertexData*)WorkingUncompressed.Address; } }
-        //protected override int DataLength { get { return Header->_dataLen; } }
-
         public MDL0ObjectNode[] Objects { get { return _objects.ToArray(); } }
         public List<MDL0ObjectNode> _objects = new List<MDL0ObjectNode>();
 
         MDL0VertexData hdr = new MDL0VertexData();
 
-        //#if DEBUG
-        //[Category("Vertex Data")]
-        //public int TotalLen { get { return hdr._dataLen; } }
-        //[Category("Vertex Data")]
-        //public int MDL0Offset { get { return hdr._mdl0Offset; } }
-        //[Category("Vertex Data")]
-        //public int DataOffset { get { return hdr._dataOffset; } }
-        //[Category("Vertex Data")]
-        //public int StringOffset { get { return hdr._stringOffset; } }
-        //[Category("Vertex Data")]
-        //public int Pad1 { get { return hdr._pad1; } }
-        //[Category("Vertex Data")]
-        //public int Pad2 { get { return hdr._pad2; } }
-        //#endif
         [Category("Vertex Data")]
         public int ID { get { return hdr._index; } }
         [Category("Vertex Data")]

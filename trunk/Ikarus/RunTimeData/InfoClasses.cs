@@ -15,8 +15,11 @@ namespace Ikarus
     /// </summary>
     public class ArticleInfo
     {
+        //Articles are like models with their own mini-movesets.
+        //There are a lot of things here that are copied directly from the main window
+
         [Browsable(false)]
-        public MoveDefArticleNode _article;
+        public ArticleEntry _article;
         [Browsable(false)]
         public MDL0Node _model;
         [Browsable(false)]
@@ -32,7 +35,7 @@ namespace Ikarus
         [Browsable(false)]
         public List<CLR0Node> _clr0List;
 
-        public int _animFrame = 1, _maxFrame, _setAt;
+        public int _animFrame = 0, _maxFrame, _setAt;
 
         public CHR0Node _chr0;
         public SRT0Node _srt0;
@@ -41,9 +44,9 @@ namespace Ikarus
         public VIS0Node _vis0;
         public CLR0Node _clr0;
 
-        public SubActionGroup _currentSubaction = null;
-        public ActionGroup _currentAction = null;
-        public SubActionGroup CurrentSubaction
+        public SubActionEntry _currentSubaction = null;
+        public ActionEntry _currentAction = null;
+        public SubActionEntry CurrentSubaction
         {
             get { return _currentSubaction; }
             set
@@ -55,13 +58,10 @@ namespace Ikarus
             }
         }
 
-        public ActionGroup CurrentAction
+        public ActionEntry CurrentAction
         {
             get { return _currentAction; }
-            set
-            {
-                _currentAction = value;
-            }
+            set { _currentAction = value; }
         }
 
         private void LoadSubactionScripts()
@@ -69,13 +69,16 @@ namespace Ikarus
             if (CurrentSubaction != null)
             {
                 for (int i = 0; i < RunTime._runningScripts.Count; i++)
-                    if (RunTime._runningScripts[i]._attachedArticleIndex >= 0)
+                    if (RunTime._runningScripts[i]._parentArticle != null)
                         RunTime._runningScripts.RemoveAt(i);
                 
-                foreach (ActionScript a in CurrentSubaction.Children)
+                foreach (Script a in CurrentSubaction.GetScriptArray())
                 {
-                    RunTime._runningScripts.Add(a);
-                    a.Reset();
+                    if (a != null)
+                    {
+                        RunTime._runningScripts.Add(a);
+                        a.Reset();
+                    }
                 }
             }
         }
@@ -88,28 +91,36 @@ namespace Ikarus
             //Reset model visiblity to its default state
             if (_model != null && _model._objList != null && _article._mdlVis != null)
             {
-                MoveDefModelVisibilityNode node = _article._mdlVis;
-                if (node.Children.Count != 0)
+                ModelVisibility node = _article._mdlVis;
+                if (node.Count != 0)
                 {
-                    MoveDefModelVisRefNode entry = node.Children[0] as MoveDefModelVisRefNode;
+                    ModelVisReference entry = node[0];
 
                     //First, disable bones
-                    foreach (MoveDefBoneSwitchNode Switch in entry.Children)
-                        foreach (MoveDefModelVisGroupNode Group in Switch.Children)
-                            if (Group.Index != Switch.defaultGroup)
-                                foreach (MoveDefBoneIndexNode b in Group.Children)
+                    foreach (ModelVisBoneSwitch Switch in entry)
+                    {
+                        int i = 0;
+                        foreach (ModelVisGroup Group in Switch)
+                        {
+                            if (i != Switch._defaultGroup)
+                                foreach (BoneIndexValue b in Group._bones)
                                     if (b.BoneNode != null)
                                         foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
                                             p._render = false;
+                            i++;
+                        }
+                    }
 
                     //Now, enable bones
-                    foreach (MoveDefBoneSwitchNode Switch in entry.Children)
-                        foreach (MoveDefModelVisGroupNode Group in Switch.Children)
-                            if (Group.Index == Switch.defaultGroup)
-                                foreach (MoveDefBoneIndexNode b in Group.Children)
-                                    if (b.BoneNode != null)
-                                        foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
-                                            p._render = true;
+                    foreach (ModelVisBoneSwitch Switch in entry)
+                        if (Switch._defaultGroup >= 0 && Switch._defaultGroup < Switch.Count)
+                        {
+                            ModelVisGroup Group = Switch[Switch._defaultGroup];
+                            foreach (BoneIndexValue b in Group._bones)
+                                if (b.BoneNode != null)
+                                    foreach (MDL0ObjectNode p in b.BoneNode._manPolys)
+                                        p._render = true;
+                        }
                 }
             }
         }
@@ -123,7 +134,6 @@ namespace Ikarus
             set
             {
                 _animFrame = value;
-
                 UpdateModel();
             }
         }
@@ -135,7 +145,7 @@ namespace Ikarus
 
         public void SetFrame(int index)
         {
-            CurrentFrame = (index + 1 - _setAt);
+            CurrentFrame = index - _setAt;
         }
 
         private AnimationNode GetAnim(AnimationNode[] arr, string name)
@@ -152,9 +162,9 @@ namespace Ikarus
             get { return _subaction; } 
             set
             {
-                if ((_subaction = value) >= 0 && _article._subActions != null && _subaction < _article._subActions.Children.Count)
+                if ((_subaction = value) >= 0 && _article._subActions != null && _subaction < _article._subActions.Count)
                 {
-                    CurrentSubaction = _article._subActions.Children[_subaction] as SubActionGroup;
+                    CurrentSubaction = _article._subActions[_subaction] as SubActionEntry;
                     if (CurrentSubaction != null)
                     {
                         _chr0 = GetAnim(_chr0List.ToArray<AnimationNode>(), CurrentSubaction.Name) as CHR0Node;
@@ -171,7 +181,11 @@ namespace Ikarus
             }
         }
 
-        public bool Running { get { return _running; } set { _running = value; } }
+        public bool Running 
+        {
+            get { return _running; } 
+            set { _running = value; }
+        }
         public bool ModelVisible { get { return _model == null ? false : _model._visible; } set { if (_model == null) return; _model._visible = value; } }
 
         public void UpdateModel()
@@ -182,30 +196,30 @@ namespace Ikarus
             MainControl ctrl = MainForm.Instance._mainControl;
 
             if (_chr0 != null && !(ctrl.TargetAnimType != AnimType.CHR && !ctrl.playCHR0ToolStripMenuItem.Checked) && _subaction >= 0)
-                _model.ApplyCHR(_chr0, _animFrame);
+                _model.ApplyCHR(_chr0, _animFrame + 1);
             else
                 _model.ApplyCHR(null, 0);
             if (_srt0 != null && !(ctrl.TargetAnimType != AnimType.SRT && !ctrl.playSRT0ToolStripMenuItem.Checked))
-                _model.ApplySRT(_srt0, _animFrame);
+                _model.ApplySRT(_srt0, _animFrame + 1);
             else
                 _model.ApplySRT(null, 0);
             if (_shp0 != null && !(ctrl.TargetAnimType != AnimType.SHP && !ctrl.playSHP0ToolStripMenuItem.Checked))
-                _model.ApplySHP(_shp0, _animFrame);
+                _model.ApplySHP(_shp0, _animFrame + 1);
             else
                 _model.ApplySHP(null, 0);
             if (_pat0 != null && !(ctrl.TargetAnimType != AnimType.PAT && !ctrl.playPAT0ToolStripMenuItem.Checked))
-                _model.ApplyPAT(_pat0, _animFrame);
+                _model.ApplyPAT(_pat0, _animFrame + 1);
             else
                 _model.ApplyPAT(null, 0);
             if (_vis0 != null && !(ctrl.TargetAnimType != AnimType.VIS && !ctrl.playVIS0ToolStripMenuItem.Checked))
-                _model.ApplyVIS(_vis0, _animFrame);
+                _model.ApplyVIS(_vis0, _animFrame + 1);
             if (_clr0 != null && !(ctrl.TargetAnimType != AnimType.CLR && !ctrl.playCLR0ToolStripMenuItem.Checked))
-                _model.ApplyCLR(_clr0, _animFrame);
+                _model.ApplyCLR(_clr0, _animFrame + 1);
             else
                 _model.ApplyCLR(null, 0);
         }
 
-        public ArticleInfo(MoveDefArticleNode article, MDL0Node model, bool running)
+        public ArticleInfo(ArticleEntry article, MDL0Node model, bool running)
         {
             _article = article;
             _model = model;
@@ -219,6 +233,11 @@ namespace Ikarus
             _clr0List = new List<CLR0Node>();
 
             _article._info = this;
+        }
+
+        public override string ToString()
+        {
+            return String.Format("[{0}] {1}", _article.Index, _model == null ? "Article" : _model.Name);
         }
     }
 
@@ -239,8 +258,13 @@ namespace Ikarus
 
     public class RequirementInfo
     {
-        public uint _requirement;
-        public List<MoveDefEventParameterNode> _values = new List<MoveDefEventParameterNode>();
+        public RequirementInfo(int req)
+        {
+            _requirement = req;
+        }
+
+        public int _requirement;
+        public List<Parameter> _values = new List<Parameter>();
     }
 
     /// <summary>
@@ -275,7 +299,7 @@ namespace Ikarus
                 bool failed = false;
                 foreach (RequirementInfo req in list)
                 {
-                    bool isTrue = ActionScript.ApplyRequirement(req);
+                    bool isTrue = Scriptor.ApplyRequirement(req);
                     if (!isTrue)
                     {
                         failed = true;
@@ -297,9 +321,13 @@ namespace Ikarus
         public bool _enabled = true;
         public bool _prioritized = true;
         public uint _statusID; //Used to enable 
-        public int _newActionID = 0;
-        
+        public int _newID = 0;
         public List<RequirementInfo> _requirements;
+
+        public ActionChangeInfo(int newID)
+        {
+            _newID = newID;
+        }
 
         public bool Evaluate()
         {
@@ -307,10 +335,47 @@ namespace Ikarus
                 return false;
 
             foreach (RequirementInfo i in _requirements)
-                if (!ActionScript.ApplyRequirement(i))
+                if (!Scriptor.ApplyRequirement(i))
                     return false;
 
             return true;
+        }
+    }
+
+    public class SubActionChangeInfo
+    {
+        public int _newID = 0;
+        public List<RequirementInfo> _requirements;
+        public bool _passFrame;
+
+        public SubActionChangeInfo(int newID, bool passFrame)
+        {
+            _newID = newID;
+            _passFrame = passFrame;
+        }
+
+        public bool Evaluate()
+        {
+            foreach (RequirementInfo i in _requirements)
+                if (!Scriptor.ApplyRequirement(i))
+                    return false;
+
+            return true;
+        }
+    }
+
+    public class ScriptOffsetInfo
+    {
+        public ListValue list;
+        public TypeValue type;
+        public int index;
+
+        public ScriptOffsetInfo() { list = ListValue.Null; type = TypeValue.None; index = -1; }
+        public ScriptOffsetInfo(ListValue l, TypeValue t, int i)
+        {
+            list = l;
+            type = t;
+            index = i;
         }
     }
 }

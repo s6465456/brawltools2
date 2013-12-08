@@ -33,6 +33,26 @@ namespace BrawlBox
 
         RecentFileHandler RecentFileHandler;
 
+        private InterpolationForm _interpolationForm = null;
+        public InterpolationForm InterpolationForm
+        {
+            get
+            {
+                if (_interpolationForm == null)
+                {
+                    _interpolationForm = new InterpolationForm(null);
+                    _interpolationForm.FormClosed += _interpolationForm_FormClosed;
+                    _interpolationForm.Show();
+                }
+                return _interpolationForm;
+            }
+        }
+
+        void _interpolationForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _interpolationForm = null;
+        }
+
         public MainForm()
         {
             InitializeComponent();
@@ -338,7 +358,7 @@ namespace BrawlBox
         private static string _inFilter =
         "PAC File Archive|*.pac"
         +"|PCS Compressed File Archive|*.pcs"
-        +"|Resource Package|*.brres;*.brtex;*.brmdl"
+        +"|Binary Revolution Resource|*.brres;*.brtex;*.brmdl;*.branm"
         +"|Palette|*.plt0"
         +"|Texture|*.tex0"
         +"|TPL Texture Archive|*.tpl"

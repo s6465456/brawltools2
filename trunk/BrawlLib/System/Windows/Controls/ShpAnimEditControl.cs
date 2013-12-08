@@ -219,10 +219,13 @@ namespace System.Windows.Forms
             // numScale
             // 
             this.numScale.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.numScale.Integral = false;
             this.numScale.Location = new System.Drawing.Point(76, 32);
             this.numScale.Margin = new System.Windows.Forms.Padding(0);
+            this.numScale.MaximumValue = 3.402823E+38F;
+            this.numScale.MinimumValue = -3.402823E+38F;
             this.numScale.Name = "numScale";
-            this.numScale.Size = new System.Drawing.Size(74, 20);
+            this.numScale.Size = new System.Drawing.Size(37, 20);
             this.numScale.TabIndex = 3;
             this.numScale.Text = "0";
             this.numScale.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
@@ -259,7 +262,7 @@ namespace System.Windows.Forms
             // 
             this.lblFrameCount.Location = new System.Drawing.Point(119, 3);
             this.lblFrameCount.Name = "lblFrameCount";
-            this.lblFrameCount.Size = new System.Drawing.Size(31, 20);
+            this.lblFrameCount.Size = new System.Drawing.Size(49, 20);
             this.lblFrameCount.TabIndex = 17;
             this.lblFrameCount.Text = "/ 10";
             this.lblFrameCount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -267,7 +270,7 @@ namespace System.Windows.Forms
             // btnPrev
             // 
             this.btnPrev.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPrev.Location = new System.Drawing.Point(152, 2);
+            this.btnPrev.Location = new System.Drawing.Point(166, 2);
             this.btnPrev.Name = "btnPrev";
             this.btnPrev.Size = new System.Drawing.Size(23, 23);
             this.btnPrev.TabIndex = 1;
@@ -279,7 +282,7 @@ namespace System.Windows.Forms
             // btnNext
             // 
             this.btnNext.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnNext.Location = new System.Drawing.Point(177, 2);
+            this.btnNext.Location = new System.Drawing.Point(191, 2);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(23, 23);
             this.btnNext.TabIndex = 2;
@@ -297,7 +300,7 @@ namespace System.Windows.Forms
             this.listKeyframes.ItemHeight = 14;
             this.listKeyframes.Location = new System.Drawing.Point(3, 16);
             this.listKeyframes.Name = "listKeyframes";
-            this.listKeyframes.Size = new System.Drawing.Size(203, 119);
+            this.listKeyframes.Size = new System.Drawing.Size(224, 119);
             this.listKeyframes.TabIndex = 18;
             this.listKeyframes.SelectedIndexChanged += new System.EventHandler(this.listKeyframes_SelectedIndexChanged);
             // 
@@ -307,7 +310,7 @@ namespace System.Windows.Forms
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(209, 138);
+            this.groupBox1.Size = new System.Drawing.Size(230, 138);
             this.groupBox1.TabIndex = 21;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Keyframes";
@@ -325,13 +328,13 @@ namespace System.Windows.Forms
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 138);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(209, 64);
+            this.panel1.Size = new System.Drawing.Size(230, 64);
             this.panel1.TabIndex = 23;
             // 
             // label2
             // 
             this.label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.label2.Location = new System.Drawing.Point(149, 32);
+            this.label2.Location = new System.Drawing.Point(112, 32);
             this.label2.Margin = new System.Windows.Forms.Padding(0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(19, 20);
@@ -344,7 +347,7 @@ namespace System.Windows.Forms
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.panel1);
             this.Name = "ShpAnimEditControl";
-            this.Size = new System.Drawing.Size(209, 202);
+            this.Size = new System.Drawing.Size(230, 202);
             ((System.ComponentModel.ISupportInitialize)(this.numFrame)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);

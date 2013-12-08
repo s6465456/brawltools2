@@ -433,28 +433,27 @@ namespace System.Windows.Forms
                 //So that changes don't affect the original event until the user finishes
                 if (_newEv == null)
                 {
-                    _newEv = new Event() { _parent = _origEvent.Parent };
+                    _newEv = new Event();
 
-                    _newEv.EventID = _origEvent._event;
-                    ActionEventInfo info = _origEvent.EventInfo;
+                    _newEv.EventID = _origEvent.EventID;
+                    EventInformation info = _origEvent.Info;
 
-                    for (int i = 0; i < _newEv.numArguments; i++)
+                    for (int i = 0; i < _newEv.NumArguments; i++)
                     {
+                        Parameter p = _origEvent[i];
                         int type = 0, value = 0;
-                        if (_origEvent.Children.Count > i)
+                        if (_origEvent.Count > i)
                         {
-                            type = (int)(_origEvent.Children[i] as MoveDefEventParameterNode)._type;
-                            value = (int)(_origEvent.Children[i] as MoveDefEventParameterNode)._value;
+                            type = (int)p.ParamType;
+                            value = p.Data;
                         }
                         _newEv.NewParam(i, value, type);
-                        if (type == (int)ArgVarType.Offset)
+                        if (type == (int)ParamType.Offset)
                         {
-                            MoveDefEventOffsetNode oldoff = _origEvent.Children[i] as MoveDefEventOffsetNode;
-                            MoveDefEventOffsetNode newoff = _newEv.Children[i] as MoveDefEventOffsetNode;
-                            newoff.list = oldoff.list;
-                            newoff.index = oldoff.index;
-                            newoff.type = oldoff.type;
-                            newoff.action = oldoff.action;
+                            EventOffset oldoff = p as EventOffset;
+                            EventOffset newoff = _newEv[i] as EventOffset;
+                            newoff._offsetInfo = oldoff._offsetInfo;
+                            newoff._script = oldoff._script;
                         }
                     } 
 
@@ -465,7 +464,7 @@ namespace System.Windows.Forms
             }
         }
 
-        public MoveDefEventParameterNode param = null;
+        public Parameter param = null;
 
         public void Setup(Event original)
         {
@@ -473,7 +472,7 @@ namespace System.Windows.Forms
 
             //Setup requirements list.
             if (cboRequirement.Items.Count == 0)
-                cboRequirement.Items.AddRange(FileManager.iRequirements);
+                cboRequirement.Items.AddRange(Manager.iRequirements);
 
             _status = DialogResult.Cancel;
             _newEv = null;
@@ -494,50 +493,49 @@ namespace System.Windows.Forms
             requirementPanel.Visible = false;
             offsetPanel.Visible = false;
 
-            ActionEventInfo info = null;
-            if (FileManager.EventDictionary.ContainsKey(NewEvent._event))
-                info = FileManager.EventDictionary[NewEvent._event];
+            EventInformation info = null;
+            if (Manager.Events.ContainsKey(NewEvent.EventID))
+                info = Manager.Events[NewEvent.EventID];
 
             if (info != null)
                 lblEventName.Text = info._name;
 
-            lblEventId.Text = Helpers.Hex8(NewEvent._event);
+            lblEventId.Text = Helpers.Hex8(NewEvent.EventID);
 
-            foreach (MoveDefEventParameterNode n in NewEvent.Children)
-                if (!String.IsNullOrEmpty(n.Name))
-                    lstParameters.Items.Add(n.Name);
+            foreach (Parameter n in NewEvent)
+                lstParameters.Items.Add(n);
         }
 
         //Display the selected parameter's value, type and description.
         private void DisplayParameter(int index)
         {
-            param = NewEvent.Children[index] as MoveDefEventParameterNode;
+            param = NewEvent[index];
 
             cboType.Enabled = true;
-            try { cboType.SelectedIndex = (int)param._type; }
-            catch { cboType.SelectedIndex = -1; cboType.Text = "(" + param._type + ")"; }
+            try { cboType.SelectedIndex = (int)param.ParamType; }
+            catch { cboType.SelectedIndex = -1; cboType.Text = "(" + param.ParamType + ")"; }
             DisplayInType(param);
 
             lblParamDescription.Text = param.Description;
         }
 
         //Display the parameter's value according to its type.
-        public void DisplayInType(MoveDefEventParameterNode value)
+        public void DisplayInType(Parameter value)
         {
-            if (value is MoveDefEventOffsetNode)
+            if (value is EventOffset)
             {
                 requirementPanel.Visible = false;
                 valueGrid.Visible = false;
                 offsetPanel.Visible = true;
 
-                MoveDefEventOffsetNode offset = value as MoveDefEventOffsetNode;
+                EventOffset offset = value as EventOffset;
 
                 _updating = true;
-                comboBox1.SelectedIndex = offset.list;
-                if (offset.type != -1)
-                    comboBox3.SelectedIndex = offset.type;
-                if (offset.index != -1)
-                    comboBox2.SelectedIndex = offset.index;
+                comboBox1.SelectedIndex = (int)offset._offsetInfo.list;
+                if (offset._offsetInfo.type != TypeValue.None)
+                    comboBox3.SelectedIndex = (int)offset._offsetInfo.type;
+                if (offset._offsetInfo.index != -1)
+                    comboBox2.SelectedIndex = offset._offsetInfo.index;
                 _updating = false;
             }
             else 
@@ -556,19 +554,19 @@ namespace System.Windows.Forms
         private void btnChangeEvent_Click(object sender, EventArgs e)
         {
             //Pass in the event Event.
-            frmEventList.eventEvent = NewEvent._event;
+            frmEventList.eventEvent = NewEvent.EventID;
             frmEventList.p = NewEvent._root;
             frmEventList.ShowDialog();
 
             //Retrieve and setup the new event according to the new event Event.
             if (frmEventList.status == DialogResult.OK)
             {
-                _newEv = new Event() { _parent = _origEvent.Parent };
+                _newEv = new Event() { _script = _origEvent._script };
 
                 NewEvent.EventID = (uint)frmEventList.eventEvent;
-                ActionEventInfo info = NewEvent.EventInfo;
+                EventInformation info = NewEvent.Info;
 
-                NewEvent.NewChildren();
+                NewEvent.Reset();
             }
 
             DisplayEvent();
@@ -589,23 +587,23 @@ namespace System.Windows.Forms
 
             //Change the type to the type selected and update the view window.
 
-            param = NewEvent.Children[index] as MoveDefEventParameterNode;
+            param = NewEvent[index];
 
-            if (param._type != (ArgVarType)cboType.SelectedIndex)
+            if (param.ParamType != (ParamType)cboType.SelectedIndex)
             {
                 int ind = param.Index;
-                ActionEventInfo info = NewEvent.EventInfo;
-                string name = ((ArgVarType)cboType.SelectedIndex).ToString();
+                EventInformation info = NewEvent.Info;
+                string name = ((ParamType)cboType.SelectedIndex).ToString();
 
                 int value = 0;
 
-                MoveDefEventParameterNode p = NewEvent.Children[ind] as MoveDefEventParameterNode;
-                if (p is MoveDefEventValueNode || p is MoveDefEventScalarNode || p is MoveDefEventBoolNode)
-                    value = p._value;
+                Parameter p = NewEvent[ind];
+                if (p is EventValue || p is EventScalar || p is EventBool)
+                    value = p.Data;
 
-                NewEvent.Children[ind].Remove();
+                NewEvent.RemoveAt(ind);
 
-                ArgVarType t = ((ArgVarType)cboType.SelectedIndex);
+                ParamType t = ((ParamType)cboType.SelectedIndex);
 
                 NewEvent.NewParam(ind, value, (int)t);
             }
@@ -621,16 +619,16 @@ namespace System.Windows.Forms
             long value = cboRequirement.SelectedIndex;
             if (chkNot.Checked) value |= 0x80000000;
 
-            (NewEvent.Children[index] as MoveDefEventParameterNode)._value = (int)value;
+            (NewEvent[index]).Data = (int)value;
         }
 
         public event EventHandler Completed;
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            if (NewEvent.IsDirty)
-                if (MessageBox.Show("Are you sure you want to cancel editing this event? You have unsaved changes.", "Done Editing?", MessageBoxButtons.YesNo) == DialogResult.No)
-                    return;
+            //if (NewEvent.IsDirty)
+            //    if (MessageBox.Show("Are you sure you want to cancel editing this event? You have unsaved changes.", "Done Editing?", MessageBoxButtons.YesNo) == DialogResult.No)
+            //        return;
 
             _status = DialogResult.Cancel;
 
@@ -640,17 +638,18 @@ namespace System.Windows.Forms
 
         private void btnDone_Click(object sender, EventArgs e)
         {
-            if (!NewEvent.IsDirty) //No changes were made.
-            {
-                btnCancel_Click(sender, e);
-                return;
-            }
+            //if (!NewEvent.IsDirty) //No changes were made.
+            //{
+            //    btnCancel_Click(sender, e);
+            //    return;
+            //}
 
             _status = DialogResult.OK;
+
             int index = _origEvent.Index;
-            ActionScript action = _origEvent.Parent as ActionScript;
-            _origEvent.Remove();
-            action.InsertChild(NewEvent, true, index);
+            Script action = _origEvent._script as Script;
+            action.RemoveAt(index);
+            action.Insert(index, NewEvent);
 
             if (Completed != null)
                 Completed(this, null);
@@ -658,86 +657,74 @@ namespace System.Windows.Forms
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboBox1.SelectedIndex == 0)
+            comboBox3.Visible = label4.Visible = comboBox1.SelectedIndex < 2;
+            comboBox2.Visible = label3.Visible = label2.Visible = comboBox1.SelectedIndex != 4;
+            comboBox3.Items.Clear();
+            switch (comboBox1.SelectedIndex)
             {
-                comboBox3.Items.Clear();
-                comboBox3.Items.Add("Entry");
-                comboBox3.Items.Add("Exit");
-
-                comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param._root._actions.Children.ToArray());
-            }
-            if (comboBox1.SelectedIndex == 1)
-            {
-                comboBox3.Items.Clear();
-                comboBox3.Items.Add("Main");
-                comboBox3.Items.Add("GFX");
-                comboBox3.Items.Add("SFX");
-                comboBox3.Items.Add("Other");
-
-                comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param._root._subActions.Children.ToArray());
-            }
-            if (comboBox1.SelectedIndex >= 2)
-                comboBox3.Visible = label4.Visible = false;
-            else
-                comboBox3.Visible = label4.Visible = true;
-            if (comboBox1.SelectedIndex == 4)
-                comboBox2.Visible = label3.Visible = label2.Visible = false;
-            else
-                comboBox2.Visible = label3.Visible = label2.Visible = true;
-            if (comboBox1.SelectedIndex == 2)
-            {
-                comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param._root._subRoutines.ToArray());
-            }
-            if (comboBox1.SelectedIndex == 3)
-            {
-                comboBox2.Items.Clear();
-                comboBox2.Items.AddRange(param._root._referenceList.ToArray());
+                case 0:
+                    comboBox3.Items.Add("Entry");
+                    comboBox3.Items.Add("Exit");
+                    comboBox2.DataSource = param._root.Actions;
+                    break;
+                case 1:
+                    comboBox3.Items.Add("Main");
+                    comboBox3.Items.Add("GFX");
+                    comboBox3.Items.Add("SFX");
+                    comboBox3.Items.Add("Other");
+                    comboBox2.DataSource = param._root.Data.SubActions;
+                    break;
+                case 2:
+                    comboBox2.DataSource = param._root.SubRoutines;
+                    break;
+                case 3:
+                    comboBox2.DataSource = param._root.ReferenceList;
+                    break;
+                default:
+                    comboBox2.DataSource = null;
+                    break;
             }
         }
 
         private void offsetOkay_Click(object sender, EventArgs e)
         {
-            MoveDefEventOffsetNode _targetNode = param as MoveDefEventOffsetNode;
-            if (_targetNode.action != null)
+            EventOffset _targetNode = param as EventOffset;
+            if (_targetNode._script != null)
             {
-                _targetNode._value = -1;
-                _targetNode.action._actionRefs.Remove(param);
+                _targetNode.Data = -1;
+                _targetNode._script._actionRefs.Remove(param);
             }
             if (comboBox1.SelectedIndex >= 3)
             {
-                if (comboBox1.SelectedIndex == 3 && comboBox2.SelectedIndex >= 0 && comboBox2.SelectedIndex < param._root._referenceList.Count)
+                if (comboBox1.SelectedIndex == 3 && comboBox2.SelectedIndex >= 0 && comboBox2.SelectedIndex < param._root.ReferenceList.Count)
                 {
                     if (_targetNode._externalEntry != null)
                     {
-                        _targetNode._externalEntry._refs.Remove(_targetNode);
+                        _targetNode._externalEntry.References.Remove(_targetNode);
                         _targetNode._externalEntry = null;
                     }
-                    (param._externalEntry = param._root._referenceList[comboBox2.SelectedIndex] as ReferenceEntry)._refs.Add(param);
+                    (param._externalEntry = param._root.ReferenceList[comboBox2.SelectedIndex] as ExternalEntry).References.Add(param);
                 }
             }
             else
             {
                 if (param._externalEntry != null)
                 {
-                    param._externalEntry._refs.Remove(param);
+                    param._externalEntry.References.Remove(param);
                     param._externalEntry = null;
                 }
             }
-            _targetNode.list = comboBox1.SelectedIndex;
-            _targetNode.type = (comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex);
-            _targetNode.index = (comboBox1.SelectedIndex == 4 ? -1 : comboBox2.SelectedIndex);
-            _targetNode.action = param._root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
-            if (_targetNode.action != null)
-            {
-                param._value = _targetNode.action._offset;
-                _targetNode.action._actionRefs.Add(param);
-            }
+
+            _targetNode._offsetInfo = new ScriptOffsetInfo(
+                (ListValue)comboBox1.SelectedIndex,
+                (TypeValue)(comboBox1.SelectedIndex >= 2 ? -1 : comboBox3.SelectedIndex),
+                (comboBox1.SelectedIndex == 4 ? -1 : comboBox2.SelectedIndex));
+
+            _targetNode._script = param._root.GetScript(_targetNode._offsetInfo);
+            if (_targetNode._script != null)
+                _targetNode._script._actionRefs.Add(param);
             else
-                param._value = -1;
-            param.SignalPropertyChange();
+                param.Data = -1;
         }
     }
 }

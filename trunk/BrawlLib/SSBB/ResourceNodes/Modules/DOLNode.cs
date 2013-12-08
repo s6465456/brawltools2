@@ -12,7 +12,7 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class DOLNode : ResourceNode, ModuleNode
     {
         internal DOLHeader* Header { get { return (DOLHeader*)WorkingUncompressed.Address; } }
-        public override ResourceType ResourceType { get { return ResourceType.DOL; } }
+        public override ResourceType ResourceType { get { return ResourceType.Unknown; } }
 
         DOLHeader hdr;
 
@@ -145,37 +145,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Static Module")]
         public string EntryPoint { get { return "0x" + ((uint)hdr.entryPoint).ToString("X"); } set { GetValue(value, out hdr.entryPoint); SignalPropertyChange(); } }
 
-        [Browsable(true)]
-        public RELNode AppliedModule { get { return _appliedModule; } }
-        private RELNode _appliedModule;
-
-        public bool ApplyRelocations(RELNode n)
-        {
-            if (_appliedModule == n)
-                return false;
-
-            if (_appliedModule != null && _appliedModule.IsDirty)
-            {
-                if (MessageBox.Show(RootNode._mainForm, "You have made changes to the externally applied module. Save changes?", "Save External Module?", MessageBoxButtons.OKCancel) == DialogResult.OK)
-                {
-                    _appliedModule.Merge();
-                    _appliedModule.Export(_appliedModule._origPath);
-                    _appliedModule.IsDirty = false;
-                }
-            }
-            if (n != null)
-                foreach (RELImportNode r in n.Children[1].Children)
-                    if (r.ModuleID == ModuleID)
-                        if (r.ApplyRelocationsTo(this))
-                        {
-                            if (_appliedModule != null)
-                                _appliedModule.Dispose();
-                            _appliedModule = n;
-                            return true;
-                        }
-            return false;
-        }
-
         bool GetValue(string v, out buint value)
         {
             string s = (v.StartsWith("0x") ? v.Substring(2, Math.Min(v.Length - 2, 8)) : v.Substring(0, Math.Min(v.Length, 8)));
@@ -253,6 +222,5 @@ namespace BrawlLib.SSBB.ResourceNodes
     {
         uint ID { get; set; }
         ModuleSectionNode[] Sections { get; }
-        RELNode AppliedModule { get; }
     }
 }

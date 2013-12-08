@@ -41,11 +41,12 @@ namespace Ikarus
         static void Main()
         {
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            SplashForm s = new SplashForm(); s.Show();
+            Application.Run(new MainForm(s));
         }
 
-        public static List<ResourceNode> OpenedFiles { get { return FileManager.OpenedFiles; } }
-        public static BindingList<string> OpenedFilePaths { get { return FileManager.OpenedFilePaths; } }
+        public static List<ResourceNode> OpenedFiles { get { return Manager.OpenedFiles; } }
+        public static BindingList<string> OpenedFilePaths { get { return Manager.OpenedFilePaths; } }
         
         public static void Say(string msg) { MessageBox.Show(msg); }
 
@@ -97,13 +98,12 @@ namespace Ikarus
             {
                 try
                 {
+                    Manager.CloseRoot();
                     RootPath = path;
-                    FileManager.OpenRoot(path);
+                    Manager.OpenRoot(path);
                     return true;
                 }
                 catch (Exception x) { Say(x.ToString()); }
-                Close();
-                return false;
             }
             return false;
         }
@@ -114,12 +114,14 @@ namespace Ikarus
             {
                 try
                 {
-                    //if (_rootPath == null)
-                    //    return SaveAs();
+                    foreach (ResourceNode r in OpenedFiles)
+                        if (r.IsDirty)
+                        {
+                            r.Merge(Control.ModifierKeys == (Keys.Control | Keys.Shift));
+                            r.Export(r._origPath);
+                            r.IsDirty = false;
+                        }
 
-                    //_rootNode.Merge(Control.ModifierKeys == (Keys.Control | Keys.Shift));
-                    //_rootNode.Export(_rootPath);
-                    //_rootNode.IsDirty = false;
                     return true;
                 }
                 catch (Exception x) { Say(x.Message); }

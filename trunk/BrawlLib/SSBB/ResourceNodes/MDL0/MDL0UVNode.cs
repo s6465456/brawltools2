@@ -9,31 +9,11 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MDL0UVNode : MDL0EntryNode
     {
         internal MDL0UVData* Header { get { return (MDL0UVData*)WorkingUncompressed.Address; } }
-        //protected override int DataLength { get { return Header->_dataLen; } }
-
         public MDL0ObjectNode[] Objects { get { return _objects.ToArray(); } }
         internal List<MDL0ObjectNode> _objects = new List<MDL0ObjectNode>();
 
         MDL0UVData hdr;
 
-        //#if DEBUG
-        //[Category("UV Data")]
-        //public int TotalLen { get { return hdr._dataLen; } }
-        //[Category("UV Data")]
-        //public int MDL0Offset { get { return hdr._mdl0Offset; } }
-        //[Category("UV Data")]
-        //public int DataOffset { get { return hdr._dataOffset; } }
-        //[Category("UV Data")]
-        //public int StringOffset { get { return hdr._stringOffset; } }
-        //[Category("UV Data")]
-        //public int Pad1 { get { return hdr._pad1; } }
-        //[Category("UV Data")]
-        //public int Pad2 { get { return hdr._pad2; } }
-        //[Category("UV Data")]
-        //public int Pad3 { get { return hdr._pad3; } }
-        //[Category("UV Data")]
-        //public int Pad4 { get { return hdr._pad4; } }
-        //#endif
         [Category("UV Data")]
         public int ID { get { return hdr._index; } }
         [Category("UV Data")]

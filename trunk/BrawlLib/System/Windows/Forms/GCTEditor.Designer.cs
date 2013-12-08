@@ -45,6 +45,7 @@
             this.forgetAllCodesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAllRememberedCodesToGCTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadCodesToRememberToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadRememberedCodesAsNewFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel6 = new System.Windows.Forms.Panel();
             this.txtCode = new System.Windows.Forms.RichTextBoxBordered();
@@ -65,7 +66,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnNewCode = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.lstCodes = new System.Windows.Forms.RefreshableListBox();
+            this.lstCodes = new System.Windows.Forms.ListView();
             this.dlgOpen = new System.Windows.Forms.OpenFileDialog();
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -99,15 +100,15 @@
             // checkBox1
             // 
             this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBox1.AutoSize = true;
+            this.checkBox1.BackColor = System.Drawing.Color.White;
             this.checkBox1.Checked = true;
             this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox1.Location = new System.Drawing.Point(343, 4);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(118, 17);
+            this.checkBox1.Size = new System.Drawing.Size(121, 17);
             this.checkBox1.TabIndex = 4;
             this.checkBox1.Text = "Save GCT with info";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.UseVisualStyleBackColor = false;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // txtPath
@@ -145,28 +146,28 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.btnClose_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.saveAsToolStripMenuItem.Text = "Save As";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.btnSaveAs_Click);
             // 
@@ -177,7 +178,8 @@
             this.toolStripMenuItem1,
             this.forgetAllCodesToolStripMenuItem,
             this.saveAllRememberedCodesToGCTToolStripMenuItem,
-            this.loadCodesToRememberToolStripMenuItem});
+            this.loadCodesToRememberToolStripMenuItem,
+            this.loadRememberedCodesAsNewFileToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -185,37 +187,44 @@
             // rememberAllCodesToolStripMenuItem
             // 
             this.rememberAllCodesToolStripMenuItem.Name = "rememberAllCodesToolStripMenuItem";
-            this.rememberAllCodesToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.rememberAllCodesToolStripMenuItem.Size = new System.Drawing.Size(263, 22);
             this.rememberAllCodesToolStripMenuItem.Text = "Remember all codes in this file";
             this.rememberAllCodesToolStripMenuItem.Click += new System.EventHandler(this.rememberAllCodesToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(254, 22);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(263, 22);
             this.toolStripMenuItem1.Text = "Forget all codes in this file";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // forgetAllCodesToolStripMenuItem
             // 
             this.forgetAllCodesToolStripMenuItem.Name = "forgetAllCodesToolStripMenuItem";
-            this.forgetAllCodesToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.forgetAllCodesToolStripMenuItem.Size = new System.Drawing.Size(263, 22);
             this.forgetAllCodesToolStripMenuItem.Text = "Forget all codes";
             this.forgetAllCodesToolStripMenuItem.Click += new System.EventHandler(this.forgetAllCodesToolStripMenuItem_Click);
             // 
             // saveAllRememberedCodesToGCTToolStripMenuItem
             // 
             this.saveAllRememberedCodesToGCTToolStripMenuItem.Name = "saveAllRememberedCodesToGCTToolStripMenuItem";
-            this.saveAllRememberedCodesToGCTToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.saveAllRememberedCodesToGCTToolStripMenuItem.Size = new System.Drawing.Size(263, 22);
             this.saveAllRememberedCodesToGCTToolStripMenuItem.Text = "Save all remembered codes to file";
             this.saveAllRememberedCodesToGCTToolStripMenuItem.Click += new System.EventHandler(this.saveAllRememberedCodesToGCTToolStripMenuItem_Click);
             // 
             // loadCodesToRememberToolStripMenuItem
             // 
             this.loadCodesToRememberToolStripMenuItem.Name = "loadCodesToRememberToolStripMenuItem";
-            this.loadCodesToRememberToolStripMenuItem.Size = new System.Drawing.Size(254, 22);
+            this.loadCodesToRememberToolStripMenuItem.Size = new System.Drawing.Size(263, 22);
             this.loadCodesToRememberToolStripMenuItem.Text = "Load codes to remember from file";
             this.loadCodesToRememberToolStripMenuItem.Click += new System.EventHandler(this.loadCodesToRememberToolStripMenuItem_Click);
+            // 
+            // loadRememberedCodesAsNewFileToolStripMenuItem
+            // 
+            this.loadRememberedCodesAsNewFileToolStripMenuItem.Name = "loadRememberedCodesAsNewFileToolStripMenuItem";
+            this.loadRememberedCodesAsNewFileToolStripMenuItem.Size = new System.Drawing.Size(263, 22);
+            this.loadRememberedCodesAsNewFileToolStripMenuItem.Text = "Load remembered codes as new file";
+            this.loadRememberedCodesAsNewFileToolStripMenuItem.Click += new System.EventHandler(this.loadRememberedCodesAsNewFileToolStripMenuItem_Click);
             // 
             // panel1
             // 
@@ -419,12 +428,19 @@
             // 
             // lstCodes
             // 
+            this.lstCodes.Alignment = System.Windows.Forms.ListViewAlignment.Default;
+            this.lstCodes.CheckBoxes = true;
             this.lstCodes.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lstCodes.FormattingEnabled = true;
+            this.lstCodes.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.lstCodes.Location = new System.Drawing.Point(0, 23);
+            this.lstCodes.MultiSelect = false;
             this.lstCodes.Name = "lstCodes";
+            this.lstCodes.ShowGroups = false;
             this.lstCodes.Size = new System.Drawing.Size(180, 310);
-            this.lstCodes.TabIndex = 16;
+            this.lstCodes.TabIndex = 20;
+            this.lstCodes.UseCompatibleStateImageBehavior = false;
+            this.lstCodes.View = System.Windows.Forms.View.List;
+            this.lstCodes.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.lstCodes_ItemChecked);
             this.lstCodes.SelectedIndexChanged += new System.EventHandler(this.lstCodes_SelectedIndexChanged);
             // 
             // dlgOpen
@@ -506,7 +522,6 @@
         #endregion
 
         private global::System.Windows.Forms.Panel panel3;
-        private global::System.Windows.Forms.RefreshableListBox lstCodes;
         private global::System.Windows.Forms.Panel panel1;
         private global::System.Windows.Forms.GroupBox groupBox1;
         private global::System.Windows.Forms.TextBox txtName;
@@ -548,5 +563,7 @@
         private ToolStripMenuItem forgetAllCodesToolStripMenuItem;
         private ToolStripMenuItem saveAllRememberedCodesToGCTToolStripMenuItem;
         private ToolStripMenuItem loadCodesToRememberToolStripMenuItem;
+        private ToolStripMenuItem loadRememberedCodesAsNewFileToolStripMenuItem;
+        private ListView lstCodes;
     }
 }

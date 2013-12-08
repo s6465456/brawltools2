@@ -42,7 +42,7 @@ namespace Ikarus.UI
                 _snapX = _snapY = _snapZ = _snapCirc = false;
 
                 MDL0BoneNode bone = SelectedBone;
-                MDL0ObjectNode poly = leftPanel.SelectedPolygon;
+                MDL0ObjectNode poly = modelListsPanel1.SelectedPolygon;
 
                 //Re-target selected bone
                 if (bone != null)
@@ -176,9 +176,6 @@ namespace Ikarus.UI
                                 //Derive angles from matrices, get difference
                                 Vector3 angles = m.GetAngles() - bone._frameState._transform.GetAngles();
 
-                                //Vector4 q = m.GetQuaternion();
-                                //Vector3 angles = q.ToEuler();
-
                                 //Truncate (allows winding)
                                 if (angles._x > 180.0f) angles._x -= 360.0f;
                                 if (angles._y > 180.0f) angles._y -= 360.0f;
@@ -270,7 +267,7 @@ namespace Ikarus.UI
             
             MDL0BoneNode bone = SelectedBone;
             //Vertex3 vertex = TargetVertex;
-            MDL0ObjectNode poly = leftPanel.SelectedPolygon;
+            MDL0ObjectNode poly = modelListsPanel1.SelectedPolygon;
 
             if (bone != null)
             {
@@ -504,11 +501,12 @@ namespace Ikarus.UI
             foreach (MDL0Node m in _targetModels)
                 if (m._objList != null)
                     foreach (MDL0ObjectNode o in m._objList)
-                        foreach (Vertex3 v in o._manager._vertices)
-                        {
-                            v._highlightColor = Color.Transparent;
-                            v._selected = false;
-                        }
+                        if (o._manager != null)
+                            foreach (Vertex3 v in o._manager._vertices)
+                            {
+                                v._highlightColor = Color.Transparent;
+                                v._selected = false;
+                            }
         }
         #endregion
     }

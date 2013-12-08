@@ -101,6 +101,7 @@
             this.txtFloat = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.splitter3 = new System.Windows.Forms.Splitter();
             this.grpSettings.SuspendLayout();
             this.grpRelocInfo.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -428,7 +429,7 @@
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
             this.copyToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
@@ -436,7 +437,7 @@
             // 
             this.pasteOverwriteToolStripMenuItem.Name = "pasteOverwriteToolStripMenuItem";
             this.pasteOverwriteToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
-            this.pasteOverwriteToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
+            this.pasteOverwriteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.pasteOverwriteToolStripMenuItem.Text = "Paste";
             this.pasteOverwriteToolStripMenuItem.Click += new System.EventHandler(this.pasteOverwriteToolStripMenuItem_Click);
             // 
@@ -530,7 +531,7 @@
             this.pnlLeft.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlLeft.Location = new System.Drawing.Point(0, 0);
             this.pnlLeft.Name = "pnlLeft";
-            this.pnlLeft.Size = new System.Drawing.Size(783, 597);
+            this.pnlLeft.Size = new System.Drawing.Size(780, 597);
             this.pnlLeft.TabIndex = 5;
             // 
             // ppcDisassembler1
@@ -538,13 +539,13 @@
             this.ppcDisassembler1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ppcDisassembler1.Location = new System.Drawing.Point(0, 0);
             this.ppcDisassembler1.Name = "ppcDisassembler1";
-            this.ppcDisassembler1.Size = new System.Drawing.Size(280, 597);
+            this.ppcDisassembler1.Size = new System.Drawing.Size(277, 597);
             this.ppcDisassembler1.TabIndex = 11;
             // 
             // splitter2
             // 
             this.splitter2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.splitter2.Location = new System.Drawing.Point(280, 0);
+            this.splitter2.Location = new System.Drawing.Point(277, 0);
             this.splitter2.Name = "splitter2";
             this.splitter2.Size = new System.Drawing.Size(3, 597);
             this.splitter2.TabIndex = 11;
@@ -556,7 +557,7 @@
             this.pnlHexEditor.Controls.Add(this.menuStrip1);
             this.pnlHexEditor.Controls.Add(this.statusStrip);
             this.pnlHexEditor.Dock = System.Windows.Forms.DockStyle.Right;
-            this.pnlHexEditor.Location = new System.Drawing.Point(283, 0);
+            this.pnlHexEditor.Location = new System.Drawing.Point(280, 0);
             this.pnlHexEditor.Name = "pnlHexEditor";
             this.pnlHexEditor.Size = new System.Drawing.Size(500, 597);
             this.pnlHexEditor.TabIndex = 11;
@@ -878,12 +879,22 @@
             this.label3.Text = "Float:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // splitter3
+            // 
+            this.splitter3.Dock = System.Windows.Forms.DockStyle.Right;
+            this.splitter3.Location = new System.Drawing.Point(780, 0);
+            this.splitter3.Name = "splitter3";
+            this.splitter3.Size = new System.Drawing.Size(3, 597);
+            this.splitter3.TabIndex = 11;
+            this.splitter3.TabStop = false;
+            // 
             // SectionEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(956, 597);
             this.Controls.Add(this.pnlLeft);
+            this.Controls.Add(this.splitter3);
             this.Controls.Add(this.pnlRight);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
@@ -993,5 +1004,6 @@
         private CheckBox chkUnresolved;
         private CheckBox chkDestructor;
         private CheckBox chkConstructor;
+        private Splitter splitter3;
     }
 }

@@ -1080,8 +1080,8 @@ namespace System.Windows.Forms
             }
             else if (pnlPointProps.Visible)
             {
-                numX.Value = _selectedLinks[0]._value._x;
-                numY.Value = _selectedLinks[0]._value._y;
+                numX.Value = _selectedLinks[0].Value._x;
+                numY.Value = _selectedLinks[0].Value._y;
             }
             else if (pnlObjProps.Visible)
             {
@@ -1258,7 +1258,7 @@ namespace System.Windows.Forms
                     if (!obj._render)
                         continue;
 
-                    Vector3 point = (Vector3)link._value;
+                    Vector3 point = (Vector3)link.Value;
 
                     if (_selectInverse && point.Contained(_selectStart, _selectEnd, 0.0f))
                     {
@@ -1332,7 +1332,7 @@ namespace System.Windows.Forms
 
             //Move points
             foreach (CollisionLink p in _selectedLinks)
-                p._value += diff;
+                p.Value += diff;
             
             _modelPanel.Invalidate();
 
@@ -1366,7 +1366,7 @@ namespace System.Windows.Forms
             {
                 Vector3 diff = _selectStart - _selectLast;
                 foreach (CollisionLink l in _selectedLinks)
-                    l._value += diff;
+                    l.Value += diff;
             }
             _modelPanel.Invalidate();
             UpdatePropPanels();
@@ -1432,7 +1432,7 @@ namespace System.Windows.Forms
                     foreach (CollisionObject obj in _targetNode._objects)
                         if (obj._render)
                             foreach (CollisionLink p in obj._points)
-                                if (p._value.Contained(point, point, PointSelectRadius))
+                                if (p.Value.Contained(point, point, PointSelectRadius))
                                 {
                                     if (create)
                                     {
@@ -1629,7 +1629,7 @@ namespace System.Windows.Forms
             if (e.Button == MouseButtons.Left)
             {
                 if (saveIndex - 1 > 0 && saveIndex - 1 < undoSaves.Count)
-                    if (undoSaves[saveIndex - 1]._collisionLinks[0]._value.ToString() == undoSaves[saveIndex - 1]._linkVectors[0].ToString())//If equal to starting point, remove.
+                    if (undoSaves[saveIndex - 1]._collisionLinks[0].Value.ToString() == undoSaves[saveIndex - 1]._linkVectors[0].ToString())//If equal to starting point, remove.
                     {
                         undoSaves.RemoveAt(saveIndex - 1);
                         saveIndex--;
@@ -1713,20 +1713,20 @@ namespace System.Windows.Forms
             for (int i = 0; i < _selectedLinks.Count - 1; )
             {
                 CollisionLink link = _selectedLinks[i++];
-                Vector2 pos = link._value;
+                Vector2 pos = link.Value;
                 int count = 1;
                 for (int x = i; x < _selectedLinks.Count;)
                 {
                     if (link.Merge(_selectedLinks[x]))
                     {
-                        pos += _selectedLinks[x]._value;
+                        pos += _selectedLinks[x].Value;
                         count++;
                         _selectedLinks.RemoveAt(x);
                     }
                     else
                         x++;
                 }
-                link._value = pos / count;
+                link.Value = pos / count;
             }
             _modelPanel.Invalidate();
         }
@@ -1847,7 +1847,7 @@ namespace System.Windows.Forms
                 CreateUndo();
                 float amount = Control.ModifierKeys == Keys.Shift ? LargeIncrement : SmallIncrement;
                 foreach (CollisionLink link in _selectedLinks)
-                    link._value._y += amount;
+                    link._rawValue._y += amount;
                 UpdatePropPanels();
                 _modelPanel.Invalidate();
             }
@@ -1856,7 +1856,7 @@ namespace System.Windows.Forms
                 CreateUndo();
                 float amount = Control.ModifierKeys == Keys.Shift ? LargeIncrement : SmallIncrement;
                 foreach (CollisionLink link in _selectedLinks)
-                    link._value._y -= amount;
+                    link._rawValue._y -= amount;
                 UpdatePropPanels();
                 _modelPanel.Invalidate();
             }
@@ -1865,7 +1865,7 @@ namespace System.Windows.Forms
                 CreateUndo();
                 float amount = Control.ModifierKeys == Keys.Shift ? LargeIncrement : SmallIncrement;
                 foreach (CollisionLink link in _selectedLinks)
-                    link._value._x -= amount;
+                    link._rawValue._x -= amount;
                 UpdatePropPanels();
                 _modelPanel.Invalidate();
             }
@@ -1874,7 +1874,7 @@ namespace System.Windows.Forms
                 CreateUndo();
                 float amount = Control.ModifierKeys == Keys.Shift ? LargeIncrement : SmallIncrement;
                 foreach (CollisionLink link in _selectedLinks)
-                    link._value._x += amount;
+                    link._rawValue._x += amount;
                 UpdatePropPanels();
                 _modelPanel.Invalidate();
             }
@@ -1912,7 +1912,7 @@ namespace System.Windows.Forms
             if (_updating)
                 return;
             foreach (CollisionLink link in _selectedLinks)
-                link._value._x = numX.Value;
+                link._rawValue._x = numX.Value;
             _modelPanel.Invalidate();
         }
 
@@ -1921,7 +1921,7 @@ namespace System.Windows.Forms
             if (_updating)
                 return;
             foreach (CollisionLink link in _selectedLinks)
-                link._value._y = numY.Value;
+                link._rawValue._y = numY.Value;
             _modelPanel.Invalidate();
         }
 
@@ -1932,7 +1932,7 @@ namespace System.Windows.Forms
             CreateUndo();
 
             for (int i = 1; i < _selectedLinks.Count; i++)
-                _selectedLinks[i]._value._x = _selectedLinks[0]._value._x;
+                _selectedLinks[i]._rawValue._x = _selectedLinks[0]._rawValue._x;
             _modelPanel.Invalidate();
         }
 
@@ -1941,7 +1941,7 @@ namespace System.Windows.Forms
             CreateUndo();
 
             for (int i = 1; i < _selectedLinks.Count; i++)
-                _selectedLinks[i]._value._y = _selectedLinks[0]._value._y;
+                _selectedLinks[i]._rawValue._y = _selectedLinks[0]._rawValue._y;
             _modelPanel.Invalidate();
         }
 
@@ -2065,7 +2065,7 @@ namespace System.Windows.Forms
             save._linkVectors = new List<Vector2>();
 
             foreach (CollisionLink l in _selectedLinks)
-            { save._collisionLinks.Add(l); save._linkVectors.Add(l._value); }
+            { save._collisionLinks.Add(l); save._linkVectors.Add(l.Value); }
 
             undoSaves.Add(save);
             btnUndo.Enabled = true;
@@ -2105,8 +2105,8 @@ namespace System.Windows.Forms
                 {
                     _selectedLinks.Add(undoSaves[saveIndex - 1]._collisionLinks[i]);
                     save._collisionLinks.Add(undoSaves[saveIndex - 1]._collisionLinks[i]);
-                    save._linkVectors.Add(undoSaves[saveIndex - 1]._collisionLinks[i]._value);
-                    _selectedLinks[i]._value = undoSaves[saveIndex - 1]._linkVectors[i];
+                    save._linkVectors.Add(undoSaves[saveIndex - 1]._collisionLinks[i].Value);
+                    _selectedLinks[i].Value = undoSaves[saveIndex - 1]._linkVectors[i];
                 }
             }
 
@@ -2131,7 +2131,7 @@ namespace System.Windows.Forms
             for (int i = 0; i < redoSaves[undoSaves.Count - saveIndex - 1]._collisionLinks.Count; i++)
             {
                 _selectedLinks.Add(redoSaves[undoSaves.Count - saveIndex - 1]._collisionLinks[i]);
-                _selectedLinks[i]._value = redoSaves[undoSaves.Count - saveIndex - 1]._linkVectors[i];
+                _selectedLinks[i].Value = redoSaves[undoSaves.Count - saveIndex - 1]._linkVectors[i];
             }
 
             redoSaves.RemoveAt(undoSaves.Count - saveIndex - 1);

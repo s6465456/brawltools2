@@ -156,10 +156,14 @@ namespace System.Windows.Forms
         {
             if (_mat == null)
             {
-                _mainWindow.KeyframePanel.chkEnabled.Checked = false;
-                _mainWindow.KeyframePanel.chkConstant.Checked = false;
+                if (_mainWindow.KeyframePanel != null)
+                {
+                    _mainWindow.KeyframePanel.chkEnabled.Checked = false;
+                    _mainWindow.KeyframePanel.chkConstant.Checked = false;
+                }
                 return;
             }
+
             _entry = _mat.FindChild(lstTarget.SelectedItem as string, false) as CLR0MaterialEntryNode;
             _mainWindow.KeyframePanel.chkEnabled.Checked = _entry != null;
             _mainWindow.KeyframePanel.chkConstant.Checked = _entry != null ? _entry.Constant : false;

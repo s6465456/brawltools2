@@ -165,7 +165,7 @@ namespace System
                 (Power(t, 3) * p3);
         }
 
-        internal static float Max(params float[] values)
+        public static float Max(params float[] values)
         {
             float v = values[0];
             if (values.Length > 1)
@@ -173,7 +173,7 @@ namespace System
                 v = Math.Max(v, values[i]);
             return v;
         }
-        internal static int Max(params int[] values)
+        public static int Max(params int[] values)
         {
             int v = values[0];
             if (values.Length > 1)
@@ -181,7 +181,7 @@ namespace System
                     v = Math.Max(v, values[i]);
             return v;
         }
-        internal static uint Max(params uint[] values)
+        public static uint Max(params uint[] values)
         {
             uint v = values[0];
             if (values.Length > 1)
@@ -189,7 +189,7 @@ namespace System
                     v = Math.Max(v, values[i]);
             return v;
         }
-        internal static short Max(params short[] values)
+        public static short Max(params short[] values)
         {
             short v = values[0];
             if (values.Length > 1)
@@ -197,7 +197,7 @@ namespace System
                     v = Math.Max(v, values[i]);
             return v;
         }
-        internal static ushort Max(params ushort[] values)
+        public static ushort Max(params ushort[] values)
         {
             ushort v = values[0];
             if (values.Length > 1)
@@ -205,7 +205,7 @@ namespace System
                     v = Math.Max(v, values[i]);
             return v;
         }
-        internal static byte Max(params byte[] values)
+        public static byte Max(params byte[] values)
         {
             byte v = values[0];
             if (values.Length > 1)
@@ -213,7 +213,7 @@ namespace System
                     v = Math.Max(v, values[i]);
             return v;
         }
-        internal static sbyte Max(params sbyte[] values)
+        public static sbyte Max(params sbyte[] values)
         {
             sbyte v = values[0];
             if (values.Length > 1)
@@ -221,7 +221,7 @@ namespace System
                     v = Math.Max(v, values[i]);
             return v;
         }
-        internal static float Min(params float[] values)
+        public static float Min(params float[] values)
         {
             float v = values[0];
             if (values.Length > 1)
@@ -229,7 +229,7 @@ namespace System
                     v = Math.Min(v, values[i]);
             return v;
         }
-        internal static int Min(params int[] values)
+        public static int Min(params int[] values)
         {
             int v = values[0];
             if (values.Length > 1)
@@ -237,7 +237,7 @@ namespace System
                     v = Math.Min(v, values[i]);
             return v;
         }
-        internal static uint Min(params uint[] values)
+        public static uint Min(params uint[] values)
         {
             uint v = values[0];
             if (values.Length > 1)
@@ -245,7 +245,7 @@ namespace System
                     v = Math.Min(v, values[i]);
             return v;
         }
-        internal static short Min(params short[] values)
+        public static short Min(params short[] values)
         {
             short v = values[0];
             if (values.Length > 1)
@@ -253,7 +253,7 @@ namespace System
                     v = Math.Min(v, values[i]);
             return v;
         }
-        internal static ushort Min(params ushort[] values)
+        public static ushort Min(params ushort[] values)
         {
             ushort v = values[0];
             if (values.Length > 1)
@@ -261,7 +261,7 @@ namespace System
                     v = Math.Min(v, values[i]);
             return v;
         }
-        internal static byte Min(params byte[] values)
+        public static byte Min(params byte[] values)
         {
             byte v = values[0];
             if (values.Length > 1)
@@ -269,7 +269,7 @@ namespace System
                     v = Math.Min(v, values[i]);
             return v;
         }
-        internal static sbyte Min(params sbyte[] values)
+        public static sbyte Min(params sbyte[] values)
         {
             sbyte v = values[0];
             if (values.Length > 1)

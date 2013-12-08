@@ -65,7 +65,8 @@ namespace BrawlLib.Modeling
 
         #region Data Handlers
         internal static Encoding encoder = Encoding.GetEncoding("shift-jis");
-        internal static string GetString(byte[] bytes)
+        internal static string GetString(byte[] bytes) { return GetString(bytes, true); }
+        internal static string GetString(byte[] bytes, bool japanese)
         {
             int i;
             for (i = 0; i < bytes.Length; i++)
@@ -268,10 +269,8 @@ namespace BrawlLib.Modeling
         }
         public static void Write(BinaryWriter writer)
         {
-            //通常ヘッダ書きだし(英語ヘッダはBoneIndexの後(ミクなら0x00071167)に書かれている
             if (_header != null)
                 _header.Write(writer);
-            //頂点リスト書きだし
             if (_vertices == null)
                 writer.Write((UInt32)0);
             else
@@ -284,18 +283,14 @@ namespace BrawlLib.Modeling
                     _vertices[i].Write(writer, CoordZ);
                 }
             }
-            //面リスト書きだし
             if (_faceIndices == null)
                 writer.Write((UInt32)0);
             else
             {
                 writer.Write((UInt32)_faceIndices.LongLength);
                 for (UInt32 i = 0; i < _faceIndices.LongLength; i++)
-                {
                     writer.Write(_faceIndices[i]);
-                }
             }
-            //材質リスト書きだし
             if (_materials == null)
                 writer.Write((UInt32)0);
             else
@@ -308,7 +303,6 @@ namespace BrawlLib.Modeling
                     _materials[i].Write(writer);
                 }
             }
-            //ボーンリスト書きだし
             if (_bones == null)
                 writer.Write((UInt16)0);
             else
@@ -321,7 +315,6 @@ namespace BrawlLib.Modeling
                     _bones[i].Write(writer, CoordZ);
                 }
             }
-            //IKリスト書きだし
             if (_IKs == null)
                 writer.Write((UInt16)0);
             else
@@ -334,7 +327,6 @@ namespace BrawlLib.Modeling
                     _IKs[i].Write(writer);
                 }
             }
-            //表情リスト書きだし
             if (_skins == null)
                 writer.Write((UInt16)0);
             else
@@ -347,7 +339,6 @@ namespace BrawlLib.Modeling
                     _skins[i].Write(writer, CoordZ);
                 }
             }
-            //表情枠用表示リスト書きだし
             if (_skinIndex == null)
                 writer.Write((byte)0);
             else
@@ -359,7 +350,6 @@ namespace BrawlLib.Modeling
                     writer.Write(_skinIndex[i]);
                 }
             }
-            //ボーン枠用枠名リスト
             if (_boneDispNames == null)
                 writer.Write((byte)0);
             else
@@ -372,7 +362,6 @@ namespace BrawlLib.Modeling
                     _boneDispNames[i].Write(writer);
                 }
             }
-            //ボーン枠用表示リスト
             if (_boneDisps == null)
                 writer.Write((UInt32)0);
             else
@@ -385,47 +374,30 @@ namespace BrawlLib.Modeling
                     _boneDisps[i].Write(writer);
                 }
             }
-            //英語表記フラグ
             writer.Write((byte)(_expansion ? 1 : 0));
             if (_expansion)
             {
-                //英語ヘッダ
                 _header.WriteExpansion(writer);
-                //ボーンリスト(英語)
                 if (_bones != null)
-                {
                     for (UInt16 i = 0; i < _bones.Length; i++)
-                    {
                         _bones[i].WriteExpansion(writer);
-                    }
-                }
-                //スキンリスト(英語)
+                
                 if (_skins != null)
-                {
                     for (UInt16 i = 0; i < _skins.Length; i++)
-                    {
-                        if (_skins[i]._skinType != 0)//baseのスキンには英名無し
+                        if (_skins[i]._skinType != 0)
                             _skins[i].WriteExpansion(writer);
-                    }
-                }
-                //ボーン枠用枠名リスト(英語)
+                
                 if (_boneDispNames != null)
-                {
                     for (byte i = 0; i < _boneDispNames.Length; i++)
-                    {
                         _boneDispNames[i].WriteExpansion(writer);
-                    }
-                }
+                
                 if (_toonExpansion)
                 {
-                    //トゥーンテクスチャリスト
                     for (int i = 0; i < _toonFileNames.Length; i++)
-                    {
                         writer.Write(GetBytes(_toonFileNames[i], 100));
-                    }
+                    
                     if (_physicsExpansion)
                     {
-                        //剛体リスト
                         if (_rigidBodies == null)
                             writer.Write((UInt32)0);
                         else
@@ -438,7 +410,6 @@ namespace BrawlLib.Modeling
                                 _rigidBodies[i].WriteExpansion(writer, CoordZ);
                             }
                         }
-                        //ジョイントリスト
                         if (_joints == null)
                             writer.Write((UInt32)0);
                         else
@@ -618,6 +589,9 @@ namespace BrawlLib.Modeling
                 model._matList.Add(mn);
             }
 
+            model._numFaces = 0;
+            model._numFacepoints = 0;
+
             int x = 0;
             int offset = 0;
             foreach (ModelMaterial m in _materials)
@@ -629,10 +603,17 @@ namespace BrawlLib.Modeling
                 p.Name = "polygon" + x++;
                 p._parent = model._objGroup;
 
+                model._numFaces += p._numFaces = manager._faceCount = manager._pointCount / 3;
+                model._numFacepoints += p._numFacepoints = manager._pointCount;
+
                 p._manager._indices = new UnsafeBuffer((int)m._faceVertCount * 2);
                 p._manager._faceData[0] = new UnsafeBuffer((int)m._faceVertCount * 12);
                 p._manager._faceData[1] = new UnsafeBuffer((int)m._faceVertCount * 12);
                 p._manager._faceData[4] = new UnsafeBuffer((int)m._faceVertCount * 8);
+
+                p._manager._dirty[0] = true;
+                p._manager._dirty[1] = true;
+                p._manager._dirty[4] = true;
 
                 ushort* Indices = (ushort*)p._manager._indices.Address;
                 Vector3* Vertices = (Vector3*)p._manager._faceData[0].Address;
@@ -741,9 +722,27 @@ namespace BrawlLib.Modeling
                     }
                 }
 
+            //foreach (MDL0ObjectNode p in model._objList)
+            //    foreach (MDL0MaterialNode m in model._matList)
+            //    {
+            //        MDL0MaterialNode m2 = p.OpaMaterialNode;
+
+            //        if (m2 == null || m2.ShaderNode != m.ShaderNode || m2.Children.Count != m.Children.Count)
+            //            continue;
+
+            //        for (int i = 0; i < m.Children.Count; i++)
+            //            if (m2.Children[i].Name != m.Children[i].Name)
+            //                continue;
+
+            //        p.OpaMaterialNode = m;
+            //        break;
+            //    }
+            //for (int i = 0; i < model._matList.Count; i++)
+            //    if (((MDL0MaterialNode)model._matList[i])._objects.Count == 0)
+            //        model._matList.RemoveAt(i--);
+
             model.CleanGroups();
-            model.Rebuild(true);
-            //model.BuildFromScratch(null);
+            model.BuildFromScratch(null);
         }
         public static void AssignParent(MDL0BoneNode pBone, ModelBone child, MDL0BoneNode cBone, ModelBone parent)
         {
@@ -1064,8 +1063,8 @@ namespace BrawlLib.Modeling
 
         internal void ReadExpansion(BinaryReader reader)
         {
-            _modelNameEnglish = PMDModel.GetString(reader.ReadBytes(20));
-            _commentEnglish = PMDModel.GetString(reader.ReadBytes(256));
+            _modelNameEnglish = PMDModel.GetString(reader.ReadBytes(20), false);
+            _commentEnglish = PMDModel.GetString(reader.ReadBytes(256), false);
         }
 
         internal void Write(BinaryWriter writer)
@@ -1226,7 +1225,7 @@ namespace BrawlLib.Modeling
 
         internal void ReadExpansion(BinaryReader reader)
         {
-            _boneNameEnglish = PMDModel.GetString(reader.ReadBytes(20));
+            _boneNameEnglish = PMDModel.GetString(reader.ReadBytes(20), false);
         }
 
         internal void Write(BinaryWriter writer, float CoordZ)
@@ -1275,7 +1274,7 @@ namespace BrawlLib.Modeling
         }
         internal void ReadExpansion(BinaryReader reader)
         {
-            _boneDispNameEnglish = PMDModel.GetString(reader.ReadBytes(50));
+            _boneDispNameEnglish = PMDModel.GetString(reader.ReadBytes(50), false);
         }
         internal void Write(BinaryWriter writer)
         {
@@ -1472,7 +1471,7 @@ namespace BrawlLib.Modeling
 
         internal void ReadExpansion(BinaryReader reader)
         {
-            _skinNameEnglish = PMDModel.GetString(reader.ReadBytes(20));
+            _skinNameEnglish = PMDModel.GetString(reader.ReadBytes(20), false);
         }
 
         internal void Write(BinaryWriter writer, float CoordZ)

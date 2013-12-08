@@ -53,19 +53,9 @@ namespace BrawlLib.SSBB.ResourceNodes
         public int TotalLen { get { return _totalLength; } }
         [Category("Object Data"), Browsable(false)]
         public int MDL0Offset { get { return _mdl0Offset; } }
-        //[Category("Object Data")]
-        //public int NodeId { get { return _nodeId; } }
 
-        //[Browsable(true), Category("Vertex Flags")]
-        //public CPVertexFormat VertexFormat { get { return _vertexFormat; } }
         internal CPVertexFormat _vertexFormat;
-
-        //[Browsable(true), Category("Vertex Flags")]
-        //public XFArrayFlags ArrayFlags { get { return _arrayFlags; } }
         internal XFArrayFlags _arrayFlags;
-
-        //[Browsable(true), Category("Vertex Flags")]
-        //public XFVertexSpecs VertexSpecs { get { return _vertexSpecs; } }
         internal XFVertexSpecs _vertexSpecs;
 
         internal CPElementSpec UVATGroups;
@@ -73,56 +63,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public bool[] HasTextureMatrix = new bool[8];
         public bool HasPosMatrix = false;
         
-        //[Browsable(true), Category("UVAT Flags")]
-        //public bool ByteDequant { get { return UVATGroups.ByteDequant; } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public bool NormalIndex3 { get { return UVATGroups.NormalIndex3; } }
-
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef PosDef { get { return UVATGroups.PositionDef; } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef NormDef { get { return UVATGroups.NormalDef; } }
-        
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef UVDef0 { get { return UVATGroups.GetUVDef(0); } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef UVDef1 { get { return UVATGroups.GetUVDef(1); } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef UVDef2 { get { return UVATGroups.GetUVDef(2); } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef UVDef3 { get { return UVATGroups.GetUVDef(3); } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef UVDef4 { get { return UVATGroups.GetUVDef(4); } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef UVDef5 { get { return UVATGroups.GetUVDef(5); } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef UVDef6 { get { return UVATGroups.GetUVDef(6); } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public CPElementDef UVDef7 { get { return UVATGroups.GetUVDef(7); } }
-
-        //[Browsable(true), Category("UVAT Flags")]
-        //public string ColorDef0 { get { return UVATGroups.GetColorDef(0).asColor(); } }
-        //[Browsable(true), Category("UVAT Flags")]
-        //public string ColorDef1 { get { return UVATGroups.GetColorDef(1).asColor(); } }
-
-        //[Category("Object Data")]
-        //public int DefBufferSize { get { return _defBufferSize; } }
-        //[Category("Object Data")]
-        //public int DefSize { get { return _defSize; } }
-        //[Category("Object Data")]
-        //public int DefOffset { get { return _defOffset; } }
-
-        //[Category("Object Data")]
-        //public int PrimBufferSize { get { return _primBufferSize; } }
-        //[Category("Object Data")]
-        //public int PrimSize { get { return _primSize; } }
-        //[Category("Object Data")]
-        //public int PrimOffset { get { return _primOffset; } }
-
         [Category("Object Data")]
         public ObjFlag Flags { get { return (ObjFlag)_flag; } set { _flag = (int)value; SignalPropertyChange(); } }
-        //[Category("Object Data")]
-        //public int StringOffset { get { return _stringOffset; } }
         [Category("Object Data")]
         public int ID { get { return _entryIndex; } }
         [Category("Object Data")]
@@ -202,7 +144,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (_colorSet[id] != null && _colorSet[id]._objects.Contains(this))
                         _colorSet[id]._objects.Remove(this);
 
-                    _c0Changed = true;
+                    _colorChanged[id] = true;
                     _colorSet[id] = null;
                     _elementIndices[id + 2] = -1;
                     _rebuild = true;
@@ -214,6 +156,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 if (node != null && node.NumEntries != 0)
                 {
                     if (_colorSet[id] != null)
+                    {
                         if (node.NumEntries == _colorSet[id].NumEntries)
                         {
                             if (_colorSet[id] != null && _colorSet[id]._objects.Contains(this))
@@ -222,25 +165,25 @@ namespace BrawlLib.SSBB.ResourceNodes
                             (_colorSet[id] = node)._objects.Add(this);
                             _elementIndices[id + 2] = (short)node.Index;
                         }
-                        else if (node.NumEntries > _colorSet[id].NumEntries)
+                        else if (node.NumEntries > 0)
                         {
-                            MessageBox.Show("All vertices will only use the first color entry.");
+                            if (MessageBox.Show(null, "All vertices will only use the first color entry.\nIs this okay?", "", MessageBoxButtons.YesNo) == DialogResult.No)
+                                return;
 
                             if (_colorSet[id] != null && _colorSet[id]._objects.Contains(this))
                                 _colorSet[id]._objects.Remove(this);
-                            
+
                             (_colorSet[id] = node)._objects.Add(this);
                             _elementIndices[id + 2] = (short)node.Index;
+                            _rebuild = true;
+                            _colorChanged[id] = true;
                         }
-                        else
-                        {
-                            MessageBox.Show("There are not enough color entries for this object.");
-                            return;
-                        }
+                    }
                     else
                     {
                         if (node.NumEntries > 1)
-                            MessageBox.Show("All vertices will only use the first color entry.");
+                            if (MessageBox.Show(null, "All vertices will only use the first color entry.\nIs this okay?", "", MessageBoxButtons.YesNo) == DialogResult.No)
+                                return;
 
                         if (_colorSet[id] != null && _colorSet[id]._objects.Contains(this))
                             _colorSet[id]._objects.Remove(this);
@@ -248,7 +191,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         (_colorSet[id] = node)._objects.Add(this);
                         _elementIndices[id + 2] = (short)node.Index;
                         _rebuild = true;
-                        _c0Changed = true;
+                        _colorChanged[id] = true;
                     }
                 }
                 else return;
@@ -256,14 +199,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             SignalPropertyChange();
         }
 
-        public bool _c0Changed = false;
+        public bool[] _colorChanged = new bool[2] { false, false };
         [TypeConverter(typeof(DropDownListColors))]
         public string ColorNode0
         {
             get { return _colorSet[0] == null ? null : _colorSet[0]._name; }
             set { SetColors(0, value); }
         }
-        public bool _c1Changed = false;
         [TypeConverter(typeof(DropDownListColors))]
         public string ColorNode1
         {
@@ -441,8 +383,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         public Facepoint[] _facepoints;
         
         public List<PrimitiveGroup> _primGroups = new List<PrimitiveGroup>();
-        public List<Triangle> Triangles = new List<Triangle>();
-        public List<Tristrip> Tristrips = new List<Tristrip>();
+        public List<FacepointTriangle> Triangles = new List<FacepointTriangle>();
+        public List<FacepointTristrip> Tristrips = new List<FacepointTristrip>();
 
         public bool _rebuild = false;
 
@@ -806,6 +748,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 Model._errors.Add("Object " + Index + " has a facepoint descriptor that does not match its linked nodes.");
                 SignalPropertyChange(); _rebuild = true;
+
+                for (int i = 0; i < 2; i++)
+                    if (_colorSet[i] != null && _manager._faceData[i + 2] == null)
+                    {
+                        _manager._faceData[i + 2] = new UnsafeBuffer(_manager._pointCount * 4);
+                        _colorChanged[i] = true;
+                    }
             }
 
             return false;
@@ -859,6 +808,20 @@ namespace BrawlLib.SSBB.ResourceNodes
             return false;
         }
 
+        public void GenerateNodeCache()
+        {
+            //Create node table
+            HashSet<int> nodes = new HashSet<int>();
+            foreach (Vertex3 v in _manager._vertices)
+                if (v._matrixNode != null)
+                    nodes.Add(v._matrixNode.NodeIndex);
+
+            //Copy to array and sort
+            _nodeCache = new int[nodes.Count];
+            nodes.CopyTo(_nodeCache);
+            Array.Sort(_nodeCache);
+        }
+
         //This should be done after node indices have been assigned
         public override int OnCalculateSize(bool force)
         {
@@ -872,17 +835,9 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             MDL0Node model = Model;
 
-            //Create node table
-            HashSet<int> nodes = new HashSet<int>();
-            foreach (Vertex3 v in _manager._vertices)
-                if (v._matrixNode != null)
-                    nodes.Add(v._matrixNode.NodeIndex);
-
-            //Copy to array and sort
-            _nodeCache = new int[nodes.Count];
-            nodes.CopyTo(_nodeCache);
-            Array.Sort(_nodeCache);
-
+            //Collect vertex node ids
+            GenerateNodeCache();
+            
             //Recollect indices of linked nodes
             RecalcIndices();
 
@@ -937,13 +892,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                     //Merge vertices and assets into facepoints
                     _facepoints = _manager.MergeData(this);
 
-                    Triangle Tri;
+                    FacepointTriangle Tri;
                     if (_manager._triangles != null)
                     {
                         uint* indices = (uint*)_manager._triangles._indices.Address;
                         for (int t = 0; t < _manager._triangles._elementCount; t += 3)
                         {
-                            Tri = new Triangle();
+                            Tri = new FacepointTriangle();
 
                             if (!model._importOptions._forceCCW)
                             {
@@ -974,17 +929,17 @@ namespace BrawlLib.SSBB.ResourceNodes
                     if (model._isImport)
                     {
                         if (g._tristrips.Count != 0)
-                            foreach (Tristrip strip in g._tristrips)
+                            foreach (FacepointTristrip strip in g._tristrips)
                                 _primitiveSize += 3 + strip._points.Count * _fpStride;
 
                         if (g._trifans.Count != 0)
-                            foreach (Trifan fan in g._trifans)
+                            foreach (FacepointTrifan fan in g._trifans)
                                 _primitiveSize += 3 + fan._points.Count * _fpStride;
 
                         if (g._triangles.Count != 0)
                         {
                             _primitiveSize += 3;
-                            foreach (Triangle t in g._triangles)
+                            foreach (FacepointTriangle t in g._triangles)
                                 _primitiveSize += 3 * _fpStride;
                         }
                     }
@@ -1000,7 +955,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 int align = ((size.Align(0x10)) % 0x20 == 0) ? 0x10 : 0x20;
                 size = size.Align(align);
                 _primitiveSize = _primitiveSize.Align(align);
-
+                
                 //Texture matrices (0x30) start at 0x00, max 11
                 //Pos matrices (0x20) start at 0x78, max 10
                 //Normal matrices (0x28) start at 0x400, max 10
@@ -1016,7 +971,7 @@ namespace BrawlLib.SSBB.ResourceNodes
             MDL0Object* header = (MDL0Object*)address;
 
             MDL0Node model = Model;
-
+            
             if (_uvSet[7] != null)
                 _defSize = 224;
             else if (_uvSet[5] != null)
@@ -1099,15 +1054,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                     (uint)Defs->UVATB,
                     (uint)Defs->UVATC);
 
-                //If the object has a single-bind, there will be no weight table
+                //Write weight table only if the object is weighted
                 if (_matrixNode == null)
-                {
-                    //Write weight table
-                    bushort* ptr = (bushort*)header->WeightIndices(model._version);
-                    *(buint*)ptr = (uint)_nodeCache.Length; ptr += 2;
-                    foreach (int n in _nodeCache)
-                        *ptr++ = (ushort)n;
-                }
+                    WriteWeightTable(header->WeightIndices(Model._version));
 
                 //Write primitives
                 _manager.WritePrimitives(this, header);
@@ -1136,13 +1085,20 @@ namespace BrawlLib.SSBB.ResourceNodes
             _rebuild = false;
         }
 
-        public void CorrectNodeIds(MDL0Object* header)
+        private void WriteWeightTable(VoidPtr addr)
         {
-            //Write weight table. The count won't change
-            bushort* ptr = (bushort*)header->WeightIndices(Model._version);
+            if (_nodeCache == null)
+                GenerateNodeCache();
+
+            bushort* ptr = (bushort*)addr;
             *(buint*)ptr = (uint)_nodeCache.Length; ptr += 2;
             foreach (int n in _nodeCache)
                 *ptr++ = (ushort)n;
+        }
+
+        private void CorrectNodeIds(MDL0Object* header)
+        {
+            WriteWeightTable(header->WeightIndices(Model._version));
 
             if (_matrixNode != null)
                 header->_nodeId = _nodeId = (ushort)_matrixNode.NodeIndex;

@@ -142,6 +142,7 @@ namespace BrawlBox
             GenericWrapper._modelViewerOpen = false;
             MainForm.Instance.modelPanel1.Capture();
             MainForm.Instance.resourceTree_SelectionChanged(this, null);
+            MainForm.Instance.Refresh();
         }
 
         private void ModelForm_FormClosing(object sender, FormClosingEventArgs e)

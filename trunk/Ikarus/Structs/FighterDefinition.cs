@@ -7,7 +7,7 @@ using BrawlLib.SSBB.ResourceNodes;
 namespace Ikarus
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefHeader
+    public unsafe struct MovesetHeader
     {
         public bint _fileSize;
         public bint _lookupOffset;
@@ -17,49 +17,23 @@ namespace Ikarus
         public int _pad1, _pad2, _pad3;
 
         //From here begins file data. All offsets are relative to this location (0x20).
-
-        public FDefAttributes* Attributes { get { return (FDefAttributes*)(Address + 0x20); } }
+        public VoidPtr BaseAddress { get { return Address + 0x20; } }
 
         public bint* LookupEntries { get { return (bint*)(Address + _lookupOffset + 0x20); } }
         
-        public FDefStringEntry* DataTable { get { return (FDefStringEntry*)(Address + _lookupOffset + 0x20 + _lookupEntryCount * 4); } }
-        public FDefStringEntry* ExternalSubRoutines { get { return (FDefStringEntry*)(Address + _lookupOffset + 0x20 + _lookupEntryCount * 4 + _dataTableEntryCount * 8); } }
+        public sStringEntry* DataTable { get { return (sStringEntry*)(Address + _lookupOffset + 0x20 + _lookupEntryCount * 4); } }
+        public sStringEntry* ExternalSubRoutines { get { return (sStringEntry*)(Address + _lookupOffset + 0x20 + _lookupEntryCount * 4 + _dataTableEntryCount * 8); } }
         
         //for DataTable and ExternalSubRoutines
-        public FDefStringTable* StringTable { get { return (FDefStringTable*)((Address + _lookupOffset + 0x20) + (_lookupEntryCount * 4) + (_dataTableEntryCount * 8) + (_externalSubRoutineCount * 8)); } }
+        public sStringTable* StringTable { get { return (sStringTable*)((Address + _lookupOffset + 0x20) + (_lookupEntryCount * 4) + (_dataTableEntryCount * 8) + (_externalSubRoutineCount * 8)); } }
         
         private VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefLookupOffset
+    public unsafe struct DataHeader
     {
-        public const int Size = 4;
-        
-        public bint _offset;
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefStringEntry
-    {
-        public bint _dataOffset;
-        public bint _stringOffset; //Base is string table
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefStringTable
-    {
-        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-        public string GetString(int offset)
-        {
-            return new String((sbyte*)Address + offset);
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct MovesetHeader
-    {
-        public const int Size = 0x8C;
+        public const int Size = 124;
         
         public bint SubactionFlagsStart;
         public bint ModelVisibilityStart;
@@ -101,10 +75,15 @@ namespace Ikarus
         public bint Flags2; //Sometimes -1
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public int this[int i]
+        {
+            get { return ((bint*)Address)[i]; }
+            set { ((bint*)Address)[i] = value; }
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct CommonMovesetHeader
+    public unsafe struct CommonHeader
     {
         public bint GlobalICs;
         public bint SSEGlobalICs;
@@ -125,7 +104,7 @@ namespace Ikarus
         public bint Unknown16;
         public bint Unknown17;
         public bint Unknown18;
-        public bint Unknown19;
+        public bint FlashOverlays;
         public bint ScreenTints;
         public bint LegBones;
         public bint Unknown22;
@@ -134,10 +113,78 @@ namespace Ikarus
         public bint Unknown25;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public int this[int i]
+        {
+            get { return ((bint*)Address)[i]; }
+            set { ((bint*)Address)[i] = value; }
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct patternPowerMul
+    public unsafe struct AnimParamHeader
+    {
+        public bint SubactionFlags;
+        public bint SubactionFlagsCount;
+        public bint ActionFlags;
+        public bint ActionFlagsCount;
+        public bint Unknown4;
+        public bint Unknown5;
+        public bint Unknown6;
+        public bint Unknown7;
+        public bint Unknown8;
+        public bint Unknown9;
+        public bint Unknown10;
+        public bint Unknown11;
+        public bint Hurtboxes;
+        public bint Unknown13;
+        public bint CollisionData;
+        public bint Unknown15;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public int this[int i]
+        {
+            get { return ((bint*)Address)[i]; }
+            set { ((bint*)Address)[i] = value; }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct SubParamHeader
+    {
+        public bint Unknown0;
+        public bint Unknown1;
+        public bint Unknown2;
+        public bint Unknown3;
+        public bint Unknown4;
+        public bint Unknown5;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public int this[int i]
+        {
+            get { return ((bint*)Address)[i]; }
+            set { ((bint*)Address)[i] = value; }
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct sStringTable
+    {
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public string GetString(int offset)
+        {
+            return new String((sbyte*)Address + offset);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct sStringEntry
+    {
+        public bint _dataOffset;
+        public bint _stringOffset; //Base is string table
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct sPatternPowerMul
     {
         public bfloat _unk1;
         public bfloat _unk2;
@@ -159,54 +206,18 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct patternPowerMulEntry
+    public unsafe struct sPatternPowerMulEntry
     {
-        public FDefEvent _event1;
-        public FDefEvent _event2;
+        public sEvent _event1;
+        public sEvent _event2;
         public bint _pad1;
         public bint _pad2;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct AnimParamHeader
+    public unsafe struct sCommonUnk7Entry
     {
-        public bint Unknown0;
-        public bint Unknown1;
-        public bint Unknown2;
-        public bint Unknown3;
-        public bint Unknown4;
-        public bint Unknown5;
-        public bint Unknown6;
-        public bint Unknown7;
-        public bint Unknown8;
-        public bint Unknown9;
-        public bint Unknown10;
-        public bint Unknown11;
-        public bint Unknown12;
-        public bint Unknown13;
-        public bint Unknown14;
-        public bint Unknown15;
-
-        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct SubParamHeader
-    {
-        public bint Unknown0;
-        public bint Unknown1;
-        public bint Unknown2;
-        public bint Unknown3;
-        public bint Unknown4;
-        public bint Unknown5;
-
-        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefCommonUnk7Entry
-    {
-        public FDefListOffset _list;
+        public sListOffset _list;
         public bshort _unk3;
         public bshort _unk4;
 
@@ -214,7 +225,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefCommonUnk7EntryListEntry
+    public unsafe struct sCommonUnk7EntryListEntry
     {
         public bfloat _unk1;
         public bfloat _unk2;
@@ -223,16 +234,16 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefCommonUnk11Entry
+    public unsafe struct sCommonUnknown11Entry
     {
         public bint _unk1;
-        public FDefListOffset _list;
+        public sListOffset _list;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct ActionOverride
+    public unsafe struct sActionOverride
     {
         public bint _actionID;
         public bint _commandListOffset;
@@ -241,7 +252,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct Article
+    public unsafe struct sArticle
     {
         public const int Size = 56;
 
@@ -264,14 +275,14 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefMiscUnk3
+    public unsafe struct sMiscUnknown10
     {
         public const int Size = 28;
 
         public bint _haveNBoneIndex1;
         public bint _haveNBoneIndex2;
         public bint _throwNBoneIndex;
-        public FDefListOffset _list;
+        public sListOffset _list;
         public bint _pad; //0
         public bint _haveNBoneIndex3;
 
@@ -279,7 +290,20 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefBoneRef2
+    public unsafe struct sMiscUnknown10Entry
+    {
+        public const int Size = 16;
+
+        public bint _unk1;
+        public bint _unk2;
+        public bint _pad1;
+        public bint _pad2;
+
+        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public unsafe struct sDataBoneRef2
     {
         public const int Size = 24;
 
@@ -295,20 +319,29 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefMiscUnk3Entry
+    public unsafe struct sMiscUnknown7
     {
-        public const int Size = 16;
+        public byte unk1;
+        public byte unk2;
+        public byte unk3;
+        public byte unk4;
 
-        public bint _unk1;
-        public bint _unk2;
-        public bint _pad1;
-        public bint _pad2;
+        public byte unk5;
+        public byte unk6;
+        public byte unk7;
+        public byte unk8;
 
-        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public bfloat unk9;
+        public bfloat unk10;
+
+        public bfloat unk11;
+        public bfloat unk12;
+        public bfloat unk13;
+        public bfloat unk14;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefMiscSection5
+    public unsafe struct sMiscUnknown12
     {
         public bint _unk1; //0x2B
         public bint _unk2; //0x64
@@ -318,26 +351,38 @@ namespace Ikarus
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 
+    //[StructLayout(LayoutKind.Sequential, Pack = 1)]
+    //public unsafe struct sMiscUnknown1
+    //{
+    //    public bint _unk1;
+    //    public bint _unk2;
+    //    public bint _unk3;
+    //    public bint _unk4;
+    //    public bint _unk5;
+    //    public bint _unk6;
+    //    public bint _unk7;
+    //    public bint _unk8;
+
+    //    public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+    //}
+
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefMiscSection1
+    public unsafe struct sMiscUnknown9
     {
         public bint _unk1;
-        public bint _unk2;
-        public bint _unk3;
+        public sListOffset _list;
+        public bfloat _unk2;
+        public bfloat _unk3;
         public bint _unk4;
-        public bint _unk5;
-        public bint _unk6;
-        public bint _unk7;
-        public bint _unk8;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct collData0
+    public unsafe struct sCollData0
     {
-        public int type;
-        public FDefListOffset _list;
+        public int type; //0
+        public sListOffset _list;
         public bfloat unk1;
         public bfloat unk2;
         public bfloat unk3;
@@ -345,9 +390,9 @@ namespace Ikarus
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct collData1
+    public unsafe struct sCollData1
     {
-        public int type;
+        public int type; //1
         public bfloat unk1;
         public bfloat unk2;
         public bfloat unk3;
@@ -355,9 +400,9 @@ namespace Ikarus
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct collData2
+    public unsafe struct sCollData2
     {
-        public int type;
+        public int type; //2
         public bint flags; //Usually 1
         public bfloat unk1;
         public bfloat unk2;
@@ -368,25 +413,20 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefSubActionFlag
+    public unsafe struct sSubActionFlags
     {
-        public byte _InTranslationTime;
-        public AnimationFlags _Flags;
+        public byte _inTranslationTime;
+        public AnimationFlags _flags;
         public short pad;
 
         //String spacing == (String length + 1).Align(4)
         public bint _stringOffset;
 
-        public override string ToString()
-        {
-            return String.Format("TransInTime:{0}; Flags:{1}; StringOff:{2}", _InTranslationTime, _Flags.ToString(), ((int)_stringOffset));
-        }
-
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefSubActionString
+    public unsafe struct sSubActionString
     {
         public sbyte _data;
 
@@ -415,12 +455,12 @@ namespace Ikarus
                     ptr[i++] = 0;
             }
         }
-        public FDefSubActionString* Next { get { return (FDefSubActionString*)((byte*)Address + (Length + 1).Align(4)); } }
-        public FDefSubActionString* End { get { FDefSubActionString* p = (FDefSubActionString*)Address; while (p->Length != 0) p = p->Next; return p; } }
+        public sSubActionString* Next { get { return (sSubActionString*)((byte*)Address + (Length + 1).Align(4)); } }
+        public sSubActionString* End { get { sSubActionString* p = (sSubActionString*)Address; while (p->Length != 0) p = p->Next; return p; } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefReferenceString
+    public unsafe struct sReferenceString
     {
         public sbyte _data;
 
@@ -449,12 +489,12 @@ namespace Ikarus
                     ptr[i++] = 0;
             }
         }
-        public FDefReferenceString* Next { get { return (FDefReferenceString*)((byte*)Address + (Length + 1)); } }
-        public FDefReferenceString* End { get { FDefReferenceString* p = (FDefReferenceString*)Address; while (p->Length != 0) p = p->Next; return p; } }
+        public sReferenceString* Next { get { return (sReferenceString*)((byte*)Address + (Length + 1)); } }
+        public sReferenceString* End { get { sReferenceString* p = (sReferenceString*)Address; while (p->Length != 0) p = p->Next; return p; } }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefEvent
+    public unsafe struct sEvent
     {
         public byte _nameSpace;
         public byte _id;
@@ -466,7 +506,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefEventArgument
+    public unsafe struct sParameter
     {
         public bint _type;
         public bint _data;
@@ -475,13 +515,13 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefMiscSection
+    public unsafe struct sDataMisc
     {
         public const int Size = 0x4C;
 
         public bint UnknownSection1Offset;
-        public bint UnkBoneSectionOffset;
-        public bint UnkBoneSectionCount;
+        public bint FinalSmashAuraOffset;
+        public bint FinalSmashAuraCount;
         public bint HurtBoxOffset;
         public bint HurtBoxCount;
         public bint LedgegrabOffset;
@@ -500,10 +540,15 @@ namespace Ikarus
         public bint UnknownSection12Offset;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
+        public int this[int i]
+        {
+            get { return ((bint*)Address)[i]; }
+            set { ((bint*)Address)[i] = value; }
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefModelDisplayDefaults
+    public unsafe struct sModelDisplayDefaults
     {
         public bint _switchIndex;
         public bint _defaultGroup;
@@ -512,19 +557,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefMiscSection9Data
-    {
-        public bint _unk1;
-        public FDefListOffset _list;
-        public bfloat _unk2;
-        public bfloat _unk3;
-        public bint _unk4;
-
-        public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefMiscUnkType1
+    public unsafe struct sMiscFSAura
     {
         public const int Size = 0x14;
 
@@ -538,7 +571,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefModelDisplay
+    public unsafe struct sModelDisplay
     {
         public bint _entryOffset;
         public bint _entryCount;
@@ -547,7 +580,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefUnk22
+    public unsafe struct sDataUnknown22
     {
         public bint _unk1;
         public bint _unk2;
@@ -555,7 +588,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefItemAnchor
+    public unsafe struct sItemAnchor
     {
         public const int Size = 0x1C;
 
@@ -565,7 +598,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct DataUnk23
+    public unsafe struct sDataUnknown23
     {
         public const int Size = 0x20;
 
@@ -581,16 +614,16 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefActionFlags
+    public unsafe struct sActionFlags
     {
         public bint _flags1; //Sometimes -1
         public bint _flags2; //Sometimes -1
         public bint _flags3; //Sometimes -1
-        public buint _flags4;
+        public bint _flags4;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefHurtBox
+    public unsafe struct sHurtBox
     {
         public BVec3 _offset;
         public BVec3 _stretch;
@@ -626,10 +659,9 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefLedgegrab
+    public unsafe struct sLedgegrab
     {
-        public bfloat _x;
-        public bfloat _y;
+        public BVec2 _xy;
         public bfloat _width;
         public bfloat _height;
 
@@ -637,7 +669,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefMultiJump
+    public unsafe struct sMultiJump
     {
         public bfloat _unk1;
         public bfloat _unk2;
@@ -658,7 +690,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefCrawl
+    public unsafe struct sCrawl
     {
         public bfloat _forward;
         public bfloat _backward;
@@ -667,7 +699,7 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefTether
+    public unsafe struct sTether
     {
         public bint _numHangFrame;
         public bfloat _unk1;
@@ -676,296 +708,11 @@ namespace Ikarus
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefListOffset
+    public unsafe struct sListOffset
     {
         public bint _startOffset;
         public bint _listCount;
 
         public VoidPtr Address { get { fixed (void* ptr = &this)return ptr; } }
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public unsafe struct FDefAttributes
-    {
-        public const int Size = 0x2E4;
-
-        //0x20
-        public bfloat _walkInitVelocity;
-        public bfloat _walkAcceleration;
-        public bfloat _walkMaxVelocity;
-        public bfloat _stopVelocity;
-
-        //0x30
-        public bfloat _dashInitVelocity;
-        public bfloat _stopTurnDecel;
-        public bfloat _stopTurnAccel;
-        public bfloat _runInitVelocity;
-
-        //0x40
-        public bfloat _unk01; //30
-        public bfloat _unk02; //3
-        public bint _unk03; //1
-        public bfloat _unk04; //1.3
-
-        //0x50
-        public bint _unk05; //5
-        public bfloat _unk06; //0.9
-        public bfloat _jumpYInitVelocity;
-        public bfloat _unk07;
-
-        //0x60
-        public bfloat _jumpXInitVelocity;
-        public bfloat _hopYInitVelocity;
-        public bfloat _airJumpMultiplier;
-        public bfloat _unk08;
-
-        //0x70
-        public bfloat _stoolYInitVelocity;
-        public bfloat _unk09;
-        public bfloat _unk10;
-        public bfloat _unk11;
-
-        //0x80
-        public bint _unk12;
-        public bfloat _gravity;
-        public bfloat _termVelocity;
-        public bfloat _unk13;
-
-        //0x90
-        public bfloat _unk14;
-        public bfloat _airMobility;
-        public bfloat _airStopMobility;
-        public bfloat _airMaxXVelocity;
-
-        //0xA0
-        public bfloat _unk15;
-        public bfloat _unk16;
-        public bfloat _unk17;
-        public bint _unk18;
-
-        //0xB0
-        public bfloat _unk19;
-        public bfloat _unk20;
-        public bfloat _unk21;
-        public bint _unk22;
-
-        //0xC0
-        public bint _unk23;
-        public bint _unk24;
-        public bfloat _unk25;
-        public bfloat _unk26;
-
-        //0xD0
-        public bfloat _weight;
-        public bfloat _unk27;
-        public bfloat _unk28;
-        public bfloat _unk29;
-
-        //0xE0
-        public bfloat _unk30;
-        public bfloat _shieldSize;
-        public bfloat _shieldBreakBounce;
-        public bfloat _unk31;
-
-        //0xF0
-        public bfloat _unk32;
-        public bfloat _unk33;
-        public bfloat _unk34;
-        public bfloat _unk35;
-
-        //0x100
-        public bfloat _unk36;
-        public bfloat _unk37;
-        public bint _unk38;
-        public bint _unk39;
-
-        //0x110
-        public bint _unk40;
-        public bfloat _unk41;
-        public bfloat _edgeJumpYVelocity;
-        public bfloat _edgeJumpXVelocity;
-
-        //0x120
-        public bfloat _unk42;
-        public bfloat _unk43;
-        public bfloat _unk44;
-        public bfloat _unk45;
-
-        //0x130
-        public bfloat _unk46;
-        public bint _unk47;
-        public bfloat _itemThrowStrength;
-        public bfloat _unk48;
-
-        //0x140
-        public bfloat _unk49;
-        public bfloat _unk50;
-        public bfloat _fireMoveSpeed;
-        public bfloat _fireFDashSpeed;
-
-        //0x150
-        public bfloat _fireBDashSpeed;
-        public bfloat _unk51;
-        public bfloat _unk52;
-        public bfloat _unk53;
-
-        //0x160
-        public bfloat _unk54;
-        public bfloat _unk55;
-        public bfloat _unk56;
-        public bfloat _unk57;
-
-        //0x170
-        public bfloat _unk58;
-        public bint _unk59;
-        public bint _unk60;
-        public bfloat _unk61;
-
-        //0x180
-        public bfloat _unk62;
-        public bfloat _wallJumpYVelocity;
-        public bfloat _wallJumpXVelocity;
-        public bfloat _unk63;
-
-        //0x190
-        public bfloat _unk64;
-        public bint _unk65;
-        public bfloat _unk66;
-        public bfloat _unk67;
-
-        //0x1A0
-        public bint _unk68;
-        public bint _unk69;
-        public bfloat _unk70;
-        public bfloat _unk71;
-
-        //0x1B0
-        public bfloat _unk72;
-        public bfloat _unk73;
-        public bfloat _unk74;
-        public bfloat _unk75;
-
-        //0x1C0
-        public bfloat _unk76;
-        public bfloat _unk77;
-        public bint _unk78;
-        public bfloat _unk79;
-
-        //0x1D0
-        public bint _unk80; 
-        public bfloat _unk81;
-        public bfloat _unk82;
-        public bfloat _unk83;
-
-        //0x1E0
-        public bfloat _unk84;
-        public bfloat _unk85;
-        public bfloat _unk86;
-        public bint _unk89;
-
-        //0x1F0
-        public bfloat _unk90;
-        public bfloat _unk91;
-        public bfloat _unk92;
-        public bfloat _unk93;
-
-        //0x200
-        public bint _unk94;
-        public bfloat _unk95;
-        public bfloat _unk96;
-        public bfloat _unk97;
-
-        //0x210
-        public bfloat _unk98;
-        public bfloat _unk99;
-        public bfloat _unk100;
-        public bfloat _unk101;
-
-        //0x220
-        public bfloat _unk102;
-        public bfloat _unk103;
-        public bfloat _unk104;
-        public bfloat _unk105;
-
-        //0x230
-        public bfloat _unk106;
-        public bfloat _unk107;
-        public bfloat _unk108;
-        public bfloat _unk109;
-
-        //0x240
-        public bint _unk110;
-        public bfloat _unk111;
-        public bfloat _unk112;
-        public bfloat _unk113;
-
-        //0x250
-        public bfloat _unk114;
-        public bint _unk115;
-        public bfloat _unk116;
-        public bfloat _unk117;
-
-        //0x260
-        public bfloat _unk118;
-        public bfloat _unk119;
-        public bfloat _unk120;
-        public bfloat _unk121;
-        
-        //0x270
-        public bfloat _unk122;
-        public bfloat _unk123;
-        public bfloat _unk124;
-        public bfloat _unk125;
-
-        //0x280
-        public bfloat _unk126;
-        public bfloat _unk127;
-        public bfloat _unk128;
-        public bfloat _unk129;
-
-        //0x290
-        public bfloat _unk130;
-        public bfloat _unk131;
-        public bfloat _unk132;
-        public bfloat _unk133;
-
-        //0x2A0
-        public bfloat _unk134;
-        public bfloat _unk135;
-        public bfloat _unk136;
-        public bint _unk137;
-
-        //0x2B0
-        public bint _unk138;
-        public bint _unk139;
-        public bfloat _unk140;
-        public bint _unk141;
-
-        //0x2C0
-        public bfloat _unk142;
-        public bfloat _unk143;
-        public bfloat _unk144;
-        public bfloat _unk145;
-
-        //0x2D0
-        public bfloat _unk146;
-        public bfloat _unk147;
-        public bfloat _unk148;
-        public bfloat _unk149;
-        
-        //0x2E0
-        public bint _unk150;
-        public bint _unk151;
-        public bint _unk152;
-        public bint _unk153;
-
-        //0x2F0
-        public bint _unk154;
-        public bint _unk155;
-        public bint _unk156;
-        public bint _unk157;
-
-        //0x300
-        public bint _unk158;
     }
 }

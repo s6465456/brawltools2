@@ -236,18 +236,18 @@ namespace Ikarus.UI
 
         public ScriptPanel _mainWindow;
 
-        private MoveDefNode _mDef;
+        private MovesetFile _mDef;
         private Panel panel2;
         public ListBox EventList;
         
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefNode MoveDef
+        public MovesetFile MoveDef
         {
             get { return _mDef; }
             set { _mDef = value; }
         }
 
-        private ActionScript _targetNode;
+        private Script _targetNode;
         private Label description;
         private ToolStrip toolStrip1;
         private ToolStripButton btnDown;
@@ -263,7 +263,7 @@ namespace Ikarus.UI
         private Splitter splitter1;
     
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ActionScript TargetNode
+        public Script TargetNode
         {
             get { return _targetNode; }
             set { _targetNode = value; TargetChanged(); }
@@ -299,22 +299,22 @@ namespace Ikarus.UI
             if (TargetNode == null)
                 return;
 
-            string[] script = new string[TargetNode.Children.Count];
+            string[] script = new string[TargetNode.Count];
             int tabs = 0;
 
-            for (int i = 0; i < TargetNode.Children.Count; i++)
+            for (int i = 0; i < TargetNode.Count; i++)
             {
-                Event node = TargetNode.Children[i] as Event;
+                Event node = TargetNode[i] as Event;
                 string arg = node._name;
 
                 //Format the event and its parameters into a readable script.
-                script[i] = ResolveEventSyntax(GetEventSyntax(node._event), node);
+                script[i] = ResolveEventSyntax(GetEventSyntax(node.EventID), node);
                 if (script[i] == "") script[i] = GetDefaultSyntax(node);
 
                 //Add tabs to the script in correspondence to the code Params.
-                tabs -= DataHelpers.TabDownEvents(node._event);
+                tabs -= Util.TabDownEvents(node.EventID);
                 for (int i2 = 0; i2 < tabs; i2++) script[i] = "\t" + script[i];
-                tabs += DataHelpers.TabUpEvents(node._event);
+                tabs += Util.TabUpEvents(node.EventID);
             }
             EventList.Items.Clear();
             EventList.Items.AddRange(script);
@@ -323,8 +323,8 @@ namespace Ikarus.UI
         //  Return the event syntax corresponding to the event id passed
         public string GetEventSyntax(uint id)
         {
-            if (FileManager.EventDictionary.ContainsKey(id))
-                return FileManager.EventDictionary[id]._syntax;
+            if (Manager.Events.ContainsKey(id))
+                return Manager.Events[id]._syntax;
             
             return "";
         }
@@ -341,12 +341,12 @@ namespace Ikarus.UI
             //Search for a ',' or a ')' and return the preceeding string.
             do
             {
-                paramEnd = DataHelpers.FindFirstOfIgnoreNest(strParams, loc, new char[] { ',', ')' }, ref chrFound);
+                paramEnd = Util.FindFirstOfIgnoreNest(strParams, loc, new char[] { ',', ')' }, ref chrFound);
                 if (paramEnd == -1) paramEnd = strParams.Length;
 
                 Array.Resize<string>(ref parameters, index + 1);
                 parameters[index] = strParams.Substring(loc, paramEnd - loc);
-                parameters[index] = DataHelpers.ClearWhiteSpace(parameters[index]);
+                parameters[index] = Util.ClearWhiteSpace(parameters[index]);
 
                 loc = paramEnd + 1;
                 index++;
@@ -362,30 +362,30 @@ namespace Ikarus.UI
         //Return the collision status corresponding to the value passed.
         public string GetCollisionStatus(long value)
         {
-            if (value > FileManager.iCollisionStats.Length)
+            if (value > Manager.iCollisionStats.Length)
                 return "Undefined(" + value + ")";
 
-            return FileManager.iCollisionStats[value];
+            return Manager.iCollisionStats[value];
         }
 
         //Return the air or ground status corresponding to the value passed.
         public string GetAirGroundStatus(long value)
         {
-            if (value > FileManager.iAirGroundStats.Length)
+            if (value > Manager.iAirGroundStats.Length)
                 return "Undefined(" + value + ")";
 
-            return FileManager.iAirGroundStats[value];
+            return Manager.iAirGroundStats[value];
         }
 
         //Return the collision status corresponding to the value passed.
-        public string GetEnum(int paramIndex, long value, Event eventData)
+        public string GetEnum(int paramIndex, long value, Event e)
         {
-            if (FileManager.EventDictionary.ContainsKey(eventData._eventEvent))
+            if (Manager.Events.ContainsKey(e.EventID))
             {
-                Dictionary<int, List<string>> Params = FileManager.EventDictionary[eventData._eventEvent].Enums;
-                if (Params.ContainsKey(paramIndex))
+                Dictionary<int, List<string>> p = Manager.Events[e.EventID]._enums;
+                if (p.ContainsKey(paramIndex))
                 {
-                    List<string> values = Params[paramIndex];
+                    List<string> values = p[paramIndex];
                     if (values != null && values.Count > value)
                         return values[(int)value];
                 }
@@ -394,86 +394,84 @@ namespace Ikarus.UI
         }
 
         //Return the string result from the passed keyword and its parameters.
-        public string ResolveKeyword(string keyword, string[] Params, Event Event)
+        public string ResolveKeyword(string keyword, string[] p, Event e)
         {
-            Event eventData = Event.EventData;
             switch (keyword)
             {
                 case "\\value":
-                    //try { 
-                        return ResolveParamTypes(Event)[int.Parse(Params[0])]; //}
-                    //catch { return "Value-" + Params[0]; }
+                    try { return ResolveParamTypes(e)[int.Parse(p[0])]; }
+                    catch { return "Value-" + p[0]; }
                 case "\\type":
-                    try { return eventData._parameters[int.Parse(Params[0])]._type.ToString(); }
-                    catch { return "Type-" + Params[0]; }
+                    try { return e[int.Parse(p[0])].ParamType.ToString(); }
+                    catch { return "Type-" + p[0]; }
                 case "\\if":
                     bool compare = false;
                     try
                     {
-                        switch (Params[1])
+                        switch (p[1])
                         {
-                            case "==": compare = int.Parse(Params[0]) == int.Parse(Params[2]); break;
-                            case "!=": compare = int.Parse(Params[0]) != int.Parse(Params[2]); break;
-                            case ">=": compare = int.Parse(Params[0]) >= int.Parse(Params[2]); break;
-                            case "<=": compare = int.Parse(Params[0]) <= int.Parse(Params[2]); break;
-                            case ">": compare = int.Parse(Params[0]) > int.Parse(Params[2]); break;
-                            case "<": compare = int.Parse(Params[0]) < int.Parse(Params[2]); break;
+                            case "==": compare = int.Parse(p[0]) == int.Parse(p[2]); break;
+                            case "!=": compare = int.Parse(p[0]) != int.Parse(p[2]); break;
+                            case ">=": compare = int.Parse(p[0]) >= int.Parse(p[2]); break;
+                            case "<=": compare = int.Parse(p[0]) <= int.Parse(p[2]); break;
+                            case ">": compare = int.Parse(p[0]) > int.Parse(p[2]); break;
+                            case "<": compare = int.Parse(p[0]) < int.Parse(p[2]); break;
                         }
                     }
                     finally { }
                     if (compare)
-                        return Params[3];
+                        return p[3];
                     else
-                        return Params[4];
+                        return p[4];
                 case "\\bone":
                     try
                     {
-                        int id = int.Parse(Params[0]);
+                        int id = int.Parse(p[0]);
                         if (id >= 400)
                             TargetNode._root.GetBoneIndex(ref id);
                         if (_targetNode.Model != null && _targetNode.Model._linker.BoneCache != null && _targetNode.Model._linker.BoneCache.Length > id && id >= 0)
                             return _targetNode.Model._linker.BoneCache[id].Name;
                         else return id.ToString();
                     }
-                    catch { return int.Parse(Params[0]).ToString(); }
+                    catch { return int.Parse(p[0]).ToString(); }
                 case "\\unhex":
                     /*try { return MParams.UnHex(Params[0]).ToString(); }
                     catch { */
-                    return Params[0];// }
+                    return p[0];// }
                 case "\\hex":
                     /*try { return MParams.Hex(int.Parse(Params[0])); }
                     catch { */
-                    return Params[0];// }
+                    return p[0];// }
                 case "\\hex8":
                     /*try { return MParams.Hex8(int.Parse(Params[0])); }
                     catch { */
-                    return Params[0];// }
+                    return p[0];// }
                 case "\\half1":
-                    return (uint.Parse(Params[0]) >> 16).ToString();
+                    return (uint.Parse(p[0]) >> 16).ToString();
                 case "\\half2":
-                    return (uint.Parse(Params[0]) & 0xFFFF).ToString();
+                    return (uint.Parse(p[0]) & 0xFFFF).ToString();
                 case "\\byte1":
-                    return (uint.Parse(Params[0]) >> 24).ToString();
+                    return (uint.Parse(p[0]) >> 24).ToString();
                 case "\\byte2":
-                    return ((uint.Parse(Params[0]) >> 16) & 0xFF).ToString();
+                    return ((uint.Parse(p[0]) >> 16) & 0xFF).ToString();
                 case "\\byte3":
-                    return ((uint.Parse(Params[0]) >> 8) & 0xFF).ToString();
+                    return ((uint.Parse(p[0]) >> 8) & 0xFF).ToString();
                 case "\\byte4":
-                    return ((uint.Parse(Params[0])) & 0xFF).ToString();
+                    return ((uint.Parse(p[0])) & 0xFF).ToString();
                 case "\\collision":
-                    try { return GetCollisionStatus(int.Parse(Params[0])); }
-                    catch { return Params[0]; }
+                    try { return GetCollisionStatus(int.Parse(p[0])); }
+                    catch { return p[0]; }
                 case "\\airground":
-                    try { return GetAirGroundStatus(int.Parse(Params[0])); }
-                    catch { return Params[0]; }
+                    try { return GetAirGroundStatus(int.Parse(p[0])); }
+                    catch { return p[0]; }
                 case "\\enum":
-                    try { return GetEnum(int.Parse(Params[1]), int.Parse(Params[0]), eventData); }
-                    catch { return "Undefined(" + Params[1] + ")"; }
+                    try { return GetEnum(int.Parse(p[1]), int.Parse(p[0]), e); }
+                    catch { return "Undefined(" + p[1] + ")"; }
                 case "\\cmpsign":
-                    try { return DataHelpers.GetComparisonSign(int.Parse(Params[0])); }
-                    catch { return Params[0]; }
+                    try { return Util.GetComparisonSign(int.Parse(p[0])); }
+                    catch { return p[0]; }
                 case "\\name":
-                    return GetEventInfo(eventData._eventEvent)._name;
+                    return GetEventInfo(e.EventID)._name;
                 case "\\white":
                     return " ";
                 default:
@@ -481,84 +479,74 @@ namespace Ikarus.UI
             }
         }
         //Return a string of the parameter in the format corresponding to it's type.
-        public string[] ResolveParamTypes(Event Event)
+        public string[] ResolveParamTypes(Event e)
         {
-            Event eventData = Event.EventData;
-            string[] p = new string[eventData._parameters.Length];
+            string[] p = new string[e.Count];
 
             for (int i = 0; i < p.Length; i++)
             {
-                switch ((int)eventData._parameters[i]._type)
+                int x = e[i].Data;
+                switch ((int)e[i].ParamType)
                 {
-                    case 0: p[i] = GetValue(eventData._eventEvent, i, eventData._parameters[i]._data); break;
-                    case 1: p[i] = DataHelpers.UnScalar(eventData._parameters[i]._data).ToString(); break;
-                    case 2: p[i] = ResolvePointer(eventData._pParameters + i * 8 + 4, eventData._parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
-                    case 3: p[i] = (eventData._parameters[i]._data != 0 ? "true" : "false"); break;
-                    case 4: p[i] = DataHelpers.Hex(eventData._parameters[i]._data); break;
-                    case 5: p[i] = ResolveVariable(eventData._parameters[i]._data); break;
-                    case 6: p[i] = GetRequirement(eventData._parameters[i]._data); break;
+                    case 0: p[i] = GetValue(e.EventID, i, x); break;
+                    case 1: p[i] = Util.UnScalar(x).ToString(); break;
+                    case 2: p[i] = ResolvePointer(e[i] as EventOffset); break;
+                    case 3: p[i] = (e[i].Data != 0 ? "true" : "false"); break;
+                    case 4: p[i] = Util.Hex(x); break;
+                    case 5: p[i] = ResolveVariable(x); break;
+                    case 6: p[i] = GetRequirement(x); break;
                 }
             }
             return p;
         }
         //Return the name of the external pointer corresponding to the address if 
         //one is available, otherwise return the string of the value passed.
-        public string ResolvePointer(long pointer, ParameterData parameter, MoveDefEventOffsetNode node)
+        public string ResolvePointer(EventOffset node)
         {
-            //MoveDefExternalNode ext;
-            //if ((ext = _targetNode.Root.IsExternal((int)pointer)) != null || (ext = _targetNode.Root.IsExternal((int)parameter._data)) != null)
-            //    return "External: " + ext.Name;
-
             if (node._externalEntry != null)
                 return "External: " + node._externalEntry.Name;
 
-            if (node.list == 4)
-                return "0x" + DataHelpers.Hex(parameter._data);
+            if (node._offsetInfo.list == ListValue.Null)
+                return "0x" + Util.Hex(node.Data);
             else
             {
                 string name = "", t = "", grp = "";
-                switch (node.list)
+                switch (node._offsetInfo.list)
                 {
-                    case 0:
-                        grp = "Actions";
-                        name = _targetNode._root._actions.Children[node.index].Name;
-                        switch (node.type)
+                    case ListValue.Actions:
+                        grp = "Action ";
+                        switch (node._offsetInfo.type)
                         {
-                            case 0: t = "Entry"; break;
-                            case 1: t = "Exit"; break;
+                            case TypeValue.Entry: t = "Entry"; break;
+                            case TypeValue.Exit: t = "Exit"; break;
                         }
                         break;
-                    case 1:
-                        grp = "SubActions";
-                        name = _targetNode._root._subActions.Children[node.index].Name;
-                        switch (node.type)
+                    case ListValue.SubActions:
+                        grp = "SubAction ";
+                        switch (node._offsetInfo.type)
                         {
-                            case 0: t = "Main"; break;
-                            case 1: t = "GFX"; break;
-                            case 2: t = "SFX"; break;
-                            case 3: t = "Other"; break;
+                            case TypeValue.Main: t = "Main"; break;
+                            case TypeValue.GFX: t = "GFX"; break;
+                            case TypeValue.SFX: t = "SFX"; break;
+                            case TypeValue.Other: t = "Other"; break;
                         }
                         break;
-                    case 2:
-                        grp = "SubRoutines";
-                        name = _targetNode._root._subRoutines[node.index].Name;
+                    case ListValue.SubRoutines:
+                        grp = "SubRoutine ";
+                        name = node.Index.ToString();
                         break;
-                    case 3:
-                        return "External: " + _targetNode._root._references.Children[node.index].Name;
-                    case 5:
-                        grp = "Screen Tints";
-                        name = _targetNode._root._dataCommon._screenTint.Children[node.index].Name;
+                    case ListValue.ScreenTints:
+                        grp = "Screen Tint ";
                         break;
-                    case 6:
-                        grp = "Flash Overlays";
-                        name = _targetNode._root._dataCommon._flashOverlay.Children[node.index].Name;
+                    case ListValue.FlashOverlays:
+                        grp = "Flash Overlay ";
                         break;
                 }
 
-                return name + (node.list >= 2 ? "" : " - " + t) + " in the " + grp + " list";
+                return grp + node._offsetInfo.index.ToString() + ((int)node._offsetInfo.list >= 2 ? "" : " " + t);
             }
         }
-
+         
         //Return the full name of the variable corresponding to the value passed.
         public string ResolveVariable(long value)
         {
@@ -585,14 +573,15 @@ namespace Ikarus.UI
                 case 0x04000100:
                 case 0x04000200:
                     if (index == 0)
-                        if (TargetNode.Parent != null && TargetNode.Parent.Parent != null && TargetNode.Parent.Parent.Name.StartsWith("Article"))
-                        {
-                            ResourceNode sa = TargetNode.Parent.Parent.FindChild("SubActions", false);
-                            if (sa != null)
-                                return sa.Children[(int)value].Name;
-                        }
-                        else if (TargetNode._root._subActions != null && value < TargetNode._root._subActions.Children.Count && value >= 0)
-                            return TargetNode._root._subActions.Children[(int)value].Name;
+                        //if (TargetNode.Parent != null && TargetNode.Parent.Parent != null && TargetNode.Parent.Parent.Name.StartsWith("Article"))
+                        //{
+                        //    ResourceNode sa = TargetNode.Parent.Parent.FindChild("SubActions", false);
+                        //    if (sa != null)
+                        //        return sa.Children[(int)value].Name;
+                        //}
+                        //else 
+                            if (TargetNode._root.Data != null && TargetNode._root.Data.SubActions != null && value < TargetNode._root.Data.SubActions.Count && value >= 0)
+                            return TargetNode._root.Data.SubActions[(int)value].Name;
                         else return ((int)value).ToString();
                     break;
                 //case 0x02010200:
@@ -618,50 +607,49 @@ namespace Ikarus.UI
             bool not = (value & 0x80000000) == 0x80000000;
             long requirement = value & 0xFF;
 
-            if (requirement > FileManager.iRequirements.Length)
-                return DataHelpers.Hex(requirement);
+            if (requirement > Manager.iRequirements.Length)
+                return Util.Hex(requirement);
 
             if (not == true)
-                return "Not " + FileManager.iRequirements[requirement];
+                return "Not " + Manager.iRequirements[requirement];
 
-            return FileManager.iRequirements[requirement];
+            return Manager.iRequirements[requirement];
         }
-        public ActionEventInfo GetEventInfo(long id)
+        public EventInformation GetEventInfo(long id)
         {
-            if (FileManager.EventDictionary.ContainsKey(id))
-                return FileManager.EventDictionary[id];
+            if (Manager.Events.ContainsKey(id))
+                return Manager.Events[id];
 
-            return new ActionEventInfo(id, id.ToString("X"), "No Description Available.", null, null);
+            return new EventInformation(id, id.ToString("X"), "No Description Available.", null, null);
         }
 
         //Return the event name followed by each parameter paired with its type.
-        public string GetDefaultSyntax(Event Event)
+        public string GetDefaultSyntax(Event e)
         {
-            Event eventData = Event.EventData;
-            string script = GetEventInfo(eventData._eventEvent)._name + (eventData._paramCount > 0 ? ": " : "");
-            for (int i = 0; i < eventData._paramCount; i++)
+            string script = GetEventInfo(e.EventID)._name + (e.Count > 0 ? ": " : "");
+            for (int i = 0; i < e.Count; i++)
             {
-                script += eventData._parameters[i]._type + "-";
-                switch ((int)eventData._parameters[i]._type)
+                script += e[i].ParamType + "(";
+                switch ((int)e[i].ParamType)
                 {
-                    case 0: script += GetValue(eventData._eventEvent, i, eventData._parameters[i]._data); break;
-                    case 1: script += DataHelpers.UnScalar(eventData._parameters[i]._data).ToString(); break;
-                    case 2: script += ResolvePointer(eventData._pParameters + i * 8 + 4, eventData._parameters[i], Event.Children[i] as MoveDefEventOffsetNode); break;
-                    case 3: script += (eventData._parameters[i]._data != 0 ? "true" : "false"); break;
-                    case 4: script += eventData._parameters[i]._data; break;
-                    case 5: script += ResolveVariable(eventData._parameters[i]._data); break;
-                    case 6: script += GetRequirement(eventData._parameters[i]._data); break;
+                    case 0: script += GetValue(e.EventID, i, e[i].Data); break;
+                    case 1: script += Util.UnScalar(e[i].Data).ToString(); break;
+                    case 2: script += ResolvePointer(e[i] as EventOffset); break;
+                    case 3: script += (e[i].Data != 0 ? "true" : "false"); break;
+                    case 4: script += e[i].Data; break;
+                    case 5: script += ResolveVariable(e[i].Data); break;
+                    case 6: script += GetRequirement(e[i].Data); break;
                 }
-                if (i != eventData._paramCount)
+                script += ")";
+                if (i != e.Count)
                     script += ", ";
             }
             return script;
         }
 
         //Return the passed syntax with all keywords replaced with their proper values.
-        public string ResolveEventSyntax(string syntax, Event Event)
+        public string ResolveEventSyntax(string syntax, Event e)
         {
-            Event eventData = Event.EventData;
             while (true)
             {
                 string keyword = "";
@@ -669,26 +657,26 @@ namespace Ikarus.UI
                 string strParams = "";
                 string[] kParams;
 
-                int keyBegin = DataHelpers.FindFirst(syntax, 0, '\\');
+                int keyBegin = Util.FindFirst(syntax, 0, '\\');
                 if (keyBegin == -1) break;
 
-                int keyEnd = DataHelpers.FindFirst(syntax, keyBegin, '(');
+                int keyEnd = Util.FindFirst(syntax, keyBegin, '(');
                 if (keyEnd == -1) keyEnd = syntax.Length;
 
                 int paramsBegin = keyEnd + 1;
 
-                int paramsEnd = DataHelpers.FindFirstIgnoreNest(syntax, paramsBegin, ')');
+                int paramsEnd = Util.FindFirstIgnoreNest(syntax, paramsBegin, ')');
                 if (paramsEnd == -1) paramsEnd = syntax.Length;
 
                 keyword = syntax.Substring(keyBegin, keyEnd - keyBegin);
 
                 strParams = syntax.Substring(paramsBegin, paramsEnd - paramsBegin);
-                kParams = GetParameters(strParams, Event);
+                kParams = GetParameters(strParams, e);
 
-                keyResult = ResolveKeyword(keyword, kParams, Event);
+                keyResult = ResolveKeyword(keyword, kParams, e);
 
-                syntax = DataHelpers.DelSubstring(syntax, keyBegin, (paramsEnd + 1) - keyBegin);
-                syntax = DataHelpers.InsString(syntax, keyResult, keyBegin);
+                syntax = Util.DelSubstring(syntax, keyBegin, (paramsEnd + 1) - keyBegin);
+                syntax = Util.InsString(syntax, keyResult, keyBegin);
             }
 
             return syntax;
@@ -702,9 +690,10 @@ namespace Ikarus.UI
 
             Event d = new Event();
             if (highest == EventList.Items.Count)
-                TargetNode.AddChild(d);
+                TargetNode.Add(d);
             else
-                TargetNode.InsertChild(d, true, highest + 1);
+                TargetNode.Insert(highest + 1, d);
+            TargetNode.SignalRebuildChange();
             d.EventID = 0x00020000;
             MakeScript();
 
@@ -719,13 +708,13 @@ namespace Ikarus.UI
             if (EventList.SelectedIndex != -1)
                 if (_mainWindow != null)
                 {
-                    _mainWindow.SelectedEvent = TargetNode.Children[EventList.SelectedIndex] as Event;
+                    _mainWindow.SelectedEvent = TargetNode[EventList.SelectedIndex];
                     _mainWindow.ModifyEvent();
                 }
                 else
                 {
                     FormModifyEvent p = new FormModifyEvent();
-                    p.eventModifier.Setup(TargetNode.Children[EventList.SelectedIndex] as Event);
+                    p.eventModifier.Setup(TargetNode[EventList.SelectedIndex]);
                     if (p.ShowDialog() == DialogResult.OK)
                         MakeScript();
                 }
@@ -735,8 +724,8 @@ namespace Ikarus.UI
         {
             int[] indices = new int[EventList.SelectedIndices.Count];
             EventList.SelectedIndices.CopyTo(indices, 0);
-            for (int i = indices.Length - 1; i >= 0 ; i--)
-                TargetNode.Children[indices[i]].Remove();
+            for (int i = indices.Length - 1; i >= 0; i--)
+                TargetNode.RemoveAt(indices[i]);
             MakeScript();
             if (TargetNode != null && indices.Length == 1)
                 foreach (int i in indices)
@@ -755,8 +744,9 @@ namespace Ikarus.UI
             EventList.SelectedIndices.CopyTo(indices, 0);
             if (lowest != -1 && lowest != 0)
             {
-                for (int i = 0; i < EventList.SelectedIndices.Count; i++)
-                    TargetNode.Children[EventList.SelectedIndices[i]].DoMoveUp(false);
+                //TODO
+                //for (int i = 0; i < EventList.SelectedIndices.Count; i++)
+                //    TargetNode[EventList.SelectedIndices[i]].DoMoveUp(false);
                 MakeScript();
                 if (TargetNode != null)
                     foreach (int i in indices)
@@ -773,8 +763,9 @@ namespace Ikarus.UI
             EventList.SelectedIndices.CopyTo(indices, 0);
             if (highest != -1 && highest != EventList.Items.Count - 1)
             {
-                for (int i = EventList.SelectedIndices.Count - 1; i >= 0; i--)
-                    TargetNode.Children[EventList.SelectedIndices[i]].DoMoveDown(false);
+                //TODO
+                //for (int i = EventList.SelectedIndices.Count - 1; i >= 0; i--)
+                //    TargetNode[EventList.SelectedIndices[i]].DoMoveDown(false);
                 MakeScript();
                 if (TargetNode != null)
                     foreach (int i in indices)
@@ -787,7 +778,7 @@ namespace Ikarus.UI
             string s = "";
             foreach (int i in EventList.SelectedIndices)
             {
-                s += (TargetNode.Children[i] as Event).Serialize();
+                s += TargetNode[i].Serialize();
                 s += "/";
             }
             if (!String.IsNullOrEmpty(s))
@@ -812,10 +803,10 @@ namespace Ikarus.UI
                     Event y = Event.Deserialize(x, TargetNode._root);
                     if (y != null)
                     {
-                        if (highest == TargetNode.Children.Count)
-                            TargetNode.AddChild(y);
+                        if (highest == TargetNode.Count)
+                            TargetNode.Add(y);
                         else
-                            TargetNode.InsertChild(y, true, highest + 1);
+                            TargetNode.Insert(highest + 1, y);
                         indices.Add(y.Index);
                         highest++;
                     }
@@ -834,7 +825,7 @@ namespace Ikarus.UI
         {
             if (EventList.SelectedIndex >= 0)
             {
-                ActionEventInfo info = (TargetNode.Children[EventList.SelectedIndex] as Event).EventInfo;
+                EventInformation info = (TargetNode[EventList.SelectedIndex]).Info;
                 if (info != null && !String.IsNullOrEmpty(info._description))
                     description.Text = info._description;
                 else

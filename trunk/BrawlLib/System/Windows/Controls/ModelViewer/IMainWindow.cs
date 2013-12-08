@@ -89,8 +89,8 @@ namespace System.Windows.Forms
         SHP = 2,
         PAT = 3,
         VIS = 4,
-        SCN = 5,
-        CLR = 6
+        CLR = 5,
+        SCN = 6,
     }
 
     public class TransparentPanel : Panel

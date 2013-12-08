@@ -390,6 +390,15 @@ namespace System
         }
     }
 
+    public class DropDownListRELModuleIDs : StringConverter
+    {
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            return new StandardValuesCollection(RELNode._idNames.Values.ToList());
+        }
+    }
+
     public class DropDownListARCEntry : StringConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }

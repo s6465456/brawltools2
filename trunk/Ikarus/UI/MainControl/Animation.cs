@@ -58,11 +58,20 @@ namespace Ikarus.UI
             box.Value = value;
             chr0Editor.BoxChanged(box, null);
         }
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public AnimType TargetAnimType
         {
-            get { return leftPanel.TargetAnimType; }
-            set { leftPanel.TargetAnimType = value; }
+            get
+            {
+                return (AnimType)fileType.SelectedIndex;
+            }
+            set
+            {
+                fileType.SelectedIndex = (int)value;
+            }
         }
+
         private Control _currentControl = null;
         public int prevHeight = 0, prevWidth = 0;
         public void SetCurrentControl()
@@ -163,13 +172,13 @@ namespace Ikarus.UI
 
             if (TargetAnimType == AnimType.VIS)
             {
-                if (rightPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)rightPanel.pnlKeyframes.visEditor.TargetNode).Constant)
-                {
-                    rightPanel.pnlKeyframes.visEditor._updating = true;
-                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
-                    rightPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame - 1;
-                    rightPanel.pnlKeyframes.visEditor._updating = false;
-                }
+                //if (scriptPanel.pnlKeyframes.visEditor.TargetNode != null && !((VIS0EntryNode)scriptPanel.pnlKeyframes.visEditor.TargetNode).Constant)
+                //{
+                //    scriptPanel.pnlKeyframes.visEditor._updating = true;
+                //    scriptPanel.pnlKeyframes.visEditor.listBox1.SelectedIndices.Clear();
+                //    scriptPanel.pnlKeyframes.visEditor.listBox1.SelectedIndex = CurrentFrame - 1;
+                //    scriptPanel.pnlKeyframes.visEditor._updating = false;
+                //}
             }
         }
 
@@ -190,7 +199,7 @@ namespace Ikarus.UI
 
             if (RunTime._articles != null)
                 foreach (ArticleInfo a in RunTime._articles)
-                    if (a.Running)
+                    if (a != null && a.Running)
                         a.UpdateModel();
 
             if (!_playing) 
@@ -200,29 +209,30 @@ namespace Ikarus.UI
         }
         private void UpdateModel(MDL0Node model)
         {
+            int frame = CurrentFrame;
             if (_chr0 != null && !(TargetAnimType != AnimType.CHR && !playCHR0ToolStripMenuItem.Checked))
-                model.ApplyCHR(_chr0, _animFrame);
+                model.ApplyCHR(_chr0, frame);
             else
                 model.ApplyCHR(null, 0);
             if (_srt0 != null && !(TargetAnimType != AnimType.SRT && !playSRT0ToolStripMenuItem.Checked))
-                model.ApplySRT(_srt0, _animFrame);
+                model.ApplySRT(_srt0, frame);
             else
                 model.ApplySRT(null, 0);
             if (_shp0 != null && !(TargetAnimType != AnimType.SHP && !playSHP0ToolStripMenuItem.Checked))
-                model.ApplySHP(_shp0, _animFrame);
+                model.ApplySHP(_shp0, frame);
             else
                 model.ApplySHP(null, 0);
             if (_pat0 != null && !(TargetAnimType != AnimType.PAT && !playPAT0ToolStripMenuItem.Checked))
-                model.ApplyPAT(_pat0, _animFrame);
+                model.ApplyPAT(_pat0, frame);
             else
                 model.ApplyPAT(null, 0);
             if (_vis0 != null && !(TargetAnimType != AnimType.VIS && !playVIS0ToolStripMenuItem.Checked))
                 if (model == TargetModel)
                     ReadVIS0();
                 else
-                    model.ApplyVIS(_vis0, _animFrame);
+                    model.ApplyVIS(_vis0, frame);
             if (_clr0 != null && !(TargetAnimType != AnimType.CLR && !playCLR0ToolStripMenuItem.Checked))
-                model.ApplyCLR(_clr0, _animFrame);
+                model.ApplyCLR(_clr0, frame);
             else
                 model.ApplyCLR(null, 0);
         }
@@ -230,22 +240,22 @@ namespace Ikarus.UI
         public void AnimChanged(AnimType type)
         {
             //Update animation editors
-            if (type != AnimType.SRT) leftPanel.UpdateSRT0Selection(null);
-            if (type != AnimType.PAT) leftPanel.UpdatePAT0Selection(null);
+            if (type != AnimType.SRT) modelListsPanel1.UpdateSRT0Selection(null);
+            if (type != AnimType.PAT) modelListsPanel1.UpdatePAT0Selection(null);
 
             switch (type)
             {
                 case AnimType.CHR:
                     break;
                 case AnimType.SRT:
-                    leftPanel.UpdateSRT0Selection(SelectedSRT0);
+                    modelListsPanel1.UpdateSRT0Selection(SelectedSRT0);
                     break;
                 case AnimType.SHP:
                     shp0Editor.UpdateSHP0Indices();
                     break;
                 case AnimType.PAT:
                     pat0Editor.UpdateBoxes();
-                    leftPanel.UpdatePAT0Selection(SelectedPAT0);
+                    modelListsPanel1.UpdatePAT0Selection(SelectedPAT0);
                     break;
                 case AnimType.VIS: 
                     vis0Editor.UpdateAnimation();
@@ -255,47 +265,9 @@ namespace Ikarus.UI
                     break;
             }
 
-            //Update keyframe panel
-            //pnlKeyframes.TargetSequence = null;
-            //btnRightToggle.Enabled = true;
-            //switch (TargetAnimType)
-            //{
-            //    case AnimType.CHR:
-            //        if (_chr0 != null && SelectedBone != null)
-            //            pnlKeyframes.TargetSequence = _chr0.FindChild(SelectedBone.Name, false);
-            //        break;
-            //    case AnimType.SRT:
-            //        if (_srt0 != null && TargetTexRef != null)
-            //            pnlKeyframes.TargetSequence = srt0Editor.TexEntry;
-            //        break;
-            //    case AnimType.SHP:
-            //        if (_shp0 != null)
-            //            pnlKeyframes.TargetSequence = shp0Editor.VertexSetDest;
-            //        break;
-            //    case AnimType.CLR:
-            //    case AnimType.VIS:
-            //        //if (TargetVisEntry == null) break;
-            //        //string name = TargetVisEntry.Name;
-            //        //if (_vis0 != null)
-            //        //{
-            //        //    int i = 0;
-            //        //    foreach (object s in vis0Editor.listBox1.Items)
-            //        //        if (s.ToString() == name)
-            //        //            vis0Editor.listBox1.SelectedIndex = i;
-            //        //        else 
-            //        //            i++;
-            //        //}
-            //        break;
-            //    default:
-            //        if (pnlKeyframes.Visible)
-            //            btnRightToggle_Click(null, null);
-            //        btnRightToggle.Enabled = false;
-            //        break;
-            //}
-
             if (GetAnimation(type) == null)
             {
-                pnlPlayback.numFrameIndex.Maximum = _maxFrame = 0;
+                pnlPlayback.numFrameIndex.Maximum = MaxFrame = 0;
                 pnlPlayback.numTotalFrames.Minimum = 0;
                 _updating = true;
                 pnlPlayback.numTotalFrames.Value = 0;
@@ -306,33 +278,33 @@ namespace Ikarus.UI
                 pnlPlayback.btnLast.Enabled = false;
                 pnlPlayback.btnFirst.Enabled = false;
                 pnlPlayback.Enabled = false;
-                SetFrame(0);
+                RunTime.SetFrame(-1);
             }
             else
             {
-                int oldMax = _maxFrame;
+                int oldMax = MaxFrame;
 
-                _maxFrame = GetAnimation(type).FrameCount;
+                MaxFrame = GetAnimation(type).FrameCount;
 
                 _updating = true;
                 pnlPlayback.btnPlay.Enabled =
                 pnlPlayback.numFrameIndex.Enabled =
                 pnlPlayback.numTotalFrames.Enabled = true;
                 pnlPlayback.Enabled = true;
-                pnlPlayback.numTotalFrames.Value = _maxFrame;
+                pnlPlayback.numTotalFrames.Value = MaxFrame;
                 if (syncLoopToAnimationToolStripMenuItem.Checked)
                     pnlPlayback.chkLoop.Checked = GetAnimation(type).Loop;
                 _updating = false;
 
-                if (_maxFrame < oldMax)
+                if (MaxFrame < oldMax)
                 {
-                    SetFrame(1);
-                    pnlPlayback.numFrameIndex.Maximum = _maxFrame;
+                    RunTime.SetFrame(0);
+                    pnlPlayback.numFrameIndex.Maximum = MaxFrame;
                 }
                 else
                 {
-                    pnlPlayback.numFrameIndex.Maximum = _maxFrame;
-                    SetFrame(1);
+                    pnlPlayback.numFrameIndex.Maximum = MaxFrame;
+                    RunTime.SetFrame(0);
                 }
             }
         }
@@ -340,130 +312,31 @@ namespace Ikarus.UI
         public void numFrameIndex_ValueChanged(object sender, EventArgs e)
         {
             int val = (int)pnlPlayback.numFrameIndex.Value;
-            if (val != _animFrame)
-            {
-                RunTime.SetFrame(val);
+            if (val != CurrentFrame)
+                SetFrame(val);
+        }
 
-                KeyframePanel.numFrame_ValueChanged();
-            }
+        internal void UpdatePlaybackPanel()
+        {
+            pnlPlayback.btnNextFrame.Enabled = CurrentFrame < MaxFrame;
+            pnlPlayback.btnPrevFrame.Enabled = CurrentFrame > 0;
+            pnlPlayback.btnLast.Enabled = CurrentFrame != MaxFrame;
+            pnlPlayback.btnFirst.Enabled = CurrentFrame > 1;
+            if (CurrentFrame <= pnlPlayback.numFrameIndex.Maximum)
+                pnlPlayback.numFrameIndex.Value = CurrentFrame;
         }
 
         public bool _playing = false;
         public void SetFrame(int index)
         {
-            index = TargetModel == null ? 0 : index.Clamp(0, _maxFrame);
-
-            //if (index < 0)
-            //    return;
-
-            //if (index > _maxFrame)
-            //    if (Loop)
-            //    {
-            //        if (MaxFrame == 0)
-            //            return;
-
-            //        index = ((index - 1) % MaxFrame) + 1;
-
-            //        //if (RunTime.SelectedSubActionGrp != null && index == 1)
-            //        //{
-            //        //    if (RunTime.SelectedSubActionGrp.Flags.HasFlag(AnimationFlags.MovesCharacter))
-            //        //    {
-            //        //        MDL0BoneNode TopN = (FileManager.Moveset._data.boneRef1.Children[0] as MoveDefBoneIndexNode).BoneNode;
-            //        //        MDL0BoneNode TransN = (FileManager.Moveset._data._misc.boneRefs.Children[4] as MoveDefBoneIndexNode).BoneNode;
-            //        //        Vector3 v = TransN._frameMatrix.GetPoint();
-            //        //        TopN._overrideTranslate = v;
-            //        //    }
-            //        //}
-            //    }
-            //    else
-            //        return;
-
-            CurrentFrame = index;
-
-            pnlPlayback.btnNextFrame.Enabled = _animFrame < _maxFrame;
-            pnlPlayback.btnPrevFrame.Enabled = _animFrame > 0;
-
-            pnlPlayback.btnLast.Enabled = _animFrame != _maxFrame;
-            pnlPlayback.btnFirst.Enabled = _animFrame > 1;
-
-            if (_animFrame <= pnlPlayback.numFrameIndex.Maximum)
-                pnlPlayback.numFrameIndex.Value = _animFrame;
-        }
-        private bool wasOff = false;
-        public bool runningAction = false;
-
-        void _timer_RenderFrame(object sender, FrameEventArgs e)
-        {
-            if (TargetAnimation == null)
-                return;
-
-            if (_animFrame >= _maxFrame)
-                if (!_loop)
-                    StopAnim();
-                else
-                    SetFrame(1);
-            else
-                SetFrame(_animFrame + 1);
-
-            if (_capture)
-                images.Add(modelPanel.GrabScreenshot(false));
+            RunTime.SetFrame(index - 1);
         }
 
-        public void PlayAnim()
+        internal void ApplyFrame()
         {
-            if (GetAnimation(TargetAnimType) == null || _maxFrame == 1)
-                return;
-
-            _playing = true;
-
-            if (disableBonesWhenPlayingToolStripMenuItem.Checked)
-            {
-                if (RenderBones == false)
-                    wasOff = true;
-
-                RenderBones = false;
-                toggleBones.Checked = false;
-            }
-
-            EnableTransformEdit = false;
-
-            if (_animFrame >= _maxFrame) //Reset anim
-                SetFrame(1);
-
-            if (_animFrame < _maxFrame)
-            {
-                pnlPlayback.btnPlay.Text = "Stop";
-                RunTime.Run();
-            }
-            else
-            {
-                if (disableBonesWhenPlayingToolStripMenuItem.Checked)
-                    RenderBones = true;
-                _playing = false;
-            }
-        }
-        public void StopAnim()
-        {
-            _playing = false;
-
-            if (disableBonesWhenPlayingToolStripMenuItem.Checked)
-            {
-                if (!wasOff)
-                    RenderBones = true;
-
-                wasOff = false;
-            }
-
-            pnlPlayback.btnPlay.Text = "Play";
-            EnableTransformEdit = true;
+            UpdateModel();
             UpdatePropDisplay();
-
-            if (_capture)
-            {
-                RenderToGIF(images.ToArray());
-                images.Clear();
-                _capture = false;
-            }
+            UpdatePlaybackPanel();
         }
     }
 }

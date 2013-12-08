@@ -384,7 +384,7 @@ namespace System.Windows.Forms
             // btnRightToggle
             // 
             this.btnRightToggle.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnRightToggle.Location = new System.Drawing.Point(993, 24);
+            this.btnRightToggle.Location = new System.Drawing.Point(657, 24);
             this.btnRightToggle.Name = "btnRightToggle";
             this.btnRightToggle.Size = new System.Drawing.Size(15, 391);
             this.btnRightToggle.TabIndex = 6;
@@ -398,7 +398,7 @@ namespace System.Windows.Forms
             this.btnBottomToggle.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.btnBottomToggle.Location = new System.Drawing.Point(157, 400);
             this.btnBottomToggle.Name = "btnBottomToggle";
-            this.btnBottomToggle.Size = new System.Drawing.Size(836, 15);
+            this.btnBottomToggle.Size = new System.Drawing.Size(500, 15);
             this.btnBottomToggle.TabIndex = 8;
             this.btnBottomToggle.TabStop = false;
             this.btnBottomToggle.UseVisualStyleBackColor = false;
@@ -419,7 +419,7 @@ namespace System.Windows.Forms
             this.btnTopToggle.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnTopToggle.Location = new System.Drawing.Point(157, 24);
             this.btnTopToggle.Name = "btnTopToggle";
-            this.btnTopToggle.Size = new System.Drawing.Size(836, 15);
+            this.btnTopToggle.Size = new System.Drawing.Size(500, 15);
             this.btnTopToggle.TabIndex = 11;
             this.btnTopToggle.TabStop = false;
             this.btnTopToggle.UseVisualStyleBackColor = false;
@@ -438,7 +438,7 @@ namespace System.Windows.Forms
             this.kinectToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(395, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(303, 24);
             this.menuStrip1.TabIndex = 13;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -849,7 +849,7 @@ namespace System.Windows.Forms
             this.showBottom,
             this.showRight});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.editorsToolStripMenuItem.Text = "Panels";
             // 
             // showTop
@@ -895,7 +895,7 @@ namespace System.Windows.Forms
             this.showCameraCoordinatesToolStripMenuItem,
             this.detachViewerToolStripMenuItem});
             this.backColorToolStripMenuItem.Name = "backColorToolStripMenuItem";
-            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.backColorToolStripMenuItem.Text = "Viewer";
             // 
             // backgroundToolStripMenuItem
@@ -1142,7 +1142,7 @@ namespace System.Windows.Forms
             this.toggleNormals,
             this.boundingBoxToolStripMenuItem});
             this.modelToolStripMenuItem.Name = "modelToolStripMenuItem";
-            this.modelToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.modelToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.modelToolStripMenuItem.Text = "Model";
             // 
             // toggleBones
@@ -1202,7 +1202,7 @@ namespace System.Windows.Forms
             this.linearInterpolationToolStripMenuItem,
             this.sCN0ToolStripMenuItem});
             this.fileTypesToolStripMenuItem.Name = "fileTypesToolStripMenuItem";
-            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.fileTypesToolStripMenuItem.Text = "Animations";
             // 
             // playToolStripMenuItem
@@ -1389,7 +1389,7 @@ namespace System.Windows.Forms
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
             // 
@@ -1592,7 +1592,7 @@ namespace System.Windows.Forms
             this.controlPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.controlPanel.Location = new System.Drawing.Point(0, 0);
             this.controlPanel.Name = "controlPanel";
-            this.controlPanel.Size = new System.Drawing.Size(1141, 24);
+            this.controlPanel.Size = new System.Drawing.Size(805, 24);
             this.controlPanel.TabIndex = 22;
             this.controlPanel.Visible = false;
             // 
@@ -1620,7 +1620,7 @@ namespace System.Windows.Forms
             this.toolStrip1.Location = new System.Drawing.Point(431, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
-            this.toolStrip1.Size = new System.Drawing.Size(710, 24);
+            this.toolStrip1.Size = new System.Drawing.Size(374, 24);
             this.toolStrip1.TabIndex = 30;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -1711,7 +1711,7 @@ namespace System.Windows.Forms
             // spltRight
             // 
             this.spltRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.spltRight.Location = new System.Drawing.Point(1008, 24);
+            this.spltRight.Location = new System.Drawing.Point(672, 24);
             this.spltRight.Name = "spltRight";
             this.spltRight.Size = new System.Drawing.Size(4, 391);
             this.spltRight.TabIndex = 23;
@@ -1724,7 +1724,7 @@ namespace System.Windows.Forms
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(157, 39);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(836, 361);
+            this.panel1.Size = new System.Drawing.Size(500, 361);
             this.panel1.TabIndex = 25;
             // 
             // modelPanel
@@ -1736,7 +1736,7 @@ namespace System.Windows.Forms
             this.modelPanel.Location = new System.Drawing.Point(0, 0);
             this.modelPanel.Name = "modelPanel";
             this.modelPanel.RotationScale = 0.4F;
-            this.modelPanel.Size = new System.Drawing.Size(836, 361);
+            this.modelPanel.Size = new System.Drawing.Size(500, 361);
             this.modelPanel.TabIndex = 0;
             this.modelPanel.TranslationScale = 0.05F;
             this.modelPanel.ZoomScale = 2.5F;
@@ -1758,7 +1758,7 @@ namespace System.Windows.Forms
             this.animEditors.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.animEditors.Location = new System.Drawing.Point(0, 415);
             this.animEditors.Name = "animEditors";
-            this.animEditors.Size = new System.Drawing.Size(1141, 60);
+            this.animEditors.Size = new System.Drawing.Size(805, 60);
             this.animEditors.TabIndex = 29;
             this.animEditors.Visible = false;
             // 
@@ -1769,7 +1769,7 @@ namespace System.Windows.Forms
             this.pnlPlayback.Location = new System.Drawing.Point(264, 0);
             this.pnlPlayback.MinimumSize = new System.Drawing.Size(290, 54);
             this.pnlPlayback.Name = "pnlPlayback";
-            this.pnlPlayback.Size = new System.Drawing.Size(877, 60);
+            this.pnlPlayback.Size = new System.Drawing.Size(541, 60);
             this.pnlPlayback.TabIndex = 15;
             this.pnlPlayback.Resize += new System.EventHandler(this.pnlPlayback_Resize);
             // 
@@ -1878,7 +1878,7 @@ namespace System.Windows.Forms
             // splitter2
             // 
             this.splitter2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.splitter2.Location = new System.Drawing.Point(1137, 24);
+            this.splitter2.Location = new System.Drawing.Point(801, 24);
             this.splitter2.Name = "splitter2";
             this.splitter2.Size = new System.Drawing.Size(4, 391);
             this.splitter2.TabIndex = 31;
@@ -1898,7 +1898,7 @@ namespace System.Windows.Forms
             // rightPanel
             // 
             this.rightPanel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.rightPanel.Location = new System.Drawing.Point(1012, 24);
+            this.rightPanel.Location = new System.Drawing.Point(676, 24);
             this.rightPanel.Name = "rightPanel";
             this.rightPanel.Size = new System.Drawing.Size(125, 391);
             this.rightPanel.TabIndex = 32;
@@ -1920,7 +1920,7 @@ namespace System.Windows.Forms
             this.Controls.Add(this.controlPanel);
             this.Controls.Add(this.animEditors);
             this.Name = "ModelEditControl";
-            this.Size = new System.Drawing.Size(1141, 475);
+            this.Size = new System.Drawing.Size(805, 475);
             this.SizeChanged += new System.EventHandler(this.ModelEditControl_SizeChanged);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.ModelEditControl_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.ModelEditControl_DragEnter);
