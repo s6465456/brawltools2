@@ -10,6 +10,7 @@ using BrawlLib.Imaging;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
+    //Most of this was converted from Dolphin's C++ source
     public unsafe partial class TEVStage : MDL0EntryNode
     {
         [Browsable(false)]

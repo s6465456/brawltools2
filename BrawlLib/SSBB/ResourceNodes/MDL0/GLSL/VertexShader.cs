@@ -11,6 +11,7 @@ using System.Windows.Forms;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
+    //Most of this was converted from Dolphin's C++ source
     public unsafe partial class MDL0ObjectNode : MDL0EntryNode
     {
         public const int SHADER_POSMTX_ATTRIB = 1;
