@@ -10,6 +10,7 @@ using System.Text;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
+    //Most of this was converted from Dolphin's C++ source
     public unsafe partial class MDL0MaterialNode : MDL0EntryNode
     {
         #region Uniforms
