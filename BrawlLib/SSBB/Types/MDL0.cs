@@ -508,6 +508,12 @@ namespace BrawlLib.SSBBTypes
             get { return (VoidPtr)Address + _stringOffset; }
             set { _stringOffset = (int)value - (int)Address; }
         }
+
+        public VoidPtr MDL0Address
+        {
+            get { return (VoidPtr)Address + _mdl0Offset; }
+            set { _mdl0Offset = (int)value - (int)Address; }
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

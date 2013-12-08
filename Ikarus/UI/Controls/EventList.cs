@@ -15,7 +15,7 @@ namespace System.Windows.Forms
     {
         public DialogResult status;
         public long eventEvent;
-        public MoveDefNode p;
+        public MovesetFile p;
 
         public FormEventList()
         {
@@ -26,7 +26,7 @@ namespace System.Windows.Forms
         {
             //Add each event to the event list, but omit any events lacking a formal name.
             if (lstEvents.Items.Count <= 0)
-                foreach (ActionEventInfo e in FileManager.EventDictionary.Values)
+                foreach (EventInformation e in Manager.Events.Values)
                     if (!(e._name == null || e._name == ""))
                         lstEvents.Items.Add(e);
 
@@ -47,7 +47,7 @@ namespace System.Windows.Forms
         private void lstEvents_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lstEvents.SelectedIndex == -1) return;
-            txtEventId.Text = Helpers.Hex8((lstEvents.SelectedItem as ActionEventInfo)._idNumber);
+            txtEventId.Text = Helpers.Hex8((lstEvents.SelectedItem as EventInformation)._id);
         }
 
         private void txtEventId_TextChanged(object sender, EventArgs e)
@@ -58,7 +58,7 @@ namespace System.Windows.Forms
             //Select the event corresponding to the id input.
             lstEvents.SelectedIndex = -1;
             for (int i = 0; i < lstEvents.Items.Count; i++)
-                if (eventId == Helpers.Hex8((lstEvents.Items[i] as ActionEventInfo)._idNumber))
+                if (eventId == Helpers.Hex8((lstEvents.Items[i] as EventInformation)._id))
                 {
                     lstEvents.SelectedIndex = i; 
                     break;

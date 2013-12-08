@@ -33,15 +33,17 @@ namespace Ikarus.UI
         private delegate void DelegateOpenFile(String s);
         private DelegateOpenFile m_DelegateOpenFile;
 
-        public int _animFrame = 0, _maxFrame;
-        public bool _updating, _loop;
+        public bool _updating;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int MaxFrame { get { return _maxFrame; } set { _maxFrame = value; } }
+        public int CurrentFrame { get { return RunTime.CurrentFrame + 1; } set { RunTime.CurrentFrame = value - 1; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int MaxFrame { get { return RunTime.MaxFrame; } set { RunTime.MaxFrame = value; } }
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool Loop { get { return RunTime.Loop; } set { RunTime.Loop = value; } }
+
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool Updating { get { return _updating; } set { _updating = value; } }
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool Loop { get { return _loop; } set { _updating = true; pnlPlayback.chkLoop.Checked = _loop = value; _updating = false; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public CHR0Editor CHR0Editor { get { return chr0Editor; } }
@@ -59,11 +61,11 @@ namespace Ikarus.UI
         public CLR0Editor CLR0Editor { get { return clr0Editor; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ResourceNode ExternalAnimationsNode { get { return FileManager.Animations; } }
+        public ResourceNode ExternalAnimationsNode { get { return Manager.Animations; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool SyncVIS0 { get { return syncObjectsListToVIS0ToolStripMenuItem.Checked; } set { syncObjectsListToVIS0ToolStripMenuItem.Checked = value; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool Playing { get { return _playing; } set { _playing = value; } }
+        public bool Playing { get { return RunTime._playing; } set { RunTime._playing = value; } }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Panel AnimCtrlPnl { get { return panel3; } }
@@ -73,9 +75,9 @@ namespace Ikarus.UI
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ModelPlaybackPanel PlaybackPanel { get { return pnlPlayback; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public BonesPanel BonesPanel { get { return rightPanel.pnlBones; } }
+        public BonesPanel BonesPanel { get { return null; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public KeyframePanel KeyframePanel { get { return rightPanel.pnlKeyframes; } }
+        public KeyframePanel KeyframePanel { get { return null; } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public ModelPanel ModelPanel { get { return modelPanel; } }
 
@@ -102,7 +104,7 @@ namespace Ikarus.UI
         public bool _enableTransform = true;
 
         public bool 
-            _renderFloor, 
+            _renderFloor = true, 
             _renderBones = true, 
             _renderPolygons = true, 
             _renderBox, 
@@ -112,6 +114,10 @@ namespace Ikarus.UI
             _renderHurtboxes, 
             _renderHitboxes, 
             _renderWireframe;
+
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public ModelViewerForm ModelViewerForm { get { return _viewerForm; } }
+        ModelViewerForm _viewerForm = null;
 
         public AnimationNode TargetAnimation
         {
@@ -158,13 +164,13 @@ namespace Ikarus.UI
             if (_targetModel != null)
                 _targetModel._isTargetModel = false;
 
-            if (model == null)
+            if (_targetModel != null)
                 modelPanel.RemoveTarget(_targetModel);
 
             if ((_targetModel = model) != null)
             {
                 modelPanel.AddTarget(_targetModel);
-                leftPanel.VIS0Indices = _targetModel.VIS0Indices;
+                listPanel.VIS0Indices = _targetModel.VIS0Indices;
                 _targetModel._isTargetModel = true;
                 ResetVertexColors();
                 hurtboxEditor._mainControl_TargetModelChanged(null, null);
@@ -173,21 +179,20 @@ namespace Ikarus.UI
             if (_resetCam)
             {
                 modelPanel.ResetCamera();
-                SetFrame(0);
+                RunTime.SetFrame(0);
             }
             else
                 _resetCam = true;
 
-            leftPanel.Reset();
-            rightPanel.pnlBones.Reset();
-            
+            modelListsPanel1.Reset();
+
             //if (TargetModelChanged != null)
             //    TargetModelChanged(this, null);
 
-            _updating = true;
-            if (_targetModel != null && !_editingAll)
-                comboCharacters.SelectedItem = _targetModel;
-            _updating = false;
+            //_updating = true;
+            //if (_targetModel != null && !_editingAll)
+            //    comboCharacters.SelectedItem = _targetModel;
+            //_updating = false;
 
             if (_targetModel != null)
                 RenderBones = _targetModel._renderBones;
@@ -343,11 +348,11 @@ namespace Ikarus.UI
                             _resetCam = false;
                         }
 
-                rightPanel.pnlBones.lstBones.SelectedItem = _selectedBone;
+                modelListsPanel1.lstBones.SelectedItem = _selectedBone;
                 chr0Editor.UpdatePropDisplay();
 
-                if (_chr0 != null && _selectedBone != null && TargetAnimType == AnimType.CHR)
-                    KeyframePanel.TargetSequence = _chr0.FindChild(_selectedBone.Name, false);
+                //if (_chr0 != null && _selectedBone != null && TargetAnimType == AnimType.CHR)
+                //    KeyframePanel.TargetSequence = _chr0.FindChild(_selectedBone.Name, false);
             }
         }
 
@@ -367,8 +372,6 @@ namespace Ikarus.UI
             } 
         }
         
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public int CurrentFrame { get { return _animFrame; } set { _animFrame = value; UpdateModel(); UpdatePropDisplay(); } }
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool EnableTransformEdit
         {
@@ -412,6 +415,10 @@ namespace Ikarus.UI
                         m._renderBones = value;
                 else if (TargetModel != null)
                     TargetModel._renderBones = value;
+                if (RunTime._articles != null)
+                foreach (ArticleInfo i in RunTime._articles)
+                    if (i.Running && i.ModelVisible)
+                        i._model._renderBones = value;
 
                 _renderBones = value;
                 _updating = true;
@@ -431,6 +438,10 @@ namespace Ikarus.UI
                         m._renderPolygons = value;
                 else if (TargetModel != null)
                     TargetModel._renderPolygons = value;
+                if (RunTime._articles != null)
+                foreach (ArticleInfo i in RunTime._articles)
+                    if (i.Running && i.ModelVisible)
+                        i._model._renderPolygons = value;
 
                 _renderPolygons = value;
                 _updating = true;
@@ -450,6 +461,10 @@ namespace Ikarus.UI
                         m._renderBox = value;
                 else if (TargetModel != null)
                     TargetModel._renderBox = value;
+                if (RunTime._articles != null)
+                foreach (ArticleInfo i in RunTime._articles)
+                    if (i.Running && i.ModelVisible)
+                        i._model._renderBox = value;
 
                 _renderBox = value;
                 _updating = true;
@@ -521,10 +536,10 @@ namespace Ikarus.UI
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool LinearInterpolation { get { return false; } set { } }
 
-        public MoveDefHurtBoxNode _selectedHurtbox;
-
+        public MiscHurtBox _selectedHurtbox;
+        
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefHurtBoxNode SelectedHurtbox
+        public MiscHurtBox SelectedHurtbox
         {
             get { return _selectedHurtbox; }
             set 

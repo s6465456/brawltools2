@@ -65,9 +65,15 @@ namespace System.Windows.Forms
             base.OnClosing(e);
             collisionEditor1.TargetNode = null;
             collisionEditor1._modelPanel.Release();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
 
             GenericWrapper._modelViewerOpen = false;
             MainForm.Instance.Visible = true;
+            MainForm.Instance.Refresh();
         }
     }
 }

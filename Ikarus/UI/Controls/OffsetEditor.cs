@@ -2,6 +2,7 @@
 using BrawlLib.SSBB.ResourceNodes;
 using System.ComponentModel;
 using System.Drawing;
+using Ikarus;
 
 namespace System.Windows.Forms
 {
@@ -154,9 +155,9 @@ namespace System.Windows.Forms
         private Panel panel1;
         private Button button1;
 
-        private MoveDefEventOffsetNode _targetNode;
+        private EventOffset _targetNode;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefEventOffsetNode TargetNode
+        public EventOffset TargetNode
         {
             get { return _targetNode; }
             set { _targetNode = value; TargetChanged(); }
@@ -169,7 +170,7 @@ namespace System.Windows.Forms
 
             _updating = true;
 
-            if (_targetNode._root._dataCommon != null)
+            if (_targetNode._root.DataCommon != null)
             {
                 listBox.Items.Clear();
                 listBox.Items.AddRange(new object[] {
@@ -191,11 +192,11 @@ namespace System.Windows.Forms
                 "Null"});
             }
 
-            listBox.SelectedIndex = _targetNode.list;
-            if (_targetNode.type != -1)
-                typeBox.SelectedIndex = _targetNode.type;
-            if (_targetNode.index != -1 && indexBox.Items.Count > _targetNode.index)
-                indexBox.SelectedIndex = _targetNode.index;
+            listBox.SelectedIndex = (int)_targetNode._offsetInfo.list;
+            if (_targetNode._offsetInfo.type != TypeValue.None)
+                typeBox.SelectedIndex = (int)_targetNode._offsetInfo.type;
+            if (_targetNode._offsetInfo.index != -1 && indexBox.Items.Count > _targetNode._offsetInfo.index)
+                indexBox.SelectedIndex = _targetNode._offsetInfo.index;
 
             //if (_targetNode.list < 3)
             //{
@@ -216,57 +217,41 @@ namespace System.Windows.Forms
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBox.SelectedIndex == 0)
-            {
-                typeBox.Items.Clear();
-                typeBox.Items.Add("Entry");
-                typeBox.Items.Add("Exit");
+            typeBox.Items.Clear();
+            typeBox.Visible = label3.Visible = listBox.SelectedIndex < 2;
+            indexBox.Visible = label2.Visible = listBox.SelectedIndex != 4;
 
-                indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode._root._actions.Children.ToArray());
-            }
-            if (listBox.SelectedIndex == 1)
+            switch (listBox.SelectedIndex)
             {
-                typeBox.Items.Clear();
-                typeBox.Items.Add("Main");
-                typeBox.Items.Add("GFX");
-                typeBox.Items.Add("SFX");
-                typeBox.Items.Add("Other");
+                case 0:
+                    typeBox.Items.Add("Entry");
+                    typeBox.Items.Add("Exit");
+                    indexBox.DataSource = _targetNode._root.Actions;
+                    break;
+                case 1:
+                    typeBox.Items.Add("Main");
+                    typeBox.Items.Add("GFX");
+                    typeBox.Items.Add("SFX");
+                    typeBox.Items.Add("Other");
+                    if (TargetNode._root.Data != null  && TargetNode._root.Data.SubActions != null)
+                        indexBox.DataSource = _targetNode._root.Data.SubActions;
+                    break;
+                case 2:
+                    indexBox.DataSource = _targetNode._root.SubRoutines;
+                    break;
+                case 3:
+                    indexBox.DataSource = _targetNode._root.ReferenceList;
+                    break;
+                case 4:
 
-                indexBox.Items.Clear();
-                if (TargetNode._root._subActions != null)
-                indexBox.Items.AddRange(_targetNode._root._subActions.Children.ToArray());
-            }
+                    break;
+                case 5:
+                    indexBox.DataSource = _targetNode._root.DataCommon.ScreenTints;
+                    break;
+                case 6:
+                    indexBox.DataSource = _targetNode._root.DataCommon.FlashOverlays;
+                    break;
 
-            if (listBox.SelectedIndex >= 2)
-                typeBox.Visible = label3.Visible = false;
-            else
-                typeBox.Visible = label3.Visible = true;
-
-            if (listBox.SelectedIndex == 4)
-                indexBox.Visible = label2.Visible = false;
-            else
-                indexBox.Visible = label2.Visible = true;
-
-            if (listBox.SelectedIndex == 2)
-            {
-                indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode._root._subRoutines.ToArray());
-            }
-            if (listBox.SelectedIndex == 3)
-            {
-                indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode._root._referenceList.ToArray());
-            }
-            if (listBox.SelectedIndex == 5)
-            {
-                indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode._root._dataCommon._screenTint.Children.ToArray());
-            }
-            if (listBox.SelectedIndex == 6)
-            {
-                indexBox.Items.Clear();
-                indexBox.Items.AddRange(_targetNode._root._dataCommon._flashOverlay.Children.ToArray());
             }
             if (!_updating)
                 UpdateText();
@@ -294,38 +279,41 @@ namespace System.Windows.Forms
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (_targetNode.action != null)
+            if (_targetNode._script != null)
             {
-                _targetNode._value = -1;
-                (_targetNode as MoveDefEventOffsetNode).action._actionRefs.Remove(_targetNode);
+                _targetNode.Data = -1;
+                (_targetNode as EventOffset)._script._actionRefs.Remove(_targetNode);
             }
             if (listBox.SelectedIndex >= 3)
             {
-                if (listBox.SelectedIndex == 3 && indexBox.SelectedIndex >= 0 && indexBox.SelectedIndex < _targetNode._root._referenceList.Count)
+                if (listBox.SelectedIndex == 3 && indexBox.SelectedIndex >= 0 && indexBox.SelectedIndex < _targetNode._root.ReferenceList.Count)
                 {
                     if (_targetNode._externalEntry != null)
                     {
-                        _targetNode._externalEntry._refs.Remove(_targetNode);
+                        _targetNode._externalEntry.References.Remove(_targetNode);
                         _targetNode._externalEntry = null;
                     }
-                    (_targetNode._externalEntry = _targetNode._root._referenceList[indexBox.SelectedIndex] as ReferenceEntry)._refs.Add(_targetNode);
-                    _targetNode.Name = _targetNode._externalEntry.Name;
+                    (_targetNode._externalEntry = _targetNode._root.ReferenceList[indexBox.SelectedIndex]).References.Add(_targetNode);
+                    _targetNode._name = _targetNode._externalEntry.Name;
                 }
             }
             else
             {
                 if (_targetNode._externalEntry != null)
                 {
-                    _targetNode._externalEntry._refs.Remove(_targetNode);
+                    _targetNode._externalEntry.References.Remove(_targetNode);
                     _targetNode._externalEntry = null;
                 }
             }
-            _targetNode.list = listBox.SelectedIndex;
-            _targetNode.type = (listBox.SelectedIndex >= 2 ? -1 : typeBox.SelectedIndex);
-            _targetNode.index = (listBox.SelectedIndex == 4 ? -1 : indexBox.SelectedIndex);
-            _targetNode.action = _targetNode._root.GetAction(_targetNode.list, _targetNode.type, _targetNode.index);
-            if (_targetNode.action != null)
-                _targetNode._value = _targetNode.action._offset;
+
+            _targetNode._offsetInfo = new ScriptOffsetInfo(
+                (ListValue)listBox.SelectedIndex,
+                (TypeValue)(listBox.SelectedIndex >= 2 ? -1 : typeBox.SelectedIndex),
+                (listBox.SelectedIndex == 4 ? -1 : indexBox.SelectedIndex));
+
+            _targetNode._script = _targetNode._root.GetScript(_targetNode._offsetInfo);
+            if (_targetNode._script != null)
+                _targetNode.Data = _targetNode._script._offset;
             _targetNode.SignalPropertyChange();
         }
     }

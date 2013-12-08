@@ -23,7 +23,8 @@ namespace System.Windows.Forms
 
             numericInputBox3._integral = true;
             comboBox1.DataSource = _modes;
-            chkLinear.Checked = _mainWindow.LinearInterpolation;
+            if (_mainWindow != null)
+                chkLinear.Checked = _mainWindow.LinearInterpolation;
 
             interpolationViewer.SelectedKeyframeChanged += interpolationViewer1_SelectedKeyframeChanged;
             interpolationViewer.FrameChanged += interpolationViewer1_FrameChanged;
@@ -39,13 +40,16 @@ namespace System.Windows.Forms
 
         void interpolationViewer1_UpdateProps(object sender, EventArgs e)
         {
-            _mainWindow.UpdatePropDisplay();
-            _mainWindow.UpdateModel();
+            if (_mainWindow != null)
+            {
+                _mainWindow.UpdatePropDisplay();
+                _mainWindow.UpdateModel();
+            }
         }
 
         void interpolationViewer1_FrameChanged(object sender, EventArgs e)
         {
-            if (_mainWindow.CurrentFrame - 1 != interpolationViewer.FrameIndex)
+            if (_mainWindow != null && _mainWindow.CurrentFrame - 1 != interpolationViewer.FrameIndex)
                 _mainWindow.SetFrame((interpolationViewer.FrameIndex + 1).Clamp(1, _mainWindow.MaxFrame));
         }
 
@@ -305,11 +309,12 @@ namespace System.Windows.Forms
 
                 if (chkSetFrame.Checked)
                     interpolationViewer1_FrameChanged(this, null);
-
-                if (indexChanged)
-                    _mainWindow.KeyframePanel.UpdateKeyframes();
-                else
-                    _mainWindow.KeyframePanel.UpdateKeyframe(interpolationViewer._selKey._index);
+                
+                if (_mainWindow != null)
+                    if (indexChanged)
+                        _mainWindow.KeyframePanel.UpdateKeyframes();
+                    else
+                        _mainWindow.KeyframePanel.UpdateKeyframe(interpolationViewer._selKey._index);
 
                 //_mainWindow.UpdatePropDisplay();
                 //_mainWindow.UpdateModel();
@@ -358,16 +363,20 @@ namespace System.Windows.Forms
             int prev = w._prev._index + 1;
             if (prev < 0) prev = 0;
             int next = w._next._index - 1;
-            if (next < 0) next = _mainWindow.MaxFrame - 1;
+            if (_mainWindow != null)
+                if (next < 0) next = _mainWindow.MaxFrame - 1;
 
             int index = ((int)numericInputBox3.Value - 1).Clamp(prev, next);
 
             interpolationViewer._selKey._index = index;
             interpolationViewer.Invalidate();
             _targetNode.SignalPropertyChange();
-            _mainWindow.KeyframePanel.UpdateKeyframes();
-            _mainWindow.UpdatePropDisplay();
-            _mainWindow.UpdateModel();
+            if (_mainWindow != null)
+            {
+                _mainWindow.KeyframePanel.UpdateKeyframes();
+                _mainWindow.UpdatePropDisplay();
+                _mainWindow.UpdateModel();
+            }
 
             if (index != numericInputBox3.Value)
                 numericInputBox3.Value = index;
@@ -381,7 +390,8 @@ namespace System.Windows.Forms
             interpolationViewer._selKey._value = numericInputBox2.Value;
             interpolationViewer.Invalidate();
             _targetNode.SignalPropertyChange();
-            _mainWindow.KeyframePanel.UpdateKeyframe(interpolationViewer._selKey._index);
+            if (_mainWindow != null)
+                _mainWindow.KeyframePanel.UpdateKeyframe(interpolationViewer._selKey._index);
 
             if (chkSyncStartEnd.Checked)
             {
@@ -397,9 +407,11 @@ namespace System.Windows.Forms
                     SelectedKeyframe._next._next._value = SelectedKeyframe._value;
                 }
             }
-
-            _mainWindow.UpdateModel();
-            _mainWindow.UpdatePropDisplay();
+            if (_mainWindow != null)
+            {
+                _mainWindow.UpdateModel();
+                _mainWindow.UpdatePropDisplay();
+            }
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)

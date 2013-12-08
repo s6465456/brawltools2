@@ -782,7 +782,7 @@ namespace System.Windows.Forms
             _mainWindow.UpdateModel();
 
             ResetBox(index);
-            _mainWindow.KeyframePanel.UpdateKeyframe(CurrentFrame - 1);
+            //_mainWindow.KeyframePanel.UpdateKeyframe(CurrentFrame - 1);
             UpdateInterpolationEditor(box);
 
             if (_mainWindow.InterpolationEditor != null && _mainWindow.InterpolationEditor.Visible)

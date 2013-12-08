@@ -98,9 +98,9 @@ namespace System.Windows.Forms
 
         #endregion
 
-        public AttributeInfo[] AttributeArray { get { return FileManager.AttributeArray; } }
+        public AttributeInfo[] AttributeArray { get { return Manager.AttributeArray; } }
 
-        LeftPanel _mainWindow;
+        ListsPanel _mainWindow;
 
         public AttributeGrid()
         {
@@ -112,9 +112,9 @@ namespace System.Windows.Forms
         private Splitter splitter1;
         public bool called = false;
 
-        private MoveDefAttributeNode _targetNode;
+        private AttributeList _targetNode;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefAttributeNode TargetNode
+        public AttributeList TargetNode
         {
             get { return _targetNode; }
             set { _targetNode = value; if (!called && value != null) { LoadData(); called = true; } TargetChanged(); }
@@ -159,30 +159,10 @@ namespace System.Windows.Forms
                     attributes.Rows[i][1] = (float)((bfloat*)buffer)[i];
         }
 
-        public void SetFloat(int index, float value)
-        {
-            if (((bfloat*)TargetNode.AttributeBuffer.Address)[index] != value)
-            {
-                ((bfloat*)TargetNode.AttributeBuffer.Address)[index] = value;
-                TargetNode.SignalPropertyChange();
-            }
-        }
-        public float GetFloat(int index)
-        {
-            return ((bfloat*)TargetNode.AttributeBuffer.Address)[index];
-        }
-        public void SetInt(int index, int value)
-        {
-            if (((bint*)TargetNode.AttributeBuffer.Address)[index] != value)
-            {
-                ((bint*)TargetNode.AttributeBuffer.Address)[index] = value;
-                TargetNode.SignalPropertyChange();
-            }
-        }
-        public int GetInt(int index)
-        {
-            return ((bint*)TargetNode.AttributeBuffer.Address)[index];
-        }
+        public void SetFloat(int index, float value) { TargetNode.SetFloat(index, value); }
+        public float GetFloat(int index) { return TargetNode.GetFloat(index); }
+        public void SetInt(int index, int value) { TargetNode.SetInt(index, value); }
+        public int GetInt(int index) { return TargetNode.GetInt(index); }
 
         private unsafe void dtgrdAttributes_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
@@ -194,7 +174,7 @@ namespace System.Windows.Forms
             if (AttributeArray[index]._name != name)
             {
                 AttributeArray[index]._name = name;
-                FileManager._dictionaryChanged = true;
+                Manager._dictionaryChanged = true;
                 return;
             }
 
@@ -244,7 +224,7 @@ namespace System.Windows.Forms
             }
 
             attributes.Rows[index][1] = value;
-            MainForm.Invalidate();
+            MainForm.UpdateMDLPnl();
         }
 
         private void dtgrdAttributes_CurrentCellChanged(object sender, EventArgs e)
@@ -267,8 +247,8 @@ namespace System.Windows.Forms
             int index = dtgrdAttributes.CurrentCell.RowIndex;
             if (index >= 0)
             {
-                AttributeArray[index]._description = FileManager.AttributeArray[index]._description = description.Text;
-                FileManager._dictionaryChanged = true;
+                AttributeArray[index]._description = Manager.AttributeArray[index]._description = description.Text;
+                Manager._dictionaryChanged = true;
             }
         }
     }

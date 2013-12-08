@@ -45,7 +45,7 @@ namespace System.Windows.Forms
             // 
             this.lblPrimary.Location = new System.Drawing.Point(5, 2);
             this.lblPrimary.Name = "lblPrimary";
-            this.lblPrimary.Size = new System.Drawing.Size(78, 20);
+            this.lblPrimary.Size = new System.Drawing.Size(61, 20);
             this.lblPrimary.TabIndex = 0;
             this.lblPrimary.Text = "Base Color:";
             this.lblPrimary.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -292,9 +292,10 @@ namespace System.Windows.Forms
                 if ((e.State & DrawItemState.Selected) != 0)
                     g.FillRectangle(Brushes.LightBlue, r.X, r.Y, 230, r.Height);
 
-                g.DrawString(String.Format("[{0:d2}]  -  {1}", index, p), _renderFont, Brushes.Black, 4.0f, e.Bounds.Y - 2);
+                double n = Math.Floor(Math.Log10(_colorSource.ColorCount(_colorId)) + 1);
+                g.DrawString(String.Format("[{0}]  -  {1}", index.ToString().PadLeft((int)n, ' '), p), _renderFont, Brushes.Black, 4.0f, e.Bounds.Y - 2);
 
-                r.X += 230;
+                r.X += 250;
                 r.Width = 40;
 
                 using (Brush b = new SolidBrush((Color)p))

@@ -38,7 +38,7 @@ namespace Ikarus.UI
 
                 GL.Enable(EnableCap.Texture2D);
 
-                GL.Color4(Color.Black);
+                GL.Color4(StaticMainWindow._floorHue);
 
                 _bgTex.Bind();
 
@@ -58,7 +58,7 @@ namespace Ikarus.UI
                 GL.Disable(EnableCap.Texture2D);
             }
 
-            leftPanel.ApplyAttributes(this);
+            Attributes.PreRender();
         }
 
         #endregion
@@ -89,33 +89,23 @@ namespace Ikarus.UI
             GL.Disable(EnableCap.Lighting);
             GL.Disable(EnableCap.DepthTest);
 
+            //Attributes.PostRender();
+
             //Render hurtboxes
             if (chkHurtboxes.Checked)
-                for (int i = 0; i < leftPanel.lstHurtboxes.Items.Count; i++)
-                    if (leftPanel.lstHurtboxes.GetItemChecked(i))
-                        ((MoveDefHurtBoxNode)leftPanel.lstHurtboxes.Items[i]).Render(SelectedHurtbox != null && SelectedHurtbox.Index == i, ActionScript._hurtBoxType);
+                for (int i = 0; i < listPanel.lstHurtboxes.Items.Count; i++)
+                    if (listPanel.lstHurtboxes.GetItemChecked(i))
+                        ((MiscHurtBox)listPanel.lstHurtboxes.Items[i]).Render(SelectedHurtbox != null && SelectedHurtbox.Index == i, Scriptor._hurtBoxType);
 
             //Render hitboxes
-            if (chkHitboxes.Checked && FileManager.Moveset != null)
+            if (chkHitboxes.Checked && Manager.Moveset != null)
             {
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
                 GLDisplayList c = context.GetRingList();
                 GLDisplayList s = context.GetSphereList();
 
-                foreach (ActionScript a in RunTime._runningScripts)
-                {
-                    if (a.catchCollisions != null && a.catchCollisions.Count > 0)
-                        foreach (HitBox e in a.catchCollisions)
-                            e.RenderCatchCollision(context, modelPanel._camera.GetPoint());
-
-                    if (a.offensiveCollisions != null && a.offensiveCollisions.Count > 0)
-                        foreach (HitBox e in a.offensiveCollisions)
-                            e.RenderOffensiveCollision(context, modelPanel._camera.GetPoint());
-
-                    if (a.specialOffensiveCollisions != null && a.specialOffensiveCollisions.Count > 0)
-                        foreach (HitBox e in a.specialOffensiveCollisions)
-                            e.RenderSpecialOffensiveCollision(context, modelPanel._camera.GetPoint());
-                }
+                foreach (HitBox e in RunTime._hitBoxes)
+                    e.Render(context, modelPanel._camera.GetPoint());
             }
 
             GL.Enable(EnableCap.DepthTest);
@@ -123,6 +113,8 @@ namespace Ikarus.UI
             //Show the user where the light source is
             if (_renderLightDisplay)
             {
+                GL.PushAttrib(AttribMask.AllAttribBits);
+
                 GL.Color4(Color.Blue);
                 GL.Disable(EnableCap.Lighting);
                 GL.Disable(EnableCap.DepthTest);
@@ -202,6 +194,8 @@ namespace Ikarus.UI
                 GL.Vertex3(0, 0, 0);
 
                 GL.End();
+
+                GL.PopAttrib();
             }
 
             GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -786,75 +780,63 @@ namespace Ikarus.UI
                 point = new Vector3();
                 return false;
             }
-
-            Vector3 lineStart = modelPanel.UnProject(mousePoint._x, mousePoint._y, 0.0f);
-            Vector3 lineEnd = modelPanel.UnProject(mousePoint._x, mousePoint._y, 1.0f);
+            Vector3 lineStart = ModelPanel.UnProject(mousePoint._x, mousePoint._y, 0.0f);
+            Vector3 lineEnd = ModelPanel.UnProject(mousePoint._x, mousePoint._y, 1.0f);
             Vector3 center = bone._frameMatrix.GetPoint();
-            Vector3 camera = modelPanel._camera.GetPoint();
+            Vector3 camera = ModelPanel._camera.GetPoint();
             Vector3 normal = new Vector3();
             float radius = center.TrueDistance(camera) / _orbRadius * 0.1f;
 
-            if (_editType == TransformType.Rotation)
-                if (_snapX)
-                    normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
-                else if (_snapY)
-                    normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
-                else if (_snapZ)
-                    normal = (bone._frameMatrix * new Vector3(0.0f, 0.0f, 1.0f)).Normalize(center);
-                else if (_snapCirc)
-                {
-                    radius *= _circOrbScale;
-                    normal = camera.Normalize(center);
-                }
-                else if (Maths.LineSphereIntersect(lineStart, lineEnd, center, radius, out point))
-                    return true;
-                else
-                    normal = camera.Normalize(center);
-            else// if (_editType == TransformType.Translation)
+            switch (_editType)
             {
-                if (_snapX && _snapY)
-                    normal = new Vector3(0.0f, 0.0f, 1.0f).Normalize();
-                else if (_snapX && _snapZ)
-                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-                else if (_snapY && _snapZ)
-                    normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
-                else if (_snapX)
-                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-                else if (_snapY)
-                    normal = new Vector3(1.0f, 0.0f, 0.0f).Normalize();
-                else if (_snapZ)
-                    normal = new Vector3(0.0f, 1.0f, 0.0f).Normalize();
-                else if (_editType == TransformType.Scale && _snapX && _snapY && _snapZ)
-                    normal = camera.Normalize(center);
-                return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
-            }
-            //else if (_editType == TransformType.Scale)
-            //{
-            //    if (_snapX && _snapY)
-            //        normal = (bone._frameMatrix * new Vector3(0.0f, 0.0f, 1.0f)).Normalize(center);
-            //    else if (_snapX && _snapZ)
-            //        normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
-            //    else if (_snapY && _snapZ)
-            //        normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
-            //    else if (_snapX)
-            //        normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
-            //    else if (_snapY)
-            //        normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
-            //    else if (_snapZ)
-            //        normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
-            //    else if (_editType == TransformType.Scale && _snapX && _snapY && _snapZ)
-            //        normal = camera.Normalize(center);
-            //    return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
-            //}
+                case TransformType.Rotation:
 
-            if (Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point))
-            {
-                point = Maths.PointAtLineDistance(center, point, radius);
-                return true;
+                    if (_snapX)
+                        normal = (bone._frameMatrix * new Vector3(1.0f, 0.0f, 0.0f)).Normalize(center);
+                    else if (_snapY)
+                        normal = (bone._frameMatrix * new Vector3(0.0f, 1.0f, 0.0f)).Normalize(center);
+                    else if (_snapZ)
+                        normal = (bone._frameMatrix * new Vector3(0.0f, 0.0f, 1.0f)).Normalize(center);
+                    else if (_snapCirc)
+                    {
+                        radius *= _circOrbScale;
+                        normal = camera.Normalize(center);
+                    }
+                    else if (Maths.LineSphereIntersect(lineStart, lineEnd, center, radius, out point))
+                        return true;
+                    else
+                        normal = camera.Normalize(center);
+
+                    if (Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point))
+                    {
+                        point = Maths.PointAtLineDistance(center, point, radius);
+                        return true;
+                    }
+
+                    break;
+
+                case TransformType.Translation:
+                case TransformType.Scale:
+
+                    if (_snapX && _snapY)
+                        normal = new Vector3(0.0f, 0.0f, 1.0f);
+                    else if (_snapX && _snapZ)
+                        normal = new Vector3(0.0f, 1.0f, 0.0f);
+                    else if (_snapY && _snapZ)
+                        normal = new Vector3(1.0f, 0.0f, 0.0f);
+                    else if (_snapX)
+                        normal = new Vector3(0.0f, 1.0f, 0.0f);
+                    else if (_snapY)
+                        normal = new Vector3(1.0f, 0.0f, 0.0f);
+                    else if (_snapZ)
+                        normal = new Vector3(0.0f, 1.0f, 0.0f);
+                    else if (_editType == TransformType.Scale && _snapX && _snapY && _snapZ)
+                        normal = camera.Normalize(center);
+
+                    break;
             }
 
-            point = new Vector3();
-            return false;
+            return Maths.LinePlaneIntersect(lineStart, lineEnd, center, normal, out point);
         }
 
         private bool CompareDistanceRecursive(MDL0BoneNode bone, Vector3 point, ref MDL0BoneNode match)

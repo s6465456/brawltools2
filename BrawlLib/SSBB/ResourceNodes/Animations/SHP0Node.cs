@@ -554,6 +554,8 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class SHP0VertexSetNode : ResourceNode, IKeyframeArrayHolder
     {
         internal SHP0KeyframeEntries* Header { get { return (SHP0KeyframeEntries*)WorkingUncompressed.Address; } }
+        public override ResourceType ResourceType { get { return ResourceType.SHP0VertexSet; } }
+        
         public int _dataLen;
         public VoidPtr _dataAddr;
         internal void SetSize(int count)

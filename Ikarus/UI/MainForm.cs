@@ -21,14 +21,28 @@ namespace Ikarus
     public partial class MainForm : Form
     {
         private static MainForm _instance;
-        public static MainForm Instance { get { return _instance == null ? _instance = new MainForm() : _instance; } }
-        public static void Invalidate() { Instance._mainControl.ModelPanel.Invalidate(); }
+        public static MainForm Instance { get { return _instance == null ? _instance = new MainForm(null) : _instance; } }
+        
+        public static void UpdateMDLPnl() { Instance._mainControl.ModelPanel.Invalidate(); }
 
-        public MainForm()
+        SplashForm _splashForm;
+        public MainForm(SplashForm s)
         {
+            _splashForm = s;
             InitializeComponent();
             Text = Program.AssemblyTitle;
             _instance = this;
+            Load += MainForm_Load;
+        }
+
+        void MainForm_Load(object sender, EventArgs e)
+        {
+            if (_splashForm != null)
+            {
+                _splashForm.Close();
+                _splashForm.Dispose();
+            }
+            WindowState = FormWindowState.Maximized;
         }
 
         private delegate bool DelegateOpenFile(String s);

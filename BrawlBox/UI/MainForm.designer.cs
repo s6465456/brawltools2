@@ -346,6 +346,7 @@ namespace BrawlBox
             // 
             // modelPanel1
             // 
+            this.modelPanel1.DefaultTranslate = ((System.Vector3)(resources.GetObject("modelPanel1.DefaultTranslate")));
             this.modelPanel1.InitialYFactor = 100;
             this.modelPanel1.InitialZoomFactor = 5;
             this.modelPanel1.Location = new System.Drawing.Point(0, 0);
@@ -438,6 +439,7 @@ namespace BrawlBox
             // 
             // clrControl
             // 
+            this.clrControl.ColorID = 0;
             this.clrControl.Location = new System.Drawing.Point(0, 0);
             this.clrControl.Name = "clrControl";
             this.clrControl.Size = new System.Drawing.Size(98, 47);

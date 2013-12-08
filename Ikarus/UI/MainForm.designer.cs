@@ -30,6 +30,7 @@ namespace Ikarus
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this._mainControl = new Ikarus.UI.MainControl();
             this.SuspendLayout();
             // 
@@ -42,8 +43,6 @@ namespace Ikarus
             this._mainControl.Name = "_mainControl";
             this._mainControl.Size = new System.Drawing.Size(763, 515);
             this._mainControl.TabIndex = 0;
-            this._mainControl.TargetAnimation = null;
-            this._mainControl.TargetAnimType = System.Windows.Forms.AnimType.CHR;
             // 
             // MainForm
             // 
@@ -52,6 +51,7 @@ namespace Ikarus
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(763, 515);
             this.Controls.Add(this._mainControl);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainForm_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainForm_DragEnter);

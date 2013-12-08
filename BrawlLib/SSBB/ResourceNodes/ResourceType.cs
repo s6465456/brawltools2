@@ -9,8 +9,6 @@ namespace BrawlLib.SSBB.ResourceNodes
     //Upper byte is entry type/flags
     public enum ResourceType : int
     {
-        DOL = 0x5900,
-
         //Base types
         Unknown = 0x0000,
         Container = 0x0101,
@@ -124,5 +122,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         MDefRefList = 0x5601,
         Event = 0x571B,
         Parameter = 0x5800,
+        
+        SHP0VertexSet = 0x5900,
+        DOL = 0x5A00,
     }
 }

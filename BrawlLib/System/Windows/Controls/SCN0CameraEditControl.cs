@@ -171,7 +171,7 @@ namespace System.Windows.Forms
 
         private void UpdateBox(int index)
         {
-            if (_target.GetKeyframe((CameraKeyframeMode)index + 0x10, _currentPage) != null)
+            if (_target.GetKeyframe((CameraKeyframeMode)index, _currentPage) != null)
                 _boxes[index].BackColor = Color.Yellow;
             else
                 _boxes[index].BackColor = Color.White;
@@ -208,7 +208,7 @@ namespace System.Windows.Forms
                             listKeyframes.Items[kfIndex] = kf;
                     }
 
-                    _target.RemoveKeyframe(CameraKeyframeMode.PosX + index, _currentPage);
+                    _target.RemoveKeyframe((CameraKeyframeMode)index, _currentPage);
                     val = _target.GetAnimFrame(_currentPage)[index];
                     box.Value = val;
                 }
@@ -235,7 +235,7 @@ namespace System.Windows.Forms
                         listKeyframes.SelectedIndex = x;
                     }
 
-                    _target.SetKeyframe(CameraKeyframeMode.PosX + index, _currentPage, val);
+                    _target.SetKeyframe((CameraKeyframeMode)index, _currentPage, val);
                 }
 
                 _currentFrame[index] = val;

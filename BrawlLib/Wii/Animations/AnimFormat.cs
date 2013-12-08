@@ -93,7 +93,7 @@ namespace BrawlLib.Wii.Animations
                         case "endUnitless":
                             float.TryParse(val, out end);
                             break;
-
+                            
                         case "animVersion":
                         case "mayaVersion":
                         case "timeUnit":
@@ -115,7 +115,7 @@ namespace BrawlLib.Wii.Animations
                     string[] anim = line.Split(' ');
                     if (anim.Length != 7)
                     {
-                        while (!(line = file.ReadLine()).StartsWith("anim ")) ;
+                        while ((line = file.ReadLine()) != null && !line.StartsWith("anim ")) ;
                         continue;
                     }
                     string t = anim[2];
@@ -151,7 +151,7 @@ namespace BrawlLib.Wii.Animations
 
                     if (mode == KeyFrameMode.All)
                     {
-                        while (!(line = file.ReadLine()).StartsWith("anim ")) ;
+                        while ((line = file.ReadLine()) != null && !line.StartsWith("anim ")) ;
                         continue;
                     }
 
@@ -190,8 +190,8 @@ namespace BrawlLib.Wii.Animations
                                     string[] s = line.Split(' ');
 
                                     float inVal, outVal;
-                                    float.TryParse(s[0], out inVal);
-                                    float.TryParse(s[1], out outVal);
+                                    float.TryParse(s[0], NumberStyles.Number, CultureInfo.InvariantCulture, out inVal);
+                                    float.TryParse(s[1], NumberStyles.Number, CultureInfo.InvariantCulture, out outVal);
 
                                     float finalTan = 0;
 
@@ -207,12 +207,13 @@ namespace BrawlLib.Wii.Animations
                                     {
                                         case "linear":
                                         case "spline":
+                                        case "auto":
                                             break;
 
                                         case "fixed":
                                             firstFixed = true;
-                                            float.TryParse(s[7], out angle1);
-                                            float.TryParse(s[8], out weight1);
+                                            float.TryParse(s[7], NumberStyles.Number, CultureInfo.InvariantCulture, out angle1);
+                                            float.TryParse(s[8], NumberStyles.Number, CultureInfo.InvariantCulture, out weight1);
                                             break;
                                     }
 
@@ -220,19 +221,20 @@ namespace BrawlLib.Wii.Animations
                                     {
                                         case "linear":
                                         case "spline":
+                                        case "auto":
                                             break;
 
                                         case "fixed":
                                             secondFixed = true;
                                             if (firstFixed)
                                             {
-                                                float.TryParse(s[9], out angle2);
-                                                float.TryParse(s[10], out weight2);
+                                                float.TryParse(s[9], NumberStyles.Number, CultureInfo.InvariantCulture, out angle2);
+                                                float.TryParse(s[10], NumberStyles.Number, CultureInfo.InvariantCulture, out weight2);
                                             }
                                             else
                                             {
-                                                float.TryParse(s[7], out angle2);
-                                                float.TryParse(s[8], out weight2);
+                                                float.TryParse(s[7], NumberStyles.Number, CultureInfo.InvariantCulture, out angle2);
+                                                float.TryParse(s[8], NumberStyles.Number, CultureInfo.InvariantCulture, out weight2);
                                             }
                                             break;
                                     }

@@ -889,13 +889,13 @@ namespace BrawlLib.Wii.Models
                             *pData++ = (int)mat.WorkingUncompressed.Address - offset;
                         }
                     }
-            
         }
 
         private static void SetBox(ModelLinker linker)
         {
             Vector3 min, max;
 
+            linker.Model.ApplyCHR(null, 0);
             linker.Model.GetBox(out min, out max);
 
             linker.Model._min = min;

@@ -18,8 +18,6 @@ namespace BrawlBox.NodeWrappers
         {
             _menu = new ContextMenuStrip();
             _menu.Items.Add(new ToolStripMenuItem("Convert Stage Module", null, ConvertAction, Keys.Control | Keys.C));
-            _menu.Items.Add(new ToolStripMenuItem("Apply Relocations", null, RelocateAction));
-            _menu.Items.Add(new ToolStripMenuItem("Relocate Self", null, RelocateSelfAction));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("Open Constructor Function", null, ConstructorAction));
             _menu.Items.Add(new ToolStripMenuItem("Open Destructor Function", null, DestructorAction));
@@ -38,23 +36,20 @@ namespace BrawlBox.NodeWrappers
             _menu.Closing += MenuClosing;
         }
         protected static void ConvertAction(object sender, EventArgs e) { GetInstance<RELWrapper>().Convert(); }
-        protected static void RelocateAction(object sender, EventArgs e) { GetInstance<RELWrapper>().Relocate(); }
-        protected static void RelocateSelfAction(object sender, EventArgs e) { GetInstance<RELWrapper>().RelocateSelf(); }
         protected static void ConstructorAction(object sender, EventArgs e) { GetInstance<RELWrapper>().Constructor(); }
         protected static void DestructorAction(object sender, EventArgs e) { GetInstance<RELWrapper>().Destructor(); }
         protected static void UnresolvedAction(object sender, EventArgs e) { GetInstance<RELWrapper>().Unresolved(); }
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            _menu.Items[2].Enabled = _menu.Items[9].Enabled = _menu.Items[10].Enabled = _menu.Items[12].Enabled = _menu.Items[13].Enabled = _menu.Items[16].Enabled = true;
+            _menu.Items[7].Enabled = _menu.Items[8].Enabled = _menu.Items[10].Enabled = _menu.Items[11].Enabled = _menu.Items[14].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             RELWrapper w = GetInstance<RELWrapper>();
-            _menu.Items[2].Enabled = (w._resource as ModuleNode).AppliedModule != w._resource;
-            _menu.Items[9].Enabled = _menu.Items[16].Enabled = w.Parent != null;
-            _menu.Items[10].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
-            _menu.Items[12].Enabled = w.PrevNode != null;
-            _menu.Items[13].Enabled = w.NextNode != null;
+            _menu.Items[7].Enabled = _menu.Items[14].Enabled = w.Parent != null;
+            _menu.Items[8].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
+            _menu.Items[10].Enabled = w.PrevNode != null;
+            _menu.Items[11].Enabled = w.NextNode != null;
         }
 
         #endregion
@@ -72,30 +67,6 @@ namespace BrawlBox.NodeWrappers
                     _resource.Name = dlg.OutputName;
                 }
             }
-        }
-
-        public void Relocate()
-        {
-            RELNode r = _resource as RELNode;
-            string file;
-            int index = Program.OpenFile(FileFilters.REL, out file);
-            if (index > 0)
-            {
-                ResourceNode x = NodeFactory.FromFile(null, file);
-                if (x is RELNode)
-                {
-                    if (r.ApplyRelocations(x as RELNode))
-                        MessageBox.Show("Relocations have been applied.");
-                    else
-                        MessageBox.Show("No relocations for this module were found.");
-                }
-            }
-        }
-
-        public void RelocateSelf()
-        {
-            RELNode r = _resource as RELNode;
-            r.ApplyRelocations();
         }
 
         public void Constructor()
@@ -184,18 +155,10 @@ namespace BrawlBox.NodeWrappers
         static RELSectionWrapper()
         {
             _menu = new ContextMenuStrip();
-            _menu.Items.Add(new ToolStripMenuItem("&Open in Memory Viewer", null, OpenAction, Keys.Control | Keys.O));
+            _menu.Items.Add(new ToolStripMenuItem("O&pen in Memory Viewer", null, OpenAction, Keys.Control | Keys.P));
             _menu.Items.Add(new ToolStripSeparator());
-            _menu.Items.Add(new ToolStripMenuItem("&Export Raw", null, ExportAction, Keys.Control | Keys.E));
-            _menu.Items.Add(new ToolStripMenuItem("&Export Initialized", null, Export2Action, Keys.Control | Keys.X));
-            _menu.Items.Add(new ToolStripMenuItem("&Replace", null, ReplaceAction, Keys.Control | Keys.R));
+            _menu.Items.Add(new ToolStripMenuItem("&Export", null, ExportAction, Keys.Control | Keys.E));
             _menu.Items.Add(new ToolStripMenuItem("Res&tore", null, RestoreAction, Keys.Control | Keys.T));
-            _menu.Items.Add(new ToolStripSeparator());
-            _menu.Items.Add(new ToolStripMenuItem("Move &Up", null, MoveUpAction, Keys.Control | Keys.Up));
-            _menu.Items.Add(new ToolStripMenuItem("Move D&own", null, MoveDownAction, Keys.Control | Keys.Down));
-            _menu.Items.Add(new ToolStripMenuItem("Re&name", null, RenameAction, Keys.Control | Keys.N));
-            _menu.Items.Add(new ToolStripSeparator());
-            _menu.Items.Add(new ToolStripMenuItem("&Delete", null, DeleteAction, Keys.Control | Keys.Delete));
             _menu.Opening += MenuOpening;
             _menu.Closing += MenuClosing;
         }
@@ -203,15 +166,12 @@ namespace BrawlBox.NodeWrappers
         protected static void Export2Action(object sender, EventArgs e) { GetInstance<RELSectionWrapper>().Export2(); }
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            //_menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[10].Enabled = true;
+            _menu.Items[3].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             RELSectionWrapper w = GetInstance<RELSectionWrapper>();
-            //_menu.Items[3].Enabled = _menu.Items[10].Enabled = w.Parent != null;
-            //_menu.Items[4].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
-            //_menu.Items[6].Enabled = w.PrevNode != null;
-            //_menu.Items[7].Enabled = w.NextNode != null;
+            _menu.Items[3].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
         }
 
         #endregion

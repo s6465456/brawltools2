@@ -125,9 +125,7 @@ namespace BrawlLib.SSBBTypes
                 int ceil = (len + 1).Align(4);
 
                 sbyte* ptr = Data;
-
-                for (int i = 0; i < len; )
-                    ptr[i] = (sbyte)value[i++];
+                value.Write(ptr);
 
                 for (int i = len; i < ceil; )
                     ptr[i++] = 0;

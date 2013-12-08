@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Ikarus v0.50")]
+[assembly: AssemblyTitle("Ikarus Unfinished Beta")]
 [assembly: AssemblyDescription("This program is provided as-is without any warranty, implied or otherwise." +
 " By using this program, the end user agrees to take full responsibility regarding its proper and lawful use." +
 " The authors/hosts/distributors cannot be held responsible for any damage resulting in the use of this program," +

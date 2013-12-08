@@ -168,7 +168,6 @@ namespace BrawlBox
             string path;
             if (Program.OpenFile(FileFilters.CHR0 + "|Raw Text (*.txt)|*.txt", out path) > 0)
             {
-                //CHR0Node node = NodeFactory.FromFile(null, path) as CHR0Node;
                 CHR0Node node = CHR0Node.FromFile(path);
                 ((BRESNode)_resource).GetOrCreateFolder<CHR0Node>().AddChild(node);
 

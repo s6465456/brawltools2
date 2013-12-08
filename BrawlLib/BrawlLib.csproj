@@ -241,6 +241,9 @@
     <Compile Include="SSBB\ResourceNodes\Archives\FileScanNode.cs" />
     <Compile Include="SSBB\ResourceNodes\CollisionNode.cs" />
     <Compile Include="SSBB\ResourceNodes\GCTNode.cs" />
+    <None Include="SSBB\ResourceNodes\MDL0\GLSL\FragmentShader.cs" />
+    <None Include="SSBB\ResourceNodes\MDL0\GLSL\Stages.cs" />
+    <None Include="SSBB\ResourceNodes\MDL0\GLSL\VertexShader.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\Relocation.cs" />
     <Compile Include="SSBB\ResourceNodes\THPNode.cs" />
     <Compile Include="SSBB\ResourceNodes\MDL0\MDL0FurVecNode.cs" />
@@ -253,8 +256,6 @@
     <Compile Include="SSBB\ResourceNodes\Modules\ModuleDataNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELDeConStructorNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELCommand.cs" />
-    <Compile Include="SSBB\ResourceNodes\Modules\RELLinkNode.cs" />
-    <Compile Include="SSBB\ResourceNodes\Modules\RELImportNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELObjectNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELSectionNode.cs" />
     <Compile Include="SSBB\ResourceNodes\Modules\RELMiscNodes.cs" />

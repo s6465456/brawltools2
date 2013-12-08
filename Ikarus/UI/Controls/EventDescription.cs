@@ -47,15 +47,15 @@ namespace System.Windows.Forms
 
         int index = -2;
 
-        private ActionEventInfo _targetNode;
+        private EventInformation _targetNode;
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ActionEventInfo TargetNode
+        public EventInformation TargetNode
         {
             get { return _targetNode; }
             set { _targetNode = value; EventChanged(); }
         }
 
-        public void SetTarget(ActionEventInfo info, int i)
+        public void SetTarget(EventInformation info, int i)
         {
             index = i;
             TargetNode = info;

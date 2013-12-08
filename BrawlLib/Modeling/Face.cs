@@ -10,6 +10,7 @@ namespace BrawlLib.Modeling
 {
     public class Facepoint
     {
+        public int _index;
         public Vertex3 _vertex;
 
         private IMatrixNode Node { get { return _vertex != null ? _vertex.MatrixNode : null; } }
@@ -69,9 +70,9 @@ namespace BrawlLib.Modeling
         }
 
         //For imports
-        public List<Trifan> _trifans = new List<Trifan>();
-        public List<Tristrip> _tristrips = new List<Tristrip>();
-        public List<Triangle> _triangles = new List<Triangle>();
+        public List<FacepointTrifan> _trifans = new List<FacepointTrifan>();
+        public List<FacepointTristrip> _tristrips = new List<FacepointTristrip>();
+        public List<FacepointTriangle> _triangles = new List<FacepointTriangle>();
 
         //For existing models
         public List<PrimitiveHeader> _headers = new List<PrimitiveHeader>();
@@ -90,7 +91,7 @@ namespace BrawlLib.Modeling
                 *(bushort*)(grpAddr + _nodeOffsets[i]._offset) = (ushort)_nodeOffsets[i]._node.NodeIndex;
         }
 
-        private void AddTriangle(Triangle t)
+        private void AddTriangle(FacepointTriangle t)
         {
             _triangles.Add(t);
             if (!_nodes.Contains(t._x.NodeID)) _nodes.Add(t._x.NodeID);
@@ -98,7 +99,7 @@ namespace BrawlLib.Modeling
             if (!_nodes.Contains(t._z.NodeID)) _nodes.Add(t._z.NodeID);
         }
 
-        public bool TryAdd(Triangle t)
+        public bool TryAdd(FacepointTriangle t)
         {
             List<ushort> ids = new List<ushort>();
 
@@ -119,7 +120,7 @@ namespace BrawlLib.Modeling
             return false;
         }
 
-        private void AddTristrip(Tristrip t)
+        private void AddTristrip(FacepointTristrip t)
         {
             _tristrips.Add(t);
             foreach (Facepoint p in t._points)
@@ -127,7 +128,7 @@ namespace BrawlLib.Modeling
                     _nodes.Add(p.NodeID);
         }
 
-        public bool TryAdd(Tristrip t)
+        public bool TryAdd(FacepointTristrip t)
         {
             List<ushort> ids = new List<ushort>();
             foreach (Facepoint p in t._points)
@@ -164,7 +165,7 @@ namespace BrawlLib.Modeling
     public class TriangleGroup
     {
         public PrimitiveHeader Header { get { return new PrimitiveHeader(WiiPrimitiveType.Triangles, _triangles.Count * 3); } }
-        public List<Triangle> _triangles = new List<Triangle>();
+        public List<FacepointTriangle> _triangles = new List<FacepointTriangle>();
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -176,21 +177,21 @@ namespace BrawlLib.Modeling
             get
             {
                 int count = 0;
-                foreach (Tristrip t in _tristrips)
+                foreach (FacepointTristrip t in _tristrips)
                     count += t._points.Count;
                 return count;
             }
         }
-        public List<Tristrip> _tristrips = new List<Tristrip>();
+        public List<FacepointTristrip> _tristrips = new List<FacepointTristrip>();
     }
 
-    public class Tristrip
+    public class FacepointTristrip
     {
         public List<Facepoint> _points = new List<Facepoint>();
-        public List<Triangle> _triangles = new List<Triangle>();
+        public List<FacepointTriangle> _triangles = new List<FacepointTriangle>();
         public List<ushort> _nodeIds = new List<ushort>();
 
-        public void Initialize(Triangle first)
+        public void Initialize(FacepointTriangle first)
         {
             _points = new List<Facepoint>();
             _nodeIds = new List<ushort>();
@@ -208,7 +209,7 @@ namespace BrawlLib.Modeling
                 _nodeIds.Add(first._z.NodeID);
         }
 
-        public bool CanAdd(Triangle t)
+        public bool CanAdd(FacepointTriangle t)
         {
             ushort id = t._z.NodeID;
             int count = 0;
@@ -218,7 +219,7 @@ namespace BrawlLib.Modeling
             return false;
         }
 
-        public void Add(Triangle t)
+        public void Add(FacepointTriangle t)
         {
             ushort id = t._z.NodeID;
             _points.Add(t._z);
@@ -228,12 +229,12 @@ namespace BrawlLib.Modeling
         }
     }
 
-    public class Trifan
+    public class FacepointTrifan
     {
         public List<Facepoint> _points = new List<Facepoint>();
     }
 
-    public class Triangle
+    public class FacepointTriangle
     {
         public Facepoint _x;
         public Facepoint _y;
@@ -262,8 +263,8 @@ namespace BrawlLib.Modeling
             }
         }
 
-        public Triangle() { }
-        public Triangle(Facepoint x, Facepoint y, Facepoint z)
+        public FacepointTriangle() { }
+        public FacepointTriangle(Facepoint x, Facepoint y, Facepoint z)
         {
             _x = x;
             _y = y;
@@ -278,9 +279,9 @@ namespace BrawlLib.Modeling
             return false;
         }
 
-        public Triangle RotateUp()
+        public FacepointTriangle RotateUp()
         {
-            return new Triangle(_y, _z, _x);
+            return new FacepointTriangle(_y, _z, _x);
         }
 
         public bool _grouped = false;

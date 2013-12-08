@@ -32,10 +32,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 uint offset;
                 if (uint.TryParse(s, System.Globalization.NumberStyles.HexNumber, null, out offset))
                 {
-                    ModuleSectionNode section = Sections[TargetSectionID];
-                    int x = (section.Relocations.Count * 4) - 2;
-                    offset = offset.Clamp(0, (uint)(x < 0 ? 0 : x)); 
-
+                    if ((_parentRelocation._section.Root as ModuleNode).ID == _moduleID)
+                    {
+                        ModuleSectionNode section = Sections[TargetSectionID];
+                        int x = (section.Relocations.Count * 4) - 2;
+                        offset = offset.Clamp(0, (uint)(x < 0 ? 0 : x)); 
+                    }
                     _addend = offset;
                     _parentRelocation._section.SignalPropertyChange();
                 }
@@ -44,18 +46,37 @@ namespace BrawlLib.SSBB.ResourceNodes
         [Category("Relocation Command"), Description("Determines how the offset should be written.")]
         public RELCommandType Command { get { return _command; } set { _command = value; _parentRelocation._section.SignalPropertyChange(); } }
 
-        [Category("Relocation Command"), Description("The index of the section to retrieve data from.")]
+        [Category("Relocation Command"), Description("The index of the section to offset into.")]
         public uint TargetSectionID 
         {
             get { return _targetSectionId; } 
             set 
             {
-                _targetSectionId = value.Clamp(0, (uint)Sections.Length - 1);
-                ModuleSectionNode section = Sections[TargetSectionID];
-                int x = (section.Relocations.Count * 4) - 2;
-                _addend = _addend.Clamp(0, (uint)(x < 0 ? 0 : x)); 
+                if ((_parentRelocation._section.Root as ModuleNode).ID == _moduleID)
+                {
+                    _targetSectionId = value.Clamp(0, (uint)Sections.Length - 1);
+                    ModuleSectionNode section = Sections[TargetSectionID];
+                    int x = (section.Relocations.Count * 4) - 2;
+                    _addend = _addend.Clamp(0, (uint)(x < 0 ? 0 : x));
+                }
+                else
+                    _targetSectionId = value;
                 _parentRelocation._section.SignalPropertyChange(); 
             } 
+        }
+        [Category("Relocation Command"), Description("The ID of the target module."), TypeConverter(typeof(DropDownListRELModuleIDs))]
+        public string TargetModuleID
+        {
+            get { return RELNode._idNames.ContainsKey((int)_moduleID) ? RELNode._idNames[(int)_moduleID] : _moduleID.ToString(); }
+            set
+            {
+                uint id = 0;
+                if (!uint.TryParse(value, out id) && RELNode._idNames.ContainsValue(value))
+                    id = (uint)RELNode._idNames.Keys[RELNode._idNames.IndexOfValue(value)];
+
+                _moduleID = id;
+                _parentRelocation._section.SignalPropertyChange();
+            }
         }
 
         public RELCommandType _command;
@@ -113,8 +134,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         {
             if (_parentRelocation == null)
                 return null;
-            RELNode r = (_parentRelocation._section.Root as ModuleNode).AppliedModule;
-            if (r != null && _targetSectionId > 0 && _targetSectionId < r.Sections.Length)
+            RELNode r = _parentRelocation._section.Root as RELNode;
+            if (r != null && _targetSectionId > 0 && _targetSectionId < r.Sections.Length && r.ModuleID == _moduleID)
                 return r.Sections[_targetSectionId].GetRelocationAtOffset((int)_addend);
             return null;
         }

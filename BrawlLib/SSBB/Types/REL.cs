@@ -94,6 +94,11 @@ namespace BrawlLib.SSBBTypes
         public buint _value; //Offset relative to the target section's address
         
         private VoidPtr Address { get { fixed (void* p = &this)return p; } }
+
+        public override string ToString()
+        {
+            return _type.ToString();
+        }
     }
 
     public enum RELLinkType : byte

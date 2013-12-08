@@ -11,19 +11,9 @@ namespace BrawlLib.SSBB.ResourceNodes
     public unsafe class MDL0ColorNode : MDL0EntryNode
     {
         internal MDL0ColorData* Header { get { return (MDL0ColorData*)WorkingUncompressed.Address; } }
-        //protected override int DataLength { get { return Header->_dataLen; } }
-
         public MDL0ObjectNode[] Objects { get { return _objects.ToArray(); } }
         internal List<MDL0ObjectNode> _objects = new List<MDL0ObjectNode>();
 
-        //[Category("Color Data")]
-        //public int TotalLen { get { return Header->_dataLen; } }
-        //[Category("Color Data")]
-        //public int MDL0Offset { get { return Header->_mdl0Offset; } }
-        //[Category("Color Data")]
-        //public int DataOffset { get { return Header->_dataOffset; } }
-        //[Category("Color Data")]
-        //public int StringOffset { get { return Header->_stringOffset; } }
         [Category("Color Data")]
         public int ID { get { return Header->_index; } }
         [Category("Color Data")]
@@ -32,8 +22,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public WiiColorComponentType Format { get { return (WiiColorComponentType)(int)Header->_format; } }
         [Category("Color Data")]
         public byte EntryStride { get { return Header->_entryStride; } }
-        //[Category("Color Data")]
-        //public byte Pad { get { return Header->_pad; } }
         [Category("Color Data")]
         public int NumEntries { get { return Header->_numEntries; } }
 

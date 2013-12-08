@@ -31,21 +31,33 @@ namespace BrawlLib.Modeling
 
                 writer.WriteStartDocument();
                 writer.WriteStartElement("COLLADA", "http://www.collada.org/2008/03/COLLADASchema");
-                writer.WriteAttributeString("version", "1.4.1");
+                writer.WriteAttributeString("version", "1.5.0");
 
                 writer.WriteStartElement("asset");
-                writer.WriteStartElement("contributor");
-                writer.WriteElementString("authoring_tool", Application.ProductName);
-                writer.WriteEndElement();
-                writer.WriteStartElement("unit");
-                writer.WriteAttributeString("meter", "0.01");
-                writer.WriteAttributeString("name", "centimeter");
-                writer.WriteEndElement();
-                writer.WriteElementString("up_axis", "Y_UP");
+                {
+                    writer.WriteStartElement("contributor");
+                    writer.WriteElementString("authoring_tool", Application.ProductName);
+                    writer.WriteEndElement();
+
+                    writer.WriteStartElement("created");
+                    writer.WriteString(DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture) + "Z");
+                    writer.WriteEndElement();
+
+                    writer.WriteStartElement("modified");
+                    writer.WriteString(DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture) + "Z");
+                    writer.WriteEndElement();
+
+                    writer.WriteStartElement("unit");
+                    writer.WriteAttributeString("meter", "0.01");
+                    writer.WriteAttributeString("name", "centimeter");
+                    writer.WriteEndElement();
+
+                    writer.WriteElementString("up_axis", "Y_UP");
+                }
                 writer.WriteEndElement();
 
                 //Define images
-                WriteImages(model, Path.GetDirectoryName(outFile), writer);
+                WriteImages(model, writer);
 
                 //Define materials
                 WriteMaterials(model, writer);
@@ -63,55 +75,62 @@ namespace BrawlLib.Modeling
 
                 //Define scenes
                 writer.WriteStartElement("library_visual_scenes");
-                writer.WriteStartElement("visual_scene");
+                {
+                    writer.WriteStartElement("visual_scene");
+                    {
+                        //Attach nodes/bones to scene, starting with TopN
+                        //Specify transform for each node
+                        //Weighted polygons must use instance_controller
+                        //Standard geometry uses instance_geometry
 
-                //Attach nodes/bones to scene, starting with TopN
-                //Specify transform for each node
-                //Weighted polygons must use instance_controller
-                //Standard geometry uses instance_geometry
+                        writer.WriteAttributeString("id", "RootNodeID");
+                        writer.WriteAttributeString("name", "RootNode");
 
-                writer.WriteAttributeString("id", "RootNode");
-                writer.WriteAttributeString("name", "RootNode");
-
-                //Define bones and geometry instances
-                WriteNodes(model, writer);
-
-                writer.WriteEndElement(); //visual scene
-                writer.WriteEndElement(); //library visual scenes
+                        //Define bones and geometry instances
+                        WriteNodes(model, writer);
+                    }
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
 
                 writer.WriteStartElement("scene");
-                writer.WriteStartElement("instance_visual_scene");
-                writer.WriteAttributeString("url", "#RootNode");
-                writer.WriteEndElement(); //instance visual scene
-
+                {
+                    writer.WriteStartElement("instance_visual_scene");
+                    writer.WriteAttributeString("url", "#RootNodeID");
+                    writer.WriteEndElement(); //instance visual scene
+                }
                 writer.WriteEndElement(); //scene
+
                 writer.Close();
             }
         }
 
-        private static void WriteImages(MDL0Node model, string path, XmlWriter writer)
+        private static void WriteImages(MDL0Node model, XmlWriter writer)
         {
             if (model._texList == null)
                 return;
 
             writer.WriteStartElement("library_images");
-
-            foreach (MDL0TextureNode tex in model._texList)
             {
-                writer.WriteStartElement("image");
-                writer.WriteAttributeString("id", tex.Name + "-image");
-                writer.WriteAttributeString("name", tex.Name);
-                writer.WriteStartElement("init_from");
-
-                string outPath = String.Format("{0}/{1}.png", path.Replace('\\', '/'), tex.Name);
-
-                //Export image and set full path. Or, cheat...
-                writer.WriteString(String.Format("file://{0}", outPath));
-
-                writer.WriteEndElement(); //init_from
-                writer.WriteEndElement(); //image
+                foreach (MDL0TextureNode tex in model._texList)
+                {
+                    writer.WriteStartElement("image");
+                    {
+                        writer.WriteAttributeString("id", tex.Name + "-image");
+                        writer.WriteAttributeString("name", tex.Name);
+                        writer.WriteStartElement("init_from");
+                        {
+                            writer.WriteStartElement("ref");
+                            {
+                                writer.WriteString(String.Format("{0}.png", tex.Name));
+                            }
+                            writer.WriteEndElement(); //ref
+                        }
+                        writer.WriteEndElement(); //init_from
+                    }
+                    writer.WriteEndElement(); //image
+                }
             }
-
             writer.WriteEndElement(); //library_images
         }
 
@@ -122,17 +141,23 @@ namespace BrawlLib.Modeling
                 return;
 
             writer.WriteStartElement("library_materials");
-
-            foreach (MDL0MaterialNode mat in node.Children)
             {
-                writer.WriteStartElement("material");
-                writer.WriteAttributeString("id", mat._name);
-                writer.WriteStartElement("instance_effect");
-                writer.WriteAttributeString("url", String.Format("#{0}-fx", mat._name));
-                writer.WriteEndElement();
-                writer.WriteEndElement();
-            }
+                foreach (MDL0MaterialNode mat in node.Children)
+                {
+                    if (mat._objects.Count == 0)
+                        continue;
 
+                    writer.WriteStartElement("material");
+                    {
+                        writer.WriteAttributeString("id", mat._name);
+
+                        writer.WriteStartElement("instance_effect");
+                        writer.WriteAttributeString("url", String.Format("#{0}-fx", mat._name));
+                        writer.WriteEndElement();
+                    }
+                    writer.WriteEndElement();
+                }
+            }
             writer.WriteEndElement();
         }
 
@@ -147,33 +172,128 @@ namespace BrawlLib.Modeling
             foreach (MDL0MaterialNode mat in node.Children)
             {
                 writer.WriteStartElement("effect");
-                writer.WriteAttributeString("id", mat._name + "-fx");
-                writer.WriteStartElement("profile_COMMON");
-                writer.WriteStartElement("technique");
-                writer.WriteAttributeString("sid", "standard");
-                writer.WriteStartElement("phong");
-
-                writer.WriteStartElement("diffuse");
-
-                foreach (MDL0MaterialRefNode mr in mat._children)
                 {
-                    if (mr._texture != null)
+                    writer.WriteAttributeString("id", mat._name + "-fx");
+                    writer.WriteAttributeString("name", mat._name);
+                    writer.WriteStartElement("profile_COMMON");
                     {
-                        writer.WriteStartElement("texture");
-                        writer.WriteAttributeString("texture", mr._texture.Name + "-image");
-                        writer.WriteAttributeString("texcoord", "TEXCOORD" + (mr.TextureCoordId < 0 ? 0 : mr.TextureCoordId));
-                        writer.WriteEndElement(); //texture
+                        if (mat.Children.Count > 0)
+                        {
+                            MDL0MaterialRefNode mr = mat.Children[0] as MDL0MaterialRefNode;
+                            if (mr._texture != null)
+                            {
+                                writer.WriteStartElement("newparam");
+                                writer.WriteAttributeString("sid", mr._texture.Name + "-surface");
+                                {
+                                    writer.WriteStartElement("surface");
+                                    writer.WriteAttributeString("type", "2D");
+                                    {
+                                        writer.WriteStartElement("init_from");
+                                        {
+                                            writer.WriteStartElement("ref");
+                                            {
+                                                writer.WriteString(mr._texture.Name + "-image");
+                                            }
+                                            writer.WriteEndElement(); //ref
+                                        }
+                                        writer.WriteEndElement(); //init_from
+                                    }
+                                    writer.WriteEndElement(); //surface
+                                }
+                                writer.WriteEndElement(); //newparam
+
+                                writer.WriteStartElement("newparam");
+                                writer.WriteAttributeString("sid", mr._texture.Name + "-sampler");
+                                {
+                                    writer.WriteStartElement("sampler2D");
+                                    {
+                                        writer.WriteStartElement("source");
+                                        {
+                                            writer.WriteString(mr._texture.Name + "-surface");
+                                        }
+                                        writer.WriteEndElement(); //source
+                                        writer.WriteStartElement("instance_image");
+                                        writer.WriteAttributeString("url", "#" + mr._texture.Name + "-image");
+                                        writer.WriteEndElement(); //instance_image
+                                        string wrap = "WRAP";
+                                        writer.WriteStartElement("wrap_s");
+                                        switch (mr._uWrap)
+                                        {
+                                            case 0:
+                                                wrap = "CLAMP";
+                                                break;
+                                            case 1:
+                                                wrap = "WRAP";
+                                                break;
+                                            case 2:
+                                                wrap = "MIRROR";
+                                                break;
+                                        }
+                                        writer.WriteString(wrap);
+                                        writer.WriteEndElement(); //wrap_s
+                                        wrap = "REPEAT";
+                                        writer.WriteStartElement("wrap_t");
+                                        switch (mr._vWrap)
+                                        {
+                                            case 0:
+                                                wrap = "CLAMP";
+                                                break;
+                                            case 1:
+                                                wrap = "WRAP";
+                                                break;
+                                            case 2:
+                                                wrap = "MIRROR";
+                                                break;
+                                        }
+                                        writer.WriteString(wrap);
+                                        writer.WriteEndElement(); //wrap_t
+                                        writer.WriteStartElement("minfilter");
+                                        writer.WriteString(mr.MinFilter.ToString().ToUpper());
+                                        writer.WriteEndElement(); //minfilter
+                                        writer.WriteStartElement("magfilter");
+                                        writer.WriteString(mr.MagFilter.ToString().ToUpper());
+                                        writer.WriteEndElement(); //magfilter
+                                    }
+                                    writer.WriteEndElement(); //sampler2D
+                                }
+                                writer.WriteEndElement(); //newparam
+                            }
+                        }
+                        writer.WriteStartElement("technique");
+                        writer.WriteAttributeString("sid", "COMMON");
+                        {
+                            writer.WriteStartElement("phong");
+                            {
+                                writer.WriteStartElement("diffuse");
+                                {
+                                    if (mat.Children.Count > 0)
+                                    {
+                                        MDL0MaterialRefNode mr = mat.Children[0] as MDL0MaterialRefNode;
+                                        if (mr._texture != null)
+                                        {
+                                            writer.WriteStartElement("texture");
+                                            {
+                                                writer.WriteAttributeString("texture", mr._texture.Name + "-sampler");
+                                                writer.WriteAttributeString("texcoord", "TEXCOORD" + (mr.TextureCoordId < 0 ? 0 : mr.TextureCoordId));
+                                            }
+                                            writer.WriteEndElement(); //texture
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                }
+                                writer.WriteEndElement(); //diffuse
+                            }
+                            writer.WriteEndElement(); //phong
+                        }
+                        writer.WriteEndElement(); //technique
                     }
+                    writer.WriteEndElement(); //profile
                 }
-
-                writer.WriteEndElement(); //diffuse
-
-                writer.WriteEndElement(); //phong
-                writer.WriteEndElement(); //technique
-                writer.WriteEndElement(); //profile
                 writer.WriteEndElement(); //effect
             }
-
             writer.WriteEndElement(); //library
         }
 
@@ -191,14 +311,14 @@ namespace BrawlLib.Modeling
 
                 //Geometry
                 writer.WriteStartElement("geometry");
-                writer.WriteAttributeString("id", poly.Name);
+                writer.WriteAttributeString("id", poly.Name + "-ID");
                 writer.WriteAttributeString("name", poly.Name);
 
                 //Mesh
                 writer.WriteStartElement("mesh");
 
                 //Write vertex data first
-                WriteVertices(poly._name, manager._vertices, poly.MatrixNode, writer);
+                WriteVertices(poly.Name + "-ID", manager._vertices, poly.MatrixNode, writer);
 
                 //Face assets
                 for (int i = 0; i < 12; i++)
@@ -212,26 +332,26 @@ namespace BrawlLib.Modeling
                             break;
 
                         case 1:
-                            WriteNormals(poly._name, writer, manager);
+                            WriteNormals(poly.Name + "-ID", writer, manager);
                             break;
 
                         case 2:
                         case 3:
-                            WriteColors(poly._name, manager, i - 2, writer);
+                            WriteColors(poly.Name + "-ID", manager, i - 2, writer);
                             break;
 
                         default:
-                            WriteUVs(poly._name, manager, i - 4, writer);
+                            WriteUVs(poly.Name + "-ID", manager, i - 4, writer);
                             break;
                     }
                 }
 
                 //Vertices
                 writer.WriteStartElement("vertices");
-                writer.WriteAttributeString("id", poly.Name + "_Vertices");
+                writer.WriteAttributeString("id", poly.Name + "-ID_Vertices");
                 writer.WriteStartElement("input");
                 writer.WriteAttributeString("semantic", "POSITION");
-                writer.WriteAttributeString("source", "#" + poly.Name + "_Positions");
+                writer.WriteAttributeString("source", "#" + poly.Name + "-ID_Positions");
                 writer.WriteEndElement(); //input
                 writer.WriteEndElement(); //vertices
 
@@ -531,7 +651,7 @@ namespace BrawlLib.Modeling
             count = prim._elementCount / stride;
 
             if (poly.UsableMaterialNode != null)
-                writer.WriteAttributeString("material", poly.UsableMaterialNode.Name);
+                writer.WriteAttributeString("material", poly.UsableMaterialNode.Name + "-ID");
 
             writer.WriteAttributeString("count", count.ToString());
 
@@ -547,26 +667,26 @@ namespace BrawlLib.Modeling
                 {
                     case 0:
                         writer.WriteAttributeString("semantic", "VERTEX");
-                        writer.WriteAttributeString("source", "#" + poly._name + "_Vertices");
+                        writer.WriteAttributeString("source", "#" + poly._name + "-ID_Vertices");
                         break;
 
                     case 1:
                         writer.WriteAttributeString("semantic", "NORMAL");
-                        writer.WriteAttributeString("source", "#" + poly._name + "_Normals");
+                        writer.WriteAttributeString("source", "#" + poly._name + "-ID_Normals");
                         break;
 
                     case 2:
                     case 3:
                         set = i - 2;
                         writer.WriteAttributeString("semantic", "COLOR");
-                        writer.WriteAttributeString("source", "#" + poly._name + "_Colors" + set.ToString());
+                        writer.WriteAttributeString("source", "#" + poly._name + "-ID_Colors" + set.ToString());
                         writer.WriteAttributeString("set", set.ToString());
                         break;
 
                     default:
                         set = i - 4;
                         writer.WriteAttributeString("semantic", "TEXCOORD");
-                        writer.WriteAttributeString("source", "#" + poly._name + "_UVs" + set.ToString());
+                        writer.WriteAttributeString("source", "#" + poly._name + "-ID_UVs" + set.ToString());
                         writer.WriteAttributeString("set", set.ToString());
                         break;
                 }
@@ -578,10 +698,10 @@ namespace BrawlLib.Modeling
                 elementType.Add(i);
             }
 
+            writer.WriteStartElement("p");
+            first = true;
             for (int i = 0; i < count; i++)
             {
-                writer.WriteStartElement("p");
-                first = true;
                 for (int x = 0; x < stride; x++)
                 {
                     int index = (int)*pData++;
@@ -604,9 +724,8 @@ namespace BrawlLib.Modeling
                             writer.WriteString(_uvRemap[elementType[y] - 4][index].ToString(CultureInfo.InvariantCulture.NumberFormat));
                     }
                 }
-                writer.WriteEndElement(); //p
             }
-
+            writer.WriteEndElement(); //p
             writer.WriteEndElement(); //primitive
         }
 
@@ -638,9 +757,9 @@ namespace BrawlLib.Modeling
                 List<Vertex3> verts = poly._manager._vertices;
 
                 writer.WriteStartElement("controller");
-                writer.WriteAttributeString("id", poly.Name + "_Controller");
+                writer.WriteAttributeString("id", poly.Name + "-ID_Controller");
                 writer.WriteStartElement("skin");
-                writer.WriteAttributeString("source", "#" + poly.Name);
+                writer.WriteAttributeString("source", "#" + poly.Name + "-ID");
 
                 writer.WriteStartElement("bind_shape_matrix");
 
@@ -690,11 +809,11 @@ namespace BrawlLib.Modeling
 
                 //Write joint source
                 writer.WriteStartElement("source");
-                writer.WriteAttributeString("id", poly.Name + "_Joints");
+                writer.WriteAttributeString("id", poly.Name + "-ID_Joints");
 
                 //Node array
                 writer.WriteStartElement("Name_array");
-                writer.WriteAttributeString("id", poly.Name + "_JointArr");
+                writer.WriteAttributeString("id", poly.Name + "-ID_JointArr");
                 //writer.WriteAttributeString("count", boneSet.Count.ToString());
                 writer.WriteAttributeString("count", bones.Length.ToString());
 
@@ -706,14 +825,14 @@ namespace BrawlLib.Modeling
                         first = false;
                     else
                         writer.WriteString(" ");
-                    writer.WriteString(b.Name);
+                    writer.WriteString(b.Name + "-ID");
                 }
                 writer.WriteEndElement(); //Name_array
 
                 //Technique
                 writer.WriteStartElement("technique_common");
                 writer.WriteStartElement("accessor");
-                writer.WriteAttributeString("source", String.Format("#{0}_JointArr", poly.Name));
+                writer.WriteAttributeString("source", String.Format("#{0}-ID_JointArr", poly.Name));
                 //writer.WriteAttributeString("count", boneSet.Count.ToString());
                 writer.WriteAttributeString("count", bones.Length.ToString());
                 writer.WriteStartElement("param");
@@ -727,10 +846,10 @@ namespace BrawlLib.Modeling
 
                 //Inverse matrices source
                 writer.WriteStartElement("source");
-                writer.WriteAttributeString("id", poly.Name + "_Matrices");
+                writer.WriteAttributeString("id", poly.Name + "-ID_Matrices");
 
                 writer.WriteStartElement("float_array");
-                writer.WriteAttributeString("id", poly.Name + "_MatArr");
+                writer.WriteAttributeString("id", poly.Name + "-ID_MatArr");
                 //writer.WriteAttributeString("count", (boneSet.Count * 16).ToString());
                 writer.WriteAttributeString("count", (bones.Length * 16).ToString());
 
@@ -748,7 +867,7 @@ namespace BrawlLib.Modeling
                 //Technique
                 writer.WriteStartElement("technique_common");
                 writer.WriteStartElement("accessor");
-                writer.WriteAttributeString("source", String.Format("#{0}_MatArr", poly.Name));
+                writer.WriteAttributeString("source", String.Format("#{0}-ID_MatArr", poly.Name));
                 //writer.WriteAttributeString("count", boneSet.Count.ToString());
                 writer.WriteAttributeString("count", bones.Length.ToString());
                 writer.WriteAttributeString("stride", "16");
@@ -762,10 +881,10 @@ namespace BrawlLib.Modeling
 
                 //Weights source
                 writer.WriteStartElement("source");
-                writer.WriteAttributeString("id", poly.Name + "_Weights");
+                writer.WriteAttributeString("id", poly.Name + "-ID_Weights");
 
                 writer.WriteStartElement("float_array");
-                writer.WriteAttributeString("id", poly.Name + "_WeightArr");
+                writer.WriteAttributeString("id", poly.Name + "-ID_WeightArr");
                 writer.WriteAttributeString("count", weightSet.Length.ToString());
                 first = true;
 
@@ -782,7 +901,7 @@ namespace BrawlLib.Modeling
                 //Technique
                 writer.WriteStartElement("technique_common");
                 writer.WriteStartElement("accessor");
-                writer.WriteAttributeString("source", String.Format("#{0}_WeightArr", poly.Name));
+                writer.WriteAttributeString("source", String.Format("#{0}-ID_WeightArr", poly.Name));
                 writer.WriteAttributeString("count", weightSet.Length.ToString());
                 writer.WriteStartElement("param");
                 writer.WriteAttributeString("type", "float");
@@ -796,11 +915,11 @@ namespace BrawlLib.Modeling
                 writer.WriteStartElement("joints");
                 writer.WriteStartElement("input");
                 writer.WriteAttributeString("semantic", "JOINT");
-                writer.WriteAttributeString("source", String.Format("#{0}_Joints", poly.Name));
+                writer.WriteAttributeString("source", String.Format("#{0}-ID_Joints", poly.Name));
                 writer.WriteEndElement(); //input
                 writer.WriteStartElement("input");
                 writer.WriteAttributeString("semantic", "INV_BIND_MATRIX");
-                writer.WriteAttributeString("source", String.Format("#{0}_Matrices", poly.Name));
+                writer.WriteAttributeString("source", String.Format("#{0}-ID_Matrices", poly.Name));
                 writer.WriteEndElement(); //input
                 writer.WriteEndElement(); //joints
 
@@ -810,12 +929,12 @@ namespace BrawlLib.Modeling
                 writer.WriteStartElement("input");
                 writer.WriteAttributeString("semantic", "JOINT");
                 writer.WriteAttributeString("offset", "0");
-                writer.WriteAttributeString("source", String.Format("#{0}_Joints", poly.Name));
+                writer.WriteAttributeString("source", String.Format("#{0}-ID_Joints", poly.Name));
                 writer.WriteEndElement(); //input
                 writer.WriteStartElement("input");
                 writer.WriteAttributeString("semantic", "WEIGHT");
                 writer.WriteAttributeString("offset", "1");
-                writer.WriteAttributeString("source", String.Format("#{0}_Weights", poly.Name));
+                writer.WriteAttributeString("source", String.Format("#{0}-ID_Weights", poly.Name));
                 writer.WriteEndElement(); //input
 
                 writer.WriteStartElement("vcount");
@@ -900,14 +1019,55 @@ namespace BrawlLib.Modeling
         private static unsafe void WriteBone(MDL0BoneNode bone, XmlWriter writer)
         {
             writer.WriteStartElement("node");
-            writer.WriteAttributeString("id", bone._name);
+            writer.WriteAttributeString("id", bone.Name + "-ID");
             writer.WriteAttributeString("name", bone._name);
-            writer.WriteAttributeString("sid", bone._name);
+            writer.WriteAttributeString("sid", bone.Name + "-ID");
             writer.WriteAttributeString("type", "JOINT");
 
-            writer.WriteStartElement("matrix");
-            writer.WriteString(WriteMatrix(bone._bindState._transform));
-            writer.WriteEndElement(); //matrix
+            //writer.WriteStartElement("matrix");
+            //writer.WriteString(WriteMatrix(bone._bindState._transform));
+            //writer.WriteEndElement(); //matrix
+
+            if (bone._bindState._translate != new Vector3())
+            {
+                writer.WriteStartElement("translate");
+                writer.WriteString(
+                    bone._bindState._translate._x.ToString(CultureInfo.InvariantCulture.NumberFormat) + " " +
+                    bone._bindState._translate._y.ToString(CultureInfo.InvariantCulture.NumberFormat) + " " +
+                    bone._bindState._translate._z.ToString(CultureInfo.InvariantCulture.NumberFormat));
+                writer.WriteEndElement(); //translate
+            }
+
+            if (bone._bindState._rotate._z != 0)
+            {
+                writer.WriteStartElement("rotate");
+                writer.WriteString("0 0 1 " +
+                    bone._bindState._rotate._z.ToString(CultureInfo.InvariantCulture.NumberFormat));
+                writer.WriteEndElement(); //rotate
+            }
+            if (bone._bindState._rotate._y != 0)
+            {
+                writer.WriteStartElement("rotate");
+                writer.WriteString("0 1 0 " +
+                    bone._bindState._rotate._y.ToString(CultureInfo.InvariantCulture.NumberFormat));
+                writer.WriteEndElement(); //rotate
+            }
+            if (bone._bindState._rotate._x != 0)
+            {
+                writer.WriteStartElement("rotate");
+                writer.WriteString("1 0 0 " +
+                    bone._bindState._rotate._x.ToString(CultureInfo.InvariantCulture.NumberFormat));
+                writer.WriteEndElement(); //rotate
+            }
+            if (bone._bindState._scale != new Vector3(1))
+            {
+                writer.WriteStartElement("scale");
+                writer.WriteString(
+                    bone._bindState._scale._x.ToString(CultureInfo.InvariantCulture.NumberFormat) + " " +
+                    bone._bindState._scale._y.ToString(CultureInfo.InvariantCulture.NumberFormat) + " " +
+                    bone._bindState._scale._z.ToString(CultureInfo.InvariantCulture.NumberFormat));
+                writer.WriteEndElement(); //scale
+            }
 
             //Write single-bind geometry
             //foreach (MDL0PolygonNode poly in bone._infPolys)
@@ -922,11 +1082,12 @@ namespace BrawlLib.Modeling
         private static void WritePolyInstance(MDL0ObjectNode poly, XmlWriter writer)
         {
             writer.WriteStartElement("node");
-            writer.WriteAttributeString("id", poly.Name);
+            writer.WriteAttributeString("id", poly.Name + "-ID");
             writer.WriteAttributeString("name", poly.Name);
+            writer.WriteAttributeString("type", "NODE");
 
             writer.WriteStartElement("instance_controller");
-            writer.WriteAttributeString("url", String.Format("#{0}_Controller", poly.Name));
+            writer.WriteAttributeString("url", String.Format("#{0}_Controller", poly.Name + "-ID"));
             
             writer.WriteStartElement("skeleton");
             writer.WriteString("#" + poly.Model._linker.BoneCache[0].Name);
@@ -937,7 +1098,7 @@ namespace BrawlLib.Modeling
                 writer.WriteStartElement("bind_material");
                 writer.WriteStartElement("technique_common");
                 writer.WriteStartElement("instance_material");
-                writer.WriteAttributeString("symbol", poly.UsableMaterialNode.Name);
+                writer.WriteAttributeString("symbol", poly.UsableMaterialNode.Name + "-ID");
                 writer.WriteAttributeString("target", "#" + poly.UsableMaterialNode.Name);
 
                 foreach (MDL0MaterialRefNode mr in poly.UsableMaterialNode.Children)

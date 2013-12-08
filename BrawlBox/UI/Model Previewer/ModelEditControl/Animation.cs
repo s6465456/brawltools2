@@ -351,7 +351,6 @@ namespace System.Windows.Forms
                 pnlPlayback.numTotalFrames.Enabled = true;
                 pnlPlayback.Enabled = true;
                 pnlPlayback.numTotalFrames.Value = _maxFrame;
-                pnlPlayback.chkLoop.Checked = node.Loop;
                 selectedAnimationToolStripMenuItem.Enabled = true;
                 _updating = false;
 
@@ -463,9 +462,7 @@ namespace System.Windows.Forms
             {
                 if (RenderBones == false)
                     _bonesWereOff = true;
-
                 RenderBones = false;
-                toggleBones.Checked = false;
             }
 
             EnableTransformEdit = false;

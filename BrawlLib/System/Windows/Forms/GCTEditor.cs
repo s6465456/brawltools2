@@ -39,29 +39,23 @@ namespace System.Windows.Forms
                         return;
                 }
 
-                if ((_targetNode = value) == null)
+                _updating = true;
+                txtCode.Text = "";
+                txtName.Text = "";
+                txtDesc.Text = "";
+                txtID.Text = "";
+                txtPath.Text = "";
+                textBox1.Text = "";
+                lstCodes.Items.Clear();
+                if ((_targetNode = value) != null)
                 {
-                    _updating = true;
-                    txtPath.Text = "";
-                    txtCode.Text = "";
-                    txtName.Text = "";
-                    txtDesc.Text = "";
-                    txtID.Text = "";
-                    txtPath.Text = "";
-                    textBox1.Text = "";
-                    lstCodes.DataSource = null;
-                    _updating = false;
-                }
-                else
-                {
-                    _updating = true;
                     txtID.Text = _targetNode._name;
                     txtName.Text = _targetNode.GameName;
-                    lstCodes.DataSource = _targetNode.Children;
-                    _updating = false;
+                    lstCodes.Items.AddRange(_targetNode.Children.Select(s => new ListViewItem() { Text = s.Name, Checked = true, Tag = s }).ToArray());
                     if (_targetNode.Children.Count > 0)
-                        lstCodes.SelectedIndex = 0;
+                        lstCodes.Items[0].Selected = true;
                 }
+                _updating = false;
             }
         }
 
@@ -110,6 +104,11 @@ namespace System.Windows.Forms
                 if (String.IsNullOrEmpty(node._origPath))
                     return SaveAs(node, writeInfo);
 
+                node.Children.Clear();
+                foreach (ListViewItem e in lstCodes.Items)
+                    if (e.Checked)
+                        node.Children.Add(e.Tag as GCTCodeEntryNode);
+
                 node._writeInfo = writeInfo;
                 node.Merge();
                 node.Export(TargetNode._origPath);
@@ -132,6 +131,11 @@ namespace System.Windows.Forms
             {
                 try
                 {
+                    node.Children.Clear();
+                    foreach (ListViewItem e in lstCodes.Items)
+                        if (e.Checked)
+                            node.Children.Add(e.Tag as GCTCodeEntryNode);
+
                     if (Path.GetExtension(path).ToUpper() == ".TXT")
                         node.ToTXT(path);
                     else
@@ -158,10 +162,10 @@ namespace System.Windows.Forms
         public int _codeEntrySavedIndex = -1;
         private void lstCodes_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (panel1.Enabled = lstCodes.SelectedIndex >= 0)
+            if (panel1.Enabled = lstCodes.SelectedIndices.Count > 0)
             {
                 _updating = true;
-                _codeEntry = lstCodes.Items[lstCodes.SelectedIndex] as GCTCodeEntryNode;
+                _codeEntry = lstCodes.Items[lstCodes.SelectedIndices[0]].Tag as GCTCodeEntryNode;
                 txtDesc.Text = _codeEntry._description;
                 txtCode.Text = _codeEntry.DisplayLines;
                 textBox1.Text = _codeEntry._name;
@@ -242,9 +246,10 @@ namespace System.Windows.Forms
                 return;
 
             _codeEntry.Remove();
-            lstCodes.SelectedIndex = lstCodes.SelectedIndex.Clamp(-1, TargetNode.Children.Count - 1);
-
-            lstCodes.RefreshItems();
+            int i = lstCodes.SelectedIndices[0];
+            lstCodes.Items[i].Remove();
+            i = i.Clamp(-1, TargetNode.Children.Count - 1);
+            lstCodes.Items[i].Selected = true;
         }
 
         private void btnNewCode_Click(object sender, EventArgs e)
@@ -255,8 +260,9 @@ namespace System.Windows.Forms
             if (TargetNode == null)
                 TargetNode = new GCTNode();
 
-            TargetNode.AddChild(new GCTCodeEntryNode() { _name = "New Code" });
-            lstCodes.RefreshItems();
+            GCTCodeEntryNode n = new GCTCodeEntryNode() { _name = "New Code" };
+            TargetNode.AddChild(n);
+            lstCodes.Items.Add(new ListViewItem() { Text = n.Name, Checked = true, Tag = n });
         }
 
         void txtCode_TextChanged(object sender, EventArgs e)
@@ -286,7 +292,6 @@ namespace System.Windows.Forms
                 return;
 
             _codeEntry.Name = textBox1.Text;
-            lstCodes.RefreshItems();
 
             if (_codeEntrySavedIndex != -1)
                 BrawlLib.Properties.Settings.Default.Codes[_codeEntrySavedIndex]._name = _codeEntry._name;
@@ -475,6 +480,21 @@ namespace System.Windows.Forms
             }
 
             l.Dispose();
+        }
+
+        private void loadRememberedCodesAsNewFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GCTNode node = new GCTNode();
+            node._name = "CODE";
+            node._gameName = "Code List";
+            foreach (CodeStorage w in BrawlLib.Properties.Settings.Default.Codes)
+                node.AddChild(new GCTCodeEntryNode() { _name = w._name, _description = w._description, LinesNoSpaces = w._code });
+            TargetNode = node;
+        }
+
+        private void lstCodes_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            TargetNode.SignalPropertyChange();
         }
     }
 }

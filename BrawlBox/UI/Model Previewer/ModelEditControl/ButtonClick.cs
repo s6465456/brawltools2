@@ -158,6 +158,12 @@ namespace System.Windows.Forms
             ModelPanel.Enabled = false;
             if (InterpolationEditor != null)
                 InterpolationEditor.Enabled = false;
+            if (disableBonesWhenPlayingToolStripMenuItem.Checked)
+            {
+                if (RenderBones == false)
+                    _bonesWereOff = true;
+                RenderBones = false;
+            }
             btnPlay_Click(null, null);
         }
 

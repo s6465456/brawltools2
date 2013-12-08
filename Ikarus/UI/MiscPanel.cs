@@ -141,7 +141,7 @@ namespace Ikarus.UI
             this.grpHurtBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpHurtBox.Location = new System.Drawing.Point(0, 0);
             this.grpHurtBox.Name = "grpHurtBox";
-            this.grpHurtBox.Size = new System.Drawing.Size(229, 615);
+            this.grpHurtBox.Size = new System.Drawing.Size(229, 264);
             this.grpHurtBox.TabIndex = 22;
             this.grpHurtBox.TabStop = false;
             this.grpHurtBox.Text = "Edit Hurtbox";
@@ -151,7 +151,10 @@ namespace Ikarus.UI
             // 
             this.numRegion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.numRegion.Integral = false;
             this.numRegion.Location = new System.Drawing.Point(69, 171);
+            this.numRegion.MaximumValue = 3.402823E+38F;
+            this.numRegion.MinimumValue = -3.402823E+38F;
             this.numRegion.Name = "numRegion";
             this.numRegion.Size = new System.Drawing.Size(155, 20);
             this.numRegion.TabIndex = 25;
@@ -213,7 +216,10 @@ namespace Ikarus.UI
             // 
             this.numOffX.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.numOffX.Integral = false;
             this.numOffX.Location = new System.Drawing.Point(69, 35);
+            this.numOffX.MaximumValue = 3.402823E+38F;
+            this.numOffX.MinimumValue = -3.402823E+38F;
             this.numOffX.Name = "numOffX";
             this.numOffX.Size = new System.Drawing.Size(155, 20);
             this.numOffX.TabIndex = 3;
@@ -234,7 +240,10 @@ namespace Ikarus.UI
             // 
             this.numRadius.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.numRadius.Integral = false;
             this.numRadius.Location = new System.Drawing.Point(70, 191);
+            this.numRadius.MaximumValue = 3.402823E+38F;
+            this.numRadius.MinimumValue = -3.402823E+38F;
             this.numRadius.Name = "numRadius";
             this.numRadius.Size = new System.Drawing.Size(154, 20);
             this.numRadius.TabIndex = 18;
@@ -255,7 +264,10 @@ namespace Ikarus.UI
             // 
             this.numStrZ.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.numStrZ.Integral = false;
             this.numStrZ.Location = new System.Drawing.Point(69, 143);
+            this.numStrZ.MaximumValue = 3.402823E+38F;
+            this.numStrZ.MinimumValue = -3.402823E+38F;
             this.numStrZ.Name = "numStrZ";
             this.numStrZ.Size = new System.Drawing.Size(155, 20);
             this.numStrZ.TabIndex = 17;
@@ -276,7 +288,10 @@ namespace Ikarus.UI
             // 
             this.numStrY.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.numStrY.Integral = false;
             this.numStrY.Location = new System.Drawing.Point(69, 123);
+            this.numStrY.MaximumValue = 3.402823E+38F;
+            this.numStrY.MinimumValue = -3.402823E+38F;
             this.numStrY.Name = "numStrY";
             this.numStrY.Size = new System.Drawing.Size(155, 20);
             this.numStrY.TabIndex = 16;
@@ -297,7 +312,10 @@ namespace Ikarus.UI
             // 
             this.numStrX.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.numStrX.Integral = false;
             this.numStrX.Location = new System.Drawing.Point(69, 103);
+            this.numStrX.MaximumValue = 3.402823E+38F;
+            this.numStrX.MinimumValue = -3.402823E+38F;
             this.numStrX.Name = "numStrX";
             this.numStrX.Size = new System.Drawing.Size(155, 20);
             this.numStrX.TabIndex = 15;
@@ -318,7 +336,10 @@ namespace Ikarus.UI
             // 
             this.numOffZ.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.numOffZ.Integral = false;
             this.numOffZ.Location = new System.Drawing.Point(69, 75);
+            this.numOffZ.MaximumValue = 3.402823E+38F;
+            this.numOffZ.MinimumValue = -3.402823E+38F;
             this.numOffZ.Name = "numOffZ";
             this.numOffZ.Size = new System.Drawing.Size(155, 20);
             this.numOffZ.TabIndex = 14;
@@ -339,7 +360,10 @@ namespace Ikarus.UI
             // 
             this.numOffY.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.numOffY.Integral = false;
             this.numOffY.Location = new System.Drawing.Point(69, 55);
+            this.numOffY.MaximumValue = 3.402823E+38F;
+            this.numOffY.MinimumValue = -3.402823E+38F;
             this.numOffY.Name = "numOffY";
             this.numOffY.Size = new System.Drawing.Size(155, 20);
             this.numOffY.TabIndex = 13;
@@ -457,7 +481,7 @@ namespace Ikarus.UI
             this.ControlPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ControlPanel.Location = new System.Drawing.Point(0, 0);
             this.ControlPanel.Name = "ControlPanel";
-            this.ControlPanel.Size = new System.Drawing.Size(229, 615);
+            this.ControlPanel.Size = new System.Drawing.Size(229, 264);
             this.ControlPanel.TabIndex = 26;
             this.ControlPanel.Visible = false;
             // 
@@ -467,7 +491,7 @@ namespace Ikarus.UI
             this.eventModifier1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.eventModifier1.Location = new System.Drawing.Point(0, 0);
             this.eventModifier1.Name = "eventModifier1";
-            this.eventModifier1.Size = new System.Drawing.Size(229, 615);
+            this.eventModifier1.Size = new System.Drawing.Size(229, 264);
             this.eventModifier1.TabIndex = 37;
             this.eventModifier1.Visible = false;
             // 
@@ -475,7 +499,7 @@ namespace Ikarus.UI
             // 
             this.Controls.Add(this.ControlPanel);
             this.Name = "MiscPanel";
-            this.Size = new System.Drawing.Size(229, 615);
+            this.Size = new System.Drawing.Size(229, 264);
             this.grpHurtBox.ResumeLayout(false);
             this.grpHurtBox.PerformLayout();
             this.ControlPanel.ResumeLayout(false);
@@ -487,11 +511,6 @@ namespace Ikarus.UI
 
         public MainControl _mainWindow;
 
-        //Variable storage. Order: RA, LA, IC
-        public int[][] BasicVars = new int[3][];
-        public float[][] FloatVars = new float[3][];
-        public bool[][] BitVars = new bool[3][];
-       
         public event EventHandler FileChanged;
         public event ReferenceEventHandler ReferenceLoaded;
         public event ReferenceEventHandler ReferenceClosed;
@@ -515,10 +534,6 @@ namespace Ikarus.UI
         public MiscPanel() 
         {
             InitializeComponent();
-            //SubActionFlagsPanel.Dock = ActionFlagsPanel.Dock = DockStyle.Top;
-            //scriptEditor1._mainWindow = this;
-            //scriptEditor1.label1.Visible = false;
-            //scriptEditor1.Offset.Visible = false;
             _hurtboxBoxes[0] = numOffX; numOffX.Tag = 0;
             _hurtboxBoxes[1] = numOffY; numOffY.Tag = 1;
             _hurtboxBoxes[2] = numOffZ; numOffZ.Tag = 2;
@@ -527,11 +542,6 @@ namespace Ikarus.UI
             _hurtboxBoxes[5] = numStrZ; numStrZ.Tag = 5;
             _hurtboxBoxes[6] = numRadius; numRadius.Tag = 6;
             _hurtboxBoxes[7] = numRegion; numRegion.Tag = 7;
-        }
-
-        public bool CloseReferences()
-        {
-            return true;//CloseMoveset();
         }
 
         private void UpdateModel()
@@ -549,15 +559,15 @@ namespace Ikarus.UI
         {
             Control newControl = null;
 
-            if (_selectedObject is MoveDefHurtBoxNode)
+            if (_selectedObject is MiscHurtBox)
             {
-                MoveDefHurtBoxNode node = (MoveDefHurtBoxNode)_selectedObject;
+                MiscHurtBox node = (MiscHurtBox)_selectedObject;
 
                 newControl = grpHurtBox;
 
-                numOffX.Text = node._offst._x.ToString();
-                numOffY.Text = node._offst._y.ToString();
-                numOffZ.Text = node._offst._z.ToString();
+                numOffX.Text = node.PosOffset._x.ToString();
+                numOffY.Text = node.PosOffset._y.ToString();
+                numOffZ.Text = node.PosOffset._z.ToString();
 
                 numStrX.Text = node._stretch._x.ToString();
                 numStrY.Text = node._stretch._y.ToString();
@@ -595,7 +605,7 @@ namespace Ikarus.UI
         }
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public MoveDefHurtBoxNode SelectedHurtbox
+        public MiscHurtBox SelectedHurtbox
         {
             get { return _mainWindow._selectedHurtbox; }
             set { _mainWindow._selectedHurtbox = value; }
@@ -630,7 +640,7 @@ namespace Ikarus.UI
             if (SelectedHurtbox == null)
                 return;
 
-            float.TryParse(numOffX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out SelectedHurtbox._offst._x);
+            float.TryParse(numOffX.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out SelectedHurtbox._posOffset._x);
             SelectedHurtbox.SignalPropertyChange();
 
             if (!_updating)
@@ -642,7 +652,7 @@ namespace Ikarus.UI
             if (SelectedHurtbox == null)
                 return;
 
-            float.TryParse(numOffY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out SelectedHurtbox._offst._y);
+            float.TryParse(numOffY.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out SelectedHurtbox._posOffset._y);
             SelectedHurtbox.SignalPropertyChange();
 
             if (!_updating)
@@ -654,7 +664,7 @@ namespace Ikarus.UI
             if (SelectedHurtbox == null)
                 return;
 
-            float.TryParse(numOffZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out SelectedHurtbox._offst._z);
+            float.TryParse(numOffZ.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out SelectedHurtbox._posOffset._z);
             SelectedHurtbox.SignalPropertyChange();
 
             if (!_updating)

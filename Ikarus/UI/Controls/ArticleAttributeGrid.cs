@@ -157,10 +157,10 @@ namespace System.Windows.Forms
             string value = attributes.Rows[index][1].ToString();
 
             string name = attributes.Rows[index][0].ToString();
-            if (AttributeArray[index]._name != name && TargetNode._root.Params.ContainsKey(TargetNode.OldName))
+            if (AttributeArray[index]._name != name && Manager.Params.ContainsKey(TargetNode._nameID))
             {
-                AttributeArray[index]._name = _targetNode._info[index]._name = TargetNode._root.Params[TargetNode.OldName]._attributes[index]._name = name;
-                FileManager._dictionaryChanged = true;
+                AttributeArray[index]._name = _targetNode._info[index]._name = Manager.Params[TargetNode._nameID]._attributes[index]._name = name;
+                Manager._dictionaryChanged = true;
                 return;
             }
 
@@ -233,10 +233,10 @@ namespace System.Windows.Forms
             if (index >= 0)
             {
                 AttributeArray[index]._description = _targetNode._info[index]._description = description.Text;
-                if (TargetNode._root.Params.ContainsKey(TargetNode.OldName))
+                if (Manager.Params.ContainsKey(TargetNode._nameID))
                 {
-                    TargetNode._root.Params[TargetNode.OldName]._attributes[index]._description = AttributeArray[index]._description;
-                    FileManager._dictionaryChanged = true;
+                    Manager.Params[TargetNode._nameID]._attributes[index]._description = AttributeArray[index]._description;
+                    Manager._dictionaryChanged = true;
                 }
             }
         }

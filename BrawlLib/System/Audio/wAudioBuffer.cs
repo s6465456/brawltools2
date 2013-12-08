@@ -95,7 +95,11 @@ namespace System.Audio
 
         public override void Play()
         {
-            _dsb8.Play(0, 0, DS.DSBufferPlayFlags.Looping);
+            try
+            {
+                _dsb8.Play(0, 0, DS.DSBufferPlayFlags.Looping);
+            }
+            catch { }
         }
         public override void Stop() 
         {

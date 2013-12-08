@@ -23,12 +23,10 @@ namespace Ikarus.UI
         #region Designer
         private ModelPanel modelPanel;
         private ColorDialog dlgColor;
-        private Button btnLeftToggle;
-        private Button btnRightToggle;
         private IContainer components;
-        private Button btnPlaybackToggle;
+        private Button btnBottomToggle;
         private Splitter spltLeft;
-        private Button btnOptionToggle;
+        private Button btnTopToggle;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem fileToolStripMenuItem;
         private ToolStripMenuItem editToolStripMenuItem;
@@ -78,7 +76,6 @@ namespace Ikarus.UI
         public Panel panel3;
         private ToolStripButton chkShaders;
         public ToolStripButton btnSaveCam;
-        private Splitter spltRight;
         public ToolStripMenuItem showCameraCoordinatesToolStripMenuItem;
         private ToolStripMenuItem sCN0ToolStripMenuItem;
         private ToolStripMenuItem displayAmbienceToolStripMenuItem;
@@ -132,27 +129,39 @@ namespace Ikarus.UI
         private ToolStripMenuItem btnLoadRoot;
         private ToolStripMenuItem pathToolStripMenuItem;
         private ToolStripMenuItem showAnim;
-        public LeftPanel leftPanel;
-        private System.Windows.Forms.ModelPlaybackPanel pnlPlayback;
-        private RightPanel rightPanel;
+        public ListsPanel listPanel;
+        public System.Windows.Forms.ModelPlaybackPanel pnlPlayback;
+        public EditorPanel scriptPanel;
         private Controls.HurtboxEditor hurtboxEditor;
         private ToolStripMenuItem muteSFXToolStripMenuItem;
-        private Label label2;
+        public ComboBox fileType;
+        private Panel panel1;
+        private Splitter splitter2;
+        private ModelListsPanel modelListsPanel1;
+        private Panel panel4;
+        private Splitter spltRight;
+        private Button button3;
+        private Button button2;
+        private ToolStripMenuItem saveAllFilesToolStripMenuItem;
+        private ToolStripMenuItem viewOpenedFilesToolStripMenuItem;
+        private ToolStripMenuItem viewLogToolStripMenuItem;
+        private ToolStripMenuItem saveTextInfoToolStripMenuItem;
+        public ComboBox comboMdl;
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainControl));
             this.dlgColor = new System.Windows.Forms.ColorDialog();
-            this.btnLeftToggle = new System.Windows.Forms.Button();
-            this.btnRightToggle = new System.Windows.Forms.Button();
-            this.btnPlaybackToggle = new System.Windows.Forms.Button();
+            this.btnBottomToggle = new System.Windows.Forms.Button();
             this.spltLeft = new System.Windows.Forms.Splitter();
-            this.btnOptionToggle = new System.Windows.Forms.Button();
+            this.btnTopToggle = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newSceneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLoadRoot = new System.Windows.Forms.ToolStripMenuItem();
             this.pathToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnLoadChar = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAllFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.btnUndo = new System.Windows.Forms.ToolStripMenuItem();
             this.btnRedo = new System.Windows.Forms.ToolStripMenuItem();
@@ -220,6 +229,8 @@ namespace Ikarus.UI
             this.playVIS0ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playCLR0ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewOpenedFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sCN0ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayAmbienceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.displayLightsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -242,7 +253,8 @@ namespace Ikarus.UI
             this.button1 = new System.Windows.Forms.ToolStripButton();
             this.btnSaveCam = new System.Windows.Forms.ToolStripButton();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.label2 = new System.Windows.Forms.Label();
+            this.fileType = new System.Windows.Forms.ComboBox();
+            this.comboMdl = new System.Windows.Forms.ComboBox();
             this.modelPanel = new System.Windows.Forms.ModelPanel();
             this.animEditors = new System.Windows.Forms.Panel();
             this.pnlPlayback = new System.Windows.Forms.ModelPlaybackPanel();
@@ -254,15 +266,24 @@ namespace Ikarus.UI
             this.srt0Editor = new System.Windows.Forms.SRT0Editor();
             this.chr0Editor = new System.Windows.Forms.CHR0Editor();
             this.clr0Editor = new System.Windows.Forms.CLR0Editor();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.scriptPanel = new Ikarus.UI.EditorPanel();
+            this.splitter2 = new System.Windows.Forms.Splitter();
+            this.listPanel = new Ikarus.UI.ListsPanel();
+            this.panel4 = new System.Windows.Forms.Panel();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.spltRight = new System.Windows.Forms.Splitter();
-            this.rightPanel = new Ikarus.UI.RightPanel();
-            this.leftPanel = new Ikarus.UI.LeftPanel();
+            this.modelListsPanel1 = new Ikarus.UI.ModelListsPanel();
+            this.saveTextInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.controlPanel.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.animEditors.SuspendLayout();
             this.panel3.SuspendLayout();
+            this.panel1.SuspendLayout();
+            this.panel4.SuspendLayout();
             this.SuspendLayout();
             // 
             // dlgColor
@@ -270,60 +291,36 @@ namespace Ikarus.UI
             this.dlgColor.AnyColor = true;
             this.dlgColor.FullOpen = true;
             // 
-            // btnLeftToggle
+            // btnBottomToggle
             // 
-            this.btnLeftToggle.Dock = System.Windows.Forms.DockStyle.Left;
-            this.btnLeftToggle.Location = new System.Drawing.Point(206, 24);
-            this.btnLeftToggle.Name = "btnLeftToggle";
-            this.btnLeftToggle.Size = new System.Drawing.Size(15, 391);
-            this.btnLeftToggle.TabIndex = 5;
-            this.btnLeftToggle.TabStop = false;
-            this.btnLeftToggle.Text = "<";
-            this.btnLeftToggle.UseVisualStyleBackColor = false;
-            this.btnLeftToggle.Click += new System.EventHandler(this.btnLeftToggle_Click);
-            // 
-            // btnRightToggle
-            // 
-            this.btnRightToggle.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnRightToggle.Location = new System.Drawing.Point(860, 24);
-            this.btnRightToggle.Name = "btnRightToggle";
-            this.btnRightToggle.Size = new System.Drawing.Size(15, 391);
-            this.btnRightToggle.TabIndex = 6;
-            this.btnRightToggle.TabStop = false;
-            this.btnRightToggle.Text = ">";
-            this.btnRightToggle.UseVisualStyleBackColor = false;
-            this.btnRightToggle.Click += new System.EventHandler(this.btnRightToggle_Click);
-            // 
-            // btnPlaybackToggle
-            // 
-            this.btnPlaybackToggle.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.btnPlaybackToggle.Location = new System.Drawing.Point(221, 400);
-            this.btnPlaybackToggle.Name = "btnPlaybackToggle";
-            this.btnPlaybackToggle.Size = new System.Drawing.Size(639, 15);
-            this.btnPlaybackToggle.TabIndex = 8;
-            this.btnPlaybackToggle.TabStop = false;
-            this.btnPlaybackToggle.UseVisualStyleBackColor = false;
-            this.btnPlaybackToggle.Click += new System.EventHandler(this.btnPlaybackToggle_Click);
+            this.btnBottomToggle.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.btnBottomToggle.Location = new System.Drawing.Point(0, 495);
+            this.btnBottomToggle.Name = "btnBottomToggle";
+            this.btnBottomToggle.Size = new System.Drawing.Size(379, 18);
+            this.btnBottomToggle.TabIndex = 8;
+            this.btnBottomToggle.TabStop = false;
+            this.btnBottomToggle.UseVisualStyleBackColor = false;
+            this.btnBottomToggle.Click += new System.EventHandler(this.btnPlaybackToggle_Click);
             // 
             // spltLeft
             // 
             this.spltLeft.BackColor = System.Drawing.SystemColors.Control;
-            this.spltLeft.Location = new System.Drawing.Point(202, 24);
+            this.spltLeft.Location = new System.Drawing.Point(368, 24);
             this.spltLeft.Name = "spltLeft";
-            this.spltLeft.Size = new System.Drawing.Size(4, 391);
+            this.spltLeft.Size = new System.Drawing.Size(4, 513);
             this.spltLeft.TabIndex = 9;
             this.spltLeft.TabStop = false;
             // 
-            // btnOptionToggle
+            // btnTopToggle
             // 
-            this.btnOptionToggle.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnOptionToggle.Location = new System.Drawing.Point(221, 24);
-            this.btnOptionToggle.Name = "btnOptionToggle";
-            this.btnOptionToggle.Size = new System.Drawing.Size(639, 15);
-            this.btnOptionToggle.TabIndex = 11;
-            this.btnOptionToggle.TabStop = false;
-            this.btnOptionToggle.UseVisualStyleBackColor = false;
-            this.btnOptionToggle.Click += new System.EventHandler(this.btnOptionToggle_Click);
+            this.btnTopToggle.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnTopToggle.Location = new System.Drawing.Point(0, 0);
+            this.btnTopToggle.Name = "btnTopToggle";
+            this.btnTopToggle.Size = new System.Drawing.Size(379, 18);
+            this.btnTopToggle.TabIndex = 11;
+            this.btnTopToggle.TabStop = false;
+            this.btnTopToggle.UseVisualStyleBackColor = false;
+            this.btnTopToggle.Click += new System.EventHandler(this.btnOptionToggle_Click);
             // 
             // menuStrip1
             // 
@@ -342,7 +339,9 @@ namespace Ikarus.UI
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newSceneToolStripMenuItem});
+            this.newSceneToolStripMenuItem,
+            this.saveAllFilesToolStripMenuItem,
+            this.saveTextInfoToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -354,7 +353,7 @@ namespace Ikarus.UI
             this.btnLoadChar});
             this.newSceneToolStripMenuItem.Name = "newSceneToolStripMenuItem";
             this.newSceneToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.newSceneToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
+            this.newSceneToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.newSceneToolStripMenuItem.Text = "Load";
             // 
             // btnLoadRoot
@@ -378,6 +377,13 @@ namespace Ikarus.UI
             this.btnLoadChar.Name = "btnLoadChar";
             this.btnLoadChar.Size = new System.Drawing.Size(161, 22);
             this.btnLoadChar.Text = "Character Folder";
+            // 
+            // saveAllFilesToolStripMenuItem
+            // 
+            this.saveAllFilesToolStripMenuItem.Name = "saveAllFilesToolStripMenuItem";
+            this.saveAllFilesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveAllFilesToolStripMenuItem.Text = "Save All Files";
+            this.saveAllFilesToolStripMenuItem.Click += new System.EventHandler(this.saveAllFilesToolStripMenuItem_Click);
             // 
             // editToolStripMenuItem
             // 
@@ -442,11 +448,10 @@ namespace Ikarus.UI
             // 
             // btnExportToAnimatedGIF
             // 
-            this.btnExportToAnimatedGIF.Enabled = false;
             this.btnExportToAnimatedGIF.Name = "btnExportToAnimatedGIF";
             this.btnExportToAnimatedGIF.Size = new System.Drawing.Size(292, 22);
             this.btnExportToAnimatedGIF.Text = "To Animated GIF";
-            this.btnExportToAnimatedGIF.Visible = false;
+            this.btnExportToAnimatedGIF.Click += new System.EventHandler(this.btnExportToAnimatedGIF_Click);
             // 
             // saveLocationToolStripMenuItem
             // 
@@ -626,7 +631,9 @@ namespace Ikarus.UI
             this.modelToolStripMenuItem,
             this.movesetToolStripMenuItem1,
             this.fileTypesToolStripMenuItem,
-            this.helpToolStripMenuItem});
+            this.helpToolStripMenuItem,
+            this.viewOpenedFilesToolStripMenuItem,
+            this.viewLogToolStripMenuItem});
             this.kinectToolStripMenuItem1.Name = "kinectToolStripMenuItem1";
             this.kinectToolStripMenuItem1.Size = new System.Drawing.Size(44, 20);
             this.kinectToolStripMenuItem1.Text = "View";
@@ -640,7 +647,7 @@ namespace Ikarus.UI
             this.showAnim,
             this.detachViewerToolStripMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.editorsToolStripMenuItem.Text = "Panels";
             // 
             // showOptions
@@ -703,7 +710,7 @@ namespace Ikarus.UI
             this.resetCameraToolStripMenuItem,
             this.showCameraCoordinatesToolStripMenuItem});
             this.backColorToolStripMenuItem.Name = "backColorToolStripMenuItem";
-            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.backColorToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.backColorToolStripMenuItem.Text = "Viewer";
             // 
             // backgroundToolStripMenuItem
@@ -865,7 +872,7 @@ namespace Ikarus.UI
             this.togglePolygons,
             this.boundingBoxToolStripMenuItem});
             this.modelToolStripMenuItem.Name = "modelToolStripMenuItem";
-            this.modelToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.modelToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.modelToolStripMenuItem.Text = "Model";
             // 
             // toggleBones
@@ -902,7 +909,7 @@ namespace Ikarus.UI
             this.hitboxesOffToolStripMenuItem,
             this.hurtboxesOffToolStripMenuItem});
             this.movesetToolStripMenuItem1.Name = "movesetToolStripMenuItem1";
-            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(135, 22);
+            this.movesetToolStripMenuItem1.Size = new System.Drawing.Size(170, 22);
             this.movesetToolStripMenuItem1.Text = "Moveset";
             this.movesetToolStripMenuItem1.Visible = false;
             // 
@@ -936,7 +943,7 @@ namespace Ikarus.UI
             this.playVIS0ToolStripMenuItem,
             this.playCLR0ToolStripMenuItem});
             this.fileTypesToolStripMenuItem.Name = "fileTypesToolStripMenuItem";
-            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.fileTypesToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.fileTypesToolStripMenuItem.Text = "Animations";
             // 
             // playCHR0ToolStripMenuItem
@@ -995,9 +1002,23 @@ namespace Ikarus.UI
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
+            // 
+            // viewOpenedFilesToolStripMenuItem
+            // 
+            this.viewOpenedFilesToolStripMenuItem.Name = "viewOpenedFilesToolStripMenuItem";
+            this.viewOpenedFilesToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.viewOpenedFilesToolStripMenuItem.Text = "View Opened Files";
+            this.viewOpenedFilesToolStripMenuItem.Click += new System.EventHandler(this.viewOpenedFilesToolStripMenuItem_Click);
+            // 
+            // viewLogToolStripMenuItem
+            // 
+            this.viewLogToolStripMenuItem.Name = "viewLogToolStripMenuItem";
+            this.viewLogToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.viewLogToolStripMenuItem.Text = "View Log";
+            this.viewLogToolStripMenuItem.Click += new System.EventHandler(this.viewLogToolStripMenuItem_Click);
             // 
             // sCN0ToolStripMenuItem
             // 
@@ -1060,9 +1081,9 @@ namespace Ikarus.UI
             this.comboCharacters.FormattingEnabled = true;
             this.comboCharacters.Items.AddRange(new object[] {
             "All"});
-            this.comboCharacters.Location = new System.Drawing.Point(206, 2);
+            this.comboCharacters.Location = new System.Drawing.Point(153, 2);
             this.comboCharacters.Name = "comboCharacters";
-            this.comboCharacters.Size = new System.Drawing.Size(116, 21);
+            this.comboCharacters.Size = new System.Drawing.Size(120, 21);
             this.comboCharacters.TabIndex = 21;
             this.comboCharacters.SelectedIndexChanged += new System.EventHandler(this.comboCharacters_SelectedIndexChanged);
             // 
@@ -1074,12 +1095,12 @@ namespace Ikarus.UI
             this.controlPanel.Dock = System.Windows.Forms.DockStyle.Top;
             this.controlPanel.Location = new System.Drawing.Point(0, 0);
             this.controlPanel.Name = "controlPanel";
-            this.controlPanel.Size = new System.Drawing.Size(1141, 24);
+            this.controlPanel.Size = new System.Drawing.Size(911, 24);
             this.controlPanel.TabIndex = 22;
             // 
             // splitter1
             // 
-            this.splitter1.Location = new System.Drawing.Point(325, 0);
+            this.splitter1.Location = new System.Drawing.Point(365, 0);
             this.splitter1.Name = "splitter1";
             this.splitter1.Size = new System.Drawing.Size(3, 24);
             this.splitter1.TabIndex = 31;
@@ -1100,10 +1121,10 @@ namespace Ikarus.UI
             this.chkFloor,
             this.button1,
             this.btnSaveCam});
-            this.toolStrip1.Location = new System.Drawing.Point(325, 0);
+            this.toolStrip1.Location = new System.Drawing.Point(365, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
-            this.toolStrip1.Size = new System.Drawing.Size(816, 24);
+            this.toolStrip1.Size = new System.Drawing.Size(546, 24);
             this.toolStrip1.TabIndex = 30;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -1175,7 +1196,9 @@ namespace Ikarus.UI
             // 
             // chkFloor
             // 
+            this.chkFloor.Checked = true;
             this.chkFloor.CheckOnClick = true;
+            this.chkFloor.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkFloor.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.chkFloor.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.chkFloor.Name = "chkFloor";
@@ -1203,34 +1226,57 @@ namespace Ikarus.UI
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.fileType);
+            this.panel2.Controls.Add(this.comboMdl);
             this.panel2.Controls.Add(this.menuStrip1);
             this.panel2.Controls.Add(this.comboCharacters);
-            this.panel2.Controls.Add(this.label2);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Left;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(325, 24);
+            this.panel2.Size = new System.Drawing.Size(365, 24);
             this.panel2.TabIndex = 29;
             // 
-            // label2
+            // fileType
             // 
-            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(150, 5);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(56, 13);
-            this.label2.TabIndex = 22;
-            this.label2.Text = "Character:";
+            this.fileType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.fileType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.fileType.FormattingEnabled = true;
+            this.fileType.Items.AddRange(new object[] {
+            "CHR",
+            "SRT",
+            "SHP",
+            "PAT",
+            "VIS",
+            "CLR"});
+            this.fileType.Location = new System.Drawing.Point(311, 2);
+            this.fileType.Name = "fileType";
+            this.fileType.Size = new System.Drawing.Size(51, 21);
+            this.fileType.TabIndex = 24;
+            this.fileType.SelectedIndexChanged += new System.EventHandler(this.fileType_SelectedIndexChanged);
+            // 
+            // comboMdl
+            // 
+            this.comboMdl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboMdl.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboMdl.FormattingEnabled = true;
+            this.comboMdl.Items.AddRange(new object[] {
+            "All"});
+            this.comboMdl.Location = new System.Drawing.Point(274, 2);
+            this.comboMdl.Name = "comboMdl";
+            this.comboMdl.Size = new System.Drawing.Size(36, 21);
+            this.comboMdl.TabIndex = 23;
+            this.comboMdl.SelectedIndexChanged += new System.EventHandler(this.comboMdl_SelectedIndexChanged);
             // 
             // modelPanel
             // 
+            this.modelPanel.DefaultTranslate = ((System.Vector3)(resources.GetObject("modelPanel.DefaultTranslate")));
             this.modelPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.modelPanel.InitialYFactor = 100;
             this.modelPanel.InitialZoomFactor = 5;
-            this.modelPanel.Location = new System.Drawing.Point(221, 39);
+            this.modelPanel.Location = new System.Drawing.Point(0, 0);
             this.modelPanel.Name = "modelPanel";
             this.modelPanel.RotationScale = 0.4F;
-            this.modelPanel.Size = new System.Drawing.Size(639, 361);
+            this.modelPanel.Size = new System.Drawing.Size(379, 513);
             this.modelPanel.TabIndex = 0;
             this.modelPanel.TranslationScale = 0.05F;
             this.modelPanel.ZoomScale = 2.5F;
@@ -1246,9 +1292,9 @@ namespace Ikarus.UI
             this.animEditors.Controls.Add(this.pnlPlayback);
             this.animEditors.Controls.Add(this.panel3);
             this.animEditors.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.animEditors.Location = new System.Drawing.Point(0, 415);
+            this.animEditors.Location = new System.Drawing.Point(0, 537);
             this.animEditors.Name = "animEditors";
-            this.animEditors.Size = new System.Drawing.Size(1141, 60);
+            this.animEditors.Size = new System.Drawing.Size(911, 60);
             this.animEditors.TabIndex = 29;
             // 
             // pnlPlayback
@@ -1256,7 +1302,7 @@ namespace Ikarus.UI
             this.pnlPlayback.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlPlayback.Location = new System.Drawing.Point(264, 0);
             this.pnlPlayback.Name = "pnlPlayback";
-            this.pnlPlayback.Size = new System.Drawing.Size(877, 60);
+            this.pnlPlayback.Size = new System.Drawing.Size(647, 60);
             this.pnlPlayback.TabIndex = 30;
             // 
             // panel3
@@ -1341,47 +1387,114 @@ namespace Ikarus.UI
             this.clr0Editor.TabIndex = 30;
             this.clr0Editor.Visible = false;
             // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.scriptPanel);
+            this.panel1.Controls.Add(this.splitter2);
+            this.panel1.Controls.Add(this.listPanel);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panel1.Location = new System.Drawing.Point(0, 24);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(368, 513);
+            this.panel1.TabIndex = 34;
+            // 
+            // scriptPanel
+            // 
+            this.scriptPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.scriptPanel.Location = new System.Drawing.Point(0, 264);
+            this.scriptPanel.Name = "scriptPanel";
+            this.scriptPanel.Size = new System.Drawing.Size(368, 249);
+            this.scriptPanel.TabIndex = 33;
+            // 
+            // splitter2
+            // 
+            this.splitter2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.splitter2.Location = new System.Drawing.Point(0, 261);
+            this.splitter2.Name = "splitter2";
+            this.splitter2.Size = new System.Drawing.Size(368, 3);
+            this.splitter2.TabIndex = 34;
+            this.splitter2.TabStop = false;
+            // 
+            // listPanel
+            // 
+            this.listPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.listPanel.Location = new System.Drawing.Point(0, 0);
+            this.listPanel.Name = "listPanel";
+            this.listPanel.Size = new System.Drawing.Size(368, 261);
+            this.listPanel.TabIndex = 32;
+            // 
+            // panel4
+            // 
+            this.panel4.Controls.Add(this.button3);
+            this.panel4.Controls.Add(this.button2);
+            this.panel4.Controls.Add(this.btnBottomToggle);
+            this.panel4.Controls.Add(this.btnTopToggle);
+            this.panel4.Controls.Add(this.modelPanel);
+            this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel4.Location = new System.Drawing.Point(372, 24);
+            this.panel4.Name = "panel4";
+            this.panel4.Size = new System.Drawing.Size(379, 513);
+            this.panel4.TabIndex = 36;
+            // 
+            // button3
+            // 
+            this.button3.Dock = System.Windows.Forms.DockStyle.Left;
+            this.button3.Location = new System.Drawing.Point(0, 18);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(18, 477);
+            this.button3.TabIndex = 13;
+            this.button3.TabStop = false;
+            this.button3.UseVisualStyleBackColor = false;
+            this.button3.Click += new System.EventHandler(this.btnLeftToggle_Click);
+            // 
+            // button2
+            // 
+            this.button2.Dock = System.Windows.Forms.DockStyle.Right;
+            this.button2.Location = new System.Drawing.Point(361, 18);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(18, 477);
+            this.button2.TabIndex = 12;
+            this.button2.TabStop = false;
+            this.button2.UseVisualStyleBackColor = false;
+            this.button2.Click += new System.EventHandler(this.btnRightToggle_Click);
+            // 
             // spltRight
             // 
+            this.spltRight.BackColor = System.Drawing.SystemColors.Control;
             this.spltRight.Dock = System.Windows.Forms.DockStyle.Right;
-            this.spltRight.Location = new System.Drawing.Point(875, 24);
+            this.spltRight.Location = new System.Drawing.Point(751, 24);
             this.spltRight.Name = "spltRight";
-            this.spltRight.Size = new System.Drawing.Size(4, 391);
-            this.spltRight.TabIndex = 31;
+            this.spltRight.Size = new System.Drawing.Size(4, 513);
+            this.spltRight.TabIndex = 37;
             this.spltRight.TabStop = false;
             // 
-            // rightPanel
+            // modelListsPanel1
             // 
-            this.rightPanel.Dock = System.Windows.Forms.DockStyle.Right;
-            this.rightPanel.Location = new System.Drawing.Point(879, 24);
-            this.rightPanel.Name = "rightPanel";
-            this.rightPanel.Size = new System.Drawing.Size(262, 391);
-            this.rightPanel.TabIndex = 33;
+            this.modelListsPanel1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.modelListsPanel1.Location = new System.Drawing.Point(755, 24);
+            this.modelListsPanel1.Name = "modelListsPanel1";
+            this.modelListsPanel1.Size = new System.Drawing.Size(156, 513);
+            this.modelListsPanel1.TabIndex = 35;
             // 
-            // leftPanel
+            // saveTextInfoToolStripMenuItem
             // 
-            this.leftPanel.Dock = System.Windows.Forms.DockStyle.Left;
-            this.leftPanel.Location = new System.Drawing.Point(0, 24);
-            this.leftPanel.Name = "leftPanel";
-            this.leftPanel.Size = new System.Drawing.Size(202, 391);
-            this.leftPanel.TabIndex = 32;
+            this.saveTextInfoToolStripMenuItem.Name = "saveTextInfoToolStripMenuItem";
+            this.saveTextInfoToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveTextInfoToolStripMenuItem.Text = "Save Text Info";
+            this.saveTextInfoToolStripMenuItem.Click += new System.EventHandler(this.saveTextInfoToolStripMenuItem_Click);
             // 
             // MainControl
             // 
             this.AllowDrop = true;
-            this.Controls.Add(this.modelPanel);
-            this.Controls.Add(this.btnOptionToggle);
-            this.Controls.Add(this.btnPlaybackToggle);
-            this.Controls.Add(this.btnRightToggle);
+            this.Controls.Add(this.panel4);
             this.Controls.Add(this.spltRight);
-            this.Controls.Add(this.rightPanel);
-            this.Controls.Add(this.btnLeftToggle);
             this.Controls.Add(this.spltLeft);
-            this.Controls.Add(this.leftPanel);
+            this.Controls.Add(this.modelListsPanel1);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.controlPanel);
             this.Controls.Add(this.animEditors);
             this.Name = "MainControl";
-            this.Size = new System.Drawing.Size(1141, 475);
+            this.Size = new System.Drawing.Size(911, 597);
             this.SizeChanged += new System.EventHandler(this.ModelEditControl_SizeChanged);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.ModelEditControl_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.ModelEditControl_DragEnter);
@@ -1395,6 +1508,8 @@ namespace Ikarus.UI
             this.panel2.PerformLayout();
             this.animEditors.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel4.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1404,12 +1519,11 @@ namespace Ikarus.UI
         public MainControl()
         {
             InitializeComponent();
-            leftPanel._mainWindow = 
-            rightPanel.pnlMoveset._mainWindow = 
+            listPanel._mainWindow =
+            scriptPanel.scriptPanel._mainWindow =
+            modelListsPanel1._mainWindow =
             this;
             MovesetPanel._mainWindow = this;
-            rightPanel.pnlKeyframes._mainWindow =
-            rightPanel.pnlBones._mainWindow = 
             chr0Editor._mainWindow =
             srt0Editor._mainWindow =
             shp0Editor._mainWindow =
@@ -1420,30 +1534,24 @@ namespace Ikarus.UI
             this;
             MovesetPanel.comboActionEntry.SelectedIndex = 0;
             _updating = true;
-            //pnlKeyframes.visEditor._mainWindow = vis0Editor;
-            //animEditors.HorizontalScroll.Enabled = addedHeight = (!(animEditors.Width - panel3.Width >= pnlPlayback.MinimumSize.Width));
-            //if (pnlPlayback.Width <= pnlPlayback.MinimumSize.Width)
-            //{
-            //    pnlPlayback.Dock = DockStyle.Left;
-            //    pnlPlayback.Width = pnlPlayback.MinimumSize.Width;
-            //}
-            //else
-            //    pnlPlayback.Dock = DockStyle.Fill;
 
-            //TargetAnimType = AnimType.CHR;
-            //m_DelegateOpenFile = new DelegateOpenFile(OpenFile);
             ScreenCapBgLocText.Text = Application.StartupPath;
 
-            comboCharacters.DataSource = FileManager._supportedCharacters;
-            comboCharacters.SelectedIndex = Array.IndexOf(FileManager._supportedCharacters, FileManager.TargetCharacter);
-            
+            comboCharacters.DataSource = Manager._supportedCharacters;
+            comboCharacters.SelectedIndex = Array.IndexOf(Manager._supportedCharacters, Manager.TargetCharacter);
+
             _targetModels = new List<MDL0Node>();
 
-            FileManager.RootChanged += new EventHandler(FolderManager_RootChanged);
-            FileManager.TargetCharacterChanged += new EventHandler(FolderManager_TargetCharacterChanged);
+            Manager.RootChanged += new EventHandler(FolderManager_RootChanged);
+            Manager.TargetCharacterChanged += new EventHandler(FolderManager_TargetCharacterChanged);
 
-            modelPanel.DefaultTranslate = new Vector3(20.0f, 15.0f, 35.0f);
-            modelPanel.DefaultRotate = new Vector2(-10.0f, 30.0f);
+            modelPanel.BackColor = Color.FromArgb(0, 45, 45, 65);
+            modelPanel.Ambient = new Vector4(65.0f / 255.0f, 78.0f / 255.0f, 94.0f / 255.0f, 255.0f / 255.0f);
+            StaticMainWindow._floorHue = Color.FromArgb(255, 99, 101, 107);
+            modelPanel.InitialYFactor = 50;
+
+            modelPanel.DefaultTranslate = new Vector3(-25.0f, 15.0f, 50.0f);
+            modelPanel.DefaultRotate = new Vector2(-5.0f, -30.0f);
             modelPanel.ResetCamera();
             _updating = false;
         }
@@ -1454,13 +1562,17 @@ namespace Ikarus.UI
         {
             base.OnLoad(e);
 
-            Ikarus.Properties.Settings.Default.RootPath = "C:\\Users\\David\\Desktop\\Test";
-            Program.OpenRootFromPath(pathToolStripMenuItem.Text = Ikarus.Properties.Settings.Default.RootPath);
+            if (!String.IsNullOrEmpty(Ikarus.Properties.Settings.Default.RootPath))
+                Program.OpenRootFromPath(pathToolStripMenuItem.Text = Ikarus.Properties.Settings.Default.RootPath);
 
             RunTime.FramesPerSecond = (double)pnlPlayback.numFPS.Value;
-            RunTime.UpdatesPerSecond = 0;//(double)pnlPlayback.numFPS.Value;
+            RunTime.UpdatesPerSecond = 0;
 
             Application.AddMessageFilter(RunTime.ButtonManager._keyFilter);
+
+            TargetAnimType = AnimType.CHR;
+            if (listPanel.SubActionsList.Items.Count > 0)
+                listPanel.SubActionsList_SelectedIndexChanged_1(this, null);
         }
 
         private void FolderManager_RootChanged(object sender, EventArgs e)
@@ -1471,7 +1583,7 @@ namespace Ikarus.UI
         private void FolderManager_TargetCharacterChanged(object sender, EventArgs e)
         {
             _updating = true;
-            comboCharacters.SelectedIndex = Array.IndexOf(FileManager._supportedCharacters, FileManager.TargetCharacter);
+            comboCharacters.SelectedIndex = Array.IndexOf(Manager._supportedCharacters, Manager.TargetCharacter.ToString());
             _updating = false;
             Reset();
         }
@@ -1563,49 +1675,56 @@ namespace Ikarus.UI
         private void btnLoadRoot_Click(object sender, EventArgs e)
         {
             if (Program.OpenRoot(pathToolStripMenuItem.Text))
-                Ikarus.Properties.Settings.Default.RootPath = 
-                    pathToolStripMenuItem.Text = 
+                Ikarus.Properties.Settings.Default.RootPath =
+                    pathToolStripMenuItem.Text =
                     String.IsNullOrEmpty(Program.RootPath) ? "<null>" : Program.RootPath;
         }
-
-        int colorIndex = 0;
         public void Reset()
         {
-            TargetModel = null;
+            _resetCam = false;
             modelPanel.ClearAll();
-
-            if (FileManager.SelectedInfo != null)
+            if (Manager.SelectedInfo != null)
             {
-                _resetCam = false;
-                if (FileManager.SelectedInfo.FileCollection._models[colorIndex] != null)
-                    TargetModel = FileManager.SelectedInfo.FileCollection._models[colorIndex].Children[0].Children[0].Children[0] as MDL0Node;
-                leftPanel.UpdateMoveset(FileManager.Moveset);
-                ResetBoneColors();
-                RunTime.ResetSubactionVariables();
-                MoveDefNode mNode = FileManager.Moveset;
-                if (mNode != null)
-                {
-                    MoveDefDataNode d = mNode._data;
-                    if (d != null)
-                    {
-                        RunTime._articles = new ArticleInfo[d._articles.Count];
-                        foreach (MoveDefArticleNode article in d._articles.Values)
-                        {
-                            ArticleInfo articleInfo = new ArticleInfo(article, null, false);
+                TargetModel = Manager.TargetModel;
+                CollectArticles();
 
-                            int groupID = article.ARCGroupID;
-                            if (groupID >= 0)
-                            {
-                                //First load models in the recolor pac
-                                //These models are always visible
-                                LoadArticles(FileManager.SelectedInfo.FileCollection._characterFiles, groupID, articleInfo, true);
-                                
-                                //Now load extra articles that will be called later
-                                LoadArticles(FileManager.SelectedInfo.FileCollection._characterEtcFiles, groupID, articleInfo, false);
-                            }
-                            RunTime._articles[article.Index] = articleInfo;
-                        }
+                listPanel.UpdateMoveset();
+                listPanel.UpdateAnimations();
+
+                ResetBoneColors();
+
+                RunTime.ResetSubactionVariables();
+                RunTime.SetFrame(1);
+            }
+            else
+                TargetModel = null;
+        }
+
+        private void CollectArticles()
+        {
+            if (RunTime._articles != null)
+                foreach (ArticleInfo i in RunTime._articles)
+                    if (i != null && i._model != null && _targetModels.Contains(i._model))
+                        RemoveTarget(i._model);
+
+            if (Manager.Moveset != null && Manager.Moveset.Data != null)
+            {
+                RunTime._articles = new ArticleInfo[Manager.Moveset.Data._articles.Count];
+                foreach (ArticleEntry article in Manager.Moveset.Data._articles.Values)
+                {
+                    ArticleInfo articleInfo = new ArticleInfo(article, null, false);
+
+                    int groupID = article.ARCGroupID;
+                    if (groupID >= 0)
+                    {
+                        //First load models in the recolor pac
+                        //These models are always visible
+                        LoadArticles(Manager.SelectedInfo._characterFiles, groupID, articleInfo, true);
+
+                        //Now load extra articles that will be called later
+                        LoadArticles(Manager.SelectedInfo._characterEtcFiles, groupID, articleInfo, false);
                     }
+                    RunTime._articles[article.Index] = articleInfo;
                 }
             }
         }
@@ -1679,6 +1798,53 @@ namespace Ikarus.UI
         private void muteSFXToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             RunTime._muteSFX = muteSFXToolStripMenuItem.Checked;
+        }
+
+        private void comboMdl_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Manager.ModelIndexChanged();
+            CollectArticles();
+        }
+
+        private void fileType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetCurrentControl();
+        }
+
+        private void saveAllFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Program.Save();
+        }
+
+        OpenedFilesDialog ofd = new OpenedFilesDialog();
+        LogDialog ld = new LogDialog();
+        private void viewOpenedFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!ofd.Visible)
+            {
+                if (ofd.IsDisposed)
+                    ofd = new OpenedFilesDialog();
+                ofd.Show();
+            }
+            else
+                ofd.Close();
+        }
+
+        private void viewLogToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!ld.Visible)
+            {
+                if (ld.IsDisposed)
+                    ld = new LogDialog();
+                ld.Show();
+            }
+            else
+                ld.Close();
+        }
+
+        private void saveTextInfoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Manager.SaveAllTextData();
         }
     }
 }

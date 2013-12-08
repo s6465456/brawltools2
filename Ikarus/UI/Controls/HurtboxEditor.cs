@@ -28,8 +28,8 @@ namespace Ikarus.UI.Controls
         }
 
         bool _updating = false;
-        public MoveDefHurtBoxNode _targetHurtbox;
-        public MoveDefHurtBoxNode TargetHurtBox
+        public MiscHurtBox _targetHurtbox;
+        public MiscHurtBox TargetHurtBox
         {
             get { return _targetHurtbox; }
             set
