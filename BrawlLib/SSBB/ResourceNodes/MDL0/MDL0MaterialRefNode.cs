@@ -123,7 +123,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         if (n._vertexNode.Format != WiiVertexComponentType.Float)
                             n._vertexNode._forceRebuild = n._vertexNode._forceFloat = value;
 
-                        if (n._normalNode.Format != WiiVertexComponentType.Float)
+                        if (n._normalNode != null && n._normalNode.Format != WiiVertexComponentType.Float)
                             n._normalNode._forceRebuild = n._normalNode._forceFloat = value;
 
                         for (int i = 4; i < 12; i++)

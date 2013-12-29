@@ -145,8 +145,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 table.Add(n.Name);
 
             if (_version == 5)
-            foreach (UserDataClass s in _userEntries)
-                table.Add(s._name);
+                foreach (UserDataClass s in _userEntries)
+                {
+                    table.Add(s._name);
+                    if (s._type == UserValueType.String && s._entries.Count > 0)
+                        table.Add(s._entries[0]);
+                }
 
             if (!String.IsNullOrEmpty(_originalPath))
                 table.Add(_originalPath);

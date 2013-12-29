@@ -54,6 +54,8 @@ namespace BrawlLib.Wii.Models
         public static int CalcSize(Collada form, ModelLinker linker)
         {
             MDL0Node model = linker.Model;
+            model._needsNrmMtxArray = model._needsTexMtxArray = false;
+            model._numFacepoints = model._numFaces = 0;
 
             int headerLen, 
                 groupLen = 0, 
@@ -122,6 +124,10 @@ namespace BrawlLib.Wii.Models
                                 //Entries are ordered by material, not by polygon.
                                 //Using the material's attached polygon list is untrustable if the definitions were corrupt on parse.
                                 MDL0ObjectNode poly = model._objList[i] as MDL0ObjectNode;
+
+                                model._numFaces += poly._numFaces;
+                                model._numFacepoints += poly._numFacepoints;
+
                                 if (poly.OpaMaterialNode != null)
                                     opaLen += 8;
                                 if (poly.XluMaterialNode != null)
@@ -174,74 +180,89 @@ namespace BrawlLib.Wii.Models
                         aLen += aInd;
                         for (int i = 0; i < polyList.Count; i++)
                         {
-                            MDL0ObjectNode p = polyList[i] as MDL0ObjectNode;
+                            MDL0ObjectNode obj = polyList[i] as MDL0ObjectNode;
                             for (int x = aInd; x < aLen; x++)
-                                if (p._manager._faceData[x] != null)
+                                if (obj._manager._faceData[x] != null)
                                 {
                                     //Remap color nodes
-                                    if ((x == 2 || x == 3) && model._importOptions._rmpClrs)
+                                    if ((x == 2 || x == 3))
                                     {
-                                        p._elementIndices[x] = -1;
-                                        foreach (MDL0ObjectNode w in polyList)
+                                        if (Collada._importOptions._rmpClrs)
                                         {
-                                            //Only compare up to the current object
-                                            if (w == p)
-                                                break;
-
-                                            var o = w._manager.GetColors(x - 2, false);
-                                            var c = p._manager.GetColors(x - 2, false);
-                                            bool equals = true;
-                                            if (o.Length == c.Length)
+                                            obj._elementIndices[x] = -1;
+                                            foreach (MDL0ObjectNode thatObj in polyList.OrderBy(c => -((MDL0ObjectNode)c)._manager.GetColors(x - 2, false).Length))
                                             {
-                                                for (int n = 0; n < o.Length; n++)
-                                                    if (o[n] != c[n])
+                                                //Only compare up to the current object
+                                                if (thatObj == obj)
+                                                    break;
+
+                                                var thatArr = thatObj._manager.GetColors(x - 2, false);
+                                                var thisArr = obj._manager.GetColors(x - 2, false);
+                                                bool equals = true;
+                                                if (thisArr.Length == thatArr.Length)
+                                                {
+                                                    for (int n = 0; n < thisArr.Length; n++)
+                                                        if (thisArr[n] != thatArr[n])
+                                                        {
+                                                            equals = false;
+                                                            break;
+                                                        }
+                                                }
+                                                else
+                                                {
+                                                    foreach (RGBAPixel px in thisArr)
                                                     {
-                                                        equals = false;
-                                                        break;
+                                                        if (Array.IndexOf(thatArr, px) < 0)
+                                                        {
+                                                            equals = false;
+                                                            break;
+                                                        }
                                                     }
-                                            }
-                                            else
-                                                equals = false;
+                                                }
 
-                                            if (equals)
-                                            {
-                                                //Found a match
-                                                p._elementIndices[x] = w._elementIndices[x];
-                                                break;
+                                                if (equals)
+                                                {
+                                                    //Found a match
+                                                    obj._elementIndices[x] = thatObj._elementIndices[x];
+                                                    obj._manager._newClrObj[x - 2] = thatObj.Index;
+                                                    break;
+                                                }
                                             }
+                                            if (obj._elementIndices[x] != -1)
+                                                continue;
                                         }
-                                        if (p._elementIndices[x] != -1)
-                                            continue;
+                                        else
+                                            obj._manager._newClrObj[x - 2] = i;
                                     }
 
-                                    p._elementIndices[x] = (short)aList.Count;
+                                    obj._elementIndices[x] = (short)aList.Count;
 
                                     if (form != null)
-                                        form.Say("Encoding " + str + (x - aInd) + " for Object " + i + ": " + p.Name);
+                                        form.Say("Encoding " + str + (x - aInd) + " for Object " + i + ": " + obj.Name);
                                     
                                     VertexCodec vert;
                                     switch (aInd)
                                     {
                                         case 0:
-                                            vert = new VertexCodec(p._manager.GetVertices(false), false, model._importOptions._fltVerts);
+                                            vert = new VertexCodec(obj._manager.GetVertices(false), false, Collada._importOptions._fltVerts);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x40;
                                             break;
                                         case 1:
-                                            vert = new VertexCodec(p._manager.GetNormals(false), false, model._importOptions._fltNrms);
+                                            vert = new VertexCodec(obj._manager.GetNormals(false), false, Collada._importOptions._fltNrms);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x20;
                                             break;
                                         case 2:
-                                            ColorCodec col = new ColorCodec(p._manager.GetColors(x - 2, false));
+                                            ColorCodec col = new ColorCodec(obj._manager.GetColors(x - 2, false));
                                             aList.Add(col);
                                             if (!direct)
                                                 assetLen += col._dataLen.Align(0x20) + 0x20;
                                             break;
                                         default:
-                                            vert = new VertexCodec(p._manager.GetUVs(x - 4, false), model._importOptions._fltUVs);
+                                            vert = new VertexCodec(obj._manager.GetUVs(x - 4, false), Collada._importOptions._fltUVs);
                                             aList.Add(vert);
                                             if (!direct)
                                                 assetLen += vert._dataLen.Align(0x20) + 0x40;
@@ -249,7 +270,7 @@ namespace BrawlLib.Wii.Models
                                     }
                                 }
                                 else
-                                    p._elementIndices[x] = -1;
+                                    obj._elementIndices[x] = -1;
                         }
                         if (!direct)
                             entries = aList.Count;
@@ -269,9 +290,38 @@ namespace BrawlLib.Wii.Models
                             entryList = model._colorList;
                         else
                         {
-                            aInd = 2; //Set the ID
-                            aLen = 2; //Offset count
-                            goto EvalAssets;
+                            if (Collada._importOptions._useOneNode)
+                            {
+                                HashSet<RGBAPixel> pixels = new HashSet<RGBAPixel>();
+                                foreach (MDL0ObjectNode obj in model._objList)
+                                {
+                                    for (int i = 0; i < 2; i++)
+                                    {
+                                        var arr = obj._manager.GetColors(i, false);
+                                        if (arr.Length > 0)
+                                        {
+                                            obj._elementIndices[i + 2] = 0;
+                                            foreach (RGBAPixel p in arr)
+                                                pixels.Add(p);
+                                        }
+                                        else
+                                            obj._elementIndices[i + 2] = -1;
+                                    }
+                                }
+                                var le = pixels.ToList(); le.Sort();
+                                Collada._importOptions._singleColorNodeEntries = le.ToArray();
+
+                                ColorCodec col = new ColorCodec(Collada._importOptions._singleColorNodeEntries);
+                                linker._colors = new List<ColorCodec>() { col };
+                                assetLen += col._dataLen.Align(0x20) + 0x20;
+                                entries = 1;
+                            }
+                            else
+                            {
+                                aInd = 2; //Set the ID
+                                aLen = 2; //Offset count
+                                goto EvalAssets;
+                            }
                         }
                         break;
                     case MDLResourceType.UVs:
@@ -305,7 +355,16 @@ namespace BrawlLib.Wii.Models
 
                     case MDLResourceType.Objects:
                         if (model._objList != null)
-                            entryList = model._objList; 
+                        {
+                            entryList = model._objList;
+                            if (model._objList.Count > 0)
+                            {
+                                model._needsNrmMtxArray = true;
+                                foreach (MDL0ObjectNode n in model._objList)
+                                    if (n.HasTexMtx)
+                                        model._needsTexMtxArray = true;
+                            }
+                        }
                         break;
 
                     case MDLResourceType.Shaders:

@@ -246,7 +246,7 @@ namespace BrawlLib.Wii.Models
                 return false;
             if (obj is BoneWeight)
             {
-                if ((Bone == ((BoneWeight)obj).Bone) && (Weight - ((BoneWeight)obj).Weight < 0.0001f))
+                if ((Bone == ((BoneWeight)obj).Bone) && (Math.Abs(Weight - ((BoneWeight)obj).Weight) < Collada._importOptions._weightPrecision))
                 return true;
             }
             return false;

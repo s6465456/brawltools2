@@ -39,7 +39,7 @@ namespace BrawlLib.Wii.Models
         TexMtx = 0x30,
         LightMtx = 0x38,
         Quads = 0x80,
-        Triangles = 0x90,
+        TriangleList = 0x90,
         TriangleStrip = 0x98,
         TriangleFan = 0xA0,
         Lines = 0xA8,

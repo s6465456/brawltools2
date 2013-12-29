@@ -224,7 +224,8 @@ namespace BrawlLib.Modeling
 
         static PrimitiveManager DecodePrimitives(Matrix nodeMatrix, GeometryEntry geo)
         {
-            uint* pTri = null, pLin = null;
+            uint[] pTriarr = null, pLinarr = null;
+            uint pTri = 0, pLin = 0;
             long* pInDataList = stackalloc long[12];
             long* pOutDataList = stackalloc long[12];
             int* pData = stackalloc int[16];
@@ -281,12 +282,12 @@ namespace BrawlLib.Modeling
             if (faces > 0)
             {
                 manager._triangles = new NewPrimitive(faces * 3, BeginMode.Triangles);
-                pTri = (uint*)manager._triangles._indices.Address;
+                pTriarr = manager._triangles._indices;
             }
             if (lines > 0)
             {
                 manager._lines = new NewPrimitive(lines * 2, BeginMode.Lines);
-                pLin = (uint*)manager._lines._indices.Address;
+                pLinarr = manager._lines._indices;
             }
 
             manager._indices = new UnsafeBuffer(points * 2);
@@ -341,7 +342,7 @@ namespace BrawlLib.Modeling
                     case PrimitiveType.triangles:
                         count = prim._faceCount * 3;
                         while (count-- > 0)
-                            *pTri++ = fIndex++;
+                            pTriarr[pTri++] = fIndex++;
                         break;
                     case PrimitiveType.trifans:
                     case PrimitiveType.polygons:
@@ -353,9 +354,9 @@ namespace BrawlLib.Modeling
                             fIndex += 2;
                             while (count-- > 0)
                             {
-                                *pTri++ = temp;
-                                *pTri++ = (uint)(fIndex - 1);
-                                *pTri++ = fIndex++;
+                                pTriarr[pTri++] = temp;
+                                pTriarr[pTri++] = (uint)(fIndex - 1);
+                                pTriarr[pTri++] = fIndex++;
                             }
                         }
                         break;
@@ -368,15 +369,15 @@ namespace BrawlLib.Modeling
                             {
                                 if ((i & 1) == 0)
                                 {
-                                    *pTri++ = (uint)(fIndex - 2);
-                                    *pTri++ = (uint)(fIndex - 1);
-                                    *pTri++ = fIndex++;
+                                    pTriarr[pTri++] = (uint)(fIndex - 2);
+                                    pTriarr[pTri++] = (uint)(fIndex - 1);
+                                    pTriarr[pTri++] = fIndex++;
                                 }
                                 else
                                 {
-                                    *pTri++ = (uint)(fIndex - 2);
-                                    *pTri++ = fIndex;
-                                    *pTri++ = (uint)(fIndex++ - 1);
+                                    pTriarr[pTri++] = (uint)(fIndex - 2);
+                                    pTriarr[pTri++] = fIndex;
+                                    pTriarr[pTri++] = (uint)(fIndex++ - 1);
                                 }
                             }
                         }
@@ -389,8 +390,8 @@ namespace BrawlLib.Modeling
                             lIndex++;
                             while (count-- > 0)
                             {
-                                *pLin++ = (uint)(lIndex - 1);
-                                *pLin++ = lIndex++;
+                                pLinarr[pLin++] = (uint)(lIndex - 1);
+                                pLinarr[pLin++] = lIndex++;
                             }
                         }
                         break;
@@ -400,7 +401,7 @@ namespace BrawlLib.Modeling
                         {
                             count = f._pointCount * 2;
                             while (count-- > 0)
-                                *pLin++ = lIndex++;
+                                pLinarr[pLin++] = lIndex++;
                         }
                         break;
                 }

@@ -779,7 +779,7 @@ namespace System.Windows.Forms
             foreach (MDL0Node m in _targetModels)
                 if (m._objList != null)
                     foreach (MDL0ObjectNode o in m._objList)
-                        if (o._manager != null)
+                        if (o._manager != null && o._manager._vertices != null)
                             foreach (Vertex3 v in o._manager._vertices)
                             {
                                 v._highlightColor = Color.Transparent;

@@ -207,7 +207,7 @@ namespace BrawlLib.SSBBTypes
         public BVec3 _minExtents;
         public BVec3 _maxExtents;
 
-        public MDL0Props(int version, int vertices, int faces, int nodes, int scalingRule, int texMtxMode, byte needsNrmArr, byte needsTexArr, byte enableExtents, byte envMtxMode, Vector3 min, Vector3 max)
+        public MDL0Props(int version, int vertices, int faces, int nodes, int scalingRule, int texMtxMode, bool needsNrmArr, bool needsTexArr, bool enableExtents, byte envMtxMode, Vector3 min, Vector3 max)
         {
             _headerLen = 0x40;
             if (version == 9 || version == 8)
@@ -220,9 +220,9 @@ namespace BrawlLib.SSBBTypes
             _numFaces = faces;
             _origPathOffset = 0;
             _numNodes = nodes;
-            _needNrmMtxArray = needsNrmArr;
-            _needTexMtxArray = needsTexArr;
-            _enableExtents = enableExtents;
+            _needNrmMtxArray = (byte)(needsNrmArr ? 1 : 0);
+            _needTexMtxArray = (byte)(needsTexArr ? 1 : 0);
+            _enableExtents = (byte)(enableExtents ? 1 : 0);
             _envMtxMode = envMtxMode;
             _dataOffset = 0x40;
             _minExtents = min;

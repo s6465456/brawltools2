@@ -39,7 +39,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public void Read(VoidPtr userDataAddr)
         {
             if (userDataAddr == null) return;
-
             UserData* data = (UserData*)userDataAddr;
             ResourceGroup* group = data->Group;
             ResourceEntry* pEntry = &group->_first + 1;
@@ -50,23 +49,21 @@ namespace BrawlLib.SSBB.ResourceNodes
                 UserDataClass d = new UserDataClass() { _name = new String((sbyte*)group + pEntry->_stringOffset) };
                 VoidPtr addr = (VoidPtr)entry + entry->_dataOffset;
                 d._type = entry->Type;
-                for (int x = 0; x < entry->_entryCount; x++)
-                    switch (entry->Type)
-                    {
-                        case UserValueType.Float:
-                            d._entries.Add(((float)*(bfloat*)addr).ToString());
-                            addr += 4;
-                            break;
-                        case UserValueType.Int:
-                            d._entries.Add(((int)*(bint*)addr).ToString());
-                            addr += 4;
-                            break;
-                        case UserValueType.String:
-                            //string s = new String((sbyte*)(addr + 2));
-                            //d._entries.Add(s);
-                            //addr += s.Length + 3;
-                            break;
-                    }
+                if (d._type != UserValueType.String)
+                    for (int x = 0; x < entry->_entryCount; x++)
+                        switch (entry->Type)
+                        {
+                            case UserValueType.Float:
+                                d._entries.Add(((float)*(bfloat*)addr).ToString());
+                                addr += 4;
+                                break;
+                            case UserValueType.Int:
+                                d._entries.Add(((int)*(bint*)addr).ToString());
+                                addr += 4;
+                                break;
+                        }
+                else
+                    d._entries.Add(new String((sbyte*)addr));
                 Add(d);
             }
         }
@@ -78,10 +75,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             int len = 0x1C + (Count * 0x28);
             foreach (UserDataClass c in this)
                 foreach (string s in c._entries)
-                    if (c.DataType == UserValueType.Float || c.DataType == UserValueType.Int)
+                    if (c.DataType != UserValueType.String)
                         len += 4;
-                    else if (c.DataType == UserValueType.String)
-                        len += s.Length + 3;
 
             return len;
         }
@@ -103,44 +98,26 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 (pEntry++)->_dataOffset = (int)pData - (int)pGroup;
                 UserDataEntry* p = (UserDataEntry*)pData;
-                *p = new UserDataEntry(s._entries.Count, s._type, id++);
+                *p = new UserDataEntry(s.DataType != UserValueType.String ? s._entries.Count : (s._entries.Count > 0 ? 1 : 0), s._type, id++);
                 pData += 0x18;
-                for (int i = 0; i < s._entries.Count; i++)
-                    if (s.DataType == UserValueType.Float)
-                    {
-                        float x;
-                        if (!float.TryParse(s._entries[i], out x))
-                            x = 0;
-                        *(bfloat*)pData = x;
-                        pData += 4;
-                    }
-                    else if (s.DataType == UserValueType.Int)
-                    {
-                        int x;
-                        if (!int.TryParse(s._entries[i], out x))
-                            x = 0;
-                        *(bint*)pData = x;
-                        pData += 4;
-                    }
-                    else if (s.DataType == UserValueType.String)
-                    {
-                        if (s._entries[i] == null)
-                            s._entries[i] = "";
-
-                        int len = s._entries[i].Length;
-                        int ceil = len + 3;
-
-                        sbyte* ptr = (sbyte*)pData + 2;
-
-                        for (int x = 0; x < len; )
-                            ptr[x] = (sbyte)s._entries[i][x++];
-
-                        for (int x = len; x < ceil; )
-                            ptr[x++] = 0;
-
-                        *(bushort*)pData = (ushort)(len + 1);
-                        pData += s._entries[i].Length + 3;
-                    }
+                if (s.DataType != UserValueType.String)
+                    for (int i = 0; i < s._entries.Count; i++)
+                        if (s.DataType == UserValueType.Float)
+                        {
+                            float x;
+                            if (!float.TryParse(s._entries[i], out x))
+                                x = 0;
+                            *(bfloat*)pData = x;
+                            pData += 4;
+                        }
+                        else if (s.DataType == UserValueType.Int)
+                        {
+                            int x;
+                            if (!int.TryParse(s._entries[i], out x))
+                                x = 0;
+                            *(bint*)pData = x;
+                            pData += 4;
+                        }
                 p->_totalLen = (int)pData - (int)p;
             }
             data->_totalLen = (int)pData - (int)userDataAddr;
@@ -160,6 +137,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             for (int i = 0; i < count; i++)
             {
                 UserDataEntry* entry = (UserDataEntry*)((byte*)pGroup + (pEntry++)->_dataOffset);
+                if (entry->Type == UserValueType.String && entry->_entryCount > 0)
+                    entry->_dataOffset = (int)((VoidPtr)(stringTable[this[i]._entries[0]] + 4) - (VoidPtr)entry);
                 ResourceEntry.Build(pGroup, i + 1, entry, (BRESString*)stringTable[this[i]._name]);
                 entry->ResourceStringAddress = stringTable[this[i]._name] + 4;
             }

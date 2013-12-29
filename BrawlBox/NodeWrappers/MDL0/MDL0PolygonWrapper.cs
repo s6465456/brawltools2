@@ -15,6 +15,7 @@ namespace BrawlBox.NodeWrappers
         static MDL0PolygonWrapper()
         {
             _menu = new ContextMenuStrip();
+            _menu.Items.Add(new ToolStripMenuItem("O&ptimize Mesh", null, OptimizeAction, Keys.Control | Keys.P));
             _menu.Items.Add(new ToolStripMenuItem("&Duplicate", null, DuplicateAction, Keys.Control | Keys.D));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("&Export", null, ExportAction, Keys.Control | Keys.E));
@@ -29,15 +30,16 @@ namespace BrawlBox.NodeWrappers
 
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            _menu.Items[6].Enabled = _menu.Items[7].Enabled = true;
+            _menu.Items[7].Enabled = _menu.Items[8].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             MDL0PolygonWrapper w = GetInstance<MDL0PolygonWrapper>();
-            _menu.Items[6].Enabled = w.PrevNode != null;
-            _menu.Items[7].Enabled = w.NextNode != null;
+            _menu.Items[7].Enabled = w.PrevNode != null;
+            _menu.Items[8].Enabled = w.NextNode != null;
         }
 
+        protected static void OptimizeAction(object sender, EventArgs e) { GetInstance<MDL0PolygonWrapper>().Optimize(); }
         protected static void DuplicateAction(object sender, EventArgs e) { GetInstance<MDL0PolygonWrapper>().Duplicate(); }
         #endregion
 
@@ -51,6 +53,11 @@ namespace BrawlBox.NodeWrappers
             node.Name += " - Copy";
             ((MDL0ObjectNode)_resource).Model._objGroup.AddChild(node);
             //((MDL0ObjectNode)_resource).Model.Rebuild(true);
+        }
+
+        public void Optimize()
+        {
+            new ObjectOptimizerForm().ShowDialog((MDL0ObjectNode)_resource);
         }
     }
 }

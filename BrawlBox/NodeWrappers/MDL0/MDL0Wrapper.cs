@@ -46,11 +46,14 @@ namespace BrawlBox.NodeWrappers
                 new ToolStripMenuItem("UVs", null, ImportUVAction)
                 ));
             _menu.Items.Add(new ToolStripMenuItem("&Import New Object", null, ImportObjectAction, Keys.Control | Keys.I));
+            _menu.Items.Add(new ToolStripMenuItem("&Optimize Meshes", null, OptimizeAction, Keys.Control | Keys.O));
             _menu.Items.Add(new ToolStripSeparator());
             _menu.Items.Add(new ToolStripMenuItem("&Delete", null, DeleteAction, Keys.Control | Keys.Delete));
             _menu.Opening += MenuOpening;
             _menu.Closing += MenuClosing;
         }
+
+        private static void OptimizeAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().Optimize(); }
         protected static void PreviewAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().Preview(); }
         protected static void ImportObjectAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().ImportObject(); }
         //protected static void MetalAction(object sender, EventArgs e) { GetInstance<MDL0Wrapper>().AutoMetal(); }
@@ -70,12 +73,12 @@ namespace BrawlBox.NodeWrappers
         
         private static void MenuClosing(object sender, ToolStripDropDownClosingEventArgs e)
         {
-            _menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[10].Enabled = _menu.Items[16].Enabled = true;
+            _menu.Items[3].Enabled = _menu.Items[4].Enabled = _menu.Items[6].Enabled = _menu.Items[7].Enabled = _menu.Items[10].Enabled = _menu.Items[17].Enabled = true;
         }
         private static void MenuOpening(object sender, CancelEventArgs e)
         {
             MDL0Wrapper w = GetInstance<MDL0Wrapper>();
-            _menu.Items[3].Enabled = _menu.Items[16].Enabled = w.Parent != null;
+            _menu.Items[3].Enabled = _menu.Items[17].Enabled = w.Parent != null;
             _menu.Items[4].Enabled = ((w._resource.IsDirty) || (w._resource.IsBranch));
             _menu.Items[6].Enabled = w.PrevNode != null;
             _menu.Items[7].Enabled = w.NextNode != null;
@@ -95,6 +98,11 @@ namespace BrawlBox.NodeWrappers
         {
             using (ModelForm form = new ModelForm())
                 form.ShowDialog(_owner, (MDL0Node)_resource);
+        }
+
+        private void Optimize()
+        {
+            new ObjectOptimizerForm().ShowDialog(_resource);
         }
 
         public void NewShader()

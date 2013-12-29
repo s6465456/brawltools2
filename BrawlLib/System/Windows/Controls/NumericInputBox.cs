@@ -73,14 +73,14 @@ namespace System.Windows.Forms
                     {
                         if (e.Control)
                         {
-                            Text = (val - 90f).ToString();
+                            Text = (val - 90f).Clamp(_minValue, _maxValue).ToString();
                             Apply();
                             e.Handled = true;
                             e.SuppressKeyPress = true;
                         }
                         if (e.Shift)
                         {
-                            Text = (val - 180f).ToString();
+                            Text = (val - 180f).Clamp(_minValue, _maxValue).ToString();
                             Apply();
                             e.Handled = true;
                             e.SuppressKeyPress = true;
@@ -93,14 +93,14 @@ namespace System.Windows.Forms
                     {
                         if (e.Control)
                         {
-                            Text = (val + 90f).ToString();
+                            Text = (val + 90f).Clamp(_minValue, _maxValue).ToString();
                             Apply();
                             e.Handled = true;
                             e.SuppressKeyPress = true;
                         }
                         if (e.Shift)
                         {
-                            Text = (val + 180f).ToString();
+                            Text = (val + 180f).Clamp(_minValue, _maxValue).ToString();
                             Apply();
                             e.Handled = true;
                             e.SuppressKeyPress = true;
@@ -112,9 +112,9 @@ namespace System.Windows.Forms
                     if (float.TryParse(Text, out val))
                     {
                         if (e.Shift || _integral)
-                            Text = (val + 1.0f).ToString();
+                            Text = (val + 1.0f).Clamp(_minValue, _maxValue).ToString();
                         else
-                            Text = (val + 0.1f).ToString();
+                            Text = (val + 0.1f).Clamp(_minValue, _maxValue).ToString();
                         Apply();
                     }
                     e.Handled = true;
@@ -125,9 +125,9 @@ namespace System.Windows.Forms
                     if (float.TryParse(Text, out val))
                     {
                         if (e.Shift || _integral)
-                            Text = (val - 1.0f).ToString();
+                            Text = (val - 1.0f).Clamp(_minValue, _maxValue).ToString();
                         else
-                            Text = (val - 0.1f).ToString();
+                            Text = (val - 0.1f).Clamp(_minValue, _maxValue).ToString();
                         Apply();
                     }
                     e.Handled = true;
@@ -209,9 +209,7 @@ namespace System.Windows.Forms
             else
             {
                 int.TryParse(Text, out val2);
-                //int max = (int)MaxValue.Clamp((float)int.MinValue, (float)int.MaxValue);
-                //int min = (int)MinValue.Clamp((float)int.MinValue, (float)int.MaxValue);
-                //val2 = val2.Clamp(min, max);
+                //val2 = val2.Clamp(Convert.ToInt32(_minValue.Clamp((float)int.MinValue, (float)int.MaxValue)), Convert.ToInt32(_maxValue.Clamp((float)int.MinValue, (float)int.MaxValue)));
             }
 
             if (!_integral)

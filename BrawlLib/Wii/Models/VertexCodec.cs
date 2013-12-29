@@ -253,7 +253,6 @@ namespace BrawlLib.Wii.Models
 
             _quantScale = VQuant.QuantTable[_scale];
             GetEncoder();
-           
         }
 
         private delegate void VertEncoder(float value, ref byte* pOut);

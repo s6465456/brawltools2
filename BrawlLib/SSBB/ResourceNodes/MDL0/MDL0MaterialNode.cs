@@ -498,7 +498,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         [Category("Material")]
         public bool XLUMaterial 
-        { 
+        {
             get { return _usageFlags[31]; }
             set
             {
@@ -518,13 +518,13 @@ namespace BrawlLib.SSBB.ResourceNodes
                             _usageFlags[31] = prev;
                             return;
                         }
-                    
+
                     message = "";
                     for (int i = 0; i < _objects.Count; i++)
                         _objects[i].FixMaterials(ref message);
 
-                    //if (message.Length != 0)
-                    //    MessageBox.Show("The following objects no longer use this material:\n" + message);
+                    if (message.Length != 0)
+                        MessageBox.Show("The following objects no longer use this material:\n" + message);
                 }
             }
         }
@@ -896,7 +896,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             table.Add(Name);
 
             foreach (UserDataClass s in _userEntries)
+            {
                 table.Add(s._name);
+                if (s._type == UserValueType.String && s._entries.Count > 0)
+                    table.Add(s._entries[0]);
+            }
 
             foreach (MDL0MaterialRefNode n in Children)
                 n.GetStrings(table);

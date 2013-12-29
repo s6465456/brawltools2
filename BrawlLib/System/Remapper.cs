@@ -24,7 +24,7 @@ namespace System
             _remapTable = new int[count];
             _impTable = new int[count];
 
-            //build remap table by assigning first appearance
+            //Build remap table by assigning first appearance
             int impIndex = 0;
             for (int i = 0; i < count; i++)
             {
@@ -43,7 +43,6 @@ namespace System
             if (comp != null)
             {
                 //Create new remap table, which is a sorted index list into the imp table
-
                 int[] sorted = new int[impCount];
                 impIndex = 0;
                 for (int i = 0; i < impCount; i++)
@@ -94,8 +93,6 @@ namespace System
             }
             else
                 Array.Resize<int>(ref _impTable, impCount);
-
         }
-
     }
 }

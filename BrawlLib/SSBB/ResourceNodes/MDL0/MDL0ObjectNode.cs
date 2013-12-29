@@ -11,6 +11,7 @@ using BrawlLib.Imaging;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing;
+using BrawlLib.Modeling.Triangle_Converter;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -23,8 +24,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Attributes
 
         public List<Vertex3> Vertices { get { return _manager != null ? _manager._vertices : null; } }
-
-        public List<int> _matrixNodePermanentIDs = new List<int>();
 
         internal bool Weighted { get { return _nodeId == -1 || _matrixNode == null; } }
         internal bool HasTexMtx
@@ -62,7 +61,24 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public bool[] HasTextureMatrix = new bool[8];
         public bool HasPosMatrix = false;
-        
+
+        [Category("Texture Matrices")]
+        public bool HasTextureMatrix0 { get { return HasTextureMatrix[0]; } set { if (!Weighted) return; HasTextureMatrix[0] = value; SignalPropertyChange(); _rebuild = true; } }
+        [Category("Texture Matrices")]
+        public bool HasTextureMatrix1 { get { return HasTextureMatrix[1]; } set { if (!Weighted) return; HasTextureMatrix[1] = value; SignalPropertyChange(); _rebuild = true; } }
+        [Category("Texture Matrices")]
+        public bool HasTextureMatrix2 { get { return HasTextureMatrix[2]; } set { if (!Weighted) return; HasTextureMatrix[2] = value; SignalPropertyChange(); _rebuild = true; } }
+        [Category("Texture Matrices")]
+        public bool HasTextureMatrix3 { get { return HasTextureMatrix[3]; } set { if (!Weighted) return; HasTextureMatrix[3] = value; SignalPropertyChange(); _rebuild = true; } }
+        [Category("Texture Matrices")]
+        public bool HasTextureMatrix4 { get { return HasTextureMatrix[4]; } set { if (!Weighted) return; HasTextureMatrix[4] = value; SignalPropertyChange(); _rebuild = true; } }
+        [Category("Texture Matrices")]
+        public bool HasTextureMatrix5 { get { return HasTextureMatrix[5]; } set { if (!Weighted) return; HasTextureMatrix[5] = value; SignalPropertyChange(); _rebuild = true; } }
+        [Category("Texture Matrices")]
+        public bool HasTextureMatrix6 { get { return HasTextureMatrix[6]; } set { if (!Weighted) return; HasTextureMatrix[6] = value; SignalPropertyChange(); _rebuild = true; } }
+        [Category("Texture Matrices")]
+        public bool HasTextureMatrix7 { get { return HasTextureMatrix[7]; } set { if (!Weighted) return; HasTextureMatrix[7] = value; SignalPropertyChange(); _rebuild = true; } }
+
         [Category("Object Data")]
         public ObjFlag Flags { get { return (ObjFlag)_flag; } set { _flag = (int)value; SignalPropertyChange(); } }
         [Category("Object Data")]
@@ -373,20 +389,14 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public int[] _nodeCache;
         private int _tableLen = 0;
-        private int _triCount = 0;
-        private int _stripCount = 0;
         private int _primitiveStart = 0;
         private int _primitiveSize = 0;
         public FacepointAttribute[] _descList;
         public VertexAttributeFormat[] _fmtList;
         public int _fpStride = 0;
-        public Facepoint[] _facepoints;
-        
         public List<PrimitiveGroup> _primGroups = new List<PrimitiveGroup>();
-        public List<FacepointTriangle> Triangles = new List<FacepointTriangle>();
-        public List<FacepointTristrip> Tristrips = new List<FacepointTristrip>();
 
-        public bool _rebuild = false;
+        public bool _rebuild = false, _reOptimized = false;
 
         #endregion
 
@@ -607,9 +617,9 @@ namespace BrawlLib.SSBB.ResourceNodes
             _vertexSpecs = header->_vertexSpecs;
             _arrayFlags = header->_arrayFlags;
 
+            HasPosMatrix = _arrayFlags.HasPosMatrix;
             for (int i = 0; i < 8; i++)
                 HasTextureMatrix[i] = _arrayFlags.GetHasTexMatrix(i);
-            HasPosMatrix = _arrayFlags.HasPosMatrix;
 
             _numFacepoints = header->_numVertices;
             _numFaces = header->_numFaces;
@@ -703,11 +713,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             {
                 int i = 0;
                 _manager = new PrimitiveManager(header, Model._assets, linker.NodeCache, this);
-                foreach (Vertex3 v in _manager._vertices)
-                {
-                    v._index = i++;
-                    v._object = this;
-                }
+                if (_manager._vertices != null)
+                    foreach (Vertex3 v in _manager._vertices)
+                    {
+                        v._index = i++;
+                        v._object = this;
+                    }
             }
 
             //Get polygon UVAT groups
@@ -756,11 +767,65 @@ namespace BrawlLib.SSBB.ResourceNodes
                         _colorChanged[i] = true;
                     }
             }
+            if (HasTexMtx && !Weighted)
+            {
+                Model._errors.Add("Object " + Index + " has texture matrices but is not weighted.");
+                for (int i = 0; i < 8; i++)
+                    HasTextureMatrix[i] = false;
+                SignalPropertyChange(); 
+                _rebuild = true;
+            }
+
+            //if (!Weighted)
+            //{
+            //    bool notFloat = HasANonFloatAsset;
+            //    foreach (PrimitiveGroup p in _primGroups)
+            //    {
+            //        bool o = false;
+            //        foreach (PrimitiveHeader ph in p._headers)
+            //            if (ph.Type != WiiPrimitiveType.TriangleList && notFloat)
+            //            {
+            //                Model._errors.Add("Object " + Index + " will explode in-game due to assets that are not written as float.");
+            //                SignalPropertyChange();
+
+            //                if (_vertexNode.Format != WiiVertexComponentType.Float)
+            //                    _vertexNode._forceRebuild = _vertexNode._forceFloat = true;
+
+            //                if (_normalNode != null && _normalNode.Format != WiiVertexComponentType.Float)
+            //                    _normalNode._forceRebuild = _normalNode._forceFloat = true;
+
+            //                for (int i = 4; i < 12; i++)
+            //                    if (_uvSet[i - 4] != null && _uvSet[i - 4].Format != WiiVertexComponentType.Float)
+            //                        _uvSet[i - 4]._forceRebuild = _uvSet[i - 4]._forceFloat = true;
+
+            //                o = true;
+            //                break;
+            //            }
+            //        if (o)
+            //            break;
+            //    }
+            //}
 
             return false;
         }
 
         #region Rebuilding
+
+        [Browsable(false)]
+        public bool HasANonFloatAsset
+        {
+            get
+            {
+                bool notFloat = _vertexNode.Format != WiiVertexComponentType.Float ||
+                    (_normalNode != null && _normalNode.Format != WiiVertexComponentType.Float);
+
+                for (int i = 4; i < 12; i++)
+                    if (_uvSet[i - 4] != null && _uvSet[i - 4].Format != WiiVertexComponentType.Float)
+                        notFloat = true;
+
+                return notFloat;
+            }
+        }
 
         public void RecalcIndices()
         {
@@ -810,6 +875,12 @@ namespace BrawlLib.SSBB.ResourceNodes
 
         public void GenerateNodeCache()
         {
+            if (MatrixNode != null)
+            {
+                _nodeCache = new int[0];
+                return;
+            }
+
             //Create node table
             HashSet<int> nodes = new HashSet<int>();
             foreach (Vertex3 v in _manager._vertices)
@@ -822,6 +893,8 @@ namespace BrawlLib.SSBB.ResourceNodes
             Array.Sort(_nodeCache);
         }
 
+        public TriangleConverter _triConverter = new TriangleConverter(true, 30, 2, false, true);
+
         //This should be done after node indices have been assigned
         public override int OnCalculateSize(bool force)
         {
@@ -829,11 +902,28 @@ namespace BrawlLib.SSBB.ResourceNodes
             _tableLen =
             _primitiveStart =
             _primitiveSize =
-            _fpStride =
-            _triCount =
-            _stripCount = 0;
+            _fpStride = 0;
 
             MDL0Node model = Model;
+            if (model._isImport)
+            {
+                //Continue checking for single bind
+                if (_nodeId == -2 && _matrixNode == null)
+                {
+                    bool first = true;
+                    foreach (Vertex3 v in _manager._vertices)
+                    {
+                        if (first)
+                        {
+                            if (v._matrixNode != null)
+                                MatrixNode = model._linker.NodeCache[v._matrixNode.NodeIndex];
+
+                            first = false;
+                        }
+                        v.MatrixNode = null;
+                    }
+                }
+            }
 
             //Collect vertex node ids
             GenerateNodeCache();
@@ -846,32 +936,12 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _rebuild = CheckVertexFormat();
 
             //Rebuild only under certain circumstances
-            if (model._rebuildAllObj || model._isImport || _rebuild)
+            if (model._rebuildAllObj || model._isImport || _rebuild || _reOptimized)
             {
                 int size = (int)MDL0Object.Size;
 
                 if (model._version >= 10)
                     size += 4; //Add extra -1 value
-
-                if (model._isImport)
-                {
-                    //Continue checking for single bind
-                    if (_nodeId == -2 && _matrixNode == null)
-                    {
-                        bool first = true;
-                        foreach (Vertex3 v in _manager._vertices)
-                        {
-                            if (first)
-                            {
-                                if (v._matrixNode != null)
-                                    MatrixNode = model._linker.NodeCache[v._matrixNode.NodeIndex];
-
-                                first = false;
-                            }
-                            v.MatrixNode = null;
-                        }
-                    }
-                }
 
                 //Set vertex descriptor
                 _descList = _manager.SetVertexDescList(this, model._linker._forceDirectAssets);
@@ -883,65 +953,45 @@ namespace BrawlLib.SSBB.ResourceNodes
                 //Add def length
                 size = _primitiveStart = _tableLen + 0xE0;
 
+                //Need to group facepoint data if creating a new model
                 if (model._isImport)
                 {
+                    _triConverter._useStrips = Collada._importOptions._useTristrips;
+                    _triConverter._cacheSize = Collada._importOptions._cacheSize;
+                    _triConverter._minStripLen = Collada._importOptions._minStripLen;
+                    _triConverter._pushCacheHits = Collada._importOptions._pushCacheHits;
+                    _triConverter._backwardSearch = Collada._importOptions._backwardSearch;
+                    
                     _primGroups.Clear();
-                    Triangles.Clear();
-                    Tristrips.Clear();
 
                     //Merge vertices and assets into facepoints
-                    _facepoints = _manager.MergeData(this);
-
-                    FacepointTriangle Tri;
+                    Facepoint[] facepoints = _manager.MergeInternalFaceData(this);
                     if (_manager._triangles != null)
                     {
-                        uint* indices = (uint*)_manager._triangles._indices.Address;
-                        for (int t = 0; t < _manager._triangles._elementCount; t += 3)
-                        {
-                            Tri = new FacepointTriangle();
+                        Facepoint[] points = new Facepoint[_manager._triangles._elementCount];
+                        uint[] indices = _manager._triangles._indices;
+                        bool ccw = Collada._importOptions._forceCCW;
 
-                            if (!model._importOptions._forceCCW)
-                            {
-                                //Indices are written in reverse for each triangle, 
-                                //so they need to be set to a triangle in reverse
+                        //Indices are written in reverse for each triangle, 
+                        //so they need to be set to a triangle in reverse if not CCW
+                        for (int t = 0; t < _manager._triangles._elementCount; t++)
+                            points[ccw ? t : (t - (t % 3)) + (2 - (t % 3))] = facepoints[indices[t]];
 
-                                Tri._z = _facepoints[indices[t + 0]];
-                                Tri._y = _facepoints[indices[t + 1]];
-                                Tri._x = _facepoints[indices[t + 2]];
-                            }
-                            else
-                            {
-                                Tri._x = _facepoints[indices[t + 0]];
-                                Tri._y = _facepoints[indices[t + 1]];
-                                Tri._z = _facepoints[indices[t + 2]];
-                            }
-
-                            Triangles.Add(Tri);
-                        }
-
-                        _primGroups = TriangleConverter.GroupPrimitives(Triangles);
+                        _primGroups = _triConverter.GroupPrimitives(points, out _numFacepoints, out _numFaces);
                     }
                 }
 
                 //Build display list
                 foreach (PrimitiveGroup g in _primGroups)
                 {
-                    if (model._isImport)
+                    if (model._isImport || _reOptimized)
                     {
                         if (g._tristrips.Count != 0)
-                            foreach (FacepointTristrip strip in g._tristrips)
+                            foreach (PointTriangleStrip strip in g._tristrips)
                                 _primitiveSize += 3 + strip._points.Count * _fpStride;
 
-                        if (g._trifans.Count != 0)
-                            foreach (FacepointTrifan fan in g._trifans)
-                                _primitiveSize += 3 + fan._points.Count * _fpStride;
-
                         if (g._triangles.Count != 0)
-                        {
-                            _primitiveSize += 3;
-                            foreach (FacepointTriangle t in g._triangles)
-                                _primitiveSize += 3 * _fpStride;
-                        }
+                            _primitiveSize += 3 + g._triangles.Count * 3 * _fpStride;
                     }
                     else
                         for (int i = 0; i < g._headers.Count; i++)
@@ -981,16 +1031,13 @@ namespace BrawlLib.SSBB.ResourceNodes
             else
                 _defSize = 128;
 
-            if (model._rebuildAllObj || model._isImport || _rebuild)
+            if (model._rebuildAllObj || model._isImport || _rebuild || _reOptimized)
             {
                 //Set Header
                 header->_totalLength = length;
 
-                //header->_numVertices = _numVertices = triCount + stripCount;
-                //header->_numFaces = _numFaces = (triCount / 3) + (stripCount <= 2 ? 0 : stripCount - 2);
-
-                _numFacepoints = header->_numVertices = _manager._pointCount;
-                _numFaces = header->_numFaces = _manager._faceCount;
+                header->_numVertices = _numFacepoints;
+                header->_numFaces = _numFaces;
 
                 _primBufferSize = header->_primitives._bufferSize = _primitiveSize;
                 _primSize = header->_primitives._size = _primitiveSize;
@@ -1081,8 +1128,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 }
                 header->_defintions._size = _defSize;
             }
-
-            _rebuild = false;
+            _rebuild = _reOptimized = false;
         }
 
         private void WriteWeightTable(VoidPtr addr)
