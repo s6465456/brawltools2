@@ -20,16 +20,9 @@ namespace System
         {
             if (_data)
             {
-                try
-                {
-                    Marshal.FreeHGlobal(_data);
-                    _data = null;
-                    GC.SuppressFinalize(this);
-                }
-                catch
-                {
-
-                }
+                Marshal.FreeHGlobal(_data);
+                _data = null;
+                GC.SuppressFinalize(this);
             }
         }
     }

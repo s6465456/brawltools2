@@ -10,6 +10,7 @@ using BrawlLib.OpenGL;
 using System.Windows.Forms;
 using OpenTK.Graphics.OpenGL;
 using System.Diagnostics;
+using BrawlLib.Modeling;
 
 namespace BrawlLib.SSBB.ResourceNodes
 {
@@ -374,7 +375,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 _ref6 =
                 _ref7 = -1;
 
-                if (Model._importOptions._mdlType == 0)
+                if (Collada._importOptions._mdlType == 0)
                     _stages = 3;
                 else
                     _stages = 1;
@@ -448,7 +449,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                 *struct0 = StageGroup.Default;
                 struct0->SetGroup(0);
 
-                switch (Model._importOptions._mdlType)
+                switch (Collada._importOptions._mdlType)
                 {
                     case Modeling.Collada.ImportOptions.MDLType.Character:
 

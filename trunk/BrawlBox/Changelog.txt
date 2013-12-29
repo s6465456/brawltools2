@@ -1,6 +1,6 @@
 
-BrawlBox Data Viewer - Version 0.70
-BrawlLib Resource Library - Version 0.17
+BrawlBox Data Viewer - Version 0.71
+BrawlLib Resource Library - Version 0.18
 Copyright © 2009 - 2013 Bryan Moulton & BlackJax96
 
 This program is provided as-is without any warranty, implied or otherwise.
@@ -9,12 +9,17 @@ regarding its proper and lawful use. The authors/hosts/distributors cannot be
 held responsible for any damage resulting in the use of this program, nor can 
 they be held accountable for the manner in which it is used.
 
-For support and feature requests, check out our forum topic at KCMM!
-http://forums.kc-mm.com/index.php?topic=17547.0
-
  ====================================
 |************ Change Log ************|
  ====================================
+
+ - v0.71- (12/25/2013) - BrawlLib v0.18
+	. Added a tristripper and integrated it into Brawllib. This allows for mesh optimization for smaller filesize and less in-game lag.
+	. Added several new options to the model importer settings dialog, including tristripper algorithm options
+	. Added "Optimize" option to the MDL0/object right click menus. This will allow you to re-optimize meshes that have already been encoded.
+	. Added support for writing string type user data properly
+	. Added toggles for texture matrices in model object properties
+	. Fixed a bug where exported Collada models would have _ID added to the end of all bone and object names.
 
  - v0.70- (12/7/2013) - BrawlLib v0.17
 	. Fixed header and alignment in module rebuilder

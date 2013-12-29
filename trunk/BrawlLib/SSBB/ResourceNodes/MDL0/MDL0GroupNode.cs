@@ -325,6 +325,35 @@ namespace BrawlLib.SSBB.ResourceNodes
                                 pData += 7;
                             }
                         }
+
+                    foreach (MDL0ObjectNode m in _children)
+                    {
+                        int max = Maths.Max(
+                        m.OpaMaterialNode != null ? m.OpaMaterialNode.Children.Count : 0,
+                        m.XluMaterialNode != null ? m.XluMaterialNode.Children.Count : 0,
+                        m.OpaMaterialNode != null && m.OpaMaterialNode.MetalMaterial != null ? m.OpaMaterialNode.MetalMaterial.Children.Count : 0,
+                        m.XluMaterialNode != null && m.XluMaterialNode.MetalMaterial != null ? m.XluMaterialNode.MetalMaterial.Children.Count : 0);
+
+                        bool hasUnused = false;
+                        for (int i = max; i < 8; i++)
+                            if (m.HasTextureMatrix[i])
+                            {
+                                m.HasTextureMatrix[i] = false;
+                                m._rebuild = true;
+                                hasUnused = true;
+                            }
+                        if (hasUnused)
+                        {
+                            ((MDL0Node)Parent)._errors.Add("Object " + m.Index + " has unused texture matrices.");
+                            m.SignalPropertyChange();
+                        }
+
+                        if (m.HasTexMtx && m.HasANonFloatAsset)
+                        {
+                            ((MDL0Node)Parent)._errors.Add("Object " + m.Index + " has texture matrices and non-float assets, meaning it will explode in-game.");
+                            m.SignalPropertyChange();
+                        }
+                    }
                     break;
 
                 case MDLResourceType.Colors:

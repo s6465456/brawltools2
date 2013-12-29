@@ -34,6 +34,19 @@ namespace BrawlLib.Modeling
         {
             return String.Format("M({12}), V({0}), N({1}), C({2}, {3}), U({4}, {5}, {6}, {7}, {8}, {9}, {10}, {11})", _vertexIndex, _normalIndex, _colorIndices[0], _colorIndices[1], _UVIndices[0], _UVIndices[1], _UVIndices[2], _UVIndices[3], _UVIndices[4], _UVIndices[5], _UVIndices[6], _UVIndices[7], NodeID);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || !(obj is Facepoint))
+                return false;
+
+            return obj.ToString().Equals(ToString());
+        }
+
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -70,10 +83,10 @@ namespace BrawlLib.Modeling
         }
 
         //For imports
-        public List<FacepointTrifan> _trifans = new List<FacepointTrifan>();
-        public List<FacepointTristrip> _tristrips = new List<FacepointTristrip>();
-        public List<FacepointTriangle> _triangles = new List<FacepointTriangle>();
-
+        public PrimitiveHeader TriangleHeader { get { return new PrimitiveHeader(WiiPrimitiveType.TriangleList, _triangles.Count * 3); } }
+        public List<PointTriangle> _triangles = new List<PointTriangle>();
+        public List<PointTriangleStrip> _tristrips = new List<PointTriangleStrip>();
+        
         //For existing models
         public List<PrimitiveHeader> _headers = new List<PrimitiveHeader>();
         public List<List<Facepoint>> _points = new List<List<Facepoint>>();
@@ -84,6 +97,8 @@ namespace BrawlLib.Modeling
         //Cache for rebuilding in case nodes are moved
         public List<NodeOffset> _nodeOffsets = new List<NodeOffset>();
 
+        internal const int _nodeCountMax = 10;
+
         public unsafe void SetNodeIds(VoidPtr primAddr)
         {
             byte* grpAddr = (byte*)(primAddr + _offset);
@@ -91,7 +106,7 @@ namespace BrawlLib.Modeling
                 *(bushort*)(grpAddr + _nodeOffsets[i]._offset) = (ushort)_nodeOffsets[i]._node.NodeIndex;
         }
 
-        private void AddTriangle(FacepointTriangle t)
+        private void AddTriangle(PointTriangle t)
         {
             _triangles.Add(t);
             if (!_nodes.Contains(t._x.NodeID)) _nodes.Add(t._x.NodeID);
@@ -99,20 +114,20 @@ namespace BrawlLib.Modeling
             if (!_nodes.Contains(t._z.NodeID)) _nodes.Add(t._z.NodeID);
         }
 
-        public bool TryAdd(FacepointTriangle t)
+        private bool TryAdd(PointTriangle t)
         {
-            List<ushort> ids = new List<ushort>();
+            List<ushort> newIds = new List<ushort>();
 
             ushort x = t._x.NodeID;
             ushort y = t._y.NodeID;
             ushort z = t._z.NodeID;
 
-            if (!_nodes.Contains(x) && !ids.Contains(x)) ids.Add(x);
-            if (!_nodes.Contains(y) && !ids.Contains(y)) ids.Add(y);
-            if (!_nodes.Contains(z) && !ids.Contains(z)) ids.Add(z);
+            if (!_nodes.Contains(x) && !newIds.Contains(x)) newIds.Add(x);
+            if (!_nodes.Contains(y) && !newIds.Contains(y)) newIds.Add(y);
+            if (!_nodes.Contains(z) && !newIds.Contains(z)) newIds.Add(z);
 
             //There's a limit of 10 matrices per group...
-            if (ids.Count + _nodes.Count <= 10)
+            if (newIds.Count + _nodes.Count <= _nodeCountMax)
             {
                 AddTriangle(t);
                 return true;
@@ -120,7 +135,15 @@ namespace BrawlLib.Modeling
             return false;
         }
 
-        private void AddTristrip(FacepointTristrip t)
+        public bool TryAdd(PrimitiveClass p)
+        {
+            if (p is PointTriangleStrip)
+                return TryAdd(p as PointTriangleStrip);
+            else //if (p is PointTriangle)
+                return TryAdd(p as PointTriangle);
+        }
+
+        private void AddTristrip(PointTriangleStrip t)
         {
             _tristrips.Add(t);
             foreach (Facepoint p in t._points)
@@ -128,17 +151,17 @@ namespace BrawlLib.Modeling
                     _nodes.Add(p.NodeID);
         }
 
-        public bool TryAdd(FacepointTristrip t)
+        private bool TryAdd(PointTriangleStrip t)
         {
-            List<ushort> ids = new List<ushort>();
+            List<ushort> newIds = new List<ushort>();
             foreach (Facepoint p in t._points)
             {
                 ushort id = p.NodeID;
-                if (!_nodes.Contains(id) && !ids.Contains(id))
-                    ids.Add(id);
+                if (!_nodes.Contains(id) && !newIds.Contains(id))
+                    newIds.Add(id);
             }
 
-            if (ids.Count + _nodes.Count <= 10)
+            if (newIds.Count + _nodes.Count <= _nodeCountMax)
             {
                 AddTristrip(t);
                 return true;
@@ -161,80 +184,28 @@ namespace BrawlLib.Modeling
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public class TriangleGroup
+    public class PrimitiveClass
     {
-        public PrimitiveHeader Header { get { return new PrimitiveHeader(WiiPrimitiveType.Triangles, _triangles.Count * 3); } }
-        public List<FacepointTriangle> _triangles = new List<FacepointTriangle>();
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public class TristripGroup
-    {
-        public PrimitiveHeader Header { get { return new PrimitiveHeader(WiiPrimitiveType.TriangleStrip, Count); } }
-        public int Count 
+        public virtual List<Facepoint> Points { get; set; }
+        public static int Compare(PrimitiveClass p1, PrimitiveClass p2)
         {
-            get
-            {
-                int count = 0;
-                foreach (FacepointTristrip t in _tristrips)
-                    count += t._points.Count;
-                return count;
-            }
+            return p1.GetType() == p2.GetType() ? 0 : p1 is PointTriangleStrip ? -1 : 1;
         }
-        public List<FacepointTristrip> _tristrips = new List<FacepointTristrip>();
     }
 
-    public class FacepointTristrip
+    public class PointTriangleStrip : PrimitiveClass
     {
+        public PrimitiveHeader Header { get { return new PrimitiveHeader(WiiPrimitiveType.TriangleStrip, _points.Count); } }
         public List<Facepoint> _points = new List<Facepoint>();
-        public List<FacepointTriangle> _triangles = new List<FacepointTriangle>();
-        public List<ushort> _nodeIds = new List<ushort>();
 
-        public void Initialize(FacepointTriangle first)
+        public override List<Facepoint> Points
         {
-            _points = new List<Facepoint>();
-            _nodeIds = new List<ushort>();
-
-            _points.Add(first._x);
-            _points.Add(first._y);
-            _points.Add(first._z);
-            _triangles.Add(first);
-
-            if (!_nodeIds.Contains(first._x.NodeID))
-                _nodeIds.Add(first._x.NodeID);
-            if (!_nodeIds.Contains(first._y.NodeID))
-                _nodeIds.Add(first._y.NodeID);
-            if (!_nodeIds.Contains(first._z.NodeID))
-                _nodeIds.Add(first._z.NodeID);
-        }
-
-        public bool CanAdd(FacepointTriangle t)
-        {
-            ushort id = t._z.NodeID;
-            int count = 0;
-            if (!_nodeIds.Contains(id)) count++;
-            if (count + _nodeIds.Count <= 10)
-                return true;
-            return false;
-        }
-
-        public void Add(FacepointTriangle t)
-        {
-            ushort id = t._z.NodeID;
-            _points.Add(t._z);
-            _triangles.Add(t);
-            if (!_nodeIds.Contains(id))
-                _nodeIds.Add(id);
+            get { return _points; }
+            set { _points = value; }
         }
     }
 
-    public class FacepointTrifan
-    {
-        public List<Facepoint> _points = new List<Facepoint>();
-    }
-
-    public class FacepointTriangle
+    public class PointTriangle : PrimitiveClass
     {
         public Facepoint _x;
         public Facepoint _y;
@@ -263,8 +234,22 @@ namespace BrawlLib.Modeling
             }
         }
 
-        public FacepointTriangle() { }
-        public FacepointTriangle(Facepoint x, Facepoint y, Facepoint z)
+        public override List<Facepoint> Points
+        {
+            get
+            {
+                return new List<Facepoint>() { _x, _y, _z };
+            }
+            set
+            {
+                _x = value[0];
+                _y = value[1];
+                _z = value[2];
+            }
+        }
+
+        public PointTriangle() { }
+        public PointTriangle(Facepoint x, Facepoint y, Facepoint z)
         {
             _x = x;
             _y = y;
@@ -277,11 +262,6 @@ namespace BrawlLib.Modeling
             if (_y == f) return true;
             if (_z == f) return true;
             return false;
-        }
-
-        public FacepointTriangle RotateUp()
-        {
-            return new FacepointTriangle(_y, _z, _x);
         }
 
         public bool _grouped = false;

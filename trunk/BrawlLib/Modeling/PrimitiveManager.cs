@@ -57,6 +57,7 @@ namespace BrawlLib.Modeling
             _rawVertices = new Vector3[_vertices.Count];
             foreach (Vertex3 v in _vertices)
                 _rawVertices[i++] = v._position;
+
             return _rawVertices;
         }
         private Vector3[] _rawVertices;
@@ -71,9 +72,12 @@ namespace BrawlLib.Modeling
                 return _rawNormals;
 
             HashSet<Vector3> list = new HashSet<Vector3>();
-            Vector3* pIn = (Vector3*)_faceData[1].Address;
-            for (int i = 0; i < _pointCount; i++)
-                list.Add(*pIn++);
+            if (_faceData[1] != null)
+            {
+                Vector3* pIn = (Vector3*)_faceData[1].Address;
+                for (int i = 0; i < _pointCount; i++)
+                    list.Add(*pIn++);
+            }
 
             _rawNormals = new Vector3[list.Count];
             list.CopyTo(_rawNormals);
@@ -95,9 +99,12 @@ namespace BrawlLib.Modeling
                 return _uvs[index];
 
             HashSet<Vector2> list = new HashSet<Vector2>();
-            Vector2* pIn = (Vector2*)_faceData[index + 4].Address;
-            for (int i = 0; i < _pointCount; i++)
-                list.Add(*pIn++);
+            if (_faceData[index + 4] != null)
+            {
+                Vector2* pIn = (Vector2*)_faceData[index + 4].Address;
+                for (int i = 0; i < _pointCount; i++)
+                    list.Add(*pIn++);
+            }
 
             _uvs[index] = new Vector2[list.Count];
             list.CopyTo(_uvs[index]);
@@ -119,9 +126,12 @@ namespace BrawlLib.Modeling
                 return _colors[index];
 
             HashSet<RGBAPixel> list = new HashSet<RGBAPixel>();
-            RGBAPixel* pIn = (RGBAPixel*)_faceData[index + 2].Address;
-            for (int i = 0; i < _pointCount; i++)
-                list.Add(*pIn++);
+            if (_faceData[index + 2] != null)
+            {
+                RGBAPixel* pIn = (RGBAPixel*)_faceData[index + 2].Address;
+                for (int i = 0; i < _pointCount; i++)
+                    list.Add(*pIn++);
+            }
 
             _colors[index] = new RGBAPixel[list.Count];
             list.CopyTo(_colors[index]);
@@ -226,7 +236,8 @@ namespace BrawlLib.Modeling
 
             //Get element count for each primitive type
             int d3 = 0, d2 = 0, d1 = 0;
-            uint* p3, p2, p1;
+            uint p3 = 0, p2 = 0, p1 = 0;
+            uint[] p1arr = null, p2arr = null, p3arr = null;
 
             bool newGroup = true;
             PrimitiveGroup group = new PrimitiveGroup();
@@ -277,33 +288,27 @@ namespace BrawlLib.Modeling
                     if (newGroup == true) newGroup = false;
                     d3 += (count = *(bushort*)pTemp) / 2 * 3;
                     group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.Quads, Entries = (ushort)count });
-                    
                     break;
 
                 case GXListCommand.DrawTriangles:
 
                     if (newGroup == true) newGroup = false;
                     d3 += (count = *(bushort*)pTemp);
-                    group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.Triangles, Entries = (ushort)count });
-                    
+                    group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.TriangleList, Entries = (ushort)count });
                     break;
 
                 case GXListCommand.DrawTriangleFan:
 
                     if (newGroup == true) newGroup = false;
                     d3 += ((count = *(bushort*)pTemp) - 2) * 3;
-
                     group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.TriangleFan, Entries = (ushort)count });
-                    
                     break;
 
                 case GXListCommand.DrawTriangleStrip:
 
                     if (newGroup == true) newGroup = false;
                     d3 += ((count = *(bushort*)pTemp) - 2) * 3;
-
                     group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.TriangleStrip, Entries = (ushort)count });
-                    
                     break;
 
                 case GXListCommand.DrawLines:
@@ -311,7 +316,6 @@ namespace BrawlLib.Modeling
                     if (newGroup == true) newGroup = false;
                     d2 += (count = *(bushort*)pTemp);
                     group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.Lines, Entries = (ushort)count });
-                    
                     break;
 
                 case GXListCommand.DrawLineStrip:
@@ -319,7 +323,6 @@ namespace BrawlLib.Modeling
                     if (newGroup == true) newGroup = false;
                     d2 += ((count = *(bushort*)pTemp) - 1) * 2;
                     group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.LineStrip, Entries = (ushort)count });
-                    
                     break;
 
                 case GXListCommand.DrawPoints:
@@ -327,7 +330,6 @@ namespace BrawlLib.Modeling
                     if (newGroup == true) newGroup = false;
                     d1 += (count = *(bushort*)pTemp);
                     group._headers.Add(new PrimitiveHeader() { Type = WiiPrimitiveType.Points, Entries = (ushort)count });
-                    
                     break;
 
                 default:
@@ -344,19 +346,16 @@ namespace BrawlLib.Modeling
 
         Next: //Create primitives
             if (d3 > 0)
-            { _triangles = new NewPrimitive(d3, BeginMode.Triangles); p3 = (uint*)_triangles._indices.Address; }
-            else
-            { _triangles = null; p3 = null; }
+            { _triangles = new NewPrimitive(d3, BeginMode.Triangles); p3arr = _triangles._indices; }
+            else _triangles = null;
 
             if (d2 > 0)
-            { _lines = new NewPrimitive(d2, BeginMode.Lines); p2 = (uint*)_lines._indices.Address; }
-            else
-            { _lines = null; p2 = null; }
+            { _lines = new NewPrimitive(d2, BeginMode.Lines); p2arr = _lines._indices; }
+            else _lines = null;
 
             if (d1 > 0)
-            { _points = new NewPrimitive(d1, BeginMode.Points); p1 = (uint*)_points._indices.Address; }
-            else
-            { _points = null; p1 = null; }
+            { _points = new NewPrimitive(d1, BeginMode.Points); p1arr = _points._indices; }
+            else _points = null;
 
             //Extract indices in reverse order, this way we get CCW winding.
         Top:
@@ -373,12 +372,12 @@ namespace BrawlLib.Modeling
                     count = *(bushort*)pData;
                     for (int i = 0; i < count; i += 4)
                     {
-                        *p3++ = index;
-                        *p3++ = (uint)(index + 2);
-                        *p3++ = (uint)(index + 1);
-                        *p3++ = index;
-                        *p3++ = (uint)(index + 3);
-                        *p3++ = (uint)(index + 2);
+                        p3arr[p3++] = index;
+                        p3arr[p3++] = (uint)(index + 2);
+                        p3arr[p3++] = (uint)(index + 1);
+                        p3arr[p3++] = index;
+                        p3arr[p3++] = (uint)(index + 3);
+                        p3arr[p3++] = (uint)(index + 2);
                         index += 4;
                     }
                     break;
@@ -386,9 +385,9 @@ namespace BrawlLib.Modeling
                     count = *(bushort*)pData;
                     for (int i = 0; i < count; i += 3)
                     {
-                        *p3++ = (uint)(index + 2);
-                        *p3++ = (uint)(index + 1);
-                        *p3++ = index;
+                        p3arr[p3++] = (uint)(index + 2);
+                        p3arr[p3++] = (uint)(index + 1);
+                        p3arr[p3++] = index;
                         index += 3;
                     }
                     break;
@@ -397,9 +396,9 @@ namespace BrawlLib.Modeling
                     temp = index++;
                     for (int i = 2; i < count; i++)
                     {
-                        *p3++ = temp;
-                        *p3++ = (uint)(index + 1);
-                        *p3++ = index++;
+                        p3arr[p3++] = temp;
+                        p3arr[p3++] = (uint)(index + 1);
+                        p3arr[p3++] = index++;
                     }
                     index++;
                     break;
@@ -408,29 +407,29 @@ namespace BrawlLib.Modeling
                     index += 2;
                     for (int i = 2; i < count; i++)
                     {
-                        *p3++ = index;
-                        *p3++ = (uint)(index - 1 - (i & 1));
-                        *p3++ = (uint)((index++) - 2 + (i & 1));
+                        p3arr[p3++] = index;
+                        p3arr[p3++] = (uint)(index - 1 - (i & 1));
+                        p3arr[p3++] = (uint)((index++) - 2 + (i & 1));
                     }
                     break;
                 case GXListCommand.DrawLines:
                     count = *(bushort*)pData;
                     for (int i = 0; i < count; i++)
-                        *p2++ = index++;
+                        p2arr[p2++] = index++;
                     break;
                 case GXListCommand.DrawLineStrip:
                     count = *(bushort*)pData;
                     for (int i = 1; i < count; i++)
                     {
-                        *p2++ = index++;
-                        *p2++ = index;
+                        p2arr[p2++] = index++;
+                        p2arr[p2++] = index;
                     }
                     index++;
                     break;
                 case GXListCommand.DrawPoints:
                     count = *(bushort*)pData;
                     for (int i = 0; i < count; i++)
-                        *p1++ = index++;
+                        p1arr[p1++] = index++;
                     break;
                 default: return;
             }
@@ -453,16 +452,18 @@ namespace BrawlLib.Modeling
 
             foreach (PrimitiveGroup g in poly._primGroups)
             {
-                if (!poly.Model._isImport)
+                if (!poly.Model._isImport && !poly._reOptimized)
                     g.RegroupNodes();
 
                 g._nodes.Sort();
                 g._offset = (uint)address - (uint)start;
                 g._nodeOffsets.Clear();
 
-                int index = 0;
+                //Write matrix headers for linking weighted influences to points
                 if (poly.Weighted)
                 {
+                    int index = 0;
+
                     //Texture Matrices
                     if (poly.HasTexMtx)
                         for (int i = 0; i < g._nodes.Count; i++)
@@ -505,22 +506,22 @@ namespace BrawlLib.Modeling
                     }
                 }
 
-                if (poly.Model._isImport)
+                if (poly.Model._isImport || poly._reOptimized)
                 {
+                    //Write strips first
                     if (g._tristrips.Count != 0)
-                        foreach (FacepointTristrip tri in g._tristrips)
+                        foreach (PointTriangleStrip strip in g._tristrips)
                         {
-                            *(PrimitiveHeader*)address = new PrimitiveHeader() { Type = WiiPrimitiveType.TriangleStrip, Entries = (ushort)tri._points.Count };
-                            address += 3;
-                            foreach (Facepoint f in tri._points)
+                            *(PrimitiveHeader*)address = strip.Header; address += 3;
+                            foreach (Facepoint f in strip._points)
                                 WriteFacepoint(f, g, desc, ref address, poly);
                         }
                     
+                    //Write remaining triangles under a single list header
                     if (g._triangles.Count != 0)
                     {
-                        *(PrimitiveHeader*)address = new PrimitiveHeader() { Type = WiiPrimitiveType.Triangles, Entries = (ushort)(g._triangles.Count * 3) };
-                        address += 3;
-                        foreach (FacepointTriangle tri in g._triangles)
+                        *(PrimitiveHeader*)address = g.TriangleHeader; address += 3;
+                        foreach (PointTriangle tri in g._triangles)
                         {
                             WriteFacepoint(tri._x, g, desc, ref address, poly);
                             WriteFacepoint(tri._y, g, desc, ref address, poly);
@@ -528,7 +529,7 @@ namespace BrawlLib.Modeling
                         }
                     }
                 }
-                else 
+                else //Write the original primitives read from the model
                     for (int i = 0; i < g._headers.Count; i++)
                     {
                         *(PrimitiveHeader*)address = g._headers[i];
@@ -846,13 +847,12 @@ namespace BrawlLib.Modeling
                         case 2: //Color 1
                         case 3: //Color 2
                             col = null;
-                            if (linker._colors != null && linker._colors.Count != 0 && polygon._elementIndices[i] != -1)
-                                if ((col = linker._colors[polygon._elementIndices[i]]) != null)
-                                    list.Add(new VertexAttributeFormat(
-                                        (GXAttribute)((int)GXAttribute.Color0 + (i - 2)),
-                                        (GXCompType)col._outType,
-                                        (GXCompCnt)(col._hasAlpha ? 1 : 0),
-                                        0));
+                            if (linker._colors != null && linker._colors.Count != 0 && polygon._elementIndices[i] != -1 && (col = linker._colors[polygon._elementIndices[i]]) != null)
+                                list.Add(new VertexAttributeFormat(
+                                    (GXAttribute)((int)GXAttribute.Color0 + (i - 2)),
+                                    (GXCompType)col._outType,
+                                    (GXCompCnt)(col._hasAlpha ? 1 : 0),
+                                    0));
                             break;
                         case 4: //Tex 1
                         case 5: //Tex 2
@@ -1100,7 +1100,55 @@ namespace BrawlLib.Modeling
                     _stride += 8;
         }
 
-        internal Facepoint[] MergeData(MDL0ObjectNode poly)
+        internal Facepoint[] MergeExternalFaceData(MDL0ObjectNode poly)
+        {
+            Facepoint[] _facepoints = new Facepoint[_pointCount];
+
+            ushort* pIndex = (ushort*)_indices.Address;
+            for (int x = 0; x < 12; x++)
+            {
+                if (poly._elementIndices[x] < 0 && x != 0)
+                    continue;
+
+                switch (x)
+                {
+                    case 0:
+                        Vector3* pIn0 = (Vector3*)_faceData[x].Address;
+                        for (int i = 0; i < _pointCount; i++)
+                        {
+                            Facepoint f = _facepoints[i] = new Facepoint() { _index = i };
+                            if (_vertices.Count != 0)
+                            {
+                                ushort id = *pIndex++;
+                                if (id < _vertices.Count && id >= 0)
+                                    f._vertex = _vertices[id];
+                                f._vertexIndex = f._vertex._facepoints[0]._vertexIndex;
+                            }
+                        }
+                        break;
+                    case 1:
+                        Vector3* pIn1 = (Vector3*)_faceData[x].Address;
+                        for (int i = 0; i < _pointCount; i++)
+                            _facepoints[i]._normalIndex = Array.IndexOf(poly._normalNode.Normals, *pIn1++);
+                        break;
+                    case 2:
+                    case 3:
+                        RGBAPixel* pIn2 = (RGBAPixel*)_faceData[x].Address;
+                        for (int i = 0; i < _pointCount; i++)
+                            _facepoints[i]._colorIndices[x - 2] = Array.IndexOf(poly._colorSet[x - 2].Colors, *pIn2++);
+                        break;
+                    default:
+                        Vector2* pIn3 = (Vector2*)_faceData[x].Address;
+                        for (int i = 0; i < _pointCount; i++)
+                            _facepoints[i]._UVIndices[x - 4] = Array.IndexOf(poly._uvSet[x - 4].Points, *pIn3++);
+                        break;
+                }
+            }
+            return _facepoints;
+        }
+
+        internal int[] _newClrObj = new int[2];
+        internal Facepoint[] MergeInternalFaceData(MDL0ObjectNode poly)
         {
             Facepoint[] _facepoints = new Facepoint[_pointCount];
 
@@ -1130,8 +1178,12 @@ namespace BrawlLib.Modeling
                     case 2:
                     case 3:
                         RGBAPixel* pIn2 = (RGBAPixel*)_faceData[x].Address;
-                        for (int i = 0; i < _pointCount; i++)
-                            _facepoints[i]._colorIndices[x - 2] = Array.IndexOf(GetColors(x - 2, false), *pIn2++);
+                        if (Collada._importOptions._useOneNode)
+                            for (int i = 0; i < _pointCount; i++)
+                                _facepoints[i]._colorIndices[x - 2] = Array.IndexOf(Collada._importOptions._singleColorNodeEntries, *pIn2++);
+                        else
+                            for (int i = 0; i < _pointCount; i++)
+                                _facepoints[i]._colorIndices[x - 2] = Array.IndexOf(((MDL0ObjectNode)_polygon.Model._objList[_newClrObj[x - 2]])._manager.GetColors(x - 2, false), *pIn2++);
                         break;
                     default:
                         Vector2* pIn3 = (Vector2*)_faceData[x].Address;
@@ -1513,32 +1565,32 @@ namespace BrawlLib.Modeling
         internal unsafe PrimitiveManager Clone() { return MemberwiseClone() as PrimitiveManager; }
     }
 
-    public unsafe class NewPrimitive : IDisposable
+    public unsafe class NewPrimitive// : IDisposable
     {
         public BeginMode _type;
         public int _elementCount;
-        public UnsafeBuffer _indices;
+        public uint[] _indices;
 
         public NewPrimitive(int elements, BeginMode type)
         {
             _elementCount = elements;
             _type = type;
-            _indices = new UnsafeBuffer(_elementCount * 4);
+            _indices = new uint[_elementCount];
         }
 
-        ~NewPrimitive() { Dispose(); }
-        public void Dispose()
-        {
-            if (_indices != null)
-            {
-                _indices.Dispose();
-                _indices = null;
-            }
-        }
+        //~NewPrimitive() { Dispose(); }
+        //public void Dispose()
+        //{
+        //    if (_indices != null)
+        //    {
+        //        _indices.Dispose();
+        //        _indices = null;
+        //    }
+        //}
 
         public unsafe void Render()
         {
-            GL.DrawElements(_type, _elementCount, DrawElementsType.UnsignedInt, (IntPtr)_indices.Address);
+            GL.DrawElements(_type, _elementCount, DrawElementsType.UnsignedInt, _indices);
         }
     }
 }

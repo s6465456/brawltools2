@@ -1,139 +1,108 @@
-﻿using System;
+﻿using BrawlLib.Wii.Models;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-namespace BrawlLib.Modeling
+
+namespace BrawlLib.Modeling.Triangle_Converter
 {
-    class TriangleConverter
+    public class TriangleConverter
     {
-        public static bool UseTristrips = false;
-        public static List<PrimitiveGroup> GroupPrimitives(List<FacepointTriangle> t)
+        public bool _useStrips;
+        public uint _cacheSize;
+        public uint _minStripLen;
+        public bool _backwardSearch;
+        public bool _pushCacheHits;
+
+        public TriangleConverter(bool useStrips, uint cacheSize, uint minStripLen, bool backwardSearch, bool pushCacheHits)
         {
-            List<PrimitiveGroup> groups = new List<PrimitiveGroup>();
+            _useStrips = useStrips;
+            _cacheSize = cacheSize;
+            _minStripLen = minStripLen;
+            _backwardSearch = backwardSearch;
+            _pushCacheHits = pushCacheHits;
+        }
 
-            List<FacepointTriangle> triangles = new List<FacepointTriangle>();
-            foreach (FacepointTriangle x in t)
-                triangles.Add(x);
-
-            PrimitiveGroup group = new PrimitiveGroup();
-
-            bool NewGroup = true;
-            PrimitiveGroup grp = new PrimitiveGroup();
-            if (UseTristrips)
+        public List<PrimitiveGroup> GroupPrimitives(Facepoint[] points, out int pointCount, out int faceCount)
+        {
+            pointCount = 0;
+            faceCount = 0;
+            List<PrimitiveClass> fpPrimitives = new List<PrimitiveClass>();
+            if (_useStrips)
             {
-                List<FacepointTristrip> strips = new List<FacepointTristrip>();
+                //Remap points so there is only one id per individual point
+                Remapper remapData = new Remapper();
+                remapData.Remap<Facepoint>(points, null);
 
-            Top:
-                FacepointTristrip strip = new FacepointTristrip();
-                for (int x = 0; x < triangles.Count; x++)
-                {
-                    FacepointTriangle current = triangles[x];
-                    if (Recursive(ref strip, ref triangles, current, true))
-                    {
-                        strips.Add(strip);
-                        goto Top;
-                    }
-                }
+                //Set up tristripper with remapped point ids
+                TriStripper stripper = new TriStripper(
+                    remapData._remapTable.Select(x => (uint)x).ToArray(),
+                    points.Select(x => x.NodeID).ToArray(),
+                    remapData._impTable);
+                stripper.SetCacheSize(_cacheSize);
+                stripper.SetMinStripSize(_minStripLen);
+                stripper.SetPushCacheHits(_pushCacheHits);
 
-                //Group strips first
-                for (int i = 0; i < strips.Count; i++)
+                //Backward search doesn't work,
+                //but generally won't improve the optimization with the cache on anyway
+                //stripper.SetBackwardSearch(_backwardSearch);
+
+                //Create strips using ids
+                List<Primitive> primArray = stripper.Strip();
+
+                //Recollect facepoints with new indices and get point/face count
+                for (int i = 0; i < primArray.Count; i++)
                 {
-                Top1:
-                    if (NewGroup) //Create a new group of triangles and node ids
+                    Primitive p = primArray[i];
+                    if (p.Type == PrimType.TriangleList)
                     {
-                        grp = new PrimitiveGroup();
-                        NewGroup = false;
+                        int count = p.Indices.Count / 3;
+                        faceCount += count;
+                        for (int r = 0; r < count; r++)
+                            fpPrimitives.Add(new PointTriangle(
+                                points[remapData._impTable[p.Indices[r * 3 + 0]]],
+                                points[remapData._impTable[p.Indices[r * 3 + 1]]],
+                                points[remapData._impTable[p.Indices[r * 3 + 2]]]));
                     }
-                    if (!(grp.TryAdd(strips[i]))) //Will add automatically if true
+                    else
                     {
-                        bool added = false;
-                        foreach (PrimitiveGroup g in groups)
-                            if (grp.TryAdd(strips[i]))
-                            {
-                                added = true;
-                                break;
-                            }
-                        if (!added)
-                        {
-                            groups.Add(grp);
-                            NewGroup = true;
-                            goto Top1;
-                        }
+                        faceCount += p.Indices.Count - 2;
+                        fpPrimitives.Add(new PointTriangleStrip() { _points = p.Indices.Select(x => points[remapData._impTable[x]]).ToList() });
                     }
-                    if (i == strips.Count - 1) //Last strip
-                        groups.Add(grp);
+                    pointCount += p.Indices.Count;
                 }
             }
-
-            //Now group triangles
-            //NewGroup = false;
-            if (groups.Count > 0)
-                grp = groups[0];
             else
-                grp = new PrimitiveGroup();
-            for (int i = 0; i < triangles.Count; i++)
             {
-            Top2:
-                if (NewGroup) //Create a new group of triangles and node ids
+                faceCount = (pointCount = points.Length) / 3;
+                for (int r = 0; r < faceCount; r++)
+                    fpPrimitives.Add(new PointTriangle(
+                        points[r * 3 + 0],
+                        points[r * 3 + 1],
+                        points[r * 3 + 2]));
+            }
+             
+            //Group primitives by each point's influence id
+            fpPrimitives.Sort(PrimitiveClass.Compare);
+            List<PrimitiveGroup> groups = new List<PrimitiveGroup>();
+            foreach (PrimitiveClass p in fpPrimitives)
+            {
+                bool added = false;
+                foreach (PrimitiveGroup g in groups)
+                    if (added = g.TryAdd(p))
+                        break;
+                if (!added)
                 {
-                    grp = new PrimitiveGroup();
-                    NewGroup = false;
+                    PrimitiveGroup g = new PrimitiveGroup();
+                    g.TryAdd(p);
+                    groups.Add(g);
                 }
-                if (!(grp.TryAdd(triangles[i]))) //Will add automatically if true
-                {
-                    bool added = false;
-                    foreach (PrimitiveGroup g in groups)
-                        if (grp.TryAdd(triangles[i]))
-                        {
-                            added = true;
-                            break;
-                        }
-                    if (!added)
-                    {
-                        groups.Add(grp);
-                        NewGroup = true;
-                        goto Top2;
-                    }
-                }
-                if (i == triangles.Count - 1) //Last triangle
-                    groups.Add(grp);
             }
 
             return groups;
-        }
-
-        public static bool Recursive(ref FacepointTristrip strip, ref List<FacepointTriangle> triangles, FacepointTriangle current, bool first)
-        {
-            Facepoint one = current._y;
-            Facepoint two = current._z;
-            for (int x = 0; x < triangles.Count; x++)
-            {
-                FacepointTriangle compare = triangles[x];
-                for (int i = 0; i < 3; i++)
-                {
-                    if (compare._x._vertex.Equals(two._vertex) &&
-                        compare._y._vertex.Equals(one._vertex) && 
-                        strip.CanAdd(compare))
-                    {
-                        triangles.RemoveAt(x);
-                        if (first)
-                        {
-                            triangles.Remove(current);
-                            strip.Initialize(current);
-                        }
-
-                        strip.Add(compare);
-
-                        Recursive(ref strip, ref triangles, compare, false);
-                        return true;
-                    }
-                    else
-                        compare = compare.RotateUp();
-                }
-            }
-            return false;
         }
     }
 }

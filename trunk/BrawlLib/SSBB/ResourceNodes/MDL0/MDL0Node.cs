@@ -31,7 +31,8 @@ namespace BrawlLib.SSBB.ResourceNodes
         //Changing the version will change the conversion.
         internal int _version = 9;
         internal int _scalingRule, _texMtxMode, _origPathOffset;
-        public byte _needsNrmMtxArray, _needsTexMtxArray, _enableExtents, _envMtxMode;
+        public byte _envMtxMode;
+        public bool _needsNrmMtxArray, _needsTexMtxArray, _enableExtents;
         internal int _numFacepoints, _numFaces, _numNodes;
         internal Vector3 _min, _max;
 
@@ -50,8 +51,6 @@ namespace BrawlLib.SSBB.ResourceNodes
         public string _originalPath;
         public List<MDL0BoneNode> _billboardBones = new List<MDL0BoneNode>();
 
-        public Collada.ImportOptions _importOptions = new Collada.ImportOptions();
-        
         [Browsable(true)]
         public bool AutoMetalMaterials { get { return _autoMetal; } set { _autoMetal = value; CheckMetals(); } }
         
@@ -103,15 +102,15 @@ namespace BrawlLib.SSBB.ResourceNodes
             } 
         }
         [Category("MDL0 Definition")]
-        public bool NeedsNormalMtxArray { get { return _needsNrmMtxArray != 0; } set { _needsNrmMtxArray = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
+        public bool NeedsNormalMtxArray { get { return _needsNrmMtxArray; } }
         [Category("MDL0 Definition")]
-        public bool NeedsTextureMtxArray { get { return _needsTexMtxArray != 0; } set { _needsTexMtxArray = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
+        public bool NeedsTextureMtxArray { get { return _needsTexMtxArray; } }
         [Category("MDL0 Definition"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 BoxMin { get { return _min; } set { _min = value; SignalPropertyChange(); } }
         [Category("MDL0 Definition"), TypeConverter(typeof(Vector3StringConverter))]
         public Vector3 BoxMax { get { return _max; } set { _max = value; SignalPropertyChange(); } }
         [Category("MDL0 Definition")]
-        public bool EnableExtents { get { return _enableExtents != 0; } set { _enableExtents = (byte)(value ? 1 : 0); SignalPropertyChange(); } }
+        public bool EnableExtents { get { return _enableExtents; } set { _enableExtents = value; SignalPropertyChange(); } }
         [Category("MDL0 Definition")]
         public MDLEnvelopeMatrixMode EnvelopeMatrixMode { get { return (MDLEnvelopeMatrixMode)_envMtxMode; } set { _envMtxMode = (byte)value; SignalPropertyChange(); } }
 
@@ -686,11 +685,11 @@ namespace BrawlLib.SSBB.ResourceNodes
             _numFaces = props->_numFaces;
             _origPathOffset = props->_origPathOffset;
             _numNodes = props->_numNodes;
-            _needsNrmMtxArray = props->_needNrmMtxArray;
-            _needsTexMtxArray = props->_needTexMtxArray;
+            _needsNrmMtxArray = props->_needNrmMtxArray != 0;
+            _needsTexMtxArray = props->_needTexMtxArray != 0;
             _min = props->_minExtents;
             _max = props->_maxExtents;
-            _enableExtents = props->_enableExtents;
+            _enableExtents = props->_enableExtents != 0;
             _envMtxMode = props->_envMtxMode;
 
             if (props->_origPathOffset > 0 && props->_origPathOffset < header->_header._size)
@@ -807,8 +806,12 @@ namespace BrawlLib.SSBB.ResourceNodes
             if (_hasXlu) table.Add("DrawXlu");
 
             if (_version > 9)
-            foreach (UserDataClass s in _userEntries)
-                table.Add(s._name);
+                foreach (UserDataClass s in _userEntries)
+                {
+                    table.Add(s._name);
+                    if (s._type == UserValueType.String && s._entries.Count > 0)
+                        table.Add(s._entries[0]);
+                }
 
             if (!String.IsNullOrEmpty(_originalPath))
                 table.Add(_originalPath);

@@ -256,16 +256,12 @@ namespace BrawlLib.Wii.Models
         public int Stride;
         public bool Weighted;
         public bool[] HasData;
-
-        public fixed byte Commands[31];
-        public fixed int Defs[12];
-
-        public UnsafeBuffer RemapTable;
+        public byte[] Commands;
+        public int[] Defs;
+        private ushort[] Nodes;
+        public int[] RemapTable;
         public int RemapSize;
-
         public List<List<Facepoint>> _points;
-
-        private fixed ushort Nodes[16];
 
         public ElementDescriptor(MDL0Object* polygon)
         {
@@ -277,10 +273,13 @@ namespace BrawlLib.Wii.Models
             int format; //0 for direct, 1 for byte, 2 for short
 
             //Create remap table for vertex weights
-            RemapTable = new UnsafeBuffer(polygon->_numVertices * 4);
+            RemapTable = new int[polygon->_numVertices];
             RemapSize = 0;
             Stride = 0;
             HasData = new bool[12];
+            Nodes = new ushort[16];
+            Commands = new byte[31];
+            Defs = new int[12];
 
             _points = new List<List<Facepoint>>();
 
@@ -482,7 +481,7 @@ namespace BrawlLib.Wii.Models
             group._points.Add(new List<Facepoint>());
 
             //Iterate commands in list
-            fixed(ushort* pNode = Nodes)
+            fixed (ushort* pNode = Nodes)
             fixed (int* pDefData = Defs)
             fixed (byte* pCmd = Commands)
             {
@@ -552,19 +551,17 @@ namespace BrawlLib.Wii.Models
                             {
                                 //Match weight and index with remap table
                                 int mapEntry = (weight << 16) | index;
-                                int* pTmp = (int*)RemapTable.Address;
 
                                 //Find matching index, starting at end of list
                                 //Lower index until a match is found at that index or index is less than 0
                                 index = RemapSize;
-                                while ((--index >= 0) && (pTmp[index] != mapEntry)) ;
+                                while ((--index >= 0) && (RemapTable[index] != mapEntry)) ;
 
                                 //No match, create new entry
                                 //Will be processed into vertices at the end!
                                 if (index < 0)
                                 {
-                                    pTmp[index = RemapSize++] = mapEntry;
-
+                                    RemapTable[index = RemapSize++] = mapEntry;
                                     _points.Add(new List<Facepoint>());
                                 }
 
@@ -637,30 +634,25 @@ namespace BrawlLib.Wii.Models
             if (!Weighted)
             {
                 //Add vertex to list using raw value.
-                int* pMap = (int*)RemapTable.Address;
                 for (int i = 0; i < RemapSize; i++)
                 {
-                    Vertex3 v = new Vertex3(pVert[*pMap++]) { _facepoints = _points[i] };
+                    Vertex3 v = new Vertex3(pVert[RemapTable[i]]) { _facepoints = _points[i] };
                     foreach (Facepoint f in v._facepoints) f._vertex = v;
                     list.Add(v);
                 }
             }
             else if (nodeTable != null)
             {
-                ushort* pMap = (ushort*)RemapTable.Address;
                 for (int i = 0; i < RemapSize; i++)
                 {
+                    int x = RemapTable[i];
                     //Create new vertex, assigning the value + influence from the remap table
-                    Vertex3 v = new Vertex3(pVert[*pMap++], nodeTable[*pMap++]) { _facepoints = _points[i] };
+                    Vertex3 v = new Vertex3(pVert[x & 0xFFFF], nodeTable[x >> 16]) { _facepoints = _points[i] };
                     foreach (Facepoint f in v._facepoints) f._vertex = v;
                     //Add vertex to list
                     list.Add(v);
                 }
             }
-
-            //Clean up
-            RemapTable.Dispose();
-            RemapTable = null;
 
             return list;
         }

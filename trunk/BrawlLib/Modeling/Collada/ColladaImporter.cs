@@ -68,8 +68,8 @@ namespace BrawlLib.Modeling
 
         public MDL0Node ShowDialog(string filePath)
         {
-            ImportOptions settings = BrawlLib.Properties.Settings.Default.ColladaImportOptions;
-            propertyGrid1.SelectedObject = settings;
+            _importOptions = BrawlLib.Properties.Settings.Default.ColladaImportOptions;
+            propertyGrid1.SelectedObject = _importOptions;
 
             if (base.ShowDialog() == DialogResult.OK)
             {
@@ -82,11 +82,14 @@ namespace BrawlLib.Modeling
                 MDL0Node model = ImportModel(filePath);
                 BrawlLib.Properties.Settings.Default.Save();
                 Close();
+                _importOptions = new ImportOptions();
                 return model;
             }
-            else return null;
+            _importOptions = new ImportOptions();
+            return null;
         }
 
+        public static ImportOptions _importOptions = new ImportOptions();
         public class ImportOptions
         {
             public enum MDLType
@@ -95,36 +98,59 @@ namespace BrawlLib.Modeling
                 Stage
             }
             
-            [Category("Misc"), Description("Determines the default settings for materials and shaders.")]
+            [Category("Model"), Description("Determines the default settings for materials and shaders.")]
             public MDLType ModelType { get { return _mdlType; } set { _mdlType = value; } }
-            [Category("Assets"), Description("If true, vertex arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices or SHP0 animations.")]
+            [Category("Model"), Description("If true, object primitives will be culled in reverse. This means the outside of the object will be the inside, and the inside will be the outside. It is not recommended to change this to true as you can change the culling later using the object's material.")]
+            public bool ForceCounterClockwisePrimitives { get { return _forceCCW; } set { _forceCCW = value; } }
+            [Category("Model"), Description("If true, the file path of the imported model will be written to the model's header.")]
+            public bool SetOriginalPath { get { return _setOrigPath; } set { _setOrigPath = value; } }
+            [Category("Model"), Description("Determines how precise weights will be compared. A smaller value means more accuracy but also more influences, resulting in a larger file size. A larger value means the weighting will be less accurate but there will be less influences.")]
+            public float WeightPrecision { get { return _weightPrecision; } set { _weightPrecision = value.Clamp(0.0000001f, 0.999999f); } }
+            [Category("Model"), Description("Sets the model version number, which affects how some parts of the model are written. Only versions 8, 9, 10 and 11 are supported.")]
+            public int ModelVersion { get { return _modelVersion; } set { _modelVersion = value.Clamp(8, 11); } }
+
+            [Category("Materials"), Description("The default texture wrap for material texture references.")]
+            public MDL0MaterialRefNode.WrapMode TextureWrap { get { return _wrap; } set { _wrap = value; } }
+            [Category("Materials"), Description("If true, materials will be remapped. This means there will be no redundant materials with the same settings, saving file space.")]
+            public bool RemapMaterials { get { return _rmpMats; } set { _rmpMats = value; } }
+            [Category("Materials"), Description("The default setting to use for material culling. Culling determines what side of the mesh is invisible.")]
+            public CullMode MaterialCulling { get { return _culling; } set { _culling = value; } }
+
+            [Category("Assets"), Description("If true, vertex arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices, tristripped primitives or SHP0 morph animations; otherwise the model will explode in-game.")]
             public bool ForceFloatVertices { get { return _fltVerts; } set { _fltVerts = value; } }
-            [Category("Assets"), Description("If true, normal arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices or SHP0 animations.")]
+            [Category("Assets"), Description("If true, normal arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices, tristripped primitives or SHP0 morph animations; otherwise the model will explode in-game.")]
             public bool ForceFloatNormals { get { return _fltNrms; } set { _fltNrms = value; } }
-            [Category("Assets"), Description("If true, texture coordinate arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices or SHP0 animations.")]
+            [Category("Assets"), Description("If true, texture coordinate arrays will be written in float format. This means that the data size will be larger, but more precise. Float arrays must be used if the model uses texture matrices, tristripped primitives or SHP0 morph animations; otherwise the model will explode in-game.")]
             public bool ForceFloatUVs { get { return _fltUVs; } set { _fltUVs = value; } }
+            
             [Category("Color Nodes"), Description("If true, color arrays read from the file will be ignored.")]
             public bool IgnoreOriginalColors { get { return _ignoreColors; } set { _ignoreColors = value; } }
             [Category("Color Nodes"), Description("If true, color arrays will be added to objects that do not have any. The array will be filled with only the default color.")]
             public bool AddColors { get { return _addClrs; } set { _addClrs = value; } }
             [Category("Color Nodes"), Description("If true, color arrays will be remapped. This means there will not be any color nodes that have the same entries as another, saving file space.")]
             public bool RemapColors { get { return _rmpClrs; } set { _rmpClrs = value; } }
-            [Category("Misc"), Description("If true, materials will be remapped. This means there will be no redundant materials with the same settings, saving file space.")]
-            public bool RemapMaterials { get { return _rmpMats; } set { _rmpMats = value; } }
-            [Category("Misc"), Description("If true, object primitives will be culled in reverse. This means the outside of the object will be the inside, and the inside will be the outside. It is not recommended to change this to true as you can change the culling later using the object's material.")]
-            public bool ForceCounterClockwisePrimitives { get { return _forceCCW; } set { _forceCCW = value; } }
             [Category("Color Nodes"), Description("If true, objects without color arrays will use a constant color (set to the default color) in its material for the whole mesh instead of a color node that specifies a color for every vertex. This saves a lot of file space.")]
             public bool UseRegisterColor { get { return _useReg; } set { _useReg = value; } }
-            [Category("Misc"), Description("The default setting to use for material culling. Culling determines what side of the mesh is invisible.")]
-            public CullMode MaterialCulling { get { return _culling; } set { _culling = value; } }
             [Category("Color Nodes"), TypeConverter(typeof(RGBAStringConverter)), Description("The default color to use for generated color arrays.")]
             public RGBAPixel DefaultColor { get { return _dfltClr; } set { _dfltClr = value; } }
-            
+            [Category("Color Nodes"), TypeConverter(typeof(RGBAStringConverter)), Description("This will make all colors be written in one color node. This will save file space for models with lots of different colors.")]
+            public bool UseOneNode { get { return _useOneNode; } set { _useOneNode = value; } }
+
+            [Category("Tristripper"), Description("Determines whether the model will be optimized to use tristrips along with triangles or not. Tristrips can greatly reduce in-game lag, so it is highly recommended that you leave this as true.")]
+            public bool UseTristrips { get { return _useTristrips; } set { _useTristrips = value; } }
+            [Category("Tristripper"), Description("The size of the cache optimizer which affects the final amount of face points. Set to 0 to disable.")]
+            public uint CacheSize { get { return _cacheSize; } set { _cacheSize = value; } }
+            [Category("Tristripper"), Description("The minimum amount of triangles that must be included in a strip. This cannot be lower than two triangles and should not be a large number. Two is highly recommended.")]
+            public uint MinimumStripLength { get { return _minStripLen; } set { _minStripLen = value < 2 ? 2 : value; } }
+            [Category("Tristripper"), Description("When enabled, pushes cache hits into a simple FIFO structure to simulate GPUs that don't duplicate cache entries, affecting the final face point count. Does nothing if the cache is disabled.")]
+            public bool PushCacheHits { get { return _pushCacheHits; } set { _pushCacheHits = value; } }
+            //[Category("Tristripper"), Description("If true, the tristripper will search for strips backwards as well as forwards.")]
+            //public bool BackwardSearch { get { return _backwardSearch; } set { _backwardSearch = value; } }
+
             public MDLType _mdlType = MDLType.Character;
-            public bool _forceTriangles = true;
-            public bool _fltVerts = false;
-            public bool _fltNrms = false;
-            public bool _fltUVs = false;
+            public bool _fltVerts = true;
+            public bool _fltNrms = true;
+            public bool _fltUVs = true;
             public bool _addClrs = false;
             public bool _rmpClrs = true;
             public bool _rmpMats = true;
@@ -133,24 +159,35 @@ namespace BrawlLib.Modeling
             public bool _ignoreColors = false;
             public CullMode _culling = CullMode.Cull_None;
             public RGBAPixel _dfltClr = new RGBAPixel(100, 100, 100, 255);
+            public uint _cacheSize = 52;
+            public uint _minStripLen = 2;
+            public bool _pushCacheHits = true;
+            public bool _useTristrips = true;
+            public bool _setOrigPath = false;
+            public float _weightPrecision = 0.0001f;
+            public int _modelVersion = 9;
+            public bool _useOneNode = true;
+            public MDL0MaterialRefNode.WrapMode _wrap = MDL0MaterialRefNode.WrapMode.Repeat;
+            
+            //This doesn't work, but it's optional and not efficient with the cache on anyway
+            public bool _backwardSearch = false;
+
+            internal RGBAPixel[] _singleColorNodeEntries;
         }
 
         public static string Error;
         public MDL0Node ImportModel(string filePath)
         {
-            MDL0Node model = new MDL0Node() { _name = Path.GetFileNameWithoutExtension(filePath), /*_originalPath = filePath*/ };
+            MDL0Node model = new MDL0Node() { _name = Path.GetFileNameWithoutExtension(filePath) };
             model.InitGroups();
-
-            model._importOptions = BrawlLib.Properties.Settings.Default.ColladaImportOptions;
+            if (_importOptions._setOrigPath)
+                model._originalPath = filePath;
 
             //Parse the collada file and use the data to create an MDL0
             using (DecoderShell shell = DecoderShell.Import(filePath))
             try
             {
-                model._version = 9; //The user can change the version later
-                model._needsNrmMtxArray = 1;
-                if (model._importOptions._mdlType == 0)
-                    model._needsTexMtxArray = 1;
+                model._version = _importOptions._modelVersion;
 
                 Error = "There was a problem reading the model.";
 
@@ -190,8 +227,8 @@ namespace BrawlLib.Modeling
                     matNode.ShaderNode = (MDL0ShaderNode)model._shadGroup.Children[0];
 
                     mat._node = matNode;
-                    matNode._cull = model._importOptions._culling;
-                     
+                    matNode._cull = _importOptions._culling;
+                    
                     //Find effect
                     if (mat._effect != null)
                         foreach (EffectEntry eff in shell._effects)
@@ -223,7 +260,7 @@ namespace BrawlLib.Modeling
                                                     mr._parent = matNode;
                                                     mr._minFltr = mr._magFltr = 1;
                                                     mr._index1 = mr._index2 = mr.Index;
-                                                    mr._uWrap = mr._vWrap = 1; //"Repeat" works best as a default
+                                                    mr._uWrap = mr._vWrap = (int)_importOptions._wrap;
                                                     break;
                                                 }
                                         }
@@ -318,7 +355,7 @@ namespace BrawlLib.Modeling
                 }
 
                 //Remove original color buffers if option set
-                if (model._importOptions._ignoreColors)
+                if (_importOptions._ignoreColors)
                 {
                     if (model._objList != null && model._objList.Count != 0)
                         foreach (MDL0ObjectNode p in model._objList)
@@ -331,9 +368,9 @@ namespace BrawlLib.Modeling
                 }
 
                 //Add color buffers if option set
-                if (model._importOptions._addClrs)
+                if (_importOptions._addClrs)
                 {
-                    RGBAPixel pixel = model._importOptions._dfltClr;
+                    RGBAPixel pixel = _importOptions._dfltClr;
 
                     //Add a color buffer to objects that don't have one
                     if (model._objList != null && model._objList.Count != 0)
@@ -350,7 +387,7 @@ namespace BrawlLib.Modeling
                 if (model._matList != null)
                     foreach (MDL0MaterialNode p in model._matList)
                     {
-                        if (model._importOptions._mdlType == 0)
+                        if (_importOptions._mdlType == 0)
                         {
                             p._lSet = 20;
                             p._fSet = 4;
@@ -384,19 +421,20 @@ namespace BrawlLib.Modeling
                     }
 
                 //Set materials to use register color if option set
-                if (model._importOptions._useReg && model._objList != null)
+                if (_importOptions._useReg && model._objList != null)
                     foreach (MDL0ObjectNode p in model._objList)
                     {
                         MDL0MaterialNode m = p.OpaMaterialNode;
                         if (m != null && p._manager._faceData[2] == null && p._manager._faceData[3] == null)
                         {
-                            m.C1MaterialColor = model._importOptions._dfltClr;
+                            m.C1MaterialColor = _importOptions._dfltClr;
                             m.C1ColorMaterialSource = GXColorSrc.Register;
+                            m.C1AlphaMaterialSource = GXColorSrc.Register;
                         }
                     }
 
                 //Remap materials if option set
-                if (model._importOptions._rmpMats && model._matList != null && model._objList != null)
+                if (_importOptions._rmpMats && model._matList != null && model._objList != null)
                 {
                     foreach (MDL0ObjectNode p in model._objList)
                         foreach (MDL0MaterialNode m in model._matList)
@@ -1791,7 +1829,7 @@ namespace BrawlLib.Modeling
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(379, 371);
+            this.panel1.Size = new System.Drawing.Size(379, 464);
             this.panel1.TabIndex = 11;
             // 
             // propertyGrid1
@@ -1799,7 +1837,7 @@ namespace BrawlLib.Modeling
             this.propertyGrid1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.propertyGrid1.Location = new System.Drawing.Point(0, 0);
             this.propertyGrid1.Name = "propertyGrid1";
-            this.propertyGrid1.Size = new System.Drawing.Size(379, 336);
+            this.propertyGrid1.Size = new System.Drawing.Size(379, 429);
             this.propertyGrid1.TabIndex = 11;
             this.propertyGrid1.ToolbarVisible = false;
             // 
@@ -1808,7 +1846,7 @@ namespace BrawlLib.Modeling
             this.panel2.Controls.Add(this.button1);
             this.panel2.Controls.Add(this.button2);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 336);
+            this.panel2.Location = new System.Drawing.Point(0, 429);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(379, 35);
             this.panel2.TabIndex = 12;
@@ -1817,11 +1855,10 @@ namespace BrawlLib.Modeling
             // 
             this.AcceptButton = this.button1;
             this.CancelButton = this.button2;
-            this.ClientSize = new System.Drawing.Size(379, 371);
-            this.ControlBox = false;
+            this.ClientSize = new System.Drawing.Size(379, 464);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.Status);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
             this.MaximizeBox = false;
             this.Name = "Collada";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -1844,6 +1881,5 @@ namespace BrawlLib.Modeling
             DialogResult = DialogResult.Cancel; 
             Close();
         }
-        bool _updating = false;
     }
 }

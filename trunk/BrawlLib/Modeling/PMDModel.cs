@@ -432,12 +432,12 @@ namespace BrawlLib.Modeling
         public static unsafe void PMD2MDL0(MDL0Node model)
         {
             model._version = 9;
-            model._needsNrmMtxArray = model._needsTexMtxArray = 1;
             model._isImport = true;
-            model._importOptions._forceCCW = true;
-            model._importOptions._fltVerts = true;
-            model._importOptions._fltNrms = true;
-            model._importOptions._fltUVs = true;
+            Collada._importOptions = BrawlLib.Properties.Settings.Default.ColladaImportOptions;
+            Collada._importOptions._forceCCW = true;
+            Collada._importOptions._fltVerts = true;
+            Collada._importOptions._fltNrms = true;
+            Collada._importOptions._fltUVs = true;
 
             model.InitGroups();
 
@@ -621,7 +621,8 @@ namespace BrawlLib.Modeling
                 Vector2* UVs = (Vector2*)p._manager._faceData[4].Address;
 
                 manager._triangles = new NewPrimitive((int)m._faceVertCount, BeginMode.Triangles);
-                uint* pTri = (uint*)manager._triangles._indices.Address;
+                uint[] pTriarr = manager._triangles._indices;
+                uint pTri = 0;
 
                 index = 0;
                 List<int> usedVertices = new List<int>();
@@ -679,7 +680,7 @@ namespace BrawlLib.Modeling
                         j = (ushort)vertexIndices[usedVertices.IndexOf(i)];
 
                     *Indices++ = j;
-                    *pTri++ = (uint)l;
+                    pTriarr[pTri++] = (uint)l;
                     *Vertices++ = p._manager._vertices[j]._position;
                     *Normals++ = mv._normal;
                     *UVs++ = mv._texCoord;

@@ -70,8 +70,8 @@ namespace System.Windows.Forms
             AnimType.SHP,
             AnimType.PAT,
             AnimType.VIS,
+            AnimType.CLR,
             AnimType.SCN,
-            AnimType.CLR
         };
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

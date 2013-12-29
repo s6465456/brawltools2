@@ -40,7 +40,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <RegisterForComInterop>false</RegisterForComInterop>
     <Prefer32Bit>false</Prefer32Bit>
@@ -210,6 +210,19 @@
     <Compile Include="Modeling\IMatrixNode.cs" />
     <Compile Include="Modeling\PrimitiveManager.cs" />
     <None Include="Modeling\TextureManager.cs" />
+    <Compile Include="Modeling\Triangle Converter\Deque\Deque.cs" />
+    <Compile Include="Modeling\Triangle Converter\Deque\GenericDeque.cs" />
+    <Compile Include="Modeling\Triangle Converter\Deque\GenericDeque.Enumerator.cs" />
+    <Compile Include="Modeling\Triangle Converter\Deque\GenericDeque.Node.cs" />
+    <Compile Include="Modeling\Triangle Converter\Deque\GenericDeque.Synchronized.cs" />
+    <Compile Include="Modeling\Triangle Converter\Deque\GenericTester.cs" />
+    <Compile Include="Modeling\Triangle Converter\Deque\Tester.cs" />
+    <Compile Include="Modeling\Triangle Converter\GraphArray.cs" />
+    <Compile Include="Modeling\Triangle Converter\HeapArray.cs" />
+    <Compile Include="Modeling\Triangle Converter\TriStripper.cs" />
+    <Compile Include="Modeling\Triangle Converter\Policy.cs" />
+    <Compile Include="Modeling\Triangle Converter\Types.cs" />
+    <Compile Include="Modeling\Triangle Converter\CacheSimulator.cs" />
     <Compile Include="Modeling\Triangle Converter\TriangleConverter.cs" />
     <Compile Include="Modeling\Vertex.cs" />
     <Compile Include="Modeling\Wavefront.cs" />
@@ -470,6 +483,12 @@
     </Compile>
     <Compile Include="System\Windows\Controls\VideoPlaybackPanel.cs">
       <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\ObjectOptimizerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="System\Windows\Forms\ObjectOptimizerForm.Designer.cs">
+      <DependentUpon>ObjectOptimizerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="System\Windows\Forms\ModelViewerForm.cs">
       <SubType>Form</SubType>
@@ -825,6 +844,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Controls\VideoPlaybackPanel.resx">
       <DependentUpon>VideoPlaybackPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="System\Windows\Forms\ObjectOptimizerForm.resx">
+      <DependentUpon>ObjectOptimizerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="System\Windows\Forms\ModelViewerForm.resx">
       <DependentUpon>ModelViewerForm.cs</DependentUpon>
