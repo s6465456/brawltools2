@@ -169,7 +169,7 @@ namespace BrawlBox
             if (_rootNode != null)
             {
                 //#if !DEBUG
-                try
+                //try
                 {
                 //#endif
                     if (_rootPath == null)
@@ -187,7 +187,7 @@ namespace BrawlBox
                     return true;
                 //#if !DEBUG
                 }
-                catch (Exception x) { Say(x.Message); }
+                //catch (Exception x) { Say(x.Message); }
                 //#endif
             }
             return false;
