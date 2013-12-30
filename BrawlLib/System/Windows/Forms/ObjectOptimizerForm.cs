@@ -124,6 +124,7 @@ namespace System.Windows.Forms
                 _object = o;
                 _facepoints = _object._manager.MergeExternalFaceData(_object);
                 _pointCount = _object._numFacepoints;
+                _faceCount = _object._numFaces;
             }
 
             public MDL0ObjectNode _object;
@@ -152,6 +153,9 @@ namespace System.Windows.Forms
 
             foreach (ObjectOptimization a in _results)
             {
+                if (a._groups == null)
+                    continue;
+
                 a._object._primGroups = a._groups;
                 a._object._numFacepoints = a._pointCount;
                 a._object._numFaces = a._faceCount;

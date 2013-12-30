@@ -35,8 +35,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
-            this.numCacheSize = new System.Windows.Forms.NumericInputBox();
-            this.numMinStripLen = new System.Windows.Forms.NumericInputBox();
             this.label4 = new System.Windows.Forms.Label();
             this.lblPercentChange = new System.Windows.Forms.Label();
             this.chkUseStrips = new System.Windows.Forms.CheckBox();
@@ -44,6 +42,8 @@
             this.lblNewCount = new System.Windows.Forms.Label();
             this.chkForceCCW = new System.Windows.Forms.CheckBox();
             this.chkAllowIncrease = new System.Windows.Forms.CheckBox();
+            this.numMinStripLen = new System.Windows.Forms.NumericInputBox();
+            this.numCacheSize = new System.Windows.Forms.NumericInputBox();
             this.SuspendLayout();
             // 
             // lblPrevCount
@@ -94,16 +94,16 @@
             // 
             this.label1.Location = new System.Drawing.Point(56, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(64, 13);
+            this.label1.Size = new System.Drawing.Size(67, 13);
             this.label1.TabIndex = 8;
             this.label1.Text = "Cache Size:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(9, 32);
+            this.label2.Location = new System.Drawing.Point(1, 32);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(111, 13);
+            this.label2.Size = new System.Drawing.Size(122, 14);
             this.label2.TabIndex = 9;
             this.label2.Text = "Minimum Strip Length:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -112,40 +112,16 @@
             // 
             this.label3.Location = new System.Drawing.Point(36, 54);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(84, 13);
+            this.label3.Size = new System.Drawing.Size(87, 13);
             this.label3.TabIndex = 10;
             this.label3.Text = "Old Point Count:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // numCacheSize
-            // 
-            this.numCacheSize.Integral = true;
-            this.numCacheSize.Location = new System.Drawing.Point(129, 6);
-            this.numCacheSize.MaximumValue = 3.402823E+38F;
-            this.numCacheSize.MinimumValue = 0F;
-            this.numCacheSize.Name = "numCacheSize";
-            this.numCacheSize.Size = new System.Drawing.Size(51, 20);
-            this.numCacheSize.TabIndex = 11;
-            this.numCacheSize.Text = "52";
-            this.numCacheSize.ValueChanged += new System.EventHandler(this.Update);
-            // 
-            // numMinStripLen
-            // 
-            this.numMinStripLen.Integral = true;
-            this.numMinStripLen.Location = new System.Drawing.Point(129, 29);
-            this.numMinStripLen.MaximumValue = 3.402823E+38F;
-            this.numMinStripLen.MinimumValue = 2F;
-            this.numMinStripLen.Name = "numMinStripLen";
-            this.numMinStripLen.Size = new System.Drawing.Size(51, 20);
-            this.numMinStripLen.TabIndex = 12;
-            this.numMinStripLen.Text = "2";
-            this.numMinStripLen.ValueChanged += new System.EventHandler(this.Update);
             // 
             // label4
             // 
             this.label4.Location = new System.Drawing.Point(30, 77);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(90, 13);
+            this.label4.Size = new System.Drawing.Size(93, 13);
             this.label4.TabIndex = 13;
             this.label4.Text = "New Point Count:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -154,7 +130,7 @@
             // 
             this.lblPercentChange.AutoSize = true;
             this.lblPercentChange.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblPercentChange.Location = new System.Drawing.Point(12, 101);
+            this.lblPercentChange.Location = new System.Drawing.Point(12, 98);
             this.lblPercentChange.Name = "lblPercentChange";
             this.lblPercentChange.Size = new System.Drawing.Size(90, 16);
             this.lblPercentChange.TabIndex = 14;
@@ -217,6 +193,30 @@
             this.chkAllowIncrease.Text = "Allow Increase";
             this.chkAllowIncrease.UseVisualStyleBackColor = true;
             this.chkAllowIncrease.CheckedChanged += new System.EventHandler(this.Update);
+            // 
+            // numMinStripLen
+            // 
+            this.numMinStripLen.Integral = true;
+            this.numMinStripLen.Location = new System.Drawing.Point(129, 29);
+            this.numMinStripLen.MaximumValue = 3.402823E+38F;
+            this.numMinStripLen.MinimumValue = 2F;
+            this.numMinStripLen.Name = "numMinStripLen";
+            this.numMinStripLen.Size = new System.Drawing.Size(51, 20);
+            this.numMinStripLen.TabIndex = 12;
+            this.numMinStripLen.Text = "2";
+            this.numMinStripLen.ValueChanged += new System.EventHandler(this.Update);
+            // 
+            // numCacheSize
+            // 
+            this.numCacheSize.Integral = true;
+            this.numCacheSize.Location = new System.Drawing.Point(129, 6);
+            this.numCacheSize.MaximumValue = 3.402823E+38F;
+            this.numCacheSize.MinimumValue = 0F;
+            this.numCacheSize.Name = "numCacheSize";
+            this.numCacheSize.Size = new System.Drawing.Size(51, 20);
+            this.numCacheSize.TabIndex = 11;
+            this.numCacheSize.Text = "52";
+            this.numCacheSize.ValueChanged += new System.EventHandler(this.Update);
             // 
             // ObjectOptimizerForm
             // 

@@ -644,7 +644,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                     _name = "polygon" + Index;
 
             //Link nodes
-            if (header->_vertexId >= 0)
+            if (header->_vertexId >= 0 && Model._vertList != null)
                 foreach (MDL0VertexNode v in Model._vertList)
                     if (header->_vertexId == v.ID)
                     {
@@ -652,7 +652,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         break;
                     }
 
-            if (header->_normalId >= 0)
+            if (header->_normalId >= 0 && Model._normList != null)
                 foreach (MDL0NormalNode n in Model._normList)
                     if (header->_normalId == n.ID)
                     {
@@ -662,7 +662,7 @@ namespace BrawlLib.SSBB.ResourceNodes
 
             int id;
             for (int i = 0; i < 2; i++)
-                if ((id = ((bshort*)header->_colorIds)[i]) >= 0)
+                if ((id = ((bshort*)header->_colorIds)[i]) >= 0 && Model._colorList != null)
                     foreach (MDL0ColorNode c in Model._colorList)
                         if (id == c.ID)
                         {
@@ -671,7 +671,7 @@ namespace BrawlLib.SSBB.ResourceNodes
                         }
 
             for (int i = 0; i < 8; i++)
-                if ((id = ((bshort*)header->_uids)[i]) >= 0)
+                if ((id = ((bshort*)header->_uids)[i]) >= 0 && Model._uvList != null)
                     foreach (MDL0UVNode u in Model._uvList)
                         if (id == u.ID)
                         {
