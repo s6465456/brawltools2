@@ -812,20 +812,7 @@ namespace BrawlLib.SSBB.ResourceNodes
         #region Rebuilding
 
         [Browsable(false)]
-        public bool HasANonFloatAsset
-        {
-            get
-            {
-                bool notFloat = _vertexNode.Format != WiiVertexComponentType.Float ||
-                    (_normalNode != null && _normalNode.Format != WiiVertexComponentType.Float);
-
-                for (int i = 4; i < 12; i++)
-                    if (_uvSet[i - 4] != null && _uvSet[i - 4].Format != WiiVertexComponentType.Float)
-                        notFloat = true;
-
-                return notFloat;
-            }
-        }
+        public bool HasNonFloatVertices { get { return _vertexNode !=  null && _vertexNode.Format != WiiVertexComponentType.Float; } }
 
         public void RecalcIndices()
         {

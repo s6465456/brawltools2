@@ -164,13 +164,6 @@ namespace System.Windows.Forms
 
                 if (a._object._vertexNode.Format != WiiVertexComponentType.Float)
                     a._object._vertexNode._forceRebuild = a._object._vertexNode._forceFloat = chkUseStrips.Checked;
-
-                if (a._object._normalNode != null && a._object._normalNode.Format != WiiVertexComponentType.Float)
-                    a._object._normalNode._forceRebuild = a._object._normalNode._forceFloat = chkUseStrips.Checked;
-
-                for (int i = 4; i < 12; i++)
-                    if (a._object._uvSet[i - 4] != null && a._object._uvSet[i - 4].Format != WiiVertexComponentType.Float)
-                        a._object._uvSet[i - 4]._forceRebuild = a._object._uvSet[i - 4]._forceFloat = chkUseStrips.Checked;
             }
 
             if (_target is MDL0Node)

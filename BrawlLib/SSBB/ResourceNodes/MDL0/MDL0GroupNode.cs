@@ -348,9 +348,9 @@ namespace BrawlLib.SSBB.ResourceNodes
                             m.SignalPropertyChange();
                         }
 
-                        if (m.HasTexMtx && m.HasANonFloatAsset)
+                        if (m.HasTexMtx && m.HasNonFloatVertices)
                         {
-                            ((MDL0Node)Parent)._errors.Add("Object " + m.Index + " has texture matrices and non-float assets, meaning it will explode in-game.");
+                            ((MDL0Node)Parent)._errors.Add("Object " + m.Index + " has texture matrices and non-float vertices, meaning it will explode in-game.");
                             m.SignalPropertyChange();
                         }
                     }
